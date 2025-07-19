@@ -7,9 +7,9 @@ import logging
 from typing import List, Optional
 
 # Import our models and services
-from .database import connect_to_mongo, close_mongo_connection
-from .models import *
-from .services import *
+from database import connect_to_mongo, close_mongo_connection
+from models import *
+from services import *
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
