@@ -4,7 +4,7 @@ from database import (
     create_document, find_document, find_documents, 
     update_document, delete_document, count_documents, aggregate_documents
 )
-from .models import *
+from models import *
 import json
 
 class UserService:
