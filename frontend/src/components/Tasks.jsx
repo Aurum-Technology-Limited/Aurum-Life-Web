@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare, Plus, Calendar, Flag, Clock, Check } from 'lucide-react';
-import { mockTasks, getStoredData, setStoredData } from '../data/mock';
+import { CheckSquare, Plus, Calendar, Flag, Clock, Check, X, Loader2, AlertCircle } from 'lucide-react';
+import { tasksAPI, handleApiError } from '../services/api';
 
-const TaskCard = ({ task, onToggle, onEdit }) => {
+const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'bg-red-400';
@@ -12,7 +12,16 @@ const TaskCard = ({ task, onToggle, onEdit }) => {
     }
   };
 
-  const isOverdue = new Date(task.dueDate) < new Date() && !task.completed;
+  const formatDate = (dateString) => {
+    if (!dateString) return 'No due date';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const isOverdue = task.is_overdue;
 
   return (
     <div className={`p-6 rounded-xl border transition-all duration-300 group hover:scale-105 ${
@@ -21,7 +30,7 @@ const TaskCard = ({ task, onToggle, onEdit }) => {
         : isOverdue
         ? 'border-red-400/30 bg-gradient-to-br from-red-900/20 to-gray-800/30'
         : 'border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30'
-    }`}>
+    } ${loading ? 'opacity-50' : ''}`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start space-x-3 flex-1">
           <div 
@@ -29,10 +38,14 @@ const TaskCard = ({ task, onToggle, onEdit }) => {
               task.completed 
                 ? 'bg-green-400 border-green-400' 
                 : 'border-gray-500 hover:border-yellow-400'
-            }`}
-            onClick={() => onToggle(task.id)}
+            } ${loading ? 'cursor-not-allowed' : ''}`}
+            onClick={() => !loading && onToggle(task.id, !task.completed)}
           >
-            {task.completed && <Check size={14} style={{ color: '#0B0D14' }} />}
+            {loading ? (
+              <Loader2 size={12} className="animate-spin text-gray-400" />
+            ) : task.completed ? (
+              <Check size={14} style={{ color: '#0B0D14' }} />
+            ) : null}
           </div>
           <div className="flex-1">
             <h3 className={`text-lg font-semibold mb-2 ${
@@ -46,7 +59,7 @@ const TaskCard = ({ task, onToggle, onEdit }) => {
               <div className="flex items-center space-x-1">
                 <Calendar size={14} className="text-gray-400" />
                 <span className={`${isOverdue && !task.completed ? 'text-red-400' : 'text-gray-400'}`}>
-                  {task.dueDate}
+                  {formatDate(task.due_date)}
                 </span>
               </div>
               <div className="flex items-center space-x-1">
@@ -65,8 +78,16 @@ const TaskCard = ({ task, onToggle, onEdit }) => {
           <button
             onClick={() => onEdit(task)}
             className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100"
+            disabled={loading}
           >
             <Clock size={14} className="text-gray-400" />
+          </button>
+          <button
+            onClick={() => onDelete(task.id)}
+            className="p-2 rounded-lg bg-gray-800 hover:bg-red-700 transition-colors opacity-0 group-hover:opacity-100"
+            disabled={loading}
+          >
+            <X size={14} className="text-gray-400 hover:text-red-400" />
           </button>
         </div>
       </div>
@@ -74,12 +95,12 @@ const TaskCard = ({ task, onToggle, onEdit }) => {
   );
 };
 
-const TaskModal = ({ task, isOpen, onClose, onSave }) => {
+const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 'medium',
-    dueDate: '',
+    due_date: '',
     category: 'personal'
   });
 
@@ -89,7 +110,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
         title: task.title,
         description: task.description,
         priority: task.priority,
-        dueDate: task.dueDate,
+        due_date: task.due_date ? task.due_date.split('T')[0] : '',
         category: task.category
       });
     } else {
@@ -99,7 +120,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
         title: '',
         description: '',
         priority: 'medium',
-        dueDate: tomorrow.toISOString().split('T')[0],
+        due_date: tomorrow.toISOString().split('T')[0],
         category: 'personal'
       });
     }
@@ -107,7 +128,11 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const submitData = {
+      ...formData,
+      due_date: formData.due_date ? new Date(formData.due_date).toISOString() : null
+    };
+    onSave(submitData);
   };
 
   if (!isOpen) return null;
@@ -122,8 +147,9 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+            disabled={loading}
           >
-            <Plus size={20} className="text-gray-400 rotate-45" />
+            <X size={20} className="text-gray-400" />
           </button>
         </div>
         
@@ -139,6 +165,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
               placeholder="What needs to be done?"
               required
+              disabled={loading}
             />
           </div>
           
@@ -152,6 +179,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
               rows="3"
               placeholder="Add more details..."
+              disabled={loading}
             />
           </div>
           
@@ -164,6 +192,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                 className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                disabled={loading}
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -177,10 +206,10 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
               </label>
               <input
                 type="date"
-                value={formData.dueDate}
-                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                value={formData.due_date}
+                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
                 className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
-                required
+                disabled={loading}
               />
             </div>
           </div>
@@ -193,6 +222,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+              disabled={loading}
             >
               <option value="personal">Personal</option>
               <option value="learning">Learning</option>
@@ -209,15 +239,21 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
               type="button"
               onClick={onClose}
               className="flex-1 py-2 px-4 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 hover:scale-105"
+              className="flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 hover:scale-105 flex items-center justify-center space-x-2"
               style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+              disabled={loading}
             >
-              {task ? 'Update' : 'Create'}
+              {loading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <span>{task ? 'Update' : 'Create'}</span>
+              )}
             </button>
           </div>
         </form>
@@ -227,21 +263,50 @@ const TaskModal = ({ task, isOpen, onClose, onSave }) => {
 };
 
 const Tasks = () => {
-  const [tasks, setTasks] = useState(() => getStoredData('tasks', mockTasks));
+  const [tasks, setTasks] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [filter, setFilter] = useState('all'); // all, active, completed
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    setStoredData('tasks', tasks);
-  }, [tasks]);
+    fetchTasks();
+  }, []);
 
-  const handleToggleTask = (taskId) => {
-    setTasks(prev => prev.map(task => 
-      task.id === taskId 
-        ? { ...task, completed: !task.completed }
-        : task
-    ));
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await tasksAPI.getTasks();
+      setTasks(response.data);
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to load tasks'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleTask = async (taskId, completed) => {
+    try {
+      setActionLoading(taskId);
+      
+      await tasksAPI.updateTask(taskId, { completed });
+      
+      // Update local state optimistically
+      setTasks(prev => prev.map(task => 
+        task.id === taskId 
+          ? { ...task, completed, completed_at: completed ? new Date().toISOString() : null }
+          : task
+      ));
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to update task'));
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const handleEditTask = (task) => {
@@ -254,23 +319,42 @@ const Tasks = () => {
     setModalOpen(true);
   };
 
-  const handleSaveTask = (formData) => {
-    if (editingTask) {
-      setTasks(prev => prev.map(task =>
-        task.id === editingTask.id
-          ? { ...task, ...formData }
-          : task
-      ));
-    } else {
-      const newTask = {
-        id: Date.now().toString(),
-        ...formData,
-        completed: false
-      };
-      setTasks(prev => [...prev, newTask]);
+  const handleSaveTask = async (formData) => {
+    try {
+      setModalLoading(true);
+      
+      if (editingTask) {
+        await tasksAPI.updateTask(editingTask.id, formData);
+        // Update local state
+        setTasks(prev => prev.map(task =>
+          task.id === editingTask.id
+            ? { ...task, ...formData }
+            : task
+        ));
+      } else {
+        const response = await tasksAPI.createTask(formData);
+        // Add to local state
+        setTasks(prev => [...prev, response.data]);
+      }
+      
+      setModalOpen(false);
+      setEditingTask(null);
+    } catch (err) {
+      setError(handleApiError(err, editingTask ? 'Failed to update task' : 'Failed to create task'));
+    } finally {
+      setModalLoading(false);
     }
-    setModalOpen(false);
-    setEditingTask(null);
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    
+    try {
+      await tasksAPI.deleteTask(taskId);
+      setTasks(prev => prev.filter(task => task.id !== taskId));
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to delete task'));
+    }
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -283,7 +367,17 @@ const Tasks = () => {
 
   const completedCount = tasks.filter(t => t.completed).length;
   const activeCount = tasks.filter(t => !t.completed).length;
-  const overdueCount = tasks.filter(t => !t.completed && new Date(t.dueDate) < new Date()).length;
+  const overdueCount = tasks.filter(t => !t.completed && t.is_overdue).length;
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={48} className="animate-spin text-yellow-400" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -301,6 +395,19 @@ const Tasks = () => {
           <span>Add Task</span>
         </button>
       </div>
+
+      {error && (
+        <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
+          <AlertCircle size={20} className="text-red-400" />
+          <span className="text-red-400">{error}</span>
+          <button
+            onClick={fetchTasks}
+            className="ml-auto px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -379,16 +486,43 @@ const Tasks = () => {
       </div>
 
       {/* Tasks Grid */}
-      <div className="space-y-4">
-        {filteredTasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onToggle={handleToggleTask}
-            onEdit={handleEditTask}
-          />
-        ))}
-      </div>
+      {filteredTasks.length > 0 ? (
+        <div className="space-y-4">
+          {filteredTasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onToggle={handleToggleTask}
+              onEdit={handleEditTask}
+              onDelete={handleDeleteTask}
+              loading={actionLoading === task.id}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-lg bg-yellow-400/20 flex items-center justify-center mx-auto mb-4">
+            <CheckSquare size={32} className="text-yellow-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">
+            {filter === 'completed' ? 'No completed tasks' : 
+             filter === 'active' ? 'No active tasks' : 'No tasks yet'}
+          </h3>
+          <p className="text-gray-400 mb-6">
+            {filter === 'all' ? 'Create your first task to get started' : 
+             `Switch to ${filter === 'completed' ? 'active' : 'all'} tasks to see more`}
+          </p>
+          {filter === 'all' && (
+            <button
+              onClick={handleCreateTask}
+              className="px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
+              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+            >
+              Create Your First Task
+            </button>
+          )}
+        </div>
+      )}
 
       <TaskModal
         task={editingTask}
@@ -398,6 +532,7 @@ const Tasks = () => {
           setEditingTask(null);
         }}
         onSave={handleSaveTask}
+        loading={modalLoading}
       />
     </div>
   );
