@@ -2,6 +2,13 @@
 Seed script to populate the database with initial data
 """
 import asyncio
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load environment variables
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
 from database import connect_to_mongo, create_document
 from models import User, Course, Badge
 from datetime import datetime
