@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, Bot, User, Lightbulb, Target, TrendingUp } from 'lucide-react';
-import { mockChatMessages, getStoredData, setStoredData } from '../data/mock';
+import { MessageCircle, Send, Bot, User, Lightbulb, Target, TrendingUp, Loader2, AlertCircle } from 'lucide-react';
+import { chatAPI, statsAPI, handleApiError } from '../services/api';
 
 const Message = ({ message, isUser }) => (
   <div className={`flex items-start space-x-3 mb-6 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
@@ -19,12 +19,21 @@ const Message = ({ message, isUser }) => (
         : 'bg-gray-800 text-white border border-gray-700'
     }`}>
       <p className="text-sm leading-relaxed">{message.content}</p>
+      <p className="text-xs mt-2 opacity-70">
+        {new Date(message.timestamp).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })}
+      </p>
     </div>
   </div>
 );
 
-const InsightCard = ({ icon: Icon, title, description, action }) => (
-  <div className="p-4 rounded-lg border border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 transition-colors">
+const InsightCard = ({ icon: Icon, title, description, action, onClick }) => (
+  <div 
+    className="p-4 rounded-lg border border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 transition-colors cursor-pointer"
+    onClick={onClick}
+  >
     <div className="flex items-center space-x-3 mb-3">
       <div className="w-8 h-8 rounded-lg bg-yellow-400 flex items-center justify-center">
         <Icon size={16} style={{ color: '#0B0D14' }} />
@@ -33,17 +42,21 @@ const InsightCard = ({ icon: Icon, title, description, action }) => (
     </div>
     <p className="text-sm text-gray-400 mb-3">{description}</p>
     {action && (
-      <button className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
+      <p className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
         {action}
-      </button>
+      </p>
     )}
   </div>
 );
 
 const AICoach = () => {
-  const [messages, setMessages] = useState(() => getStoredData('chat_messages', mockChatMessages));
+  const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId] = useState(() => `session-${Date.now()}`);
+  const [userStats, setUserStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -56,50 +69,80 @@ const AICoach = () => {
   }, [messages]);
 
   useEffect(() => {
-    setStoredData('chat_messages', messages);
-  }, [messages]);
+    initializeChat();
+  }, []);
 
-  const generateAIResponse = (userMessage) => {
-    const responses = [
-      "That's a great insight! Building self-awareness is the first step toward meaningful change. Have you considered setting specific daily practices to reinforce this?",
-      "I understand your perspective. It's normal to feel overwhelmed sometimes. Let's break this down into smaller, manageable steps.",
-      "Your commitment to growth is inspiring! Based on what you've shared, I'd recommend focusing on consistency rather than perfection.",
-      "That's a common challenge many people face. What if we explored some mindfulness techniques that could help you navigate these situations?",
-      "I can sense you're making real progress. Remember, growth isn't always linear - every step forward counts, even the small ones.",
-      "Your reflection shows deep self-awareness. How do you think you could apply this insight to other areas of your life?",
-      "That's a wonderful goal! Let's create a specific action plan that aligns with your values and current habits.",
-      "I appreciate your honesty. Vulnerability is actually a strength and shows you're ready for genuine growth."
-    ];
+  const initializeChat = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load existing messages for this session
+      const messagesResponse = await chatAPI.getMessages(sessionId);
+      setMessages(messagesResponse.data);
+      
+      // Load user stats for insights
+      const statsResponse = await statsAPI.getUserStats();
+      setUserStats(statsResponse.data);
+      
+      // If no messages exist, send welcome message
+      if (messagesResponse.data.length === 0) {
+        await sendWelcomeMessage();
+      }
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to initialize chat'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return responses[Math.floor(Math.random() * responses.length)];
+  const sendWelcomeMessage = async () => {
+    const welcomeMessage = {
+      session_id: sessionId,
+      message_type: 'ai',
+      content: "Hello! I'm your AI Growth Coach. I'm here to help you on your personal development journey. How are you feeling about your progress today?"
+    };
+    
+    try {
+      const response = await chatAPI.sendMessage(welcomeMessage);
+      setMessages([response.data]);
+    } catch (err) {
+      console.error('Failed to send welcome message:', err);
+    }
   };
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
     const userMessage = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: inputValue,
-      timestamp: new Date().toISOString()
+      session_id: sessionId,
+      message_type: 'user',
+      content: inputValue
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
-    setIsTyping(true);
-
-    // Simulate AI response delay
-    setTimeout(() => {
-      const aiResponse = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: generateAIResponse(inputValue),
-        timestamp: new Date().toISOString()
-      };
+    try {
+      setIsTyping(true);
       
-      setMessages(prev => [...prev, aiResponse]);
+      // Send user message to backend
+      const response = await chatAPI.sendMessage(userMessage);
+      
+      // Refresh messages to get both user message and AI response
+      setTimeout(async () => {
+        try {
+          const messagesResponse = await chatAPI.getMessages(sessionId);
+          setMessages(messagesResponse.data);
+        } catch (err) {
+          console.error('Failed to refresh messages:', err);
+        }
+        setIsTyping(false);
+      }, 1000);
+      
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to send message'));
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000);
+    }
+
+    setInputValue('');
   };
 
   const handleKeyPress = (e) => {
@@ -109,12 +152,26 @@ const AICoach = () => {
     }
   };
 
+  const handleQuickPrompt = (prompt) => {
+    setInputValue(prompt);
+  };
+
   const quickPrompts = [
     "How can I stay motivated?",
     "Help me set better goals",
     "I'm feeling stuck lately",
     "Tips for better focus"
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={48} className="animate-spin text-yellow-400" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -124,6 +181,19 @@ const AICoach = () => {
           Get personalized guidance, insights, and motivation from your AI-powered personal development coach
         </p>
       </div>
+
+      {error && (
+        <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
+          <AlertCircle size={20} className="text-red-400" />
+          <span className="text-red-400">{error}</span>
+          <button
+            onClick={initializeChat}
+            className="ml-auto px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chat Area */}
@@ -151,7 +221,7 @@ const AICoach = () => {
                 <Message
                   key={message.id}
                   message={message}
-                  isUser={message.type === 'user'}
+                  isUser={message.message_type === 'user'}
                 />
               ))}
               
@@ -183,14 +253,19 @@ const AICoach = () => {
                   className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 transition-colors resize-none"
                   rows="1"
                   style={{ minHeight: '40px' }}
+                  disabled={isTyping}
                 />
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isTyping}
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
                 >
-                  <Send size={18} />
+                  {isTyping ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <Send size={18} />
+                  )}
                 </button>
               </div>
               
@@ -199,8 +274,9 @@ const AICoach = () => {
                 {quickPrompts.map((prompt, index) => (
                   <button
                     key={index}
-                    onClick={() => setInputValue(prompt)}
+                    onClick={() => handleQuickPrompt(prompt)}
                     className="px-3 py-1 text-xs bg-gray-700 text-gray-300 rounded-full hover:bg-gray-600 transition-colors"
+                    disabled={isTyping}
                   >
                     {prompt}
                   </button>
@@ -216,24 +292,31 @@ const AICoach = () => {
           <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
             <h3 className="text-lg font-semibold text-white mb-4">Today's Insights</h3>
             <div className="space-y-4">
-              <InsightCard
-                icon={Lightbulb}
-                title="Progress Recognition"
-                description="You've maintained your meditation streak for 15 days straight!"
-                action="View habit details →"
-              />
-              <InsightCard
-                icon={Target}
-                title="Goal Alignment"
-                description="Your learning activities are well-aligned with your growth objectives."
-                action="Explore more courses →"
-              />
-              <InsightCard
-                icon={TrendingUp}
-                title="Momentum Building"
-                description="Your task completion rate has improved 23% this week."
-                action="See full analytics →"
-              />
+              {userStats && (
+                <>
+                  <InsightCard
+                    icon={Lightbulb}
+                    title="Progress Recognition"
+                    description={`You've completed ${userStats.habits_completed_today} out of ${userStats.total_habits} habits today!`}
+                    action="View habit details →"
+                    onClick={() => handleQuickPrompt("Tell me about my habit progress")}
+                  />
+                  <InsightCard
+                    icon={Target}
+                    title="Goal Alignment"
+                    description={`You have ${userStats.total_tasks} tasks and ${userStats.courses_enrolled} courses in progress.`}
+                    action="Explore learning →"
+                    onClick={() => handleQuickPrompt("How can I better manage my learning goals?")}
+                  />
+                  <InsightCard
+                    icon={TrendingUp}
+                    title="Growth Journey"
+                    description={`You've written ${userStats.total_journal_entries} journal entries for reflection.`}
+                    action="See insights →"
+                    onClick={() => handleQuickPrompt("What patterns do you see in my growth journey?")}
+                  />
+                </>
+              )}
             </div>
           </div>
 
@@ -242,16 +325,18 @@ const AICoach = () => {
             <h3 className="text-lg font-semibold text-white mb-4">Your Journey</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-400">Sessions with AI</span>
-                <span className="text-white font-medium">24</span>
+                <span className="text-gray-400">Chat sessions</span>
+                <span className="text-white font-medium">{messages.length > 0 ? Math.ceil(messages.length / 4) : 0}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Goals achieved</span>
-                <span className="text-white font-medium">8</span>
+                <span className="text-gray-400">Goals discussed</span>
+                <span className="text-white font-medium">{userStats?.total_tasks || 0}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Growth score</span>
-                <span className="text-yellow-400 font-medium">87/100</span>
+                <span className="text-yellow-400 font-medium">
+                  {userStats ? Math.min(87 + (userStats.habits_completed_today * 5), 100) : 87}/100
+                </span>
               </div>
             </div>
           </div>
