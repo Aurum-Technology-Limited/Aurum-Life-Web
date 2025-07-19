@@ -371,10 +371,17 @@ test_plan:
     - "Dashboard Integration"
     - "Habits Component Integration"
     - "Statistics and Analytics"
+    - "Journal Component"
+    - "Task Management Component" 
+    - "AI Chat System"
+    - "Course Management"
+    - "Mindfulness Component"
+    - "Learning Component"
+    - "Achievements Component"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
-      message: "Successfully implemented full-stack backend with MongoDB, comprehensive API endpoints, and integrated Dashboard + Habits components with real data. Need testing to verify all backend APIs work correctly and frontend integration is successful. Focus on high-priority tasks: API endpoints, habit tracking, dashboard, and stats calculation."
+      message: "Successfully implemented full-stack backend with MongoDB, comprehensive API endpoints, and integrated Dashboard + Habits components with real data. Backend APIs manually tested and working (habit creation, completion, streak tracking, dashboard). Now need comprehensive frontend testing of ALL components to verify complete application functionality. User requested 'test all of it' - need full application testing including backend integration for all features."
