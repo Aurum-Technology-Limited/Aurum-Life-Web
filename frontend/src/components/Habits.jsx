@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Target, Flame, Calendar, Plus, Check, X } from 'lucide-react';
-import { mockHabits, getStoredData, setStoredData } from '../data/mock';
+import { Target, Flame, Calendar, Plus, Check, X, Loader2, AlertCircle } from 'lucide-react';
+import { habitsAPI, handleApiError } from '../services/api';
 
-const HabitCard = ({ habit, onToggle, onEdit }) => {
-  const progressPercentage = (habit.streak / habit.target) * 100;
+const HabitCard = ({ habit, onToggle, onEdit, loading = false }) => {
+  const progressPercentage = habit.progress_percentage || 0;
   
   return (
     <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group">
@@ -11,13 +11,17 @@ const HabitCard = ({ habit, onToggle, onEdit }) => {
         <div className="flex items-center space-x-3">
           <div 
             className={`w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-200 ${
-              habit.completed 
+              habit.is_completed_today 
                 ? 'bg-yellow-400 border-yellow-400' 
                 : 'border-gray-500 hover:border-yellow-400'
-            }`}
-            onClick={() => onToggle(habit.id)}
+            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => !loading && onToggle(habit.id, !habit.is_completed_today)}
           >
-            {habit.completed && <Check size={14} style={{ color: '#0B0D14' }} />}
+            {loading ? (
+              <Loader2 size={12} className="animate-spin text-gray-400" />
+            ) : habit.is_completed_today ? (
+              <Check size={14} style={{ color: '#0B0D14' }} />
+            ) : null}
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white">{habit.name}</h3>
@@ -27,6 +31,7 @@ const HabitCard = ({ habit, onToggle, onEdit }) => {
         <button
           onClick={() => onEdit(habit)}
           className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+          disabled={loading}
         >
           <Target size={16} className="text-gray-400" />
         </button>
@@ -35,7 +40,7 @@ const HabitCard = ({ habit, onToggle, onEdit }) => {
       <div className="mb-4">
         <div className="flex justify-between text-sm text-gray-400 mb-2">
           <span>Progress</span>
-          <span>{habit.streak} / {habit.target} days</span>
+          <span>{habit.current_streak} / {habit.target_days} days</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-3">
           <div 
@@ -51,7 +56,7 @@ const HabitCard = ({ habit, onToggle, onEdit }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Flame size={16} className="text-orange-400" />
-          <span className="text-sm font-medium text-white">{habit.streak} day streak</span>
+          <span className="text-sm font-medium text-white">{habit.current_streak} day streak</span>
         </div>
         <span className="text-xs text-gray-500 capitalize">{habit.category}</span>
       </div>
@@ -59,11 +64,11 @@ const HabitCard = ({ habit, onToggle, onEdit }) => {
   );
 };
 
-const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
+const HabitModal = ({ habit, isOpen, onClose, onSave, loading = false }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    target: 30,
+    target_days: 30,
     category: 'health'
   });
 
@@ -72,14 +77,14 @@ const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
       setFormData({
         name: habit.name,
         description: habit.description,
-        target: habit.target,
+        target_days: habit.target_days,
         category: habit.category
       });
     } else {
       setFormData({
         name: '',
         description: '',
-        target: 30,
+        target_days: 30,
         category: 'health'
       });
     }
@@ -102,6 +107,7 @@ const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+            disabled={loading}
           >
             <X size={20} className="text-gray-400" />
           </button>
@@ -118,6 +124,7 @@ const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
               required
+              disabled={loading}
             />
           </div>
           
@@ -130,6 +137,7 @@ const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
               rows="3"
+              disabled={loading}
             />
           </div>
           
@@ -139,11 +147,12 @@ const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
             </label>
             <input
               type="number"
-              value={formData.target}
-              onChange={(e) => setFormData({ ...formData, target: parseInt(e.target.value) })}
+              value={formData.target_days}
+              onChange={(e) => setFormData({ ...formData, target_days: parseInt(e.target.value) })}
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
               min="1"
               required
+              disabled={loading}
             />
           </div>
           
@@ -155,6 +164,7 @@ const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+              disabled={loading}
             >
               <option value="health">Health</option>
               <option value="mindfulness">Mindfulness</option>
@@ -169,15 +179,21 @@ const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
               type="button"
               onClick={onClose}
               className="flex-1 py-2 px-4 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 hover:scale-105"
+              className="flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 hover:scale-105 flex items-center justify-center space-x-2"
               style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+              disabled={loading}
             >
-              {habit ? 'Update' : 'Create'}
+              {loading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <span>{habit ? 'Update' : 'Create'}</span>
+              )}
             </button>
           </div>
         </form>
@@ -187,24 +203,54 @@ const HabitModal = ({ habit, isOpen, onClose, onSave }) => {
 };
 
 const Habits = () => {
-  const [habits, setHabits] = useState(() => getStoredData('habits', mockHabits));
+  const [habits, setHabits] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    setStoredData('habits', habits);
-  }, [habits]);
+    fetchHabits();
+  }, []);
 
-  const handleToggleHabit = (habitId) => {
-    setHabits(prev => prev.map(habit => 
-      habit.id === habitId 
-        ? { 
-            ...habit, 
-            completed: !habit.completed,
-            streak: !habit.completed ? habit.streak + 1 : habit.streak 
-          }
-        : habit
-    ));
+  const fetchHabits = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await habitsAPI.getHabits();
+      setHabits(response.data);
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to load habits'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleHabit = async (habitId, completed) => {
+    try {
+      setActionLoading(habitId);
+      
+      await habitsAPI.toggleHabit(habitId, completed);
+      
+      // Update local state optimistically
+      setHabits(prev => prev.map(habit => 
+        habit.id === habitId 
+          ? { 
+              ...habit, 
+              is_completed_today: completed,
+              current_streak: completed ? habit.current_streak + 1 : Math.max(0, habit.current_streak - 1),
+              progress_percentage: ((completed ? habit.current_streak + 1 : Math.max(0, habit.current_streak - 1)) / habit.target_days) * 100
+            }
+          : habit
+      ));
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to update habit'));
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const handleEditHabit = (habit) => {
@@ -217,29 +263,49 @@ const Habits = () => {
     setModalOpen(true);
   };
 
-  const handleSaveHabit = (formData) => {
-    if (editingHabit) {
-      setHabits(prev => prev.map(habit =>
-        habit.id === editingHabit.id
-          ? { ...habit, ...formData }
-          : habit
-      ));
-    } else {
-      const newHabit = {
-        id: Date.now().toString(),
-        ...formData,
-        streak: 0,
-        completed: false,
-        color: '#F4B400'
-      };
-      setHabits(prev => [...prev, newHabit]);
+  const handleSaveHabit = async (formData) => {
+    try {
+      setModalLoading(true);
+      
+      if (editingHabit) {
+        await habitsAPI.updateHabit(editingHabit.id, formData);
+        // Update local state
+        setHabits(prev => prev.map(habit =>
+          habit.id === editingHabit.id
+            ? { ...habit, ...formData }
+            : habit
+        ));
+      } else {
+        const response = await habitsAPI.createHabit(formData);
+        // Add to local state
+        const newHabit = {
+          ...response.data,
+          progress_percentage: 0
+        };
+        setHabits(prev => [...prev, newHabit]);
+      }
+      
+      setModalOpen(false);
+      setEditingHabit(null);
+    } catch (err) {
+      setError(handleApiError(err, editingHabit ? 'Failed to update habit' : 'Failed to create habit'));
+    } finally {
+      setModalLoading(false);
     }
-    setModalOpen(false);
-    setEditingHabit(null);
   };
 
-  const completedCount = habits.filter(h => h.completed).length;
-  const averageStreak = habits.length > 0 ? Math.round(habits.reduce((acc, h) => acc + h.streak, 0) / habits.length) : 0;
+  const completedCount = habits.filter(h => h.is_completed_today).length;
+  const averageStreak = habits.length > 0 ? Math.round(habits.reduce((acc, h) => acc + h.current_streak, 0) / habits.length) : 0;
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={48} className="animate-spin text-yellow-400" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -257,6 +323,19 @@ const Habits = () => {
           <span>Add Habit</span>
         </button>
       </div>
+
+      {error && (
+        <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
+          <AlertCircle size={20} className="text-red-400" />
+          <span className="text-red-400">{error}</span>
+          <button
+            onClick={fetchHabits}
+            className="ml-auto px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -298,16 +377,34 @@ const Habits = () => {
       </div>
 
       {/* Habits Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {habits.map((habit) => (
-          <HabitCard
-            key={habit.id}
-            habit={habit}
-            onToggle={handleToggleHabit}
-            onEdit={handleEditHabit}
-          />
-        ))}
-      </div>
+      {habits.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {habits.map((habit) => (
+            <HabitCard
+              key={habit.id}
+              habit={habit}
+              onToggle={handleToggleHabit}
+              onEdit={handleEditHabit}
+              loading={actionLoading === habit.id}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-lg bg-yellow-400/20 flex items-center justify-center mx-auto mb-4">
+            <Target size={32} className="text-yellow-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">No habits yet</h3>
+          <p className="text-gray-400 mb-6">Create your first habit to start building consistency</p>
+          <button
+            onClick={handleCreateHabit}
+            className="px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
+            style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+          >
+            Create Your First Habit
+          </button>
+        </div>
+      )}
 
       <HabitModal
         habit={editingHabit}
@@ -317,6 +414,7 @@ const Habits = () => {
           setEditingHabit(null);
         }}
         onSave={handleSaveHabit}
+        loading={modalLoading}
       />
     </div>
   );
