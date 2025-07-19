@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, timedelta
-from .database import (
+from database import (
     create_document, find_document, find_documents, 
     update_document, delete_document, count_documents, aggregate_documents
 )
