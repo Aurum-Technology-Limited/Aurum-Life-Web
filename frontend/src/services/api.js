@@ -1,0 +1,114 @@
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+// Default user ID for demo
+const DEFAULT_USER_ID = 'demo-user-123';
+
+// Create axios instance with default config
+const apiClient = axios.create({
+  baseURL: API,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add request interceptor for common parameters
+apiClient.interceptors.request.use((config) => {
+  // Add user_id to query params for all requests
+  if (!config.params) {
+    config.params = {};
+  }
+  if (!config.params.user_id) {
+    config.params.user_id = DEFAULT_USER_ID;
+  }
+  return config;
+});
+
+// Add response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
+// Dashboard API
+export const dashboardAPI = {
+  getDashboard: () => apiClient.get('/dashboard'),
+};
+
+// User API
+export const userAPI = {
+  getUser: (userId = DEFAULT_USER_ID) => apiClient.get(`/users/${userId}`),
+  updateUser: (userData, userId = DEFAULT_USER_ID) => apiClient.put(`/users/${userId}`, userData),
+  createUser: (userData) => apiClient.post('/users', userData),
+};
+
+// Habits API
+export const habitsAPI = {
+  getHabits: () => apiClient.get('/habits'),
+  createHabit: (habitData) => apiClient.post('/habits', habitData),
+  updateHabit: (habitId, habitData) => apiClient.put(`/habits/${habitId}`, habitData),
+  toggleHabit: (habitId, completed) => apiClient.post(`/habits/${habitId}/toggle`, { habit_id: habitId, completed }),
+  deleteHabit: (habitId) => apiClient.delete(`/habits/${habitId}`),
+};
+
+// Journal API
+export const journalAPI = {
+  getEntries: (skip = 0, limit = 20) => apiClient.get('/journal', { params: { skip, limit } }),
+  createEntry: (entryData) => apiClient.post('/journal', entryData),
+  updateEntry: (entryId, entryData) => apiClient.put(`/journal/${entryId}`, entryData),
+  deleteEntry: (entryId) => apiClient.delete(`/journal/${entryId}`),
+};
+
+// Tasks API
+export const tasksAPI = {
+  getTasks: () => apiClient.get('/tasks'),
+  createTask: (taskData) => apiClient.post('/tasks', taskData),
+  updateTask: (taskId, taskData) => apiClient.put(`/tasks/${taskId}`, taskData),
+  deleteTask: (taskId) => apiClient.delete(`/tasks/${taskId}`),
+};
+
+// Chat API
+export const chatAPI = {
+  sendMessage: (messageData) => apiClient.post('/chat', messageData),
+  getMessages: (sessionId) => apiClient.get(`/chat/${sessionId}`),
+};
+
+// Courses API
+export const coursesAPI = {
+  getAllCourses: () => apiClient.get('/courses'),
+  getEnrolledCourses: () => apiClient.get('/courses/enrolled'),
+  enrollInCourse: (courseId) => apiClient.post(`/courses/${courseId}/enroll`),
+};
+
+// Stats API
+export const statsAPI = {
+  getUserStats: () => apiClient.get('/stats'),
+  updateUserStats: () => apiClient.post('/stats/update'),
+};
+
+// Health check
+export const healthAPI = {
+  check: () => apiClient.get('/health'),
+  root: () => apiClient.get('/'),
+};
+
+// Utility functions
+export const handleApiError = (error, defaultMessage = 'An error occurred') => {
+  const message = error.response?.data?.detail || error.message || defaultMessage;
+  console.error('API Error:', message);
+  return message;
+};
+
+export const isApiError = (error) => {
+  return error.response && error.response.status;
+};
+
+export const getApiErrorStatus = (error) => {
+  return error.response?.status;
+};
