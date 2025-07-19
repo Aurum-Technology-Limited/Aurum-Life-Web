@@ -1,52 +1,49 @@
-import { useEffect } from "react";
+import React, { useState } from 'react';
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import Layout from './components/Layout';
+import Dashboard from './components/Dashboard';
+import Habits from './components/Habits';
+import Journal from './components/Journal';
+import Mindfulness from './components/Mindfulness';
+import Tasks from './components/Tasks';
+import Learning from './components/Learning';
+import AICoach from './components/AICoach';
+import Achievements from './components/Achievements';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+function App() {
+  const [activeSection, setActiveSection] = useState('dashboard');
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+  const renderActiveSection = () => {
+    const props = { onSectionChange: setActiveSection };
+    
+    switch (activeSection) {
+      case 'habits':
+        return <Habits {...props} />;
+      case 'journal':
+        return <Journal {...props} />;
+      case 'mindfulness':
+        return <Mindfulness {...props} />;
+      case 'tasks':
+        return <Tasks {...props} />;
+      case 'learning':
+        return <Learning {...props} />;
+      case 'ai-coach':
+        return <AICoach {...props} />;
+      case 'achievements':
+        return <Achievements {...props} />;
+      default:
+        return <Dashboard {...props} />;
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
   return (
     <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <Layout 
+        activeSection={activeSection} 
+        onSectionChange={setActiveSection}
+      >
+        {renderActiveSection()}
+      </Layout>
     </div>
   );
 }
