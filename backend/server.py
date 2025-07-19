@@ -1,67 +1,24 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+from pathlib import Path
 import os
 import logging
-from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List
-import uuid
-from datetime import datetime
+from typing import List, Optional
 
+# Import our models and services
+from .database import connect_to_mongo, close_mongo_connection
+from .models import *
+from .services import *
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Create the main app
+app = FastAPI(title="Aurum Life API", version="1.0.0")
 
-# Create the main app without a prefix
-app = FastAPI()
-
-# Create a router with the /api prefix
+# Create API router
 api_router = APIRouter(prefix="/api")
-
-
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
-
-# Include the router in the main app
-app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Configure logging
 logging.basicConfig(
@@ -70,6 +27,276 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Default user ID for demo (in real app, this would come from authentication)
+DEFAULT_USER_ID = "demo-user-123"
+
+# Health check endpoints
+@api_router.get("/")
+async def root():
+    return {"message": "Aurum Life API is running", "version": "1.0.0"}
+
+@api_router.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "aurum-life-api"}
+
+# User endpoints
+@api_router.post("/users", response_model=User)
+async def create_user(user_data: UserCreate):
+    """Create a new user"""
+    try:
+        return await UserService.create_user(user_data)
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/users/{user_id}", response_model=User)
+async def get_user(user_id: str = DEFAULT_USER_ID):
+    """Get user by ID"""
+    user = await UserService.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@api_router.put("/users/{user_id}", response_model=dict)
+async def update_user(user_data: UserUpdate, user_id: str = DEFAULT_USER_ID):
+    """Update user"""
+    success = await UserService.update_user(user_id, user_data)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"success": True, "message": "User updated successfully"}
+
+# Dashboard endpoint
+@api_router.get("/dashboard", response_model=UserDashboard)
+async def get_dashboard(user_id: str = Query(DEFAULT_USER_ID)):
+    """Get dashboard data for user"""
+    try:
+        return await StatsService.get_dashboard_data(user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting dashboard data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Habit endpoints
+@api_router.post("/habits", response_model=Habit)
+async def create_habit(habit_data: HabitCreate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Create a new habit"""
+    try:
+        return await HabitService.create_habit(user_id, habit_data)
+    except Exception as e:
+        logger.error(f"Error creating habit: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/habits", response_model=List[HabitResponse])
+async def get_habits(user_id: str = Query(DEFAULT_USER_ID)):
+    """Get all habits for user"""
+    try:
+        return await HabitService.get_user_habits(user_id)
+    except Exception as e:
+        logger.error(f"Error getting habits: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/habits/{habit_id}", response_model=dict)
+async def update_habit(habit_id: str, habit_data: HabitUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Update a habit"""
+    success = await HabitService.update_habit(habit_id, habit_data)
+    if not success:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    return {"success": True, "message": "Habit updated successfully"}
+
+@api_router.post("/habits/{habit_id}/toggle", response_model=dict)
+async def toggle_habit(habit_id: str, completion: HabitCompletion, user_id: str = Query(DEFAULT_USER_ID)):
+    """Toggle habit completion"""
+    success = await HabitService.toggle_habit_completion(user_id, habit_id, completion.completed)
+    if not success:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    return {"success": True, "message": "Habit completion updated"}
+
+@api_router.delete("/habits/{habit_id}", response_model=dict)
+async def delete_habit(habit_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Delete a habit"""
+    success = await HabitService.delete_habit(user_id, habit_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    return {"success": True, "message": "Habit deleted successfully"}
+
+# Journal endpoints
+@api_router.post("/journal", response_model=JournalEntry)
+async def create_journal_entry(entry_data: JournalEntryCreate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Create a new journal entry"""
+    try:
+        return await JournalService.create_entry(user_id, entry_data)
+    except Exception as e:
+        logger.error(f"Error creating journal entry: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/journal", response_model=List[JournalEntry])
+async def get_journal_entries(
+    user_id: str = Query(DEFAULT_USER_ID),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get journal entries for user"""
+    try:
+        return await JournalService.get_user_entries(user_id, skip, limit)
+    except Exception as e:
+        logger.error(f"Error getting journal entries: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/journal/{entry_id}", response_model=dict)
+async def update_journal_entry(entry_id: str, entry_data: JournalEntryUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Update a journal entry"""
+    success = await JournalService.update_entry(user_id, entry_id, entry_data)
+    if not success:
+        raise HTTPException(status_code=404, detail="Journal entry not found")
+    return {"success": True, "message": "Journal entry updated successfully"}
+
+@api_router.delete("/journal/{entry_id}", response_model=dict)
+async def delete_journal_entry(entry_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Delete a journal entry"""
+    success = await JournalService.delete_entry(user_id, entry_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Journal entry not found")
+    return {"success": True, "message": "Journal entry deleted successfully"}
+
+# Task endpoints
+@api_router.post("/tasks", response_model=Task)
+async def create_task(task_data: TaskCreate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Create a new task"""
+    try:
+        return await TaskService.create_task(user_id, task_data)
+    except Exception as e:
+        logger.error(f"Error creating task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/tasks", response_model=List[TaskResponse])
+async def get_tasks(user_id: str = Query(DEFAULT_USER_ID)):
+    """Get all tasks for user"""
+    try:
+        return await TaskService.get_user_tasks(user_id)
+    except Exception as e:
+        logger.error(f"Error getting tasks: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/tasks/{task_id}", response_model=dict)
+async def update_task(task_id: str, task_data: TaskUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Update a task"""
+    success = await TaskService.update_task(user_id, task_id, task_data)
+    if not success:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"success": True, "message": "Task updated successfully"}
+
+@api_router.delete("/tasks/{task_id}", response_model=dict)
+async def delete_task(task_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Delete a task"""
+    success = await TaskService.delete_task(user_id, task_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"success": True, "message": "Task deleted successfully"}
+
+# Chat endpoints
+@api_router.post("/chat", response_model=ChatMessage)
+async def send_chat_message(message_data: ChatMessageCreate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Send a chat message"""
+    try:
+        # Save user message
+        user_message = await ChatService.create_message(user_id, message_data)
+        
+        # Generate AI response if user message
+        if message_data.message_type == MessageTypeEnum.user:
+            ai_response_text = await ChatService.generate_ai_response(message_data.content)
+            ai_message_data = ChatMessageCreate(
+                session_id=message_data.session_id,
+                message_type=MessageTypeEnum.ai,
+                content=ai_response_text
+            )
+            await ChatService.create_message(user_id, ai_message_data)
+        
+        return user_message
+    except Exception as e:
+        logger.error(f"Error sending chat message: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/chat/{session_id}", response_model=List[ChatMessage])
+async def get_chat_messages(session_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Get chat messages for a session"""
+    try:
+        return await ChatService.get_session_messages(user_id, session_id)
+    except Exception as e:
+        logger.error(f"Error getting chat messages: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Course endpoints
+@api_router.get("/courses", response_model=List[CourseResponse])
+async def get_all_courses():
+    """Get all available courses"""
+    try:
+        return await CourseService.get_all_courses()
+    except Exception as e:
+        logger.error(f"Error getting courses: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/courses/enrolled", response_model=List[CourseResponse])
+async def get_enrolled_courses(user_id: str = Query(DEFAULT_USER_ID)):
+    """Get user's enrolled courses"""
+    try:
+        return await CourseService.get_user_courses(user_id)
+    except Exception as e:
+        logger.error(f"Error getting enrolled courses: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/courses/{course_id}/enroll", response_model=dict)
+async def enroll_in_course(course_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Enroll user in a course"""
+    try:
+        enrollment = await CourseService.enroll_user(user_id, course_id)
+        return {"success": True, "message": "Successfully enrolled in course", "enrollment_id": enrollment.id}
+    except Exception as e:
+        logger.error(f"Error enrolling in course: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Stats endpoints
+@api_router.get("/stats", response_model=UserStats)
+async def get_user_stats(user_id: str = Query(DEFAULT_USER_ID)):
+    """Get user statistics"""
+    try:
+        return await StatsService.get_user_stats(user_id)
+    except Exception as e:
+        logger.error(f"Error getting user stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/stats/update", response_model=UserStats)
+async def update_user_stats(user_id: str = Query(DEFAULT_USER_ID)):
+    """Update and recalculate user statistics"""
+    try:
+        return await StatsService.update_user_stats(user_id)
+    except Exception as e:
+        logger.error(f"Error updating user stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Include the router in the main app
+app.include_router(api_router)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Startup and shutdown events
+@app.on_event("startup")
+async def startup_db_client():
+    await connect_to_mongo()
+    logger.info("🚀 Aurum Life API started successfully")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    await close_mongo_connection()
+    logger.info("💤 Aurum Life API shutdown complete")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
