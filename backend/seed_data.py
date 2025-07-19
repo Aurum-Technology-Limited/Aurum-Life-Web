@@ -2,8 +2,8 @@
 Seed script to populate the database with initial data
 """
 import asyncio
-from .database import connect_to_mongo, create_document
-from .models import User, Course, Badge
+from database import connect_to_mongo, create_document
+from models import User, Course, Badge
 from datetime import datetime
 
 async def seed_database():
