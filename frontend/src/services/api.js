@@ -99,14 +99,6 @@ export const journalAPI = {
   deleteEntry: (entryId) => apiClient.delete(`/journal/${entryId}`),
 };
 
-// Tasks API
-export const tasksAPI = {
-  getTasks: () => apiClient.get('/tasks'),
-  createTask: (taskData) => apiClient.post('/tasks', taskData),
-  updateTask: (taskId, taskData) => apiClient.put(`/tasks/${taskId}`, taskData),
-  deleteTask: (taskId) => apiClient.delete(`/tasks/${taskId}`),
-};
-
 // Chat API
 export const chatAPI = {
   sendMessage: (messageData) => apiClient.post('/chat', messageData),
