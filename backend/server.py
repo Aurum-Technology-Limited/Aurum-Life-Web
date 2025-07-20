@@ -159,7 +159,139 @@ async def delete_journal_entry(entry_id: str, user_id: str = Query(DEFAULT_USER_
         raise HTTPException(status_code=404, detail="Journal entry not found")
     return {"success": True, "message": "Journal entry deleted successfully"}
 
-# Task endpoints
+# Area endpoints
+@api_router.post("/areas", response_model=Area)
+async def create_area(area_data: AreaCreate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Create a new area"""
+    try:
+        return await AreaService.create_area(user_id, area_data)
+    except Exception as e:
+        logger.error(f"Error creating area: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/areas", response_model=List[AreaResponse])
+async def get_areas(
+    include_projects: bool = Query(False),
+    user_id: str = Query(DEFAULT_USER_ID)
+):
+    """Get all areas for user"""
+    try:
+        return await AreaService.get_user_areas(user_id, include_projects)
+    except Exception as e:
+        logger.error(f"Error getting areas: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/areas/{area_id}", response_model=AreaResponse)
+async def get_area(area_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Get area by ID with projects"""
+    area = await AreaService.get_area(user_id, area_id)
+    if not area:
+        raise HTTPException(status_code=404, detail="Area not found")
+    return area
+
+@api_router.put("/areas/{area_id}", response_model=dict)
+async def update_area(area_id: str, area_data: AreaUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Update an area"""
+    success = await AreaService.update_area(user_id, area_id, area_data)
+    if not success:
+        raise HTTPException(status_code=404, detail="Area not found")
+    return {"success": True, "message": "Area updated successfully"}
+
+@api_router.delete("/areas/{area_id}", response_model=dict)
+async def delete_area(area_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Delete an area and all its projects/tasks"""
+    success = await AreaService.delete_area(user_id, area_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Area not found")
+    return {"success": True, "message": "Area deleted successfully"}
+
+# Project endpoints
+@api_router.post("/projects", response_model=Project)
+async def create_project(project_data: ProjectCreate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Create a new project"""
+    try:
+        return await ProjectService.create_project(user_id, project_data)
+    except Exception as e:
+        logger.error(f"Error creating project: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/projects", response_model=List[ProjectResponse])
+async def get_projects(
+    area_id: str = Query(None),
+    user_id: str = Query(DEFAULT_USER_ID)
+):
+    """Get all projects for user, optionally filtered by area"""
+    try:
+        return await ProjectService.get_user_projects(user_id, area_id)
+    except Exception as e:
+        logger.error(f"Error getting projects: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/projects/{project_id}", response_model=ProjectResponse)
+async def get_project(
+    project_id: str, 
+    include_tasks: bool = Query(False),
+    user_id: str = Query(DEFAULT_USER_ID)
+):
+    """Get project by ID"""
+    project = await ProjectService.get_project(user_id, project_id, include_tasks)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
+@api_router.put("/projects/{project_id}", response_model=dict)
+async def update_project(project_id: str, project_data: ProjectUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+    """Update a project"""
+    success = await ProjectService.update_project(user_id, project_id, project_data)
+    if not success:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"success": True, "message": "Project updated successfully"}
+
+@api_router.delete("/projects/{project_id}", response_model=dict)
+async def delete_project(project_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Delete a project and all its tasks"""
+    success = await ProjectService.delete_project(user_id, project_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"success": True, "message": "Project deleted successfully"}
+
+# Enhanced Task endpoints
+@api_router.get("/projects/{project_id}/tasks", response_model=List[TaskResponse])
+async def get_project_tasks(project_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Get all tasks for a specific project"""
+    try:
+        return await TaskService.get_project_tasks(project_id)
+    except Exception as e:
+        logger.error(f"Error getting project tasks: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/projects/{project_id}/kanban", response_model=KanbanBoard)
+async def get_kanban_board(project_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Get kanban board for a project"""
+    try:
+        return await TaskService.get_kanban_board(user_id, project_id)
+    except Exception as e:
+        logger.error(f"Error getting kanban board: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/tasks/{task_id}/column", response_model=dict)
+async def move_task_column(task_id: str, new_column: str, user_id: str = Query(DEFAULT_USER_ID)):
+    """Move task to different kanban column"""
+    success = await TaskService.move_task_column(user_id, task_id, new_column)
+    if not success:
+        raise HTTPException(status_code=400, detail="Invalid column or task not found")
+    return {"success": True, "message": "Task moved successfully"}
+
+@api_router.get("/today", response_model=TodayView)
+async def get_today_view(user_id: str = Query(DEFAULT_USER_ID)):
+    """Get today's focused view"""
+    try:
+        return await StatsService.get_today_view(user_id)
+    except Exception as e:
+        logger.error(f"Error getting today view: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Update existing task endpoints to work with new structure
 @api_router.post("/tasks", response_model=Task)
 async def create_task(task_data: TaskCreate, user_id: str = Query(DEFAULT_USER_ID)):
     """Create a new task"""
