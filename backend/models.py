@@ -282,6 +282,9 @@ class UserStats(BaseDocument):
     total_journal_entries: int = 0
     total_tasks: int = 0
     tasks_completed: int = 0
+    total_areas: int = 0
+    total_projects: int = 0
+    completed_projects: int = 0
     courses_enrolled: int = 0
     courses_completed: int = 0
     badges_earned: int = 0
