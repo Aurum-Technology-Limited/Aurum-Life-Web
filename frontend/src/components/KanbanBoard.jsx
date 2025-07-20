@@ -9,7 +9,8 @@ import {
   Circle,
   CheckCircle2,
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
+  X
 } from 'lucide-react';
 import { projectsAPI, tasksAPI } from '../services/api';
 
