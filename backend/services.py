@@ -118,7 +118,171 @@ class JournalService:
     async def delete_entry(user_id: str, entry_id: str) -> bool:
         return await delete_document("journal_entries", {"id": entry_id, "user_id": user_id})
 
-class TaskService:
+class AreaService:
+    @staticmethod
+    async def create_area(user_id: str, area_data: AreaCreate) -> Area:
+        # Get the current max sort_order
+        areas = await find_documents("areas", {"user_id": user_id})
+        max_sort_order = max([area.get("sort_order", 0) for area in areas] + [0])
+        
+        area = Area(user_id=user_id, sort_order=max_sort_order + 1, **area_data.dict())
+        area_dict = area.dict()
+        await create_document("areas", area_dict)
+        return area
+
+    @staticmethod
+    async def get_user_areas(user_id: str, include_projects: bool = False) -> List[AreaResponse]:
+        areas_docs = await find_documents("areas", {"user_id": user_id})
+        areas_docs.sort(key=lambda x: x.get("sort_order", 0))
+        
+        areas = []
+        for doc in areas_docs:
+            area_response = AreaResponse(**doc)
+            
+            if include_projects:
+                # Get projects for this area
+                projects = await ProjectService.get_area_projects(area_response.id)
+                area_response.projects = projects
+                area_response.project_count = len(projects)
+                area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
+                
+                # Calculate task counts
+                total_tasks = sum([p.task_count or 0 for p in projects])
+                completed_tasks = sum([p.completed_task_count or 0 for p in projects])
+                area_response.total_task_count = total_tasks
+                area_response.completed_task_count = completed_tasks
+            else:
+                # Just get counts
+                projects_docs = await find_documents("projects", {"user_id": user_id, "area_id": area_response.id})
+                area_response.project_count = len(projects_docs)
+                area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
+            
+            areas.append(area_response)
+        
+        return areas
+
+    @staticmethod
+    async def get_area(user_id: str, area_id: str) -> Optional[AreaResponse]:
+        area_doc = await find_document("areas", {"id": area_id, "user_id": user_id})
+        if not area_doc:
+            return None
+            
+        area_response = AreaResponse(**area_doc)
+        
+        # Get projects for this area
+        projects = await ProjectService.get_area_projects(area_id)
+        area_response.projects = projects
+        area_response.project_count = len(projects)
+        area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
+        
+        return area_response
+
+    @staticmethod
+    async def update_area(user_id: str, area_id: str, area_data: AreaUpdate) -> bool:
+        update_data = {k: v for k, v in area_data.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow()
+        return await update_document("areas", {"id": area_id, "user_id": user_id}, update_data)
+
+    @staticmethod
+    async def delete_area(user_id: str, area_id: str) -> bool:
+        # First delete all projects (which will delete their tasks)
+        projects = await find_documents("projects", {"user_id": user_id, "area_id": area_id})
+        for project in projects:
+            await ProjectService.delete_project(user_id, project["id"])
+        
+        # Then delete the area
+        return await delete_document("areas", {"id": area_id, "user_id": user_id})
+
+class ProjectService:
+    @staticmethod
+    async def create_project(user_id: str, project_data: ProjectCreate) -> Project:
+        # Get the current max sort_order for this area
+        projects = await find_documents("projects", {"user_id": user_id, "area_id": project_data.area_id})
+        max_sort_order = max([project.get("sort_order", 0) for project in projects] + [0])
+        
+        project = Project(user_id=user_id, sort_order=max_sort_order + 1, **project_data.dict())
+        project_dict = project.dict()
+        await create_document("projects", project_dict)
+        return project
+
+    @staticmethod
+    async def get_area_projects(area_id: str) -> List[ProjectResponse]:
+        projects_docs = await find_documents("projects", {"area_id": area_id})
+        projects_docs.sort(key=lambda x: x.get("sort_order", 0))
+        
+        projects = []
+        for doc in projects_docs:
+            project = await ProjectService._build_project_response(doc)
+            projects.append(project)
+        
+        return projects
+
+    @staticmethod
+    async def get_user_projects(user_id: str, area_id: str = None) -> List[ProjectResponse]:
+        query = {"user_id": user_id}
+        if area_id:
+            query["area_id"] = area_id
+            
+        projects_docs = await find_documents("projects", query)
+        projects_docs.sort(key=lambda x: x.get("sort_order", 0))
+        
+        projects = []
+        for doc in projects_docs:
+            project = await ProjectService._build_project_response(doc)
+            projects.append(project)
+        
+        return projects
+
+    @staticmethod
+    async def get_project(user_id: str, project_id: str, include_tasks: bool = False) -> Optional[ProjectResponse]:
+        project_doc = await find_document("projects", {"id": project_id, "user_id": user_id})
+        if not project_doc:
+            return None
+            
+        return await ProjectService._build_project_response(project_doc, include_tasks)
+
+    @staticmethod
+    async def _build_project_response(project_doc: dict, include_tasks: bool = False) -> ProjectResponse:
+        project_response = ProjectResponse(**project_doc)
+        
+        # Get task counts
+        tasks_docs = await find_documents("tasks", {"project_id": project_response.id})
+        project_response.task_count = len(tasks_docs)
+        project_response.completed_task_count = len([t for t in tasks_docs if t.get("completed", False)])
+        
+        # Calculate completion percentage
+        if project_response.task_count > 0:
+            project_response.completion_percentage = (project_response.completed_task_count / project_response.task_count) * 100
+        
+        # Check if overdue
+        if project_response.deadline and project_response.status != "Completed":
+            project_response.is_overdue = project_response.deadline < datetime.utcnow()
+        
+        # Get area name
+        area_doc = await find_document("areas", {"id": project_response.area_id})
+        if area_doc:
+            project_response.area_name = area_doc.get("name")
+        
+        # Include tasks if requested
+        if include_tasks:
+            tasks = await TaskService.get_project_tasks(project_response.id)
+            project_response.tasks = tasks
+        
+        return project_response
+
+    @staticmethod
+    async def update_project(user_id: str, project_id: str, project_data: ProjectUpdate) -> bool:
+        update_data = {k: v for k, v in project_data.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow()
+        return await update_document("projects", {"id": project_id, "user_id": user_id}, update_data)
+
+    @staticmethod
+    async def delete_project(user_id: str, project_id: str) -> bool:
+        # First delete all tasks in this project
+        await delete_document("tasks", {"project_id": project_id, "user_id": user_id})
+        
+        # Then delete the project
+        return await delete_document("projects", {"id": project_id, "user_id": user_id})
     @staticmethod
     async def create_task(user_id: str, task_data: TaskCreate) -> Task:
         task = Task(user_id=user_id, **task_data.dict())
