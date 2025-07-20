@@ -20,6 +20,12 @@ function App() {
     const props = { onSectionChange: setActiveSection };
     
     switch (activeSection) {
+      case 'today':
+        return <Today {...props} />;
+      case 'areas':
+        return <Areas {...props} />;
+      case 'projects':
+        return <Projects {...props} />;
       case 'habits':
         return <Habits {...props} />;
       case 'journal':
