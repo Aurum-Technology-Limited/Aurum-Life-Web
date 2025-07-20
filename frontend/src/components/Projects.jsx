@@ -358,7 +358,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 {/* Actions */}
                 <div className="flex space-x-2">
                   <button 
-                    onClick={() => window.open(`#kanban-${project.id}`, '_blank')}
+                    onClick={() => handleKanban(project.id)}
                     className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
                   >
                     <BarChart3 className="h-4 w-4" />
