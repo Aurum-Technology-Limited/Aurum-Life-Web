@@ -292,6 +292,7 @@ async def get_today_view(user_id: str = Query(DEFAULT_USER_ID)):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Update existing task endpoints to work with new structure
+# Task endpoints (updated for project integration)
 @api_router.post("/tasks", response_model=Task)
 async def create_task(task_data: TaskCreate, user_id: str = Query(DEFAULT_USER_ID)):
     """Create a new task"""
@@ -302,10 +303,13 @@ async def create_task(task_data: TaskCreate, user_id: str = Query(DEFAULT_USER_I
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/tasks", response_model=List[TaskResponse])
-async def get_tasks(user_id: str = Query(DEFAULT_USER_ID)):
-    """Get all tasks for user"""
+async def get_tasks(
+    project_id: str = Query(None),
+    user_id: str = Query(DEFAULT_USER_ID)
+):
+    """Get all tasks for user, optionally filtered by project"""
     try:
-        return await TaskService.get_user_tasks(user_id)
+        return await TaskService.get_user_tasks(user_id, project_id)
     except Exception as e:
         logger.error(f"Error getting tasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
