@@ -36,7 +36,41 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Dashboard API
+// Areas API
+export const areasAPI = {
+  getAreas: (includeProjects = false) => apiClient.get('/areas', { params: { include_projects: includeProjects } }),
+  getArea: (areaId) => apiClient.get(`/areas/${areaId}`),
+  createArea: (areaData) => apiClient.post('/areas', areaData),
+  updateArea: (areaId, areaData) => apiClient.put(`/areas/${areaId}`, areaData),
+  deleteArea: (areaId) => apiClient.delete(`/areas/${areaId}`),
+};
+
+// Projects API
+export const projectsAPI = {
+  getProjects: (areaId = null) => apiClient.get('/projects', { params: areaId ? { area_id: areaId } : {} }),
+  getProject: (projectId, includeTasks = false) => apiClient.get(`/projects/${projectId}`, { params: { include_tasks: includeTasks } }),
+  createProject: (projectData) => apiClient.post('/projects', projectData),
+  updateProject: (projectId, projectData) => apiClient.put(`/projects/${projectId}`, projectData),
+  deleteProject: (projectId) => apiClient.delete(`/projects/${projectId}`),
+  getProjectTasks: (projectId) => apiClient.get(`/projects/${projectId}/tasks`),
+  getKanbanBoard: (projectId) => apiClient.get(`/projects/${projectId}/kanban`),
+};
+
+// Enhanced Tasks API
+export const tasksAPI = {
+  getTasks: (projectId = null) => apiClient.get('/tasks', { params: projectId ? { project_id: projectId } : {} }),
+  createTask: (taskData) => apiClient.post('/tasks', taskData),
+  updateTask: (taskId, taskData) => apiClient.put(`/tasks/${taskId}`, taskData),
+  deleteTask: (taskId) => apiClient.delete(`/tasks/${taskId}`),
+  moveTaskColumn: (taskId, newColumn) => apiClient.put(`/tasks/${taskId}/column`, null, { params: { new_column: newColumn } }),
+};
+
+// Today View API
+export const todayAPI = {
+  getTodayView: () => apiClient.get('/today'),
+};
+
+// Dashboard API (updated)
 export const dashboardAPI = {
   getDashboard: () => apiClient.get('/dashboard'),
 };
