@@ -284,6 +284,202 @@ class ProjectService:
         # Then delete the project
         return await delete_document("projects", {"id": project_id, "user_id": user_id})
 
+class TaskService:
+    @staticmethod
+    async def create_task(user_id: str, task_data: TaskCreate) -> Task:
+        # Get the current max sort_order for this project
+        tasks = await find_documents("tasks", {"user_id": user_id, "project_id": task_data.project_id, "parent_task_id": task_data.parent_task_id})
+        max_sort_order = max([task.get("sort_order", 0) for task in tasks] + [0])
+        
+        task = Task(user_id=user_id, sort_order=max_sort_order + 1, **task_data.dict())
+        
+        # Set initial kanban column based on status
+        if task.status == TaskStatusEnum.in_progress:
+            task.kanban_column = "in_progress"
+        elif task.status == TaskStatusEnum.completed:
+            task.kanban_column = "done"
+            task.completed = True
+            task.completed_at = datetime.utcnow()
+        else:
+            task.kanban_column = "to_do"
+        
+        task_dict = task.dict()
+        await create_document("tasks", task_dict)
+        return task
+
+    @staticmethod
+    async def get_project_tasks(project_id: str, include_subtasks: bool = True) -> List[TaskResponse]:
+        # Get main tasks (no parent)
+        tasks_docs = await find_documents("tasks", {"project_id": project_id, "parent_task_id": None})
+        tasks_docs.sort(key=lambda x: x.get("sort_order", 0))
+        
+        tasks = []
+        for doc in tasks_docs:
+            task = await TaskService._build_task_response(doc, include_subtasks)
+            tasks.append(task)
+        
+        return tasks
+
+    @staticmethod
+    async def get_user_tasks(user_id: str, project_id: str = None) -> List[TaskResponse]:
+        query = {"user_id": user_id}
+        if project_id:
+            query["project_id"] = project_id
+            
+        tasks_docs = await find_documents("tasks", query)
+        tasks = []
+        
+        for doc in tasks_docs:
+            task = await TaskService._build_task_response(doc, include_subtasks=False)
+            tasks.append(task)
+        
+        return tasks
+
+    @staticmethod
+    async def get_today_tasks(user_id: str) -> List[TaskResponse]:
+        today = datetime.now().date()
+        today_start = datetime.combine(today, datetime.min.time())
+        today_end = datetime.combine(today, datetime.max.time())
+        
+        # Query for tasks due today or overdue
+        pipeline = [
+            {
+                "$match": {
+                    "user_id": user_id,
+                    "$or": [
+                        {"due_date": {"$gte": today_start, "$lte": today_end}},
+                        {"due_date": {"$lt": today_start}, "completed": False}
+                    ]
+                }
+            },
+            {"$sort": {"priority": -1, "due_date": 1}}
+        ]
+        
+        tasks_docs = await aggregate_documents("tasks", pipeline)
+        tasks = []
+        
+        for doc in tasks_docs:
+            task = await TaskService._build_task_response(doc, include_subtasks=False)
+            tasks.append(task)
+        
+        return tasks
+
+    @staticmethod
+    async def _build_task_response(task_doc: dict, include_subtasks: bool = True) -> TaskResponse:
+        task_response = TaskResponse(**task_doc)
+        
+        # Check if overdue
+        if task_response.due_date and not task_response.completed:
+            task_response.is_overdue = task_response.due_date < datetime.utcnow()
+        
+        # Check if task can start (dependencies met)
+        if task_response.dependency_task_ids:
+            dependency_docs = await find_documents("tasks", {"id": {"$in": task_response.dependency_task_ids}})
+            task_response.can_start = all([dep.get("completed", False) for dep in dependency_docs])
+            task_response.dependency_tasks = [TaskResponse(**dep) for dep in dependency_docs]
+        else:
+            task_response.can_start = True
+        
+        # Get subtasks if requested
+        if include_subtasks:
+            subtasks_docs = await find_documents("tasks", {"parent_task_id": task_response.id})
+            subtasks_docs.sort(key=lambda x: x.get("sort_order", 0))
+            task_response.sub_tasks = [await TaskService._build_task_response(sub, False) for sub in subtasks_docs]
+        
+        return task_response
+
+    @staticmethod
+    async def update_task(user_id: str, task_id: str, task_data: TaskUpdate) -> bool:
+        update_data = {k: v for k, v in task_data.dict().items() if v is not None}
+        
+        # Handle status changes
+        if "status" in update_data:
+            if update_data["status"] == TaskStatusEnum.completed:
+                update_data["completed"] = True
+                update_data["completed_at"] = datetime.utcnow()
+                update_data["kanban_column"] = "done"
+            elif update_data["status"] == TaskStatusEnum.in_progress:
+                update_data["kanban_column"] = "in_progress"
+            else:
+                update_data["kanban_column"] = "to_do"
+                
+        # Handle completion toggle
+        if "completed" in update_data:
+            if update_data["completed"]:
+                update_data["completed_at"] = datetime.utcnow()
+                update_data["status"] = TaskStatusEnum.completed
+                update_data["kanban_column"] = "done"
+            else:
+                update_data["completed_at"] = None
+                update_data["status"] = TaskStatusEnum.not_started
+                update_data["kanban_column"] = "to_do"
+                
+        update_data["updated_at"] = datetime.utcnow()
+        return await update_document("tasks", {"id": task_id, "user_id": user_id}, update_data)
+
+    @staticmethod
+    async def delete_task(user_id: str, task_id: str) -> bool:
+        # First delete all subtasks
+        await delete_document("tasks", {"parent_task_id": task_id, "user_id": user_id})
+        
+        # Then delete the task
+        return await delete_document("tasks", {"id": task_id, "user_id": user_id})
+
+    @staticmethod
+    async def get_kanban_board(user_id: str, project_id: str) -> KanbanBoard:
+        project_doc = await find_document("projects", {"id": project_id, "user_id": user_id})
+        if not project_doc:
+            raise ValueError("Project not found")
+        
+        tasks_docs = await find_documents("tasks", {"project_id": project_id, "parent_task_id": None})
+        
+        columns = {
+            "to_do": [],
+            "in_progress": [],
+            "done": []
+        }
+        
+        for doc in tasks_docs:
+            task = await TaskService._build_task_response(doc, include_subtasks=True)
+            column = task.kanban_column or "to_do"
+            if column in columns:
+                columns[column].append(task)
+        
+        # Sort each column by sort_order
+        for column in columns.values():
+            column.sort(key=lambda x: x.sort_order)
+        
+        return KanbanBoard(
+            project_id=project_id,
+            project_name=project_doc.get("name", ""),
+            columns=columns
+        )
+
+    @staticmethod
+    async def move_task_column(user_id: str, task_id: str, new_column: str) -> bool:
+        """Move task between kanban columns"""
+        valid_columns = ["to_do", "in_progress", "done"]
+        if new_column not in valid_columns:
+            return False
+        
+        update_data = {"kanban_column": new_column, "updated_at": datetime.utcnow()}
+        
+        # Update status based on column
+        if new_column == "done":
+            update_data["status"] = TaskStatusEnum.completed
+            update_data["completed"] = True
+            update_data["completed_at"] = datetime.utcnow()
+        elif new_column == "in_progress":
+            update_data["status"] = TaskStatusEnum.in_progress
+            update_data["completed"] = False
+            update_data["completed_at"] = None
+        else:  # to_do
+            update_data["status"] = TaskStatusEnum.not_started
+            update_data["completed"] = False
+            update_data["completed_at"] = None
+        
+        return await update_document("tasks", {"id": task_id, "user_id": user_id}, update_data)
+
 
 class ChatService:
     @staticmethod
