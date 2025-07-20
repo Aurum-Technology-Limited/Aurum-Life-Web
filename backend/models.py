@@ -94,30 +94,126 @@ class PriorityEnum(str, Enum):
     medium = "medium"
     high = "high"
 
+class TaskStatusEnum(str, Enum):
+    not_started = "not_started"
+    in_progress = "in_progress"
+    completed = "completed"
+    on_hold = "on_hold"
+
+class ProjectStatusEnum(str, Enum):
+    not_started = "Not Started"
+    in_progress = "In Progress" 
+    completed = "Completed"
+    on_hold = "On Hold"
+
+class RecurrenceEnum(str, Enum):
+    none = "none"
+    daily = "daily"
+    weekly = "weekly"
+    monthly = "monthly"
+
+# Area models
+class Area(BaseDocument):
+    user_id: str
+    name: str
+    description: str = ""
+    icon: str = "🎯"
+    color: str = "#F4B400"
+    sort_order: int = 0
+
+class AreaCreate(BaseModel):
+    name: str
+    description: str = ""
+    icon: str = "🎯"
+    color: str = "#F4B400"
+
+class AreaUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    sort_order: Optional[int] = None
+
+# Project models
+class Project(BaseDocument):
+    user_id: str
+    area_id: str
+    name: str
+    description: str = ""
+    deadline: Optional[datetime] = None
+    status: ProjectStatusEnum = ProjectStatusEnum.not_started
+    priority: PriorityEnum = PriorityEnum.medium
+    completion_percentage: float = 0.0
+    sort_order: int = 0
+
+class ProjectCreate(BaseModel):
+    area_id: str
+    name: str
+    description: str = ""
+    deadline: Optional[datetime] = None
+    status: ProjectStatusEnum = ProjectStatusEnum.not_started
+    priority: PriorityEnum = PriorityEnum.medium
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    deadline: Optional[datetime] = None
+    status: Optional[ProjectStatusEnum] = None
+    priority: Optional[PriorityEnum] = None
+    sort_order: Optional[int] = None
+
+# Enhanced Task models
 class Task(BaseDocument):
     user_id: str
-    title: str
+    project_id: str
+    parent_task_id: Optional[str] = None  # For sub-tasks
+    name: str
     description: str = ""
+    status: TaskStatusEnum = TaskStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
     due_date: Optional[datetime] = None
-    category: str = "personal"
+    reminder_date: Optional[datetime] = None
+    category: str = "general"
     completed: bool = False
     completed_at: Optional[datetime] = None
+    dependency_task_ids: List[str] = []  # Tasks that must be completed first
+    recurrence: RecurrenceEnum = RecurrenceEnum.none
+    recurrence_interval: int = 1
+    next_due_date: Optional[datetime] = None
+    kanban_column: str = "to_do"  # to_do, in_progress, done
+    sort_order: int = 0
+    estimated_duration: Optional[int] = None  # in minutes
 
 class TaskCreate(BaseModel):
-    title: str
+    project_id: str
+    parent_task_id: Optional[str] = None
+    name: str
     description: str = ""
+    status: TaskStatusEnum = TaskStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
     due_date: Optional[datetime] = None
-    category: str = "personal"
+    reminder_date: Optional[datetime] = None
+    category: str = "general"
+    dependency_task_ids: List[str] = []
+    recurrence: RecurrenceEnum = RecurrenceEnum.none
+    recurrence_interval: int = 1
+    estimated_duration: Optional[int] = None
 
 class TaskUpdate(BaseModel):
-    title: Optional[str] = None
+    name: Optional[str] = None
     description: Optional[str] = None
+    status: Optional[TaskStatusEnum] = None
     priority: Optional[PriorityEnum] = None
     due_date: Optional[datetime] = None
+    reminder_date: Optional[datetime] = None
     category: Optional[str] = None
     completed: Optional[bool] = None
+    dependency_task_ids: Optional[List[str]] = None
+    recurrence: Optional[RecurrenceEnum] = None
+    recurrence_interval: Optional[int] = None
+    kanban_column: Optional[str] = None
+    sort_order: Optional[int] = None
+    estimated_duration: Optional[int] = None
 
 # Course models
 class Course(BaseDocument):
