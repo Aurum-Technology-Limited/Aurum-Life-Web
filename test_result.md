@@ -429,20 +429,15 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Today View Component"
+    - "Areas Management Component"
+    - "Projects Management Component"
+    - "Kanban Board Component"
+    - "Hierarchical Navigation Integration"
     - "REST API Endpoints"
-    - "Habit Tracking with Streaks" 
-    - "Dashboard Integration"
-    - "Habits Component Integration"
     - "Statistics and Analytics"
-    - "Journal Component"
-    - "Task Management Component" 
-    - "AI Chat System"
-    - "Course Management"
-    - "Mindfulness Component"
-    - "Learning Component"
-    - "Achievements Component"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
