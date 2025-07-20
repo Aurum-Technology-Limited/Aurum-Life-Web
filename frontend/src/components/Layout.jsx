@@ -9,7 +9,10 @@ import {
   Trophy, 
   Settings,
   Menu,
-  X
+  X,
+  Calendar,
+  Layers,
+  FolderOpen
 } from 'lucide-react';
 
 const Layout = ({ children, activeSection, onSectionChange }) => {
