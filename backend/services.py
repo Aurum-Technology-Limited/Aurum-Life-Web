@@ -586,8 +586,16 @@ class StatsService:
         total_habits = await count_documents("habits", {"user_id": user_id})
         habits_completed_today = await count_documents("habits", {"user_id": user_id, "is_completed_today": True})
         total_journal_entries = await count_documents("journal_entries", {"user_id": user_id})
+        
+        # Updated task counts to work with projects
         total_tasks = await count_documents("tasks", {"user_id": user_id})
         tasks_completed = await count_documents("tasks", {"user_id": user_id, "completed": True})
+        
+        # New counts for areas and projects
+        total_areas = await count_documents("areas", {"user_id": user_id})
+        total_projects = await count_documents("projects", {"user_id": user_id})
+        completed_projects = await count_documents("projects", {"user_id": user_id, "status": "Completed"})
+        
         courses_enrolled = await count_documents("user_course_progress", {"user_id": user_id})
         courses_completed = await count_documents("user_course_progress", {"user_id": user_id, "progress_percentage": 100})
         badges_earned = await count_documents("user_badges", {"user_id": user_id, "earned": True})
@@ -603,6 +611,9 @@ class StatsService:
             "total_journal_entries": total_journal_entries,
             "total_tasks": total_tasks,
             "tasks_completed": tasks_completed,
+            "total_areas": total_areas,
+            "total_projects": total_projects,
+            "completed_projects": completed_projects,
             "courses_enrolled": courses_enrolled,
             "courses_completed": courses_completed,
             "badges_earned": badges_earned,
@@ -620,7 +631,7 @@ class StatsService:
             await create_document("user_stats", stats.dict())
         
         # Update user's current streak and total points
-        total_points = (habits_completed_today * 10) + (tasks_completed * 15) + (badges_earned * 50) + (courses_completed * 100)
+        total_points = (habits_completed_today * 10) + (tasks_completed * 15) + (badges_earned * 50) + (courses_completed * 100) + (completed_projects * 25)
         await update_document("users", {"id": user_id}, {
             "current_streak": current_streak,
             "total_points": total_points,
@@ -644,6 +655,10 @@ class StatsService:
         recent_habits = await HabitService.get_user_habits(user_id)
         recent_tasks = await TaskService.get_user_tasks(user_id)
         recent_courses = await CourseService.get_user_courses(user_id)
+        today_tasks = await TaskService.get_today_tasks(user_id)
+        
+        # Get areas with projects
+        areas = await AreaService.get_user_areas(user_id, include_projects=True)
         
         # Get badges (placeholder for now)
         recent_achievements = []
@@ -654,5 +669,27 @@ class StatsService:
             recent_habits=recent_habits[:5],  # Limit to 5 most recent
             recent_tasks=recent_tasks[:5],
             recent_courses=recent_courses[:3],
-            recent_achievements=recent_achievements
+            recent_achievements=recent_achievements,
+            areas=areas,
+            today_tasks=today_tasks
+        )
+
+    @staticmethod
+    async def get_today_view(user_id: str) -> TodayView:
+        """Get today's focused view with tasks and habits"""
+        today_tasks = await TaskService.get_today_tasks(user_id)
+        habits = await HabitService.get_user_habits(user_id)
+        
+        # Calculate totals
+        total_tasks = len(today_tasks)
+        completed_tasks = len([t for t in today_tasks if t.completed])
+        estimated_duration = sum([t.estimated_duration or 0 for t in today_tasks])
+        
+        return TodayView(
+            date=datetime.now(),
+            tasks=today_tasks,
+            habits=habits,
+            total_tasks=total_tasks,
+            completed_tasks=completed_tasks,
+            estimated_duration=estimated_duration
         )
