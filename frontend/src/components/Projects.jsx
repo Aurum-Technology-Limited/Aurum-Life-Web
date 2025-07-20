@@ -170,6 +170,11 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     setSelectedProjectId(null);
   };
 
+  const isOverdue = (dueDate) => {
+    if (!dueDate) return false;
+    return new Date(dueDate) < new Date();
+  };
+
   if (showKanban && selectedProjectId) {
     return <KanbanBoard projectId={selectedProjectId} onBack={handleBackFromKanban} />;
   }
