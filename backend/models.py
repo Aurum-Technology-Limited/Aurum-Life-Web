@@ -290,11 +290,28 @@ class UserStats(BaseDocument):
     last_updated: datetime = Field(default_factory=datetime.utcnow)
 
 # Response models for API
-class HabitResponse(Habit):
-    progress_percentage: Optional[float] = None
-
 class TaskResponse(Task):
     is_overdue: Optional[bool] = None
+    can_start: Optional[bool] = None  # Based on dependencies
+    sub_tasks: Optional[List['TaskResponse']] = []
+    dependency_tasks: Optional[List['TaskResponse']] = []
+
+class ProjectResponse(Project):
+    task_count: Optional[int] = None
+    completed_task_count: Optional[int] = None
+    area_name: Optional[str] = None
+    is_overdue: Optional[bool] = None
+    tasks: Optional[List[TaskResponse]] = []
+
+class AreaResponse(Area):
+    project_count: Optional[int] = None
+    completed_project_count: Optional[int] = None
+    total_task_count: Optional[int] = None
+    completed_task_count: Optional[int] = None
+    projects: Optional[List[ProjectResponse]] = []
+
+class HabitResponse(Habit):
+    progress_percentage: Optional[float] = None
 
 class CourseResponse(Course):
     progress_percentage: Optional[int] = None
@@ -307,3 +324,32 @@ class UserDashboard(BaseModel):
     recent_tasks: List[TaskResponse]
     recent_courses: List[CourseResponse]
     recent_achievements: List[UserBadge]
+    areas: List[AreaResponse]
+    today_tasks: List[TaskResponse]
+
+class TodayView(BaseModel):
+    date: datetime
+    tasks: List[TaskResponse]
+    habits: List[HabitResponse]
+    total_tasks: int
+    completed_tasks: int
+    estimated_duration: int  # Total estimated time in minutes
+
+class KanbanBoard(BaseModel):
+    project_id: str
+    project_name: str
+    columns: Dict[str, List[TaskResponse]]
+
+class CalendarEvent(BaseModel):
+    id: str
+    title: str
+    type: str  # "task", "habit", "project_deadline"
+    date: datetime
+    priority: Optional[str] = None
+    project_name: Optional[str] = None
+    area_name: Optional[str] = None
+
+# Enable forward references
+TaskResponse.model_rebuild()
+ProjectResponse.model_rebuild()
+AreaResponse.model_rebuild()
