@@ -283,46 +283,7 @@ class ProjectService:
         
         # Then delete the project
         return await delete_document("projects", {"id": project_id, "user_id": user_id})
-    @staticmethod
-    async def create_task(user_id: str, task_data: TaskCreate) -> Task:
-        task = Task(user_id=user_id, **task_data.dict())
-        task_dict = task.dict()
-        await create_document("tasks", task_dict)
-        return task
 
-    @staticmethod
-    async def get_user_tasks(user_id: str) -> List[TaskResponse]:
-        tasks_docs = await find_documents("tasks", {"user_id": user_id})
-        tasks = []
-        today = datetime.now()
-        
-        for doc in tasks_docs:
-            task = TaskResponse(**doc)
-            # Check if task is overdue
-            if task.due_date and not task.completed:
-                task.is_overdue = task.due_date < today
-            else:
-                task.is_overdue = False
-            tasks.append(task)
-        
-        return tasks
-
-    @staticmethod
-    async def update_task(user_id: str, task_id: str, task_data: TaskUpdate) -> bool:
-        update_data = {k: v for k, v in task_data.dict().items() if v is not None}
-        
-        # Set completion timestamp if completing task
-        if update_data.get("completed") == True:
-            update_data["completed_at"] = datetime.utcnow()
-        elif update_data.get("completed") == False:
-            update_data["completed_at"] = None
-            
-        update_data["updated_at"] = datetime.utcnow()
-        return await update_document("tasks", {"id": task_id, "user_id": user_id}, update_data)
-
-    @staticmethod
-    async def delete_task(user_id: str, task_id: str) -> bool:
-        return await delete_document("tasks", {"id": task_id, "user_id": user_id})
 
 class ChatService:
     @staticmethod
