@@ -20,6 +20,9 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
 
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: Brain, description: 'Overview & insights' },
+    { id: 'today', name: 'Today', icon: Calendar, description: 'Today\'s tasks & focus' },
+    { id: 'areas', name: 'Areas', icon: Layers, description: 'Life domains' },
+    { id: 'projects', name: 'Projects', icon: FolderOpen, description: 'Active projects' },
     { id: 'habits', name: 'Habits', icon: Target, description: 'Daily routines' },
     { id: 'journal', name: 'Journal', icon: BookOpen, description: 'Reflection & writing' },
     { id: 'mindfulness', name: 'Mindfulness', icon: Heart, description: 'Meditation & peace' },
