@@ -1,0 +1,393 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  Target, 
+  BarChart3, 
+  FolderOpen, 
+  Calendar,
+  AlertCircle,
+  X,
+  Save,
+  Layers
+} from 'lucide-react';
+import { areasAPI } from '../services/api';
+
+const Areas = ({ onSectionChange }) => {
+  const [areas, setAreas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editingArea, setEditingArea] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    color: '#F4B400',
+    icon: 'target'
+  });
+
+  const iconOptions = [
+    { value: 'target', label: 'Target', component: Target },
+    { value: 'bar-chart', label: 'Bar Chart', component: BarChart3 },
+    { value: 'folder', label: 'Folder', component: FolderOpen },
+    { value: 'calendar', label: 'Calendar', component: Calendar },
+    { value: 'layers', label: 'Layers', component: Layers }
+  ];
+
+  const colorOptions = [
+    '#F4B400', '#EF4444', '#10B981', '#3B82F6', '#8B5CF6',
+    '#F59E0B', '#06B6D4', '#84CC16', '#F97316', '#EC4899'
+  ];
+
+  const loadAreas = async () => {
+    try {
+      setLoading(true);
+      const response = await areasAPI.getAreas(true); // Include projects
+      setAreas(response.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load areas');
+      console.error('Error loading areas:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAreas();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingArea) {
+        await areasAPI.updateArea(editingArea.id, formData);
+      } else {
+        await areasAPI.createArea(formData);
+      }
+      loadAreas();
+      handleCloseModal();
+    } catch (err) {
+      console.error('Error saving area:', err);
+      setError(editingArea ? 'Failed to update area' : 'Failed to create area');
+    }
+  };
+
+  const handleDelete = async (areaId) => {
+    if (window.confirm('Are you sure? This will delete all projects and tasks in this area.')) {
+      try {
+        await areasAPI.deleteArea(areaId);
+        loadAreas();
+      } catch (err) {
+        console.error('Error deleting area:', err);
+        setError('Failed to delete area');
+      }
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingArea(null);
+    setFormData({
+      name: '',
+      description: '',
+      color: '#F4B400',
+      icon: 'target'
+    });
+  };
+
+  const handleEdit = (area) => {
+    setEditingArea(area);
+    setFormData({
+      name: area.name,
+      description: area.description || '',
+      color: area.color || '#F4B400',
+      icon: area.icon || 'target'
+    });
+    setShowModal(true);
+  };
+
+  const getIconComponent = (iconName) => {
+    const iconOption = iconOptions.find(opt => opt.value === iconName);
+    return iconOption ? iconOption.component : Target;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-800 rounded mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-48 bg-gray-800 rounded-xl"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+              Life Areas
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Organize your life into meaningful domains
+            </p>
+          </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
+            style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+          >
+            <Plus className="h-5 w-5" />
+            <span>New Area</span>
+          </button>
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+              <span className="text-red-400">{error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Areas Grid */}
+        {areas.length === 0 ? (
+          <div className="text-center py-12">
+            <Layers className="mx-auto h-16 w-16 text-gray-600 mb-4" />
+            <h3 className="text-xl font-medium text-gray-400 mb-2">No areas yet</h3>
+            <p className="text-gray-500 mb-6">Create your first life area to get started</p>
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-6 py-3 rounded-lg font-medium"
+              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+            >
+              Create First Area
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {areas.map((area) => {
+              const IconComponent = getIconComponent(area.icon);
+              return (
+                <div
+                  key={area.id}
+                  className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg cursor-pointer"
+                  onClick={() => onSectionChange && onSectionChange('projects', { areaId: area.id })}
+                >
+                  {/* Area Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className="p-3 rounded-lg"
+                        style={{ backgroundColor: area.color + '20' }}
+                      >
+                        <IconComponent
+                          className="h-6 w-6"
+                          style={{ color: area.color }}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-white text-lg">{area.name}</h3>
+                        <p className="text-sm text-gray-400">
+                          {area.projects?.length || 0} projects
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(area);
+                        }}
+                        className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(area.id);
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {area.description && (
+                    <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                      {area.description}
+                    </p>
+                  )}
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-2xl font-bold text-white">
+                        {area.projects?.filter(p => p.status === 'active').length || 0}
+                      </p>
+                      <p className="text-xs text-gray-500">Active Projects</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-white">
+                        {area.total_tasks || 0}
+                      </p>
+                      <p className="text-xs text-gray-500">Total Tasks</p>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  {area.total_tasks > 0 && (
+                    <div className="mt-4">
+                      <div className="w-full bg-gray-800 rounded-full h-2">
+                        <div
+                          className="h-2 rounded-full transition-all duration-300"
+                          style={{
+                            backgroundColor: area.color,
+                            width: `${(area.completed_tasks / area.total_tasks) * 100}%`
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {area.completed_tasks || 0} of {area.total_tasks} tasks complete
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-white">
+                  {editingArea ? 'Edit Area' : 'Create New Area'}
+                </h2>
+                <button
+                  onClick={handleCloseModal}
+                  className="p-2 text-gray-400 hover:text-white rounded-lg"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    placeholder="e.g., Health & Fitness"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    placeholder="Brief description of this life area"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Icon
+                  </label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {iconOptions.map((icon) => {
+                      const IconComp = icon.component;
+                      return (
+                        <button
+                          key={icon.value}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, icon: icon.value })}
+                          className={`p-3 rounded-lg border transition-colors ${
+                            formData.icon === icon.value
+                              ? 'border-yellow-500 bg-yellow-500/10'
+                              : 'border-gray-700 hover:border-gray-600'
+                          }`}
+                        >
+                          <IconComp className="h-5 w-5 text-gray-400" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Color
+                  </label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {colorOptions.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, color })}
+                        className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                          formData.color === color
+                            ? 'border-white scale-110'
+                            : 'border-gray-600 hover:border-gray-500'
+                        }`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors"
+                    style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+                  >
+                    <Save className="h-4 w-4" />
+                    <span>{editingArea ? 'Update' : 'Create'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Areas;
