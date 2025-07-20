@@ -160,10 +160,19 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     return Math.round((project.completed_tasks / project.total_tasks) * 100);
   };
 
-  const isOverdue = (dueDate) => {
-    if (!dueDate) return false;
-    return new Date(dueDate) < new Date();
+  const handleKanban = (projectId) => {
+    setSelectedProjectId(projectId);
+    setShowKanban(true);
   };
+
+  const handleBackFromKanban = () => {
+    setShowKanban(false);
+    setSelectedProjectId(null);
+  };
+
+  if (showKanban && selectedProjectId) {
+    return <KanbanBoard projectId={selectedProjectId} onBack={handleBackFromKanban} />;
+  }
 
   if (loading) {
     return (
