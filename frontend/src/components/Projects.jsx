@@ -1,0 +1,506 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  Calendar, 
+  Target, 
+  CheckCircle2,
+  Circle,
+  AlertCircle,
+  X,
+  Save,
+  FolderOpen,
+  Clock,
+  BarChart3,
+  ArrowRight
+} from 'lucide-react';
+import { projectsAPI, areasAPI, tasksAPI } from '../services/api';
+
+const Projects = ({ onSectionChange, filterAreaId }) => {
+  const [projects, setProjects] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [selectedArea, setSelectedArea] = useState(filterAreaId || '');
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    area_id: '',
+    status: 'planning',
+    priority: 'medium',
+    due_date: '',
+    target_completion: ''
+  });
+
+  const statusOptions = [
+    { value: 'planning', label: 'Planning', color: 'text-blue-400 bg-blue-400/10' },
+    { value: 'active', label: 'Active', color: 'text-green-400 bg-green-400/10' },
+    { value: 'on-hold', label: 'On Hold', color: 'text-yellow-400 bg-yellow-400/10' },
+    { value: 'completed', label: 'Completed', color: 'text-gray-400 bg-gray-400/10' },
+    { value: 'cancelled', label: 'Cancelled', color: 'text-red-400 bg-red-400/10' }
+  ];
+
+  const priorityOptions = [
+    { value: 'low', label: 'Low', color: 'text-green-400 bg-green-400/10' },
+    { value: 'medium', label: 'Medium', color: 'text-yellow-400 bg-yellow-400/10' },
+    { value: 'high', label: 'High', color: 'text-red-400 bg-red-400/10' }
+  ];
+
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await projectsAPI.getProjects(selectedArea || null);
+      setProjects(response.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load projects');
+      console.error('Error loading projects:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAreas = async () => {
+    try {
+      const response = await areasAPI.getAreas(false);
+      setAreas(response.data);
+    } catch (err) {
+      console.error('Error loading areas:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadAreas();
+  }, []);
+
+  useEffect(() => {
+    loadProjects();
+  }, [selectedArea]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const submitData = {
+        ...formData,
+        due_date: formData.due_date || null,
+        target_completion: formData.target_completion || null
+      };
+      
+      if (editingProject) {
+        await projectsAPI.updateProject(editingProject.id, submitData);
+      } else {
+        await projectsAPI.createProject(submitData);
+      }
+      loadProjects();
+      handleCloseModal();
+    } catch (err) {
+      console.error('Error saving project:', err);
+      setError(editingProject ? 'Failed to update project' : 'Failed to create project');
+    }
+  };
+
+  const handleDelete = async (projectId) => {
+    if (window.confirm('Are you sure? This will delete all tasks in this project.')) {
+      try {
+        await projectsAPI.deleteProject(projectId);
+        loadProjects();
+      } catch (err) {
+        console.error('Error deleting project:', err);
+        setError('Failed to delete project');
+      }
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingProject(null);
+    setFormData({
+      name: '',
+      description: '',
+      area_id: selectedArea || '',
+      status: 'planning',
+      priority: 'medium',
+      due_date: '',
+      target_completion: ''
+    });
+  };
+
+  const handleEdit = (project) => {
+    setEditingProject(project);
+    setFormData({
+      name: project.name,
+      description: project.description || '',
+      area_id: project.area_id || '',
+      status: project.status || 'planning',
+      priority: project.priority || 'medium',
+      due_date: project.due_date ? new Date(project.due_date).toISOString().split('T')[0] : '',
+      target_completion: project.target_completion ? new Date(project.target_completion).toISOString().split('T')[0] : ''
+    });
+    setShowModal(true);
+  };
+
+  const getStatusColor = (status) => {
+    const statusOption = statusOptions.find(opt => opt.value === status);
+    return statusOption ? statusOption.color : 'text-gray-400 bg-gray-400/10';
+  };
+
+  const getPriorityColor = (priority) => {
+    const priorityOption = priorityOptions.find(opt => opt.value === priority);
+    return priorityOption ? priorityOption.color : 'text-gray-400 bg-gray-400/10';
+  };
+
+  const getProgressPercentage = (project) => {
+    if (!project.total_tasks || project.total_tasks === 0) return 0;
+    return Math.round((project.completed_tasks / project.total_tasks) * 100);
+  };
+
+  const isOverdue = (dueDate) => {
+    if (!dueDate) return false;
+    return new Date(dueDate) < new Date();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-800 rounded mb-6"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-64 bg-gray-800 rounded-xl"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+              Projects
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Manage your active projects and goals
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            {/* Area Filter */}
+            <select
+              value={selectedArea}
+              onChange={(e) => setSelectedArea(e.target.value)}
+              className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            >
+              <option value="">All Areas</option>
+              {areas.map(area => (
+                <option key={area.id} value={area.id}>{area.name}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
+              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+            >
+              <Plus className="h-5 w-5" />
+              <span>New Project</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+              <span className="text-red-400">{error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Projects Grid */}
+        {projects.length === 0 ? (
+          <div className="text-center py-12">
+            <FolderOpen className="mx-auto h-16 w-16 text-gray-600 mb-4" />
+            <h3 className="text-xl font-medium text-gray-400 mb-2">No projects yet</h3>
+            <p className="text-gray-500 mb-6">Create your first project to get started</p>
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-6 py-3 rounded-lg font-medium"
+              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+            >
+              Create First Project
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {projects.map((project) => (
+              <div
+                key={project.id}
+                className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg"
+              >
+                {/* Project Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <h3 className="font-semibold text-white text-lg">{project.name}</h3>
+                      <div className="flex space-x-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>
+                          {project.status}
+                        </span>
+                        <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(project.priority)}`}>
+                          {project.priority}
+                        </span>
+                      </div>
+                    </div>
+                    {project.area_name && (
+                      <p className="text-sm text-gray-400">{project.area_name}</p>
+                    )}
+                  </div>
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => handleEdit(project)}
+                      className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(project.id)}
+                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Description */}
+                {project.description && (
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                    {project.description}
+                  </p>
+                )}
+
+                {/* Progress */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-400">Progress</span>
+                    <span className="text-sm font-medium text-white">
+                      {getProgressPercentage(project)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-800 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full transition-all duration-300"
+                      style={{
+                        backgroundColor: '#F4B400',
+                        width: `${getProgressPercentage(project)}%`
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {project.completed_tasks || 0} of {project.total_tasks || 0} tasks complete
+                  </p>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <p className="text-lg font-bold text-white">
+                      {project.total_tasks || 0}
+                    </p>
+                    <p className="text-xs text-gray-500">Total Tasks</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-white">
+                      {project.active_tasks || 0}
+                    </p>
+                    <p className="text-xs text-gray-500">Active Tasks</p>
+                  </div>
+                </div>
+
+                {/* Due Date */}
+                {project.due_date && (
+                  <div className={`flex items-center space-x-2 text-sm mb-4 ${
+                    isOverdue(project.due_date) ? 'text-red-400' : 'text-gray-400'
+                  }`}>
+                    <Clock className="h-4 w-4" />
+                    <span>
+                      Due: {new Date(project.due_date).toLocaleDateString()}
+                      {isOverdue(project.due_date) && ' (Overdue)'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => window.open(`#kanban-${project.id}`, '_blank')}
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Kanban</span>
+                  </button>
+                  <button 
+                    onClick={() => onSectionChange && onSectionChange('tasks', { projectId: project.id })}
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Tasks</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-white">
+                  {editingProject ? 'Edit Project' : 'Create New Project'}
+                </h2>
+                <button
+                  onClick={handleCloseModal}
+                  className="p-2 text-gray-400 hover:text-white rounded-lg"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Project Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    placeholder="e.g., Build Personal Website"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    placeholder="What is this project about?"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Area
+                  </label>
+                  <select
+                    value={formData.area_id}
+                    onChange={(e) => setFormData({ ...formData, area_id: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    required
+                  >
+                    <option value="">Select an area</option>
+                    {areas.map(area => (
+                      <option key={area.id} value={area.id}>{area.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    >
+                      {statusOptions.map(status => (
+                        <option key={status.value} value={status.value}>{status.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Priority
+                    </label>
+                    <select
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    >
+                      {priorityOptions.map(priority => (
+                        <option key={priority.value} value={priority.value}>{priority.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Due Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.due_date}
+                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Target Completion
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.target_completion}
+                    onChange={(e) => setFormData({ ...formData, target_completion: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
+                </div>
+
+                <div className="flex space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors"
+                    style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+                  >
+                    <Save className="h-4 w-4" />
+                    <span>{editingProject ? 'Update' : 'Create'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Projects;
