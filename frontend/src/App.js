@@ -33,9 +33,30 @@ function App() {
     
     console.log('🎯 Rendering section:', activeSection);
     
+    // Temporary simple test - bypass API-dependent components
+    if (activeSection === 'insights') {
+      return (
+        <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+          <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+            🎉 INSIGHTS COMPONENT LOADED SUCCESSFULLY!
+          </h1>
+          <p className="text-gray-400 mt-4">This proves component routing is working.</p>
+        </div>
+      );
+    }
+    
+    if (activeSection === 'today') {
+      return (
+        <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+          <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+            🎉 TODAY COMPONENT LOADED SUCCESSFULLY!
+          </h1>
+          <p className="text-gray-400 mt-4">This proves component routing is working.</p>
+        </div>
+      );
+    }
+    
     switch (activeSection) {
-      case 'today':
-        return <Today {...props} />;
       case 'areas':
         return <Areas {...props} />;
       case 'projects':
@@ -56,8 +77,6 @@ function App() {
         return <Achievements {...props} />;
       case 'profile':
         return <Profile {...props} />;
-      case 'insights':
-        return <Insights {...props} />;
       default:
         return <Dashboard {...props} />;
     }
