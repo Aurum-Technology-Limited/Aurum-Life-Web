@@ -661,6 +661,26 @@ class BackendTester:
             print(f"   Test user created: {user_id} (cleanup may require admin privileges)")
         
         print(f"   Created {len(self.created_resources['users'])} test users during authentication testing")
+
+    def test_health_check(self):
+        """Test basic API health"""
+        print("\n=== HEALTH CHECK ===")
+        
+        # Test root endpoint
+        result = self.make_request('GET', '/')
+        self.log_test(
+            "API Root Endpoint",
+            result['success'],
+            f"Status: {result['status_code']}, Message: {result['data'].get('message', 'No message')}"
+        )
+        
+        # Test health endpoint
+        result = self.make_request('GET', '/health')
+        self.log_test(
+            "Health Check Endpoint",
+            result['success'],
+            f"Status: {result['status_code']}, Service: {result['data'].get('service', 'Unknown')}"
+        )
         """Test basic API health"""
         print("\n=== HEALTH CHECK ===")
         
