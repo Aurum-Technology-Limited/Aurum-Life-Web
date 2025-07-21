@@ -51,7 +51,18 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     { value: 'high', label: 'High', color: 'text-red-400 bg-red-400/10' }
   ];
 
-  const loadProjects = async () => {
+  const handleAreaChange = (e) => {
+    const selectedAreaId = e.target.value;
+    console.log('🔍 Area dropdown changed:', { selectedAreaId, formDataBefore: formData.area_id });
+    
+    // Ensure immutable state update
+    setFormData(prevData => ({ 
+      ...prevData, 
+      area_id: selectedAreaId 
+    }));
+    
+    console.log('✅ Area state should be updated to:', selectedAreaId);
+  };
     try {
       setLoading(true);
       const response = await projectsAPI.getProjects(selectedArea || null);
