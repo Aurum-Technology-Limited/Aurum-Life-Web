@@ -12,7 +12,8 @@ import {
   X,
   Calendar,
   Layers,
-  FolderOpen
+  FolderOpen,
+  User
 } from 'lucide-react';
 
 const Layout = ({ children, activeSection, onSectionChange }) => {
