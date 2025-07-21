@@ -456,6 +456,10 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                       <option key={area.id} value={area.id}>{area.name}</option>
                     ))}
                   </select>
+                  {/* Debug info */}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {areas.length > 0 ? `${areas.length} areas loaded` : 'No areas loaded yet'}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
