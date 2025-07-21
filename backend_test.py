@@ -25,7 +25,18 @@ class BackendTester:
         self.created_resources = {
             'areas': [],
             'projects': [],
-            'tasks': []
+            'tasks': [],
+            'users': []
+        }
+        self.auth_token = None
+        self.test_user_email = f"testuser_{uuid.uuid4().hex[:8]}@aurumlife.com"
+        self.test_user_password = "SecurePassword123!"
+        self.test_user_data = {
+            "username": f"testuser_{uuid.uuid4().hex[:8]}",
+            "email": self.test_user_email,
+            "first_name": "John",
+            "last_name": "Doe",
+            "password": self.test_user_password
         }
         
     def log_test(self, test_name: str, success: bool, message: str = "", data: Any = None):
