@@ -450,7 +450,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   </label>
                   <select
                     value={formData.area_id}
-                    onChange={(e) => setFormData({ ...formData, area_id: e.target.value })}
+                    onChange={handleAreaChange}
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     required
                   >
