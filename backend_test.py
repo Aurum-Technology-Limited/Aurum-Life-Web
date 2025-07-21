@@ -56,27 +56,32 @@ class BackendTester:
         if data and not success:
             print(f"   Data: {json.dumps(data, indent=2, default=str)}")
 
-    def make_request(self, method: str, endpoint: str, data: Dict = None, params: Dict = None) -> Dict:
-        """Make HTTP request with error handling"""
+    def make_request(self, method: str, endpoint: str, data: Dict = None, params: Dict = None, use_auth: bool = False) -> Dict:
+        """Make HTTP request with error handling and optional authentication"""
         url = f"{self.base_url}{endpoint}"
+        headers = {}
+        
+        # Add authentication header if token is available and requested
+        if use_auth and self.auth_token:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
         
         try:
             if method.upper() == 'GET':
-                response = self.session.get(url, params=params)
+                response = self.session.get(url, params=params, headers=headers)
             elif method.upper() == 'POST':
-                response = self.session.post(url, json=data, params=params)
+                response = self.session.post(url, json=data, params=params, headers=headers)
             elif method.upper() == 'PUT':
-                response = self.session.put(url, json=data, params=params)
+                response = self.session.put(url, json=data, params=params, headers=headers)
             elif method.upper() == 'DELETE':
-                response = self.session.delete(url, params=params)
+                response = self.session.delete(url, params=params, headers=headers)
             else:
                 raise ValueError(f"Unsupported method: {method}")
                 
-            response.raise_for_status()
             return {
-                'success': True,
+                'success': response.status_code < 400,
                 'status_code': response.status_code,
-                'data': response.json() if response.content else {}
+                'data': response.json() if response.content else {},
+                'response': response
             }
             
         except requests.exceptions.RequestException as e:
@@ -84,7 +89,8 @@ class BackendTester:
                 'success': False,
                 'error': str(e),
                 'status_code': getattr(e.response, 'status_code', None),
-                'data': {}
+                'data': {},
+                'response': getattr(e, 'response', None)
             }
 
     def test_health_check(self):
