@@ -42,10 +42,91 @@ async def root():
 async def health_check():
     return {"status": "healthy", "service": "aurum-life-api"}
 
-# User endpoints
+# Authentication endpoints
+@api_router.post("/auth/register", response_model=UserResponse)
+async def register_user(user_data: UserCreate):
+    """Register a new user"""
+    try:
+        user = await UserService.create_user(user_data)
+        return UserResponse(
+            id=user.id,
+            username=user.username,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            is_active=user.is_active,
+            level=user.level,
+            total_points=user.total_points,
+            current_streak=user.current_streak,
+            created_at=user.created_at
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error registering user: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/auth/login", response_model=Token)
+async def login_user(user_credentials: UserLogin):
+    """Login user and return access token"""
+    try:
+        user = await UserService.authenticate_user(user_credentials.email, user_credentials.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email}, expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error during login: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_current_user_info(current_user: User = Depends(get_current_active_user)):
+    """Get current user information"""
+    return UserResponse(
+        id=current_user.id,
+        username=current_user.username,
+        email=current_user.email,
+        first_name=current_user.first_name,
+        last_name=current_user.last_name,
+        is_active=current_user.is_active,
+        level=current_user.level,
+        total_points=current_user.total_points,
+        current_streak=current_user.current_streak,
+        created_at=current_user.created_at
+    )
+
+@api_router.put("/users/me", response_model=dict)
+async def update_current_user_profile(
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Update current user's profile information"""
+    try:
+        success = await UserService.update_user_profile(current_user.id, first_name, last_name)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to update profile")
+        return {"success": True, "message": "Profile updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating user profile: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# User endpoints (keeping existing functionality for demo purposes)
 @api_router.post("/users", response_model=User)
 async def create_user(user_data: UserCreate):
-    """Create a new user"""
+    """Create a new user (legacy endpoint)"""
     try:
         return await UserService.create_user(user_data)
     except Exception as e:
