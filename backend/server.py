@@ -105,6 +105,86 @@ async def get_current_user_info(current_user: User = Depends(get_current_active_
         created_at=current_user.created_at
     )
 
+@api_router.post("/auth/forgot-password", response_model=PasswordResetResponse)
+async def request_password_reset(reset_request: PasswordResetRequest):
+    """Request password reset email"""
+    try:
+        from email_service import email_service
+        
+        # Generate reset token
+        reset_token = await UserService.create_password_reset_token(reset_request.email)
+        
+        if not reset_token:
+            # For security, don't reveal whether email exists or not
+            return PasswordResetResponse(
+                message="If an account with that email exists, a password reset link has been sent.",
+                success=True
+            )
+        
+        # Get user information for personalized email
+        user = await UserService.get_user_by_email(reset_request.email)
+        user_name = user.first_name if user and user.first_name else "User"
+        
+        # Send password reset email
+        try:
+            await email_service.send_password_reset_email(
+                email=reset_request.email,
+                reset_token=reset_token,
+                user_name=user_name
+            )
+            logger.info(f"Password reset email sent to {reset_request.email}")
+        except Exception as e:
+            logger.error(f"Failed to send password reset email to {reset_request.email}: {str(e)}")
+            # Don't expose email sending errors to user
+            pass
+        
+        return PasswordResetResponse(
+            message="If an account with that email exists, a password reset link has been sent.",
+            success=True
+        )
+        
+    except Exception as e:
+        logger.error(f"Password reset request failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to process password reset request"
+        )
+
+@api_router.post("/auth/reset-password", response_model=PasswordResetResponse)
+async def confirm_password_reset(reset_confirm: PasswordResetConfirm):
+    """Confirm password reset with token and new password"""
+    try:
+        # Validate password length
+        if len(reset_confirm.new_password) < 6:
+            return PasswordResetResponse(
+                message="Password must be at least 6 characters long.",
+                success=False
+            )
+        
+        # Reset password
+        success = await UserService.reset_password(
+            token=reset_confirm.token,
+            new_password=reset_confirm.new_password
+        )
+        
+        if success:
+            return PasswordResetResponse(
+                message="Password has been reset successfully. You can now login with your new password.",
+                success=True
+            )
+        else:
+            return PasswordResetResponse(
+                message="Invalid or expired reset token. Please request a new password reset.",
+                success=False
+            )
+            
+    except Exception as e:
+        logger.error(f"Password reset confirmation failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reset password"
+        )
+
 class UserProfileUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
