@@ -30,7 +30,8 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
     { id: 'tasks', name: 'Tasks', icon: CheckSquare, description: 'Goals & productivity' },
     { id: 'learning', name: 'Learning', icon: BookOpen, description: 'Courses & growth' },
     { id: 'ai-coach', name: 'AI Coach', icon: MessageCircle, description: 'Personal guidance' },
-    { id: 'achievements', name: 'Achievements', icon: Trophy, description: 'Badges & rewards' }
+    { id: 'achievements', name: 'Achievements', icon: Trophy, description: 'Badges & rewards' },
+    { id: 'profile', name: 'Profile', icon: User, description: 'Account settings' }
   ];
 
   const handleNavigation = (sectionId) => {
