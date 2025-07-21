@@ -485,18 +485,6 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Target Completion
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.target_completion}
-                    onChange={(e) => setFormData({ ...formData, target_completion: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                  />
-                </div>
-
                 <div className="flex space-x-4 pt-4">
                   <button
                     type="button"
