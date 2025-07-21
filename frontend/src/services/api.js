@@ -70,6 +70,13 @@ export const todayAPI = {
   getTodayView: () => apiClient.get('/today'),
 };
 
+// Insights API
+export const insightsAPI = {
+  getInsights: (dateRange = 'all_time') => apiClient.get(`/insights?date_range=${dateRange}`),
+  getAreaDrillDown: (areaId, dateRange = 'all_time') => apiClient.get(`/insights/areas/${areaId}?date_range=${dateRange}`),
+  getProjectDrillDown: (projectId, dateRange = 'all_time') => apiClient.get(`/insights/projects/${projectId}?date_range=${dateRange}`),
+};
+
 // Dashboard API (updated)
 export const dashboardAPI = {
   getDashboard: () => apiClient.get('/dashboard'),
