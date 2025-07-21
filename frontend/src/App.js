@@ -20,43 +20,21 @@ import Insights from './components/Insights';
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
 
-  // Debug logging
-  console.log('🔍 Current activeSection:', activeSection);
-
   const handleSectionChange = (newSection) => {
-    console.log('🔄 Changing section from', activeSection, 'to', newSection);
+    console.log('🔄 Navigation: Changing section from', activeSection, 'to', newSection);
     setActiveSection(newSection);
   };
 
   const renderActiveSection = () => {
     const props = { onSectionChange: handleSectionChange };
     
-    console.log('🎯 Rendering section:', activeSection);
-    
-    // Temporary simple test - bypass API-dependent components
-    if (activeSection === 'insights') {
-      return (
-        <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-          <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-            🎉 INSIGHTS COMPONENT LOADED SUCCESSFULLY!
-          </h1>
-          <p className="text-gray-400 mt-4">This proves component routing is working.</p>
-        </div>
-      );
-    }
-    
-    if (activeSection === 'today') {
-      return (
-        <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-          <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-            🎉 TODAY COMPONENT LOADED SUCCESSFULLY!
-          </h1>
-          <p className="text-gray-400 mt-4">This proves component routing is working.</p>
-        </div>
-      );
-    }
+    console.log('🎯 Rendering active section:', activeSection);
     
     switch (activeSection) {
+      case 'today':
+        return <Today {...props} />;
+      case 'insights':
+        return <Insights {...props} />;
       case 'areas':
         return <Areas {...props} />;
       case 'projects':
@@ -77,6 +55,7 @@ function App() {
         return <Achievements {...props} />;
       case 'profile':
         return <Profile {...props} />;
+      case 'dashboard':
       default:
         return <Dashboard {...props} />;
     }
@@ -86,34 +65,12 @@ function App() {
     <AuthProvider>
       <div className="App">
         <ProtectedRoute>
-          {/* MINIMAL TEST - no Layout component */}
-          <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-            <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-              MINIMAL TEST - No Layout Component
-            </h1>
-            <p className="text-white mt-4">Current activeSection: <strong>{activeSection}</strong></p>
-            
-            <div className="flex space-x-4 mt-8">
-              <button 
-                onClick={() => handleSectionChange('today')}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Set to Today
-              </button>
-              <button 
-                onClick={() => handleSectionChange('insights')}
-                className="px-4 py-2 bg-green-600 text-white rounded"
-              >
-                Set to Insights
-              </button>
-              <button 
-                onClick={() => handleSectionChange('dashboard')}
-                className="px-4 py-2 bg-red-600 text-white rounded"
-              >
-                Set to Dashboard
-              </button>
-            </div>
-          </div>
+          <Layout 
+            activeSection={activeSection} 
+            onSectionChange={handleSectionChange}
+          >
+            {renderActiveSection()}
+          </Layout>
         </ProtectedRoute>
       </div>
     </AuthProvider>
