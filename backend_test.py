@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for Aurum Life Hierarchical Goal Management System
-Tests Areas, Projects, Tasks, Today View, and Kanban Board functionality
+Comprehensive Backend API Testing for Aurum Life Authentication and User Profile Management System
+Tests Authentication, User Registration, Login, JWT tokens, Protected Routes, and User Profile Management
 """
 
 import requests
@@ -10,6 +10,7 @@ import sys
 from datetime import datetime, timedelta
 from typing import Dict, List, Any
 import uuid
+import time
 
 # Configuration
 BACKEND_URL = "https://575a5fc8-3b5a-4d3d-9314-0d71af76d86c.preview.emergentagent.com/api"
