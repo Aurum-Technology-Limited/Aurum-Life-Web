@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import "./App.css";
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -16,9 +16,24 @@ import AICoach from './components/AICoach';
 import Achievements from './components/Achievements';
 import Profile from './components/Profile';
 import Insights from './components/Insights';
+import PasswordReset from './components/PasswordReset';
 
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
+
+  // Check if we're on password reset page
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const pathname = window.location.pathname;
+    
+    if (token && (pathname === '/reset-password' || pathname === '/')) {
+      setIsPasswordResetPage(true);
+    } else {
+      setIsPasswordResetPage(false);
+    }
+  }, []);
 
   const handleSectionChange = (newSection) => {
     console.log('🔄 Navigation: Changing section from', activeSection, 'to', newSection);
@@ -60,6 +75,17 @@ function App() {
         return <Dashboard {...props} />;
     }
   };
+
+  // If on password reset page, show the PasswordReset component
+  if (isPasswordResetPage) {
+    return (
+      <AuthProvider>
+        <div className="App">
+          <PasswordReset />
+        </div>
+      </AuthProvider>
+    );
+  }
 
   return (
     <AuthProvider>
