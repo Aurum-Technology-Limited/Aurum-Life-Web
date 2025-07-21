@@ -71,6 +71,97 @@ class UserService:
             update_data["last_name"] = last_name
         return await update_document("users", {"id": user_id}, update_data)
 
+    @staticmethod
+    async def create_password_reset_token(email: str) -> Optional[str]:
+        """
+        Create a password reset token for the user
+        Returns the token if user exists, None otherwise
+        """
+        # Check if user exists
+        user = await UserService.get_user_by_email(email)
+        if not user:
+            return None
+        
+        # Generate secure reset token
+        reset_token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(reset_token.encode()).hexdigest()
+        
+        # Calculate expiration time
+        expiry_hours = int(os.getenv('RESET_TOKEN_EXPIRY_HOURS', 24))
+        expires_at = datetime.utcnow() + timedelta(hours=expiry_hours)
+        
+        # Invalidate any existing reset tokens for this user
+        await find_documents_with_filter("password_reset_tokens", 
+                                        {"user_id": user.id, "is_used": False},
+                                        update={"is_used": True})
+        
+        # Create new reset token
+        reset_token_obj = PasswordResetToken(
+            user_id=user.id,
+            token=token_hash,
+            expires_at=expires_at
+        )
+        
+        await create_document("password_reset_tokens", reset_token_obj.dict())
+        
+        return reset_token  # Return the plain token, not the hash
+
+    @staticmethod
+    async def verify_reset_token(token: str) -> Optional[User]:
+        """
+        Verify password reset token and return associated user
+        Returns User if token is valid, None otherwise
+        """
+        # Hash the provided token to match stored hash
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        
+        # Find the token
+        token_data = await find_document("password_reset_tokens", {
+            "token": token_hash,
+            "is_used": False
+        })
+        
+        if not token_data:
+            return None
+        
+        # Check if token has expired
+        token_obj = PasswordResetToken(**token_data)
+        if datetime.utcnow() > token_obj.expires_at:
+            # Mark token as used (expired)
+            await update_document("password_reset_tokens", 
+                                {"token": token_hash}, 
+                                {"is_used": True})
+            return None
+        
+        # Get the user associated with this token
+        return await UserService.get_user(token_obj.user_id)
+
+    @staticmethod
+    async def reset_password(token: str, new_password: str) -> bool:
+        """
+        Reset user password using the reset token
+        Returns True if successful, False otherwise
+        """
+        # Verify token and get user
+        user = await UserService.verify_reset_token(token)
+        if not user:
+            return False
+        
+        # Hash the provided token to mark as used
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        
+        # Update user's password
+        new_password_hash = get_password_hash(new_password)
+        user_update = UserUpdate(password_hash=new_password_hash)
+        await UserService.update_user(user.id, user_update)
+        
+        # Mark token as used
+        await update_document("password_reset_tokens", 
+                            {"token": token_hash}, 
+                            {"is_used": True})
+        
+        return True
+
 class HabitService:
     @staticmethod
     async def create_habit(user_id: str, habit_data: HabitCreate) -> Habit:
