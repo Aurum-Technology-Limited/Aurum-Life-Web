@@ -1062,14 +1062,35 @@ class BackendTester:
                 print(f"   Cleaned up area: {area_id}")
 
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting Comprehensive Backend API Testing for Aurum Life Hierarchical System")
+        """Run all backend tests including authentication and user management"""
+        print("🚀 Starting Comprehensive Backend API Testing for Aurum Life Authentication & User Management System")
         print(f"Backend URL: {self.base_url}")
-        print(f"User ID: {self.user_id}")
+        print(f"Default User ID: {self.user_id}")
         
         try:
             # Core API tests
             self.test_health_check()
+            
+            # Authentication and User Management Tests
+            print("\n" + "="*80)
+            print("🔐 AUTHENTICATION AND USER PROFILE MANAGEMENT TESTING")
+            print("="*80)
+            
+            self.test_user_registration()
+            self.test_user_login()
+            self.test_jwt_token_validation()
+            self.test_protected_route_access_control()
+            self.test_password_hashing_verification()
+            self.test_user_profile_management()
+            self.test_user_data_persistence()
+            self.test_user_stats_and_progress()
+            self.test_user_creation_timestamps()
+            
+            # Existing hierarchical system tests (if needed)
+            print("\n" + "="*80)
+            print("🏗️ HIERARCHICAL SYSTEM TESTING (LEGACY)")
+            print("="*80)
+            
             self.test_areas_api()
             self.test_projects_api()
             self.test_tasks_api()
@@ -1085,6 +1106,7 @@ class BackendTester:
             self.log_test("Critical Error", False, str(e))
         
         finally:
+            self.cleanup_auth_test_data()
             self.cleanup_test_data()
             self.print_summary()
 
