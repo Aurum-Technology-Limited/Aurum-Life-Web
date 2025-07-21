@@ -15,6 +15,7 @@ import {
   FolderOpen,
   User
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Layout = ({ children, activeSection, onSectionChange }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
