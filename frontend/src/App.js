@@ -43,6 +43,8 @@ function App() {
         return <AICoach {...props} />;
       case 'achievements':
         return <Achievements {...props} />;
+      case 'profile':
+        return <Profile {...props} />;
       default:
         return <Dashboard {...props} />;
     }
