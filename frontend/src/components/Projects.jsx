@@ -67,10 +67,13 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
 
   const loadAreas = async () => {
     try {
+      console.log('Loading areas...'); // Debug log
       const response = await areasAPI.getAreas(false);
+      console.log('Areas loaded:', response.data); // Debug log
       setAreas(response.data);
     } catch (err) {
       console.error('Error loading areas:', err);
+      setError('Failed to load areas. Please refresh the page.');
     }
   };
 
