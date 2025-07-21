@@ -1,15 +1,18 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer
 from dotenv import load_dotenv
 from pathlib import Path
 import os
 import logging
 from typing import List, Optional
+from datetime import timedelta
 
 # Import our models and services
 from database import connect_to_mongo, close_mongo_connection
 from models import *
 from services import *
+from auth import create_access_token, get_current_active_user, ACCESS_TOKEN_EXPIRE_MINUTES
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
