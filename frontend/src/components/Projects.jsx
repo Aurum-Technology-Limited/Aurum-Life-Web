@@ -87,9 +87,13 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     e.preventDefault();
     try {
       const submitData = {
-        ...formData,
-        due_date: formData.due_date || null,
-        target_completion: formData.target_completion || null
+        area_id: formData.area_id,
+        name: formData.name,
+        description: formData.description,
+        status: formData.status,
+        priority: formData.priority,
+        deadline: formData.due_date || null,
+        // Note: target_completion removed as it's not in the backend model
       };
       
       if (editingProject) {
