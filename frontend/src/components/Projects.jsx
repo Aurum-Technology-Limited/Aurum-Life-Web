@@ -63,6 +63,8 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     
     console.log('✅ Area state should be updated to:', selectedAreaId);
   };
+
+  const loadProjects = async () => {
     try {
       setLoading(true);
       const response = await projectsAPI.getProjects(selectedArea || null);
