@@ -51,14 +51,18 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <Layout 
-        activeSection={activeSection} 
-        onSectionChange={setActiveSection}
-      >
-        {renderActiveSection()}
-      </Layout>
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <ProtectedRoute>
+          <Layout 
+            activeSection={activeSection} 
+            onSectionChange={setActiveSection}
+          >
+            {renderActiveSection()}
+          </Layout>
+        </ProtectedRoute>
+      </div>
+    </AuthProvider>
   );
 }
 
