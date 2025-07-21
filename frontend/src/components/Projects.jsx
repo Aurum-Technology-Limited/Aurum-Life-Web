@@ -84,6 +84,18 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form Data:', formData); // Debug log
+    
+    // Validate required fields
+    if (!formData.area_id) {
+      setError('Please select an area');
+      return;
+    }
+    if (!formData.name.trim()) {
+      setError('Please enter a project name');
+      return;
+    }
+    
     try {
       const submitData = {
         area_id: formData.area_id,
@@ -94,6 +106,8 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
         deadline: formData.due_date || null,
         // Note: target_completion removed as it's not in the backend model
       };
+      
+      console.log('Submit Data:', submitData); // Debug log
       
       if (editingProject) {
         await projectsAPI.updateProject(editingProject.id, submitData);
