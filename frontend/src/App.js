@@ -69,7 +69,7 @@ function App() {
         <ProtectedRoute>
           <Layout 
             activeSection={activeSection} 
-            onSectionChange={setActiveSection}
+            onSectionChange={handleSectionChange}
           >
             {renderActiveSection()}
           </Layout>
