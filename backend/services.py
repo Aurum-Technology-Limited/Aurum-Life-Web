@@ -137,7 +137,7 @@ class UserService:
             return None
         
         # Get the user associated with this token
-        return await UserService.get_user(token_obj.user_id)
+        return await UserService.get_user_by_id(token_obj.user_id)
 
     @staticmethod
     async def reset_password(token: str, new_password: str) -> bool:
