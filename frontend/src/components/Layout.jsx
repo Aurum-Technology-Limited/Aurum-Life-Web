@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Layout = ({ children, activeSection, onSectionChange }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: Brain, description: 'Overview & insights' },
