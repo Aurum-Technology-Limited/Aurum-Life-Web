@@ -455,7 +455,11 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   </label>
                   <select
                     value={formData.area_id}
-                    onChange={handleAreaChange}
+                    onChange={(e) => {
+                      console.log('🚨 DIRECT onChange fired with value:', e.target.value);
+                      setFormData({ ...formData, area_id: e.target.value });
+                      console.log('🔧 Updated formData with area_id:', e.target.value);
+                    }}
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     required
                   >
