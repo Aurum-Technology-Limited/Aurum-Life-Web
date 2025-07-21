@@ -46,6 +46,8 @@ function App() {
         return <Achievements {...props} />;
       case 'profile':
         return <Profile {...props} />;
+      case 'insights':
+        return <Insights {...props} />;
       default:
         return <Dashboard {...props} />;
     }
