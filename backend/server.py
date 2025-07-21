@@ -105,15 +105,22 @@ async def get_current_user_info(current_user: User = Depends(get_current_active_
         created_at=current_user.created_at
     )
 
+class UserProfileUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
 @api_router.put("/users/me", response_model=dict)
 async def update_current_user_profile(
-    first_name: Optional[str] = None,
-    last_name: Optional[str] = None,
+    profile_data: UserProfileUpdate,
     current_user: User = Depends(get_current_active_user)
 ):
     """Update current user's profile information"""
     try:
-        success = await UserService.update_user_profile(current_user.id, first_name, last_name)
+        success = await UserService.update_user_profile(
+            current_user.id, 
+            profile_data.first_name, 
+            profile_data.last_name
+        )
         if not success:
             raise HTTPException(status_code=500, detail="Failed to update profile")
         return {"success": True, "message": "Profile updated successfully"}
