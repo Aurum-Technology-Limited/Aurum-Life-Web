@@ -605,7 +605,257 @@ class CourseService:
         await create_document("user_course_progress", enrollment_dict)
         return enrollment
 
-class StatsService:
+class InsightsService:
+    @staticmethod
+    async def get_insights_data(user_id: str, date_range: str = 'all_time'):
+        """Get comprehensive insights data for visualization"""
+        from datetime import datetime, timedelta
+        
+        # Calculate date range filter
+        now = datetime.utcnow()
+        date_filter = {}
+        
+        if date_range == 'weekly':
+            week_ago = now - timedelta(days=7)
+            date_filter = {"created_at": {"$gte": week_ago}}
+        elif date_range == 'monthly':
+            month_ago = now - timedelta(days=30)
+            date_filter = {"created_at": {"$gte": month_ago}}
+        elif date_range == 'yearly':
+            year_ago = now - timedelta(days=365)
+            date_filter = {"created_at": {"$gte": year_ago}}
+        # 'all_time' uses no date filter
+        
+        # Base filter for user
+        base_filter = {"user_id": user_id}
+        if date_filter:
+            base_filter.update(date_filter)
+        
+        # Overall Task Status Counts
+        total_tasks = await count_documents("tasks", base_filter)
+        completed_tasks = await count_documents("tasks", {**base_filter, "status": "completed"})
+        in_progress_tasks = await count_documents("tasks", {**base_filter, "status": "in-progress"})
+        todo_tasks = await count_documents("tasks", {**base_filter, "status": "todo"})
+        overdue_tasks = 0  # We'll calculate this separately
+        
+        # Get tasks that are overdue
+        overdue_filter = {
+            **base_filter,
+            "due_date": {"$lt": now},
+            "status": {"$ne": "completed"}
+        }
+        overdue_tasks = await count_documents("tasks", overdue_filter)
+        
+        # Areas with their progress
+        areas = await find_documents("areas", {"user_id": user_id})
+        areas_data = []
+        
+        for area in areas:
+            area_projects = await find_documents("projects", {"user_id": user_id, "area_id": area["id"]})
+            area_tasks = []
+            
+            # Get all tasks for projects in this area
+            for project in area_projects:
+                project_tasks = await find_documents("tasks", {"user_id": user_id, "project_id": project["id"]})
+                area_tasks.extend(project_tasks)
+            
+            # Apply date filtering to tasks
+            if date_filter.get("created_at"):
+                area_tasks = [t for t in area_tasks if t["created_at"] >= date_filter["created_at"]["$gte"]]
+            
+            total_area_tasks = len(area_tasks)
+            completed_area_tasks = len([t for t in area_tasks if t["status"] == "completed"])
+            
+            completion_percentage = (completed_area_tasks / total_area_tasks * 100) if total_area_tasks > 0 else 0
+            
+            areas_data.append({
+                "id": area["id"],
+                "name": area["name"],
+                "color": area.get("color", "#F4B400"),
+                "total_projects": len(area_projects),
+                "total_tasks": total_area_tasks,
+                "completed_tasks": completed_area_tasks,
+                "completion_percentage": round(completion_percentage, 1),
+                "projects": []  # Will be populated when drilling down
+            })
+        
+        # Projects overview
+        all_projects = await find_documents("projects", {"user_id": user_id})
+        projects_data = []
+        
+        for project in all_projects:
+            project_tasks = await find_documents("tasks", {"user_id": user_id, "project_id": project["id"]})
+            
+            # Apply date filtering
+            if date_filter.get("created_at"):
+                project_tasks = [t for t in project_tasks if t["created_at"] >= date_filter["created_at"]["$gte"]]
+            
+            total_project_tasks = len(project_tasks)
+            completed_project_tasks = len([t for t in project_tasks if t["status"] == "completed"])
+            
+            completion_percentage = (completed_project_tasks / total_project_tasks * 100) if total_project_tasks > 0 else 0
+            
+            projects_data.append({
+                "id": project["id"],
+                "name": project["name"],
+                "area_id": project.get("area_id"),
+                "status": project.get("status", "Not Started"),
+                "priority": project.get("priority", "medium"),
+                "total_tasks": total_project_tasks,
+                "completed_tasks": completed_project_tasks,
+                "completion_percentage": round(completion_percentage, 1)
+            })
+        
+        # Time-based analytics
+        productivity_by_day = {}  # Could implement daily completion tracking
+        
+        return {
+            "date_range": date_range,
+            "generated_at": now.isoformat(),
+            "overall_stats": {
+                "total_tasks": total_tasks,
+                "completed_tasks": completed_tasks,
+                "in_progress_tasks": in_progress_tasks,
+                "todo_tasks": todo_tasks,
+                "overdue_tasks": overdue_tasks,
+                "completion_rate": round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0, 1)
+            },
+            "task_status_breakdown": {
+                "completed": completed_tasks,
+                "in_progress": in_progress_tasks,
+                "todo": todo_tasks,
+                "overdue": overdue_tasks
+            },
+            "areas": areas_data,
+            "projects": projects_data,
+            "productivity_trends": productivity_by_day
+        }
+
+    @staticmethod
+    async def get_area_drill_down(user_id: str, area_id: str, date_range: str = 'all_time'):
+        """Get detailed breakdown for a specific area"""
+        from datetime import datetime, timedelta
+        
+        # Calculate date range filter
+        now = datetime.utcnow()
+        date_filter = {}
+        
+        if date_range == 'weekly':
+            week_ago = now - timedelta(days=7)
+            date_filter = {"created_at": {"$gte": week_ago}}
+        elif date_range == 'monthly':
+            month_ago = now - timedelta(days=30)
+            date_filter = {"created_at": {"$gte": month_ago}}
+        elif date_range == 'yearly':
+            year_ago = now - timedelta(days=365)
+            date_filter = {"created_at": {"$gte": year_ago}}
+        
+        # Get area info
+        area = await find_document("areas", {"id": area_id, "user_id": user_id})
+        if not area:
+            raise ValueError("Area not found")
+        
+        # Get projects in this area
+        projects = await find_documents("projects", {"user_id": user_id, "area_id": area_id})
+        projects_data = []
+        
+        for project in projects:
+            project_tasks = await find_documents("tasks", {"user_id": user_id, "project_id": project["id"]})
+            
+            # Apply date filtering
+            if date_filter.get("created_at"):
+                project_tasks = [t for t in project_tasks if t["created_at"] >= date_filter["created_at"]["$gte"]]
+            
+            total_tasks = len(project_tasks)
+            completed_tasks = len([t for t in project_tasks if t["status"] == "completed"])
+            in_progress_tasks = len([t for t in project_tasks if t["status"] == "in-progress"])
+            todo_tasks = len([t for t in project_tasks if t["status"] == "todo"])
+            
+            completion_percentage = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+            
+            projects_data.append({
+                "id": project["id"],
+                "name": project["name"],
+                "status": project.get("status", "Not Started"),
+                "priority": project.get("priority", "medium"),
+                "total_tasks": total_tasks,
+                "completed_tasks": completed_tasks,
+                "in_progress_tasks": in_progress_tasks,
+                "todo_tasks": todo_tasks,
+                "completion_percentage": round(completion_percentage, 1)
+            })
+        
+        return {
+            "area": {
+                "id": area["id"],
+                "name": area["name"],
+                "color": area.get("color", "#F4B400")
+            },
+            "projects": projects_data,
+            "date_range": date_range
+        }
+
+    @staticmethod
+    async def get_project_drill_down(user_id: str, project_id: str, date_range: str = 'all_time'):
+        """Get detailed task breakdown for a specific project"""
+        from datetime import datetime, timedelta
+        
+        # Calculate date range filter
+        now = datetime.utcnow()
+        date_filter = {}
+        
+        if date_range == 'weekly':
+            week_ago = now - timedelta(days=7)
+            date_filter = {"created_at": {"$gte": week_ago}}
+        elif date_range == 'monthly':
+            month_ago = now - timedelta(days=30)
+            date_filter = {"created_at": {"$gte": month_ago}}
+        elif date_range == 'yearly':
+            year_ago = now - timedelta(days=365)
+            date_filter = {"created_at": {"$gte": year_ago}}
+        
+        # Get project info
+        project = await find_document("projects", {"id": project_id, "user_id": user_id})
+        if not project:
+            raise ValueError("Project not found")
+        
+        # Get area info
+        area = None
+        if project.get("area_id"):
+            area = await find_document("areas", {"id": project["area_id"], "user_id": user_id})
+        
+        # Get tasks for this project
+        tasks = await find_documents("tasks", {"user_id": user_id, "project_id": project_id})
+        
+        # Apply date filtering
+        if date_filter.get("created_at"):
+            tasks = [t for t in tasks if t["created_at"] >= date_filter["created_at"]["$gte"]]
+        
+        # Sort tasks by priority and due date
+        def task_sort_key(task):
+            priority_order = {"high": 0, "medium": 1, "low": 2}
+            return (
+                priority_order.get(task.get("priority", "medium"), 1),
+                task.get("due_date") or "9999-12-31"
+            )
+        
+        tasks.sort(key=task_sort_key)
+        
+        return {
+            "project": {
+                "id": project["id"],
+                "name": project["name"],
+                "status": project.get("status", "Not Started"),
+                "priority": project.get("priority", "medium")
+            },
+            "area": {
+                "id": area["id"] if area else None,
+                "name": area["name"] if area else None,
+                "color": area.get("color", "#F4B400") if area else "#F4B400"
+            } if area else None,
+            "tasks": tasks,
+            "date_range": date_range
+        }
     @staticmethod
     async def get_user_stats(user_id: str) -> UserStats:
         stats_doc = await find_document("user_stats", {"user_id": user_id})
