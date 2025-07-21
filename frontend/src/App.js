@@ -15,6 +15,7 @@ import Learning from './components/Learning';
 import AICoach from './components/AICoach';
 import Achievements from './components/Achievements';
 import Profile from './components/Profile';
+import Insights from './components/Insights';
 
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
