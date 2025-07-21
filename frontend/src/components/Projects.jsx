@@ -98,6 +98,11 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     loadProjects();
   }, [selectedArea]);
 
+  // Debug: Watch for formData changes
+  useEffect(() => {
+    console.log('📝 FormData updated:', formData);
+  }, [formData]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Form Data:', formData); // Debug log
