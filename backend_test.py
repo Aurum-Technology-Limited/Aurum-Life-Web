@@ -1216,6 +1216,7 @@ class BackendTester:
             self.test_user_data_persistence()
             self.test_user_stats_and_progress()
             self.test_user_creation_timestamps()
+            self.test_password_reset_functionality()
             
             # Existing hierarchical system tests (if needed)
             print("\n" + "="*80)
