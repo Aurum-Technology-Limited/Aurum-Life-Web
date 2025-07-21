@@ -269,6 +269,15 @@ const Login = ({ switchToRegister }) => {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+              <div className="text-right mt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-yellow-500 hover:text-yellow-400"
+                >
+                  Forgot password?
+                </button>
+              </div>
             </div>
 
             <button
