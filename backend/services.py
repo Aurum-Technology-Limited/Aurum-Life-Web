@@ -91,9 +91,12 @@ class UserService:
         expires_at = datetime.utcnow() + timedelta(hours=expiry_hours)
         
         # Invalidate any existing reset tokens for this user
-        await find_documents_with_filter("password_reset_tokens", 
-                                        {"user_id": user.id, "is_used": False},
-                                        update={"is_used": True})
+        existing_tokens = await find_documents("password_reset_tokens", 
+                                              {"user_id": user.id, "is_used": False})
+        for token_doc in existing_tokens:
+            await update_document("password_reset_tokens", 
+                                {"id": token_doc["id"]}, 
+                                {"is_used": True})
         
         # Create new reset token
         reset_token_obj = PasswordResetToken(
