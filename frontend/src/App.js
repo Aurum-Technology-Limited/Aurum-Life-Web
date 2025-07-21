@@ -86,30 +86,34 @@ function App() {
     <AuthProvider>
       <div className="App">
         <ProtectedRoute>
-          <Layout 
-            activeSection={activeSection} 
-            onSectionChange={handleSectionChange}
-          >
-            {/* DIRECT TEST - bypass renderActiveSection entirely */}
-            {activeSection === 'insights' ? (
-              <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-                <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-                  🎉 DIRECT INSIGHTS RENDER SUCCESS!
-                </h1>
-                <p className="text-gray-400 mt-4">activeSection = {activeSection}</p>
-                <p className="text-gray-400 mt-2">This proves the issue is in renderActiveSection function!</p>
-              </div>
-            ) : activeSection === 'today' ? (
-              <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-                <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-                  🎉 DIRECT TODAY RENDER SUCCESS!  
-                </h1>
-                <p className="text-gray-400 mt-4">activeSection = {activeSection}</p>
-              </div>
-            ) : (
-              renderActiveSection()
-            )}
-          </Layout>
+          {/* MINIMAL TEST - no Layout component */}
+          <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+            <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+              MINIMAL TEST - No Layout Component
+            </h1>
+            <p className="text-white mt-4">Current activeSection: <strong>{activeSection}</strong></p>
+            
+            <div className="flex space-x-4 mt-8">
+              <button 
+                onClick={() => handleSectionChange('today')}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                Set to Today
+              </button>
+              <button 
+                onClick={() => handleSectionChange('insights')}
+                className="px-4 py-2 bg-green-600 text-white rounded"
+              >
+                Set to Insights
+              </button>
+              <button 
+                onClick={() => handleSectionChange('dashboard')}
+                className="px-4 py-2 bg-red-600 text-white rounded"
+              >
+                Set to Dashboard
+              </button>
+            </div>
+          </div>
         </ProtectedRoute>
       </div>
     </AuthProvider>
