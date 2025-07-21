@@ -20,8 +20,18 @@ import Insights from './components/Insights';
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
 
+  // Debug logging
+  console.log('🔍 Current activeSection:', activeSection);
+
+  const handleSectionChange = (newSection) => {
+    console.log('🔄 Changing section from', activeSection, 'to', newSection);
+    setActiveSection(newSection);
+  };
+
   const renderActiveSection = () => {
-    const props = { onSectionChange: setActiveSection };
+    const props = { onSectionChange: handleSectionChange };
+    
+    console.log('🎯 Rendering section:', activeSection);
     
     switch (activeSection) {
       case 'today':
