@@ -12,7 +12,7 @@ from typing import Dict, List, Any
 import uuid
 
 # Configuration
-BACKEND_URL = "https://e6fa80b0-a261-4607-9157-30a81f92e6f3.preview.emergentagent.com/api"
+BACKEND_URL = "https://575a5fc8-3b5a-4d3d-9314-0d71af76d86c.preview.emergentagent.com/api"
 DEFAULT_USER_ID = "demo-user-123"
 
 class BackendTester:
