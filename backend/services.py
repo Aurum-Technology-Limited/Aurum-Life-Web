@@ -5,6 +5,7 @@ from database import (
     update_document, delete_document, count_documents, aggregate_documents
 )
 from models import *
+from auth import get_password_hash, verify_password
 import json
 
 class UserService:
