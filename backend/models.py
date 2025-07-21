@@ -16,7 +16,7 @@ class User(BaseDocument):
     email: str
     first_name: str = ""
     last_name: str = ""
-    password_hash: str
+    password_hash: Optional[str] = None  # Make optional for backward compatibility
     is_active: bool = True
     level: int = 1
     total_points: int = 0
