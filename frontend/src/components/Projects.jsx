@@ -98,19 +98,6 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     loadProjects();
   }, [selectedArea]);
 
-  const handleAreaChange = (e) => {
-    const selectedAreaId = e.target.value;
-    console.log('🔍 Area dropdown changed:', { selectedAreaId, formDataBefore: formData.area_id });
-    
-    // Ensure immutable state update
-    setFormData(prevData => ({ 
-      ...prevData, 
-      area_id: selectedAreaId 
-    }));
-    
-    console.log('✅ Area state should be updated to:', selectedAreaId);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Form Data:', formData); // Debug log
