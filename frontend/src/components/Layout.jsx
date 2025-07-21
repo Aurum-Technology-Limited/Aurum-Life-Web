@@ -13,7 +13,8 @@ import {
   Calendar,
   Layers,
   FolderOpen,
-  User
+  User,
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
