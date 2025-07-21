@@ -90,7 +90,25 @@ function App() {
             activeSection={activeSection} 
             onSectionChange={handleSectionChange}
           >
-            {renderActiveSection()}
+            {/* DIRECT TEST - bypass renderActiveSection entirely */}
+            {activeSection === 'insights' ? (
+              <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+                <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+                  🎉 DIRECT INSIGHTS RENDER SUCCESS!
+                </h1>
+                <p className="text-gray-400 mt-4">activeSection = {activeSection}</p>
+                <p className="text-gray-400 mt-2">This proves the issue is in renderActiveSection function!</p>
+              </div>
+            ) : activeSection === 'today' ? (
+              <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+                <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+                  🎉 DIRECT TODAY RENDER SUCCESS!  
+                </h1>
+                <p className="text-gray-400 mt-4">activeSection = {activeSection}</p>
+              </div>
+            ) : (
+              renderActiveSection()
+            )}
           </Layout>
         </ProtectedRoute>
       </div>
