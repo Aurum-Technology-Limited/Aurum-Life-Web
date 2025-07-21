@@ -89,16 +89,6 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     e.preventDefault();
     console.log('Form Data:', formData); // Debug log
     
-    // Validate required fields
-    if (!formData.area_id) {
-      setError('Please select an area');
-      return;
-    }
-    if (!formData.name.trim()) {
-      setError('Please enter a project name');
-      return;
-    }
-    
     try {
       const submitData = {
         area_id: formData.area_id,
