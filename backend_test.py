@@ -1155,6 +1155,13 @@ class BackendTester:
         
         # Check critical functionality
         critical_tests = {
+            'User Registration': any('User Registration - Valid Data' in t['test'] and t['success'] for t in self.test_results),
+            'User Login': any('User Login - Valid Credentials' in t['test'] and t['success'] for t in self.test_results),
+            'JWT Token Validation': any('Protected Route - Valid Token' in t['test'] and t['success'] for t in self.test_results),
+            'Protected Routes': any('Protected Route Access Control' in t['test'] and t['success'] for t in self.test_results),
+            'Password Security': any('Password Hashing' in t['test'] and t['success'] for t in self.test_results),
+            'Profile Management': any('Update User Profile' in t['test'] and t['success'] for t in self.test_results),
+            'User Data Persistence': any('User Data Persistence' in t['test'] and t['success'] for t in self.test_results),
             'Areas API': any('GET Areas' in t['test'] and t['success'] for t in self.test_results),
             'Projects API': any('GET Projects' in t['test'] and t['success'] for t in self.test_results),
             'Tasks API': any('GET Tasks' in t['test'] and t['success'] for t in self.test_results),
