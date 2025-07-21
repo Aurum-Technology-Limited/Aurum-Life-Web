@@ -14,6 +14,10 @@ class BaseDocument(BaseModel):
 class User(BaseDocument):
     username: str
     email: str
+    first_name: str = ""
+    last_name: str = ""
+    password_hash: str
+    is_active: bool = True
     level: int = 1
     total_points: int = 0
     current_streak: int = 0
@@ -22,14 +26,42 @@ class User(BaseDocument):
 class UserCreate(BaseModel):
     username: str
     email: str
+    first_name: str = ""
+    last_name: str = ""
+    password: str
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     level: Optional[int] = None
     total_points: Optional[int] = None
     current_streak: Optional[int] = None
     profile_data: Optional[Dict[str, Any]] = None
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+    is_active: bool
+    level: int
+    total_points: int
+    current_streak: int
+    created_at: datetime
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
 
 # Habit models
 class Habit(BaseDocument):
