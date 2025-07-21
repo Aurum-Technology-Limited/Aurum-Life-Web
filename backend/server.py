@@ -501,6 +501,52 @@ async def update_user_stats(user_id: str = Query(DEFAULT_USER_ID)):
         logger.error(f"Error updating user stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Insights endpoints
+@api_router.get("/insights")
+async def get_insights_data(
+    date_range: str = Query("all_time", regex="^(weekly|monthly|yearly|all_time)$"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get comprehensive insights data with date range filtering"""
+    try:
+        insights = await InsightsService.get_insights_data(current_user.id, date_range)
+        return insights
+    except Exception as e:
+        logger.error(f"Error getting insights data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get insights data")
+
+@api_router.get("/insights/areas/{area_id}")
+async def get_area_drill_down(
+    area_id: str,
+    date_range: str = Query("all_time", regex="^(weekly|monthly|yearly|all_time)$"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get detailed breakdown for a specific area"""
+    try:
+        drill_down = await InsightsService.get_area_drill_down(current_user.id, area_id, date_range)
+        return drill_down
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting area drill down: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get area breakdown")
+
+@api_router.get("/insights/projects/{project_id}")
+async def get_project_drill_down(
+    project_id: str,
+    date_range: str = Query("all_time", regex="^(weekly|monthly|yearly|all_time)$"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get detailed task breakdown for a specific project"""
+    try:
+        drill_down = await InsightsService.get_project_drill_down(current_user.id, project_id, date_range)
+        return drill_down
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting project drill down: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get project breakdown")
+
 # Include the router in the main app
 app.include_router(api_router)
 
