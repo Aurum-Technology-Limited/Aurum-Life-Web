@@ -11,7 +11,20 @@ import json
 class UserService:
     @staticmethod
     async def create_user(user_data: UserCreate) -> User:
-        user = User(**user_data.dict())
+        # Check if user already exists
+        existing_user = await UserService.get_user_by_email(user_data.email)
+        if existing_user:
+            raise ValueError("User with this email already exists")
+        
+        # Hash the password
+        password_hash = get_password_hash(user_data.password)
+        
+        # Create user without the plain password
+        user_dict = user_data.dict()
+        user_dict.pop('password')  # Remove plain password
+        user_dict['password_hash'] = password_hash
+        
+        user = User(**user_dict)
         user_dict = user.dict()
         await create_document("users", user_dict)
         
@@ -22,6 +35,20 @@ class UserService:
         return user
 
     @staticmethod
+    async def authenticate_user(email: str, password: str) -> Optional[User]:
+        user = await UserService.get_user_by_email(email)
+        if not user:
+            return None
+        if not verify_password(password, user.password_hash):
+            return None
+        return user
+
+    @staticmethod
+    async def get_user_by_email(email: str) -> Optional[User]:
+        user_doc = await find_document("users", {"email": email})
+        return User(**user_doc) if user_doc else None
+
+    @staticmethod
     async def get_user(user_id: str) -> Optional[User]:
         user_doc = await find_document("users", {"id": user_id})
         return User(**user_doc) if user_doc else None
@@ -30,6 +57,15 @@ class UserService:
     async def update_user(user_id: str, user_data: UserUpdate) -> bool:
         update_data = {k: v for k, v in user_data.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
+        return await update_document("users", {"id": user_id}, update_data)
+
+    @staticmethod
+    async def update_user_profile(user_id: str, first_name: str = None, last_name: str = None) -> bool:
+        update_data = {"updated_at": datetime.utcnow()}
+        if first_name is not None:
+            update_data["first_name"] = first_name
+        if last_name is not None:
+            update_data["last_name"] = last_name
         return await update_document("users", {"id": user_id}, update_data)
 
 class HabitService:
