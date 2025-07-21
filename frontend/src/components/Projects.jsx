@@ -140,9 +140,9 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
       name: project.name,
       description: project.description || '',
       area_id: project.area_id || '',
-      status: project.status || 'planning',
+      status: project.status || 'Not Started',
       priority: project.priority || 'medium',
-      due_date: project.due_date ? new Date(project.due_date).toISOString().split('T')[0] : '',
+      due_date: project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : '',
       target_completion: project.target_completion ? new Date(project.target_completion).toISOString().split('T')[0] : ''
     });
     setShowModal(true);
