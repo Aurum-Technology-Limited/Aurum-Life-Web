@@ -1,0 +1,291 @@
+import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
+
+const Login = ({ switchToRegister }) => {
+  const { login } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const [loginData, setLoginData] = useState({
+    email: '',
+    password: ''
+  });
+
+  const [registerData, setRegisterData] = useState({
+    username: '',
+    email: '',
+    first_name: '',
+    last_name: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const result = await login(loginData.email, loginData.password);
+    
+    if (!result.success) {
+      setError(result.error);
+    }
+    
+    setLoading(false);
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    if (registerData.password !== registerData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (registerData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
+
+    const result = await register({
+      username: registerData.username,
+      email: registerData.email,
+      first_name: registerData.first_name,
+      last_name: registerData.last_name,
+      password: registerData.password,
+    });
+    
+    if (!result.success) {
+      setError(result.error);
+    }
+    
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0D14' }}>
+      <div className="w-full max-w-md p-8">
+        {/* Logo/Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Aurum Life</h1>
+          <p className="text-gray-400">Transform your potential into gold</p>
+        </div>
+
+        {/* Toggle Tabs */}
+        <div className="flex mb-8 bg-gray-800 rounded-lg p-1">
+          <button
+            onClick={() => setIsLogin(true)}
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+              isLogin 
+                ? 'bg-yellow-500 text-gray-900' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Login
+          </button>
+          <button
+            onClick={() => setIsLogin(false)}
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+              !isLogin 
+                ? 'bg-yellow-500 text-gray-900' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Sign Up
+          </button>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-900/20 border border-red-600 rounded-lg flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
+            <span className="text-red-400 text-sm">{error}</span>
+          </div>
+        )}
+
+        {/* Login Form */}
+        {isLogin ? (
+          <form onSubmit={handleLoginSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <input
+                  type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  className="w-full pl-10 pr-12 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Enter your password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-white"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-700 text-gray-900 font-semibold rounded-lg transition-colors"
+            >
+              {loading ? 'Signing In...' : 'Sign In'}
+            </button>
+          </form>
+        ) : (
+          /* Register Form */
+          <form onSubmit={handleRegisterSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  value={registerData.first_name}
+                  onChange={(e) => setRegisterData({ ...registerData, first_name: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="First name"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  value={registerData.last_name}
+                  onChange={(e) => setRegisterData({ ...registerData, last_name: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Last name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Username
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={registerData.username}
+                  onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Choose a username"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <input
+                  type="email"
+                  value={registerData.email}
+                  onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={registerData.password}
+                  onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                  className="w-full pl-10 pr-12 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Create a password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-white"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={registerData.confirmPassword}
+                  onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  placeholder="Confirm your password"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-700 text-gray-900 font-semibold rounded-lg transition-colors"
+            >
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </form>
+        )}
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-sm text-gray-400">
+          <p>Welcome to your personal growth journey</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
