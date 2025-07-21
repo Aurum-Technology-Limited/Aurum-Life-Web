@@ -39,11 +39,10 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
   });
 
   const statusOptions = [
-    { value: 'planning', label: 'Planning', color: 'text-blue-400 bg-blue-400/10' },
-    { value: 'active', label: 'Active', color: 'text-green-400 bg-green-400/10' },
-    { value: 'on-hold', label: 'On Hold', color: 'text-yellow-400 bg-yellow-400/10' },
-    { value: 'completed', label: 'Completed', color: 'text-gray-400 bg-gray-400/10' },
-    { value: 'cancelled', label: 'Cancelled', color: 'text-red-400 bg-red-400/10' }
+    { value: 'Not Started', label: 'Not Started', color: 'text-blue-400 bg-blue-400/10' },
+    { value: 'In Progress', label: 'In Progress', color: 'text-green-400 bg-green-400/10' },
+    { value: 'On Hold', label: 'On Hold', color: 'text-yellow-400 bg-yellow-400/10' },
+    { value: 'Completed', label: 'Completed', color: 'text-gray-400 bg-gray-400/10' }
   ];
 
   const priorityOptions = [
