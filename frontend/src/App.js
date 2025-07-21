@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import "./App.css";
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Today from './components/Today';
@@ -12,6 +14,7 @@ import Tasks from './components/Tasks';
 import Learning from './components/Learning';
 import AICoach from './components/AICoach';
 import Achievements from './components/Achievements';
+import Profile from './components/Profile';
 
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
