@@ -1,7 +1,10 @@
+import secrets
+import hashlib
+import os
 from typing import List, Optional
 from datetime import datetime, timedelta
 from database import (
-    create_document, find_document, find_documents, 
+    create_document, find_document, find_documents, find_documents_with_filter,
     update_document, delete_document, count_documents, aggregate_documents
 )
 from models import *
