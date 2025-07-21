@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
 
 const Login = ({ switchToRegister }) => {
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
