@@ -856,6 +856,8 @@ class InsightsService:
             "tasks": tasks,
             "date_range": date_range
         }
+
+class StatsService:
     @staticmethod
     async def get_user_stats(user_id: str) -> UserStats:
         stats_doc = await find_document("user_stats", {"user_id": user_id})
