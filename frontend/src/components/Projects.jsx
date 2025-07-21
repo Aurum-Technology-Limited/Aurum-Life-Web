@@ -127,7 +127,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
       name: '',
       description: '',
       area_id: selectedArea || '',
-      status: 'planning',
+      status: 'Not Started',
       priority: 'medium',
       due_date: '',
       target_completion: ''
