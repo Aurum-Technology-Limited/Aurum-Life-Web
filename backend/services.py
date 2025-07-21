@@ -155,8 +155,7 @@ class UserService:
         
         # Update user's password
         new_password_hash = get_password_hash(new_password)
-        user_update = UserUpdate(password_hash=new_password_hash)
-        await UserService.update_user(user.id, user_update)
+        await update_document("users", {"id": user.id}, {"password_hash": new_password_hash})
         
         # Mark token as used
         await update_document("password_reset_tokens", 
