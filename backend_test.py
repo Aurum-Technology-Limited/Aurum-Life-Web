@@ -4377,6 +4377,279 @@ class BackendTester:
         
         print("\n--- TASK COUNT SYNCHRONIZATION FIX TESTING COMPLETED ---")
 
+    def test_unified_project_views_task_creation_synchronization(self):
+        """Test Fixed Unified Project Views - Task Creation and Status Synchronization"""
+        print("\n=== UNIFIED PROJECT VIEWS - TASK CREATION AND STATUS SYNCHRONIZATION TESTING ===")
+        
+        if not self.auth_token:
+            self.log_test("Unified Project Views Setup", False, "No auth token available for testing")
+            return
+        
+        # Get a project to test with
+        projects_result = self.make_request('GET', '/projects', use_auth=True)
+        if not projects_result['success'] or not projects_result['data']:
+            self.log_test("Unified Project Views Setup", False, "No projects found for testing")
+            return
+            
+        test_project_id = projects_result['data'][0]['id']
+        
+        # Test 1: Task creation with all new status values
+        print("\n   Testing Task Creation with All Status Values:")
+        
+        status_tests = [
+            ("todo", "to_do"),
+            ("in_progress", "in_progress"), 
+            ("review", "review"),
+            ("completed", "done")
+        ]
+        
+        created_task_ids = []
+        
+        for status, expected_column in status_tests:
+            task_data = {
+                "project_id": test_project_id,
+                "name": f"Test Task - {status.title()} Status",
+                "description": f"Task created to test {status} status",
+                "status": status,
+                "priority": "medium"
+            }
+            
+            result = self.make_request('POST', '/tasks', data=task_data, use_auth=True)
+            self.log_test(
+                f"POST Task Creation - Status '{status}'",
+                result['success'],
+                f"Task created with {status} status successfully" if result['success'] else f"Failed to create task with {status} status: {result.get('error', 'Unknown error')}"
+            )
+            
+            if result['success']:
+                created_task_ids.append(result['data']['id'])
+                task = result['data']
+                
+                # Verify status is set correctly
+                self.log_test(
+                    f"Task Status Verification - '{status}'",
+                    task.get('status') == status,
+                    f"Task status correctly set to '{status}'" if task.get('status') == status else f"Task status incorrect: expected '{status}', got '{task.get('status')}'"
+                )
+                
+                # Verify kanban column mapping
+                self.log_test(
+                    f"Kanban Column Mapping - '{status}' -> '{expected_column}'",
+                    task.get('kanban_column') == expected_column,
+                    f"Kanban column correctly mapped to '{expected_column}'" if task.get('kanban_column') == expected_column else f"Kanban column incorrect: expected '{expected_column}', got '{task.get('kanban_column')}'"
+                )
+        
+        # Test 2: Kanban board with 4 columns
+        print("\n   Testing Kanban Board with 4 Columns:")
+        
+        result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+        self.log_test(
+            "GET Kanban Board - 4 Columns",
+            result['success'],
+            f"Kanban board retrieved successfully" if result['success'] else f"Failed to get kanban board: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            kanban_data = result['data']
+            columns = kanban_data.get('columns', {})
+            expected_columns = ['to_do', 'in_progress', 'review', 'done']
+            
+            # Verify all 4 columns exist
+            missing_columns = [col for col in expected_columns if col not in columns]
+            self.log_test(
+                "Kanban Board - 4 Columns Present",
+                len(missing_columns) == 0,
+                f"All 4 columns present: {list(columns.keys())}" if len(missing_columns) == 0 else f"Missing columns: {missing_columns}"
+            )
+            
+            # Verify tasks are in correct columns
+            for status, expected_column in status_tests:
+                tasks_in_column = columns.get(expected_column, [])
+                matching_tasks = [t for t in tasks_in_column if f"Test Task - {status.title()} Status" in t.get('name', '')]
+                
+                self.log_test(
+                    f"Task Distribution - '{status}' in '{expected_column}' column",
+                    len(matching_tasks) > 0,
+                    f"Task with {status} status found in {expected_column} column" if len(matching_tasks) > 0 else f"Task with {status} status not found in {expected_column} column"
+                )
+            
+            # Print column summary
+            print(f"   Kanban columns summary:")
+            for col_name, tasks in columns.items():
+                print(f"     {col_name}: {len(tasks)} tasks")
+        
+        # Test 3: Task status transitions
+        print("\n   Testing Task Status Transitions:")
+        
+        if created_task_ids:
+            test_task_id = created_task_ids[0]  # Use first created task
+            
+            # Test transition: todo → in_progress → review → completed
+            transitions = [
+                ("in_progress", "in_progress"),
+                ("review", "review"),
+                ("completed", "done")
+            ]
+            
+            for new_status, expected_column in transitions:
+                update_data = {"status": new_status}
+                result = self.make_request('PUT', f'/tasks/{test_task_id}', data=update_data, use_auth=True)
+                
+                self.log_test(
+                    f"Task Status Transition - to '{new_status}'",
+                    result['success'],
+                    f"Task status updated to '{new_status}'" if result['success'] else f"Failed to update task status to '{new_status}': {result.get('error', 'Unknown error')}"
+                )
+                
+                if result['success']:
+                    # Verify the task appears in the correct kanban column after update
+                    kanban_result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+                    if kanban_result['success']:
+                        columns = kanban_result['data'].get('columns', {})
+                        tasks_in_column = columns.get(expected_column, [])
+                        task_found = any(t.get('id') == test_task_id for t in tasks_in_column)
+                        
+                        self.log_test(
+                            f"Kanban Column Update - '{new_status}' -> '{expected_column}'",
+                            task_found,
+                            f"Task moved to '{expected_column}' column after status change" if task_found else f"Task not found in '{expected_column}' column after status change"
+                        )
+        
+        # Test 4: Data synchronization between views
+        print("\n   Testing Data Synchronization:")
+        
+        # Create a task with 'todo' status and verify it appears in 'to_do' column
+        sync_task_data = {
+            "project_id": test_project_id,
+            "name": "Sync Test Task - Todo",
+            "description": "Task to test synchronization",
+            "status": "todo",
+            "priority": "high"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=sync_task_data, use_auth=True)
+        self.log_test(
+            "Data Sync - Create Todo Task",
+            result['success'],
+            f"Sync test task created with todo status" if result['success'] else f"Failed to create sync test task: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            sync_task_id = result['data']['id']
+            created_task_ids.append(sync_task_id)
+            
+            # Verify task appears in kanban to_do column
+            kanban_result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+            if kanban_result['success']:
+                to_do_tasks = kanban_result['data'].get('columns', {}).get('to_do', [])
+                task_found = any(t.get('id') == sync_task_id for t in to_do_tasks)
+                
+                self.log_test(
+                    "Data Sync - Todo Task in Kanban",
+                    task_found,
+                    f"Todo task appears in kanban to_do column" if task_found else f"Todo task not found in kanban to_do column"
+                )
+            
+            # Test creating a task with 'review' status
+            review_task_data = {
+                "project_id": test_project_id,
+                "name": "Sync Test Task - Review",
+                "description": "Task to test review status synchronization",
+                "status": "review",
+                "priority": "high"
+            }
+            
+            result = self.make_request('POST', '/tasks', data=review_task_data, use_auth=True)
+            self.log_test(
+                "Data Sync - Create Review Task",
+                result['success'],
+                f"Review test task created successfully" if result['success'] else f"Failed to create review test task: {result.get('error', 'Unknown error')}"
+            )
+            
+            if result['success']:
+                review_task_id = result['data']['id']
+                created_task_ids.append(review_task_id)
+                
+                # Verify task appears in kanban review column
+                kanban_result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+                if kanban_result['success']:
+                    review_tasks = kanban_result['data'].get('columns', {}).get('review', [])
+                    task_found = any(t.get('id') == review_task_id for t in review_tasks)
+                    
+                    self.log_test(
+                        "Data Sync - Review Task in Kanban",
+                        task_found,
+                        f"Review task appears in kanban review column" if task_found else f"Review task not found in kanban review column"
+                    )
+        
+        # Test 5: Project task counts with new status values
+        print("\n   Testing Project Task Counts:")
+        
+        result = self.make_request('GET', f'/projects/{test_project_id}', use_auth=True)
+        self.log_test(
+            "GET Project with Task Counts",
+            result['success'],
+            f"Project data retrieved with task counts" if result['success'] else f"Failed to get project data: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            project = result['data']
+            
+            # Verify task count fields are present
+            count_fields = ['task_count', 'completed_task_count', 'active_task_count']
+            missing_fields = [field for field in count_fields if field not in project]
+            
+            self.log_test(
+                "Project Task Count Fields",
+                len(missing_fields) == 0,
+                f"All task count fields present: {count_fields}" if len(missing_fields) == 0 else f"Missing task count fields: {missing_fields}"
+            )
+            
+            # Verify active_task_count includes tasks with status todo, in_progress, review
+            if 'active_task_count' in project:
+                active_count = project['active_task_count']
+                self.log_test(
+                    "Active Task Count Calculation",
+                    isinstance(active_count, int) and active_count >= 0,
+                    f"Active task count is valid: {active_count}" if isinstance(active_count, int) and active_count >= 0 else f"Active task count invalid: {active_count}"
+                )
+        
+        # Test 6: Task completion toggle still works
+        print("\n   Testing Task Completion Toggle:")
+        
+        if created_task_ids:
+            toggle_task_id = created_task_ids[-1]  # Use last created task
+            
+            # Toggle completion
+            update_data = {"completed": True}
+            result = self.make_request('PUT', f'/tasks/{toggle_task_id}', data=update_data, use_auth=True)
+            
+            self.log_test(
+                "Task Completion Toggle - Mark Complete",
+                result['success'],
+                f"Task marked as completed successfully" if result['success'] else f"Failed to mark task as completed: {result.get('error', 'Unknown error')}"
+            )
+            
+            if result['success']:
+                # Verify task moved to done column
+                kanban_result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+                if kanban_result['success']:
+                    done_tasks = kanban_result['data'].get('columns', {}).get('done', [])
+                    task_found = any(t.get('id') == toggle_task_id for t in done_tasks)
+                    
+                    self.log_test(
+                        "Completion Toggle - Task in Done Column",
+                        task_found,
+                        f"Completed task moved to done column" if task_found else f"Completed task not found in done column"
+                    )
+        
+        # Cleanup test tasks
+        print("\n   Cleaning up test tasks:")
+        for task_id in created_task_ids:
+            delete_result = self.make_request('DELETE', f'/tasks/{task_id}', use_auth=True)
+            if delete_result['success']:
+                print(f"     Cleaned up test task: {task_id}")
+
     def run_all_tests(self):
         """Run all backend tests including authentication and user management"""
         print("🚀 Starting Comprehensive Backend API Testing for Task Count Synchronization Fix")
