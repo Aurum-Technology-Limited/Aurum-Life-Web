@@ -226,9 +226,36 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     return Math.round((project.completed_tasks / project.total_tasks) * 100);
   };
 
-  const handleKanban = (projectId) => {
+  // Unified data fetching for project tasks
+  const loadProjectTasks = async (projectId) => {
+    try {
+      setProjectTasksLoading(true);
+      const [projectResponse, tasksResponse] = await Promise.all([
+        projectsAPI.getProject(projectId, true),
+        projectsAPI.getProjectTasks(projectId)
+      ]);
+      setSelectedProject(projectResponse.data);
+      setProjectTasks(tasksResponse.data);
+    } catch (err) {
+      setError('Failed to load project tasks');
+      console.error('Error loading project tasks:', err);
+    } finally {
+      setProjectTasksLoading(false);
+    }
+  };
+
+  const handleKanban = async (projectId) => {
     setSelectedProjectId(projectId);
+    await loadProjectTasks(projectId);
     setShowKanban(true);
+    setShowListView(false);
+  };
+
+  const handleListView = async (projectId) => {
+    setSelectedProjectId(projectId);
+    await loadProjectTasks(projectId);
+    setShowListView(true);
+    setShowKanban(false);
   };
 
   const handleBackFromKanban = () => {
