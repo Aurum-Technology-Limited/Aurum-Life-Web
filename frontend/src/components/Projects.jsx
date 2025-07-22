@@ -13,7 +13,11 @@ import {
   FolderOpen,
   Clock,
   BarChart3,
-  ArrowRight
+  ArrowRight,
+  Archive,
+  ArchiveRestore,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { projectsAPI, areasAPI, tasksAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
