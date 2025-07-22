@@ -312,7 +312,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     const handleTaskToggle = async (taskId, completed) => {
       try {
         await tasksAPI.updateTask(taskId, { completed });
-        await loadProjectTasks(project.id); // Reload shared data
+        onTaskUpdate(); // Use shared callback to reload data
       } catch (err) {
         console.error('Error updating task:', err);
       }
