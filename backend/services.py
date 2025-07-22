@@ -719,9 +719,97 @@ class TaskService:
                 update_data["completed_at"] = None
                 update_data["status"] = TaskStatusEnum.not_started
                 update_data["kanban_column"] = "to_do"
-                
+        
         update_data["updated_at"] = datetime.utcnow()
-        return await update_document("tasks", {"id": task_id, "user_id": user_id}, update_data)
+        
+        # Update the task
+        success = await update_document("tasks", {"id": task_id, "user_id": user_id}, update_data)
+        
+        if success:
+            # Get the updated task to check for parent task completion logic
+            updated_task = await find_document("tasks", {"id": task_id, "user_id": user_id})
+            if updated_task:
+                # If this is a sub-task, check if parent task completion should be updated
+                if updated_task.get("parent_task_id"):
+                    await TaskService._update_parent_task_completion(updated_task["parent_task_id"], user_id)
+                    
+                # If this task has sub_task_completion_required and we're marking it complete,
+                # check if all sub-tasks are complete first
+                if (updated_task.get("sub_task_completion_required") and 
+                    update_data.get("completed") and 
+                    not await TaskService._all_subtasks_completed(task_id)):
+                    # Revert the completion if not all sub-tasks are done
+                    await update_document("tasks", {"id": task_id, "user_id": user_id}, {
+                        "completed": False,
+                        "completed_at": None,
+                        "status": TaskStatusEnum.in_progress,
+                        "kanban_column": "in_progress"
+                    })
+                    return False
+        
+        return success
+
+    @staticmethod
+    async def _update_parent_task_completion(parent_task_id: str, user_id: str):
+        """Update parent task completion status based on sub-tasks"""
+        parent_task = await find_document("tasks", {"id": parent_task_id, "user_id": user_id})
+        if not parent_task or not parent_task.get("sub_task_completion_required"):
+            return
+        
+        # Check if all sub-tasks are completed
+        all_subtasks_complete = await TaskService._all_subtasks_completed(parent_task_id)
+        
+        if all_subtasks_complete and not parent_task.get("completed"):
+            # Mark parent as complete
+            await update_document("tasks", {"id": parent_task_id, "user_id": user_id}, {
+                "completed": True,
+                "completed_at": datetime.utcnow(),
+                "status": TaskStatusEnum.completed,
+                "kanban_column": "done",
+                "updated_at": datetime.utcnow()
+            })
+        elif not all_subtasks_complete and parent_task.get("completed"):
+            # Mark parent as incomplete
+            await update_document("tasks", {"id": parent_task_id, "user_id": user_id}, {
+                "completed": False,
+                "completed_at": None,
+                "status": TaskStatusEnum.in_progress,
+                "kanban_column": "in_progress",
+                "updated_at": datetime.utcnow()
+            })
+
+    @staticmethod
+    async def _all_subtasks_completed(parent_task_id: str) -> bool:
+        """Check if all sub-tasks of a parent task are completed"""
+        subtasks = await find_documents("tasks", {"parent_task_id": parent_task_id})
+        if not subtasks:
+            return True  # No sub-tasks means parent can be completed
+        
+        return all(subtask.get("completed", False) for subtask in subtasks)
+
+    @staticmethod
+    async def get_task_with_subtasks(user_id: str, task_id: str) -> Optional[TaskResponse]:
+        """Get a task with all its sub-tasks"""
+        task_doc = await find_document("tasks", {"id": task_id, "user_id": user_id})
+        if not task_doc:
+            return None
+        
+        return await TaskService._build_task_response(task_doc, include_subtasks=True)
+
+    @staticmethod
+    async def create_subtask(user_id: str, parent_task_id: str, subtask_data: TaskCreate) -> Task:
+        """Create a sub-task under a parent task"""
+        # Validate that the parent task exists and belongs to the user
+        parent_task = await find_document("tasks", {"id": parent_task_id, "user_id": user_id})
+        if not parent_task:
+            raise ValueError(f"Parent task with ID {parent_task_id} not found or does not belong to user")
+        
+        # Set the parent_task_id and inherit project_id from parent
+        subtask_data.parent_task_id = parent_task_id
+        subtask_data.project_id = parent_task["project_id"]
+        
+        # Create the sub-task
+        return await TaskService.create_task(user_id, subtask_data)
 
     @staticmethod
     async def delete_task(user_id: str, task_id: str) -> bool:
