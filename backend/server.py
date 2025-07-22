@@ -330,6 +330,53 @@ async def delete_journal_entry(entry_id: str, user_id: str = Query(DEFAULT_USER_
         raise HTTPException(status_code=404, detail="Journal entry not found")
     return {"success": True, "message": "Journal entry deleted successfully"}
 
+# Project Templates endpoints
+@api_router.get("/project-templates", response_model=List[ProjectTemplateResponse])
+async def get_project_templates(current_user: User = Depends(get_current_active_user)):
+    """Get all project templates for the current user"""
+    return await ProjectTemplateService.get_user_templates(current_user.id)
+
+@api_router.post("/project-templates", response_model=ProjectTemplateResponse)
+async def create_project_template(template_data: ProjectTemplateCreate, current_user: User = Depends(get_current_active_user)):
+    """Create a new project template"""
+    template = await ProjectTemplateService.create_template(current_user.id, template_data)
+    return await ProjectTemplateService.get_template(current_user.id, template.id)
+
+@api_router.get("/project-templates/{template_id}", response_model=ProjectTemplateResponse)
+async def get_project_template(template_id: str, current_user: User = Depends(get_current_active_user)):
+    """Get a specific project template"""
+    template = await ProjectTemplateService.get_template(current_user.id, template_id)
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return template
+
+@api_router.put("/project-templates/{template_id}", response_model=ProjectTemplateResponse)
+async def update_project_template(template_id: str, template_data: ProjectTemplateUpdate, current_user: User = Depends(get_current_active_user)):
+    """Update a project template"""
+    success = await ProjectTemplateService.update_template(current_user.id, template_id, template_data)
+    if not success:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    return await ProjectTemplateService.get_template(current_user.id, template_id)
+
+@api_router.delete("/project-templates/{template_id}")
+async def delete_project_template(template_id: str, current_user: User = Depends(get_current_active_user)):
+    """Delete a project template"""
+    success = await ProjectTemplateService.delete_template(current_user.id, template_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    return {"message": "Template deleted successfully"}
+
+@api_router.post("/project-templates/{template_id}/use", response_model=ProjectResponse)
+async def use_project_template(template_id: str, project_data: ProjectCreate, current_user: User = Depends(get_current_active_user)):
+    """Create a new project from a template"""
+    try:
+        project = await ProjectTemplateService.use_template(current_user.id, template_id, project_data)
+        return await ProjectService.get_project(current_user.id, project.id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
 # Area endpoints
 @api_router.post("/areas", response_model=Area)
 async def create_area(area_data: AreaCreate, current_user: User = Depends(get_current_active_user)):
