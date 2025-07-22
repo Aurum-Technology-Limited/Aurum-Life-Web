@@ -366,6 +366,21 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
+                Due Time (Optional)
+              </label>
+              <input
+                type="time"
+                value={formData.due_time}
+                onChange={(e) => setFormData({ ...formData, due_time: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                disabled={loading}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Category
               </label>
               <select
@@ -382,6 +397,19 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                 <option value="coaching">Coaching</option>
                 <option value="planning">Planning</option>
               </select>
+            </div>
+            
+            <div className="flex items-center">
+              <label className="flex items-center space-x-2 text-sm font-medium text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={formData.sub_task_completion_required}
+                  onChange={(e) => setFormData({ ...formData, sub_task_completion_required: e.target.checked })}
+                  className="rounded bg-gray-800 border-gray-700 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
+                  disabled={loading}
+                />
+                <span>Require all sub-tasks to complete</span>
+              </label>
             </div>
           </div>
           
