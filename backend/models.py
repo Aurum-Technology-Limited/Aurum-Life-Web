@@ -77,7 +77,7 @@ class PasswordResetToken(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class PasswordResetRequest(BaseModel):
-    email: EmailStr
+    email: str
 
 class PasswordResetConfirm(BaseModel):
     token: str
