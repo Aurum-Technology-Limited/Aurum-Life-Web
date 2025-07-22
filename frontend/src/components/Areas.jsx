@@ -63,7 +63,7 @@ const Areas = ({ onSectionChange }) => {
 
   useEffect(() => {
     loadAreas();
-  }, []);
+  }, [showArchived]); // Reload when showArchived changes
 
   const handleSubmit = async (e) => {
     e.preventDefault();
