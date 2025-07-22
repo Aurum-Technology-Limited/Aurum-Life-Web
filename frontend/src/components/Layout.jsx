@@ -163,6 +163,29 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
 
       {/* Main content */}
       <div className="lg:ml-80 min-h-screen">
+        {/* Top header with level display */}
+        <div className="sticky top-0 z-20 bg-[#0B0D14]/95 backdrop-blur-sm border-b border-gray-800/50 p-4 lg:p-6">
+          <div className="flex items-center justify-between">
+            <div className="lg:hidden">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50"
+              >
+                <Menu size={24} />
+              </button>
+            </div>
+            
+            {/* Level display in top right */}
+            {user && (
+              <div className="ml-auto inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20">
+                <span className="text-yellow-400 font-medium">Level {user.level}</span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-300">{user.total_points} points</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
         <main className="p-6 lg:p-8">
           {children}
         </main>
