@@ -104,6 +104,42 @@
 
 user_problem_statement: "Build Aurum Life personal growth platform with habit tracking, journaling, task management, mindfulness, learning, AI coaching, and achievements system"
 
+  - task: "Project Templates System Implementation"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/models.py, /app/backend/services.py, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented comprehensive Project Templates system with ProjectTemplate/TaskTemplate models, ProjectTemplateService with full CRUD operations, template usage tracking, and 6 new API endpoints for managing templates and creating projects from templates"
+
+  - task: "Archiving System for Areas and Projects"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/models.py, /app/backend/services.py, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added archived fields to Area and Project models, implemented archive/unarchive methods in services with proper filtering, added 4 new archive/unarchive API endpoints, enhanced existing get APIs with include_archived parameters"
+
+  - task: "Enhanced API Filtering for Archive Support"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/services.py, /app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Enhanced get_user_areas and get_user_projects methods with include_archived parameters, updated corresponding API endpoints to support optional archived item filtering while maintaining backward compatibility"
+
 backend:
   - task: "Authentication System Implementation"
     implemented: true
