@@ -108,21 +108,23 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
   useEffect(() => {
     if (task) {
       setFormData({
-        title: task.title,
+        name: task.name || task.title || '', // Handle both old and new field names
         description: task.description,
         priority: task.priority,
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
-        category: task.category
+        category: task.category,
+        project_id: task.project_id || ''
       });
     } else {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       setFormData({
-        title: '',
+        name: '',
         description: '',
         priority: 'medium',
         due_date: tomorrow.toISOString().split('T')[0],
-        category: 'personal'
+        category: 'personal',
+        project_id: ''
       });
     }
   }, [task, isOpen]);
