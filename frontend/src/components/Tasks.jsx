@@ -149,9 +149,16 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
         description: task.description,
         priority: task.priority,
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
+        due_time: task.due_time || '', // New field
         category: task.category,
-        project_id: task.project_id || ''
+        project_id: task.project_id || '',
+        sub_task_completion_required: task.sub_task_completion_required || false // New field
       });
+      
+      // Load existing subtasks if editing
+      if (task.id) {
+        loadSubtasks(task.id);
+      }
     } else {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -160,9 +167,15 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
         description: '',
         priority: 'medium',
         due_date: tomorrow.toISOString().split('T')[0],
+        due_time: '', // New field
         category: 'personal',
-        project_id: '' // Will be set after projects load
+        project_id: '', // Will be set after projects load
+        sub_task_completion_required: false // New field
       });
+      
+      // Clear subtasks when creating new task
+      setSubtasks([]);
+      setNewSubtask({ name: '', description: '' });
     }
   }, [task, isOpen, projects]);
 
