@@ -394,7 +394,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   </p>
                 )}
 
-                {/* Progress */}
+                {/* Enhanced Progress Visualization */}
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-400">Progress</span>
@@ -402,7 +402,9 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                       {getProgressPercentage(project)}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-800 rounded-full h-2">
+                  
+                  {/* Traditional Progress Bar */}
+                  <div className="w-full bg-gray-800 rounded-full h-2 mb-3">
                     <div
                       className="h-2 rounded-full transition-all duration-300"
                       style={{
@@ -411,9 +413,33 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                       }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  
+                  <p className="text-xs text-gray-500 mb-3">
                     {project.completed_tasks || 0} of {project.total_tasks || 0} tasks complete
                   </p>
+
+                  {/* Enhanced Donut Chart Visualization */}
+                  {(project.total_tasks || 0) > 0 && (
+                    <div className="flex justify-center">
+                      <DonutChart
+                        data={{
+                          labels: ['Completed', 'In Progress', 'To Do'],
+                          values: [
+                            project.completed_tasks || 0,
+                            project.active_tasks || 0,
+                            Math.max(0, (project.total_tasks || 0) - (project.completed_tasks || 0) - (project.active_tasks || 0))
+                          ],
+                          colors: [
+                            '#10B981', // Green for completed
+                            '#F4B400', // Aurum gold for in progress  
+                            '#6B7280', // Gray for to do
+                          ]
+                        }}
+                        size="sm"
+                        showLegend={false}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Stats */}
