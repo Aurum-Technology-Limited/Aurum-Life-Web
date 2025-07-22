@@ -6,7 +6,7 @@ import {
   Save,
   X,
   AlertCircle,
-  FileTemplate,
+  FileText,
   Clock,
   Target,
   ArrowRight,
