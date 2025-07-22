@@ -267,6 +267,13 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
     }
   }, [task, isOpen, projects]);
 
+  // Load dependencies when project changes
+  useEffect(() => {
+    if (formData.project_id) {
+      loadAvailableDependencies(formData.project_id);
+    }
+  }, [formData.project_id]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const submitData = {
