@@ -213,13 +213,47 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
     }
   }, [task, isOpen, projects]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const submitData = {
       ...formData,
       due_date: formData.due_date ? new Date(formData.due_date).toISOString() : null
     };
-    onSave(submitData);
+    
+    try {
+      // Save the main task first
+      await onSave(submitData);
+      
+      // If creating a new task and we have subtasks, create them
+      if (!task && subtasks.length > 0) {
+        // We'll need the created task ID to create subtasks
+        // For now, we'll handle this in the parent component
+        // Pass subtasks data to be handled after task creation
+        if (onSave.subtasks) {
+          onSave.subtasks(subtasks);
+        }
+      } else if (task && subtasks.length > 0) {
+        // Handle subtask updates for existing tasks
+        for (const subtask of subtasks) {
+          if (subtask.isNew) {
+            // Create new subtask
+            const subtaskData = {
+              name: subtask.name,
+              description: subtask.description || '',
+              priority: 'medium',
+              category: formData.category
+            };
+            await tasksAPI.createSubtask(task.id, subtaskData);
+          } else if (subtask.completed !== subtask.originalCompleted) {
+            // Update existing subtask completion status
+            await tasksAPI.updateTask(subtask.id, { completed: subtask.completed });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error saving task with subtasks:', err);
+      throw err; // Re-throw to let parent handle the error
+    }
   };
 
   if (!isOpen) return null;
