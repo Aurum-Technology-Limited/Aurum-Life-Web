@@ -419,16 +419,16 @@ async def update_project(project_id: str, project_data: ProjectUpdate, current_u
     return {"success": True, "message": "Project updated successfully"}
 
 @api_router.delete("/projects/{project_id}", response_model=dict)
-async def delete_project(project_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def delete_project(project_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete a project and all its tasks"""
-    success = await ProjectService.delete_project(user_id, project_id)
+    success = await ProjectService.delete_project(current_user.id, project_id)
     if not success:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"success": True, "message": "Project deleted successfully"}
 
 # Enhanced Task endpoints
 @api_router.get("/projects/{project_id}/tasks", response_model=List[TaskResponse])
-async def get_project_tasks(project_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def get_project_tasks(project_id: str, current_user: User = Depends(get_current_active_user)):
     """Get all tasks for a specific project"""
     try:
         return await TaskService.get_project_tasks(project_id)
@@ -437,27 +437,27 @@ async def get_project_tasks(project_id: str, user_id: str = Query(DEFAULT_USER_I
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/projects/{project_id}/kanban", response_model=KanbanBoard)
-async def get_kanban_board(project_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def get_kanban_board(project_id: str, current_user: User = Depends(get_current_active_user)):
     """Get kanban board for a project"""
     try:
-        return await TaskService.get_kanban_board(user_id, project_id)
+        return await TaskService.get_kanban_board(current_user.id, project_id)
     except Exception as e:
         logger.error(f"Error getting kanban board: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/tasks/{task_id}/column", response_model=dict)
-async def move_task_column(task_id: str, new_column: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def move_task_column(task_id: str, new_column: str, current_user: User = Depends(get_current_active_user)):
     """Move task to different kanban column"""
-    success = await TaskService.move_task_column(user_id, task_id, new_column)
+    success = await TaskService.move_task_column(current_user.id, task_id, new_column)
     if not success:
         raise HTTPException(status_code=400, detail="Invalid column or task not found")
     return {"success": True, "message": "Task moved successfully"}
 
 @api_router.get("/today", response_model=TodayView)
-async def get_today_view(user_id: str = Query(DEFAULT_USER_ID)):
+async def get_today_view(current_user: User = Depends(get_current_active_user)):
     """Get today's focused view"""
     try:
-        return await StatsService.get_today_view(user_id)
+        return await StatsService.get_today_view(current_user.id)
     except Exception as e:
         logger.error(f"Error getting today view: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -465,10 +465,10 @@ async def get_today_view(user_id: str = Query(DEFAULT_USER_ID)):
 # Update existing task endpoints to work with new structure
 # Task endpoints (updated for project integration)
 @api_router.post("/tasks", response_model=Task)
-async def create_task(task_data: TaskCreate, user_id: str = Query(DEFAULT_USER_ID)):
+async def create_task(task_data: TaskCreate, current_user: User = Depends(get_current_active_user)):
     """Create a new task"""
     try:
-        return await TaskService.create_task(user_id, task_data)
+        return await TaskService.create_task(current_user.id, task_data)
     except Exception as e:
         logger.error(f"Error creating task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
