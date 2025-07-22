@@ -1317,7 +1317,7 @@ class TaskService:
     @staticmethod
     async def move_task_column(user_id: str, task_id: str, new_column: str) -> bool:
         """Move task between kanban columns"""
-        valid_columns = ["to_do", "in_progress", "done"]
+        valid_columns = ["to_do", "in_progress", "review", "done"]
         if new_column not in valid_columns:
             return False
         
