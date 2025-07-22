@@ -229,7 +229,9 @@ const Areas = ({ onSectionChange }) => {
               return (
                 <div
                   key={area.id}
-                  className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg cursor-pointer"
+                  className={`bg-gray-900/50 border rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg cursor-pointer ${
+                    area.archived ? 'border-gray-700 opacity-75' : 'border-gray-800'
+                  }`}
                   onClick={() => onSectionChange && onSectionChange('projects', { areaId: area.id })}
                 >
                   {/* Area Header */}
@@ -245,13 +247,34 @@ const Areas = ({ onSectionChange }) => {
                         />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-white text-lg">{area.name}</h3>
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-semibold text-white text-lg">{area.name}</h3>
+                          {area.archived && (
+                            <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300">
+                              Archived
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-400">
                           {area.projects?.length || 0} projects
                         </p>
                       </div>
                     </div>
                     <div className="flex space-x-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleArchive(area.id, area.archived);
+                        }}
+                        className={`p-2 rounded-lg transition-colors ${
+                          area.archived
+                            ? 'text-blue-400 hover:text-blue-300 hover:bg-gray-800'
+                            : 'text-gray-400 hover:text-yellow-400 hover:bg-gray-800'
+                        }`}
+                        title={area.archived ? 'Unarchive Area' : 'Archive Area'}
+                      >
+                        {area.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
