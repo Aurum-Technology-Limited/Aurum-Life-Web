@@ -23,19 +23,7 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
-  // Add user_id to query params for endpoints that need it (legacy support)
-  if (!config.params) {
-    config.params = {};
-  }
-  
-  // Only add user_id for legacy endpoints that don't use authentication
-  const legacyEndpoints = ['/dashboard', '/habits', '/journal', '/areas', '/projects', '/tasks', '/today', '/users', '/stats', '/chat', '/courses'];
-  const isLegacyEndpoint = legacyEndpoints.some(endpoint => config.url.includes(endpoint) && !config.url.includes('/insights'));
-  
-  if (isLegacyEndpoint && !config.params.user_id) {
-    config.params.user_id = DEFAULT_USER_ID;
-  }
-  
+  // Don't add user_id anymore since we use authentication
   return config;
 });
 
