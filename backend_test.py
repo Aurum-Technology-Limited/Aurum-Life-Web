@@ -1975,6 +1975,12 @@ class BackendTester:
             # Core API tests
             self.test_health_check()
             
+            # PRIORITY: Task Creation Functionality Testing (as requested)
+            print("\n" + "="*80)
+            print("🎯 TASK CREATION FUNCTIONALITY TESTING (PRIORITY)")
+            print("="*80)
+            self.test_task_creation_functionality()
+            
             # Authentication and User Management Tests (using existing user)
             print("\n" + "="*80)
             print("🔐 AUTHENTICATION SETUP FOR EPIC 1 TESTING")
