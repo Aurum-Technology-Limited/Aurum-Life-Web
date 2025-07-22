@@ -339,14 +339,14 @@ const Areas = ({ onSectionChange }) => {
                     </div>
 
                     {/* Enhanced Donut Chart Visualization */}
-                    {area.total_tasks > 0 && (
+                    {area.total_task_count > 0 && (
                       <div className="flex justify-center mt-4">
                         <DonutChart
                           data={{
                             labels: ['Completed', 'Active', 'Not Started'],
                             values: [
-                              area.completed_tasks || 0,
-                              Math.max(0, (area.total_tasks || 0) - (area.completed_tasks || 0)),
+                              area.completed_task_count || 0,
+                              Math.max(0, (area.total_task_count || 0) - (area.completed_task_count || 0)),
                               0 // For now, we don't distinguish between active and not started
                             ],
                             colors: [
