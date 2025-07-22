@@ -862,7 +862,10 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Task Creation Functionality with Project Context"
+    - "Epic 2 Phase 1: Enhanced Task Creation with New Fields"
+    - "Epic 2 Phase 1: Sub-task Management API System"
+    - "Epic 2 Phase 1: Sub-task Completion Logic System"
+    - "Epic 2 Phase 1: Enhanced TaskService Methods"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
