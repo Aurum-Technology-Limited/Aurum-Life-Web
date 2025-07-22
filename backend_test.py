@@ -3030,6 +3030,16 @@ class BackendTester:
             self.test_archiving_system()
             self.test_enhanced_api_filtering()
             
+            # Epic 2 Phase 1 Feature Tests
+            print("\n" + "="*80)
+            print("🚀 EPIC 2 PHASE 1 BACKEND FEATURE TESTING")
+            print("="*80)
+            
+            self.test_epic2_phase1_enhanced_task_creation()
+            self.test_epic2_phase1_subtask_management()
+            self.test_epic2_phase1_subtask_completion_logic()
+            self.test_epic2_phase1_enhanced_task_service_methods()
+            
             # Existing hierarchical system tests (for regression testing)
             print("\n" + "="*80)
             print("🏗️ REGRESSION TESTING (EXISTING FUNCTIONALITY)")
