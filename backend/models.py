@@ -343,7 +343,7 @@ class Task(BaseDocument):
     recurrence: RecurrenceEnum = RecurrenceEnum.none
     recurrence_interval: int = 1
     next_due_date: Optional[datetime] = None
-    kanban_column: str = "to_do"  # to_do, in_progress, done
+    kanban_column: str = "to_do"  # to_do, in_progress, review, done
     sort_order: int = 0
     estimated_duration: Optional[int] = None  # in minutes
     # Sub-task completion tracking
