@@ -26,8 +26,10 @@ class Epic2Phase1Tester:
             'users': []
         }
         self.auth_token = None
-        self.test_user_email = "navtest@example.com"
-        self.test_user_password = "password123"
+        # Use a unique email for testing to avoid conflicts
+        unique_id = uuid.uuid4().hex[:8]
+        self.test_user_email = f"epic2test_{unique_id}@example.com"
+        self.test_user_password = "Epic2TestPassword123!"
         
     def log_test(self, test_name: str, success: bool, message: str = "", data: Any = None):
         """Log test results"""
