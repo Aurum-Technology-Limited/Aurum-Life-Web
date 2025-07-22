@@ -1192,9 +1192,554 @@ class BackendTester:
             if result['success']:
                 print(f"   Cleaned up area: {area_id}")
 
+    def test_project_templates_system(self):
+        """Test comprehensive Project Templates System - Epic 1 Feature"""
+        print("\n=== PROJECT TEMPLATES SYSTEM TESTING (EPIC 1) ===")
+        
+        if not self.auth_token:
+            self.log_test("Project Templates System Setup", False, "No auth token available for testing")
+            return
+        
+        # Test 1: GET /api/project-templates - Get user templates (initially empty)
+        result = self.make_request('GET', '/project-templates', use_auth=True)
+        self.log_test(
+            "GET Project Templates - Initial Empty List",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} templates (should be empty initially)" if result['success'] else f"Failed to get templates: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 2: POST /api/project-templates - Create template with tasks
+        template_data = {
+            "name": "Marathon Training Template",
+            "description": "Complete marathon training program template",
+            "category": "fitness",
+            "tasks": [
+                {
+                    "name": "Week 1-4: Base Building",
+                    "description": "Build aerobic base with easy runs",
+                    "priority": "high",
+                    "estimated_duration": 60
+                },
+                {
+                    "name": "Week 5-8: Speed Work",
+                    "description": "Add interval training and tempo runs",
+                    "priority": "high",
+                    "estimated_duration": 90
+                },
+                {
+                    "name": "Week 9-12: Peak Training",
+                    "description": "Long runs and race pace training",
+                    "priority": "high",
+                    "estimated_duration": 120
+                },
+                {
+                    "name": "Week 13-16: Taper",
+                    "description": "Reduce volume, maintain intensity",
+                    "priority": "medium",
+                    "estimated_duration": 45
+                }
+            ]
+        }
+        
+        result = self.make_request('POST', '/project-templates', data=template_data, use_auth=True)
+        self.log_test(
+            "POST Create Project Template",
+            result['success'],
+            f"Created template: {result['data'].get('name', 'Unknown')} with {result['data'].get('task_count', 0)} tasks" if result['success'] else f"Failed to create template: {result.get('error', 'Unknown error')}"
+        )
+        
+        created_template_id = None
+        if result['success']:
+            created_template_id = result['data']['id']
+            template_response = result['data']
+            
+            # Verify template structure
+            required_fields = ['id', 'name', 'description', 'category', 'user_id', 'usage_count', 'task_count', 'tasks']
+            missing_fields = [field for field in required_fields if field not in template_response]
+            
+            self.log_test(
+                "Project Template - Response Structure",
+                len(missing_fields) == 0,
+                f"All required fields present" if len(missing_fields) == 0 else f"Missing fields: {missing_fields}"
+            )
+            
+            # Verify task count matches
+            self.log_test(
+                "Project Template - Task Count Verification",
+                template_response.get('task_count') == 4 and len(template_response.get('tasks', [])) == 4,
+                f"Task count correct: {template_response.get('task_count')} tasks, {len(template_response.get('tasks', []))} task objects"
+            )
+        
+        # Test 3: GET /api/project-templates - Get user templates (should now have 1)
+        result = self.make_request('GET', '/project-templates', use_auth=True)
+        self.log_test(
+            "GET Project Templates - After Creation",
+            result['success'] and len(result['data']) == 1,
+            f"Retrieved {len(result['data']) if result['success'] else 0} templates (should be 1)" if result['success'] else f"Failed to get templates: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 4: GET /api/project-templates/{id} - Get specific template
+        if created_template_id:
+            result = self.make_request('GET', f'/project-templates/{created_template_id}', use_auth=True)
+            self.log_test(
+                "GET Specific Project Template",
+                result['success'],
+                f"Retrieved template: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to get specific template: {result.get('error', 'Unknown error')}"
+            )
+            
+            if result['success']:
+                template = result['data']
+                # Verify all tasks are included
+                self.log_test(
+                    "Specific Template - Tasks Included",
+                    len(template.get('tasks', [])) == 4,
+                    f"Template includes {len(template.get('tasks', []))} tasks (should be 4)"
+                )
+        
+        # Test 5: PUT /api/project-templates/{id} - Update template
+        if created_template_id:
+            update_data = {
+                "name": "Updated Marathon Training Template",
+                "description": "Updated complete marathon training program template",
+                "tasks": [
+                    {
+                        "name": "Updated Week 1-4: Base Building",
+                        "description": "Updated build aerobic base with easy runs",
+                        "priority": "high",
+                        "estimated_duration": 65
+                    },
+                    {
+                        "name": "Week 5-8: Speed Work",
+                        "description": "Add interval training and tempo runs",
+                        "priority": "high",
+                        "estimated_duration": 90
+                    }
+                ]
+            }
+            
+            result = self.make_request('PUT', f'/project-templates/{created_template_id}', data=update_data, use_auth=True)
+            self.log_test(
+                "PUT Update Project Template",
+                result['success'],
+                f"Updated template: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to update template: {result.get('error', 'Unknown error')}"
+            )
+            
+            if result['success']:
+                # Verify update took effect
+                self.log_test(
+                    "Template Update Verification",
+                    result['data'].get('name') == "Updated Marathon Training Template" and result['data'].get('task_count') == 2,
+                    f"Template updated correctly: name='{result['data'].get('name')}', tasks={result['data'].get('task_count')}"
+                )
+        
+        # Test 6: POST /api/project-templates/{id}/use - Create project from template
+        if created_template_id:
+            # First, get an area to create the project in
+            areas_result = self.make_request('GET', '/areas', use_auth=True)
+            if areas_result['success'] and areas_result['data']:
+                area_id = areas_result['data'][0]['id']
+                
+                project_data = {
+                    "area_id": area_id,
+                    "name": "My Marathon Training Project",
+                    "description": "Personal marathon training based on template",
+                    "status": "In Progress",
+                    "priority": "high"
+                }
+                
+                result = self.make_request('POST', f'/project-templates/{created_template_id}/use', data=project_data, use_auth=True)
+                self.log_test(
+                    "POST Use Project Template",
+                    result['success'],
+                    f"Created project from template: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to use template: {result.get('error', 'Unknown error')}"
+                )
+                
+                if result['success']:
+                    created_project_id = result['data']['id']
+                    
+                    # Verify tasks were created from template
+                    tasks_result = self.make_request('GET', f'/projects/{created_project_id}/tasks', use_auth=True)
+                    self.log_test(
+                        "Template Usage - Tasks Created",
+                        tasks_result['success'] and len(tasks_result['data']) == 2,  # Should match updated template
+                        f"Created {len(tasks_result['data']) if tasks_result['success'] else 0} tasks from template (should be 2)"
+                    )
+                    
+                    # Verify template usage count incremented
+                    template_result = self.make_request('GET', f'/project-templates/{created_template_id}', use_auth=True)
+                    if template_result['success']:
+                        self.log_test(
+                            "Template Usage Count Increment",
+                            template_result['data'].get('usage_count') == 1,
+                            f"Template usage count: {template_result['data'].get('usage_count')} (should be 1)"
+                        )
+            else:
+                self.log_test("Template Usage Test", False, "No areas available to create project from template")
+        
+        # Test 7: DELETE /api/project-templates/{id} - Delete template
+        if created_template_id:
+            result = self.make_request('DELETE', f'/project-templates/{created_template_id}', use_auth=True)
+            self.log_test(
+                "DELETE Project Template",
+                result['success'],
+                "Template deleted successfully" if result['success'] else f"Failed to delete template: {result.get('error', 'Unknown error')}"
+            )
+            
+            # Verify template is deleted
+            if result['success']:
+                verify_result = self.make_request('GET', f'/project-templates/{created_template_id}', use_auth=True)
+                self.log_test(
+                    "Template Deletion Verification",
+                    not verify_result['success'] and verify_result['status_code'] == 404,
+                    f"Template properly deleted (status: {verify_result['status_code']})" if not verify_result['success'] else "Template still exists after deletion"
+                )
+
+    def test_archiving_system(self):
+        """Test comprehensive Archiving System for Areas and Projects - Epic 1 Feature"""
+        print("\n=== ARCHIVING SYSTEM TESTING (EPIC 1) ===")
+        
+        if not self.auth_token:
+            self.log_test("Archiving System Setup", False, "No auth token available for testing")
+            return
+        
+        # Setup: Create test area and project for archiving tests
+        area_data = {
+            "name": "Test Archive Area",
+            "description": "Area for testing archiving functionality",
+            "icon": "📦",
+            "color": "#FF9800"
+        }
+        
+        area_result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+        if not area_result['success']:
+            self.log_test("Archiving System Setup", False, "Failed to create test area")
+            return
+        
+        test_area_id = area_result['data']['id']
+        
+        project_data = {
+            "area_id": test_area_id,
+            "name": "Test Archive Project",
+            "description": "Project for testing archiving functionality",
+            "status": "In Progress",
+            "priority": "medium"
+        }
+        
+        project_result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+        if not project_result['success']:
+            self.log_test("Archiving System Setup", False, "Failed to create test project")
+            return
+        
+        test_project_id = project_result['data']['id']
+        
+        # Test 1: GET /api/areas?include_archived=false (default) - Should show active areas
+        result = self.make_request('GET', '/areas', params={'include_archived': False}, use_auth=True)
+        initial_area_count = len(result['data']) if result['success'] else 0
+        self.log_test(
+            "GET Areas - Active Only (Before Archive)",
+            result['success'],
+            f"Retrieved {initial_area_count} active areas" if result['success'] else f"Failed to get areas: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 2: PUT /api/areas/{id}/archive - Archive area
+        result = self.make_request('PUT', f'/areas/{test_area_id}/archive', use_auth=True)
+        self.log_test(
+            "PUT Archive Area",
+            result['success'],
+            "Area archived successfully" if result['success'] else f"Failed to archive area: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 3: GET /api/areas?include_archived=false - Should show one less area
+        result = self.make_request('GET', '/areas', params={'include_archived': False}, use_auth=True)
+        active_area_count_after_archive = len(result['data']) if result['success'] else 0
+        self.log_test(
+            "GET Areas - Active Only (After Archive)",
+            result['success'] and active_area_count_after_archive == initial_area_count - 1,
+            f"Retrieved {active_area_count_after_archive} active areas (should be {initial_area_count - 1})" if result['success'] else f"Failed to get areas: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 4: GET /api/areas?include_archived=true - Should show all areas including archived
+        result = self.make_request('GET', '/areas', params={'include_archived': True}, use_auth=True)
+        all_area_count = len(result['data']) if result['success'] else 0
+        self.log_test(
+            "GET Areas - Include Archived",
+            result['success'] and all_area_count == initial_area_count,
+            f"Retrieved {all_area_count} total areas (should be {initial_area_count})" if result['success'] else f"Failed to get areas: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            # Verify archived area is marked as archived
+            archived_area = next((area for area in result['data'] if area['id'] == test_area_id), None)
+            self.log_test(
+                "Area Archive Status Verification",
+                archived_area and archived_area.get('archived') == True,
+                f"Archived area properly marked: archived={archived_area.get('archived') if archived_area else 'Not found'}"
+            )
+        
+        # Test 5: PUT /api/areas/{id}/unarchive - Unarchive area
+        result = self.make_request('PUT', f'/areas/{test_area_id}/unarchive', use_auth=True)
+        self.log_test(
+            "PUT Unarchive Area",
+            result['success'],
+            "Area unarchived successfully" if result['success'] else f"Failed to unarchive area: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 6: GET /api/areas?include_archived=false - Should show original count again
+        result = self.make_request('GET', '/areas', params={'include_archived': False}, use_auth=True)
+        active_area_count_after_unarchive = len(result['data']) if result['success'] else 0
+        self.log_test(
+            "GET Areas - Active Only (After Unarchive)",
+            result['success'] and active_area_count_after_unarchive == initial_area_count,
+            f"Retrieved {active_area_count_after_unarchive} active areas (should be {initial_area_count})" if result['success'] else f"Failed to get areas: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 7: GET /api/projects?include_archived=false (default) - Should show active projects
+        result = self.make_request('GET', '/projects', params={'include_archived': False}, use_auth=True)
+        initial_project_count = len(result['data']) if result['success'] else 0
+        self.log_test(
+            "GET Projects - Active Only (Before Archive)",
+            result['success'],
+            f"Retrieved {initial_project_count} active projects" if result['success'] else f"Failed to get projects: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 8: PUT /api/projects/{id}/archive - Archive project
+        result = self.make_request('PUT', f'/projects/{test_project_id}/archive', use_auth=True)
+        self.log_test(
+            "PUT Archive Project",
+            result['success'],
+            "Project archived successfully" if result['success'] else f"Failed to archive project: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 9: GET /api/projects?include_archived=false - Should show one less project
+        result = self.make_request('GET', '/projects', params={'include_archived': False}, use_auth=True)
+        active_project_count_after_archive = len(result['data']) if result['success'] else 0
+        self.log_test(
+            "GET Projects - Active Only (After Archive)",
+            result['success'] and active_project_count_after_archive == initial_project_count - 1,
+            f"Retrieved {active_project_count_after_archive} active projects (should be {initial_project_count - 1})" if result['success'] else f"Failed to get projects: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 10: GET /api/projects?include_archived=true - Should show all projects including archived
+        result = self.make_request('GET', '/projects', params={'include_archived': True}, use_auth=True)
+        all_project_count = len(result['data']) if result['success'] else 0
+        self.log_test(
+            "GET Projects - Include Archived",
+            result['success'] and all_project_count == initial_project_count,
+            f"Retrieved {all_project_count} total projects (should be {initial_project_count})" if result['success'] else f"Failed to get projects: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            # Verify archived project is marked as archived
+            archived_project = next((project for project in result['data'] if project['id'] == test_project_id), None)
+            self.log_test(
+                "Project Archive Status Verification",
+                archived_project and archived_project.get('archived') == True,
+                f"Archived project properly marked: archived={archived_project.get('archived') if archived_project else 'Not found'}"
+            )
+        
+        # Test 11: PUT /api/projects/{id}/unarchive - Unarchive project
+        result = self.make_request('PUT', f'/projects/{test_project_id}/unarchive', use_auth=True)
+        self.log_test(
+            "PUT Unarchive Project",
+            result['success'],
+            "Project unarchived successfully" if result['success'] else f"Failed to unarchive project: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 12: GET /api/projects?include_archived=false - Should show original count again
+        result = self.make_request('GET', '/projects', params={'include_archived': False}, use_auth=True)
+        active_project_count_after_unarchive = len(result['data']) if result['success'] else 0
+        self.log_test(
+            "GET Projects - Active Only (After Unarchive)",
+            result['success'] and active_project_count_after_unarchive == initial_project_count,
+            f"Retrieved {active_project_count_after_unarchive} active projects (should be {initial_project_count})" if result['success'] else f"Failed to get projects: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Cleanup test data
+        self.make_request('DELETE', f'/projects/{test_project_id}', use_auth=True)
+        self.make_request('DELETE', f'/areas/{test_area_id}', use_auth=True)
+
+    def test_enhanced_api_filtering(self):
+        """Test Enhanced API Filtering for Archive Support - Epic 1 Feature"""
+        print("\n=== ENHANCED API FILTERING TESTING (EPIC 1) ===")
+        
+        if not self.auth_token:
+            self.log_test("Enhanced API Filtering Setup", False, "No auth token available for testing")
+            return
+        
+        # Setup: Create test data with mixed archived/active status
+        area_data_1 = {
+            "name": "Active Filter Test Area",
+            "description": "Active area for filtering tests",
+            "icon": "✅",
+            "color": "#4CAF50"
+        }
+        
+        area_data_2 = {
+            "name": "Archived Filter Test Area",
+            "description": "Area to be archived for filtering tests",
+            "icon": "📦",
+            "color": "#9E9E9E"
+        }
+        
+        # Create areas
+        active_area_result = self.make_request('POST', '/areas', data=area_data_1, use_auth=True)
+        archived_area_result = self.make_request('POST', '/areas', data=area_data_2, use_auth=True)
+        
+        if not (active_area_result['success'] and archived_area_result['success']):
+            self.log_test("Enhanced API Filtering Setup", False, "Failed to create test areas")
+            return
+        
+        active_area_id = active_area_result['data']['id']
+        archived_area_id = archived_area_result['data']['id']
+        
+        # Archive the second area
+        self.make_request('PUT', f'/areas/{archived_area_id}/archive', use_auth=True)
+        
+        # Create projects in both areas
+        active_project_data = {
+            "area_id": active_area_id,
+            "name": "Active Filter Test Project",
+            "description": "Active project for filtering tests",
+            "status": "In Progress",
+            "priority": "medium"
+        }
+        
+        archived_project_data = {
+            "area_id": active_area_id,  # Put in active area but will archive the project itself
+            "name": "Archived Filter Test Project",
+            "description": "Project to be archived for filtering tests",
+            "status": "Completed",
+            "priority": "low"
+        }
+        
+        active_project_result = self.make_request('POST', '/projects', data=active_project_data, use_auth=True)
+        archived_project_result = self.make_request('POST', '/projects', data=archived_project_data, use_auth=True)
+        
+        if not (active_project_result['success'] and archived_project_result['success']):
+            self.log_test("Enhanced API Filtering Setup", False, "Failed to create test projects")
+            return
+        
+        active_project_id = active_project_result['data']['id']
+        archived_project_id = archived_project_result['data']['id']
+        
+        # Archive the second project
+        self.make_request('PUT', f'/projects/{archived_project_id}/archive', use_auth=True)
+        
+        # Test 1: Default behavior (include_archived not specified) - Should exclude archived
+        result = self.make_request('GET', '/areas', use_auth=True)
+        default_areas = result['data'] if result['success'] else []
+        active_area_found = any(area['id'] == active_area_id for area in default_areas)
+        archived_area_found = any(area['id'] == archived_area_id for area in default_areas)
+        
+        self.log_test(
+            "Areas API - Default Filtering (Exclude Archived)",
+            result['success'] and active_area_found and not archived_area_found,
+            f"Default filtering correct: active area {'found' if active_area_found else 'not found'}, archived area {'found' if archived_area_found else 'not found'}"
+        )
+        
+        # Test 2: Explicit include_archived=false - Should exclude archived
+        result = self.make_request('GET', '/areas', params={'include_archived': False}, use_auth=True)
+        explicit_false_areas = result['data'] if result['success'] else []
+        active_area_found = any(area['id'] == active_area_id for area in explicit_false_areas)
+        archived_area_found = any(area['id'] == archived_area_id for area in explicit_false_areas)
+        
+        self.log_test(
+            "Areas API - Explicit include_archived=false",
+            result['success'] and active_area_found and not archived_area_found,
+            f"Explicit false filtering correct: active area {'found' if active_area_found else 'not found'}, archived area {'found' if archived_area_found else 'not found'}"
+        )
+        
+        # Test 3: include_archived=true - Should include archived
+        result = self.make_request('GET', '/areas', params={'include_archived': True}, use_auth=True)
+        include_archived_areas = result['data'] if result['success'] else []
+        active_area_found = any(area['id'] == active_area_id for area in include_archived_areas)
+        archived_area_found = any(area['id'] == archived_area_id for area in include_archived_areas)
+        
+        self.log_test(
+            "Areas API - include_archived=true",
+            result['success'] and active_area_found and archived_area_found,
+            f"Include archived filtering correct: active area {'found' if active_area_found else 'not found'}, archived area {'found' if archived_area_found else 'not found'}"
+        )
+        
+        # Test 4: Projects API - Default behavior (exclude archived)
+        result = self.make_request('GET', '/projects', use_auth=True)
+        default_projects = result['data'] if result['success'] else []
+        active_project_found = any(project['id'] == active_project_id for project in default_projects)
+        archived_project_found = any(project['id'] == archived_project_id for project in default_projects)
+        
+        self.log_test(
+            "Projects API - Default Filtering (Exclude Archived)",
+            result['success'] and active_project_found and not archived_project_found,
+            f"Default filtering correct: active project {'found' if active_project_found else 'not found'}, archived project {'found' if archived_project_found else 'not found'}"
+        )
+        
+        # Test 5: Projects API - include_archived=true
+        result = self.make_request('GET', '/projects', params={'include_archived': True}, use_auth=True)
+        include_archived_projects = result['data'] if result['success'] else []
+        active_project_found = any(project['id'] == active_project_id for project in include_archived_projects)
+        archived_project_found = any(project['id'] == archived_project_id for project in include_archived_projects)
+        
+        self.log_test(
+            "Projects API - include_archived=true",
+            result['success'] and active_project_found and archived_project_found,
+            f"Include archived filtering correct: active project {'found' if active_project_found else 'not found'}, archived project {'found' if archived_project_found else 'not found'}"
+        )
+        
+        # Test 6: Areas API with include_projects and archive filtering
+        result = self.make_request('GET', '/areas', params={'include_projects': True, 'include_archived': False}, use_auth=True)
+        self.log_test(
+            "Areas API - Combined include_projects and archive filtering",
+            result['success'],
+            f"Combined filtering successful: retrieved {len(result['data']) if result['success'] else 0} areas with projects" if result['success'] else f"Combined filtering failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            # Verify that archived areas are excluded but their projects data is consistent
+            found_active_area = next((area for area in result['data'] if area['id'] == active_area_id), None)
+            found_archived_area = next((area for area in result['data'] if area['id'] == archived_area_id), None)
+            
+            self.log_test(
+                "Combined Filtering - Area Inclusion Verification",
+                found_active_area is not None and found_archived_area is None,
+                f"Area filtering correct: active area {'included' if found_active_area else 'excluded'}, archived area {'included' if found_archived_area else 'excluded'}"
+            )
+            
+            if found_active_area and 'projects' in found_active_area:
+                # Check that archived projects are excluded from the active area's projects
+                area_projects = found_active_area['projects']
+                active_project_in_area = any(p['id'] == active_project_id for p in area_projects)
+                archived_project_in_area = any(p['id'] == archived_project_id for p in area_projects)
+                
+                self.log_test(
+                    "Combined Filtering - Project Inclusion in Area",
+                    active_project_in_area and not archived_project_in_area,
+                    f"Project filtering in area correct: active project {'included' if active_project_in_area else 'excluded'}, archived project {'included' if archived_project_in_area else 'excluded'}"
+                )
+        
+        # Test 7: Backward compatibility - Ensure existing endpoints still work
+        result = self.make_request('GET', '/areas', use_auth=True)
+        self.log_test(
+            "Backward Compatibility - Areas API",
+            result['success'],
+            f"Backward compatibility maintained: {len(result['data']) if result['success'] else 0} areas retrieved" if result['success'] else f"Backward compatibility issue: {result.get('error', 'Unknown error')}"
+        )
+        
+        result = self.make_request('GET', '/projects', use_auth=True)
+        self.log_test(
+            "Backward Compatibility - Projects API",
+            result['success'],
+            f"Backward compatibility maintained: {len(result['data']) if result['success'] else 0} projects retrieved" if result['success'] else f"Backward compatibility issue: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Cleanup test data
+        self.make_request('DELETE', f'/projects/{active_project_id}', use_auth=True)
+        self.make_request('DELETE', f'/projects/{archived_project_id}', use_auth=True)
+        self.make_request('DELETE', f'/areas/{active_area_id}', use_auth=True)
+        self.make_request('DELETE', f'/areas/{archived_area_id}', use_auth=True)
+
     def run_all_tests(self):
         """Run all backend tests including authentication and user management"""
-        print("🚀 Starting Comprehensive Backend API Testing for Aurum Life Authentication & User Management System")
+        print("🚀 Starting Comprehensive Backend API Testing for Aurum Life Epic 1 Features")
         print(f"Backend URL: {self.base_url}")
         print(f"Default User ID: {self.user_id}")
         
@@ -1202,25 +1747,44 @@ class BackendTester:
             # Core API tests
             self.test_health_check()
             
-            # Authentication and User Management Tests
+            # Authentication and User Management Tests (using existing user)
             print("\n" + "="*80)
-            print("🔐 AUTHENTICATION AND USER PROFILE MANAGEMENT TESTING")
+            print("🔐 AUTHENTICATION SETUP FOR EPIC 1 TESTING")
             print("="*80)
             
-            self.test_user_registration()
-            self.test_user_login()
-            self.test_jwt_token_validation()
-            self.test_protected_route_access_control()
-            self.test_password_hashing_verification()
-            self.test_user_profile_management()
-            self.test_user_data_persistence()
-            self.test_user_stats_and_progress()
-            self.test_user_creation_timestamps()
-            self.test_password_reset_functionality()
+            # Login with existing test user
+            login_data = {
+                "email": "navtest@example.com",
+                "password": "password123"
+            }
             
-            # Existing hierarchical system tests (if needed)
+            result = self.make_request('POST', '/auth/login', data=login_data)
+            if result['success']:
+                self.auth_token = result['data'].get('access_token')
+                self.log_test(
+                    "Authentication Setup",
+                    True,
+                    f"Successfully authenticated with existing user: navtest@example.com"
+                )
+            else:
+                self.log_test(
+                    "Authentication Setup",
+                    False,
+                    f"Failed to authenticate: {result.get('error', 'Unknown error')}"
+                )
+            
+            # Epic 1 Feature Tests
             print("\n" + "="*80)
-            print("🏗️ HIERARCHICAL SYSTEM TESTING (LEGACY)")
+            print("🚀 EPIC 1 BACKEND FEATURE TESTING")
+            print("="*80)
+            
+            self.test_project_templates_system()
+            self.test_archiving_system()
+            self.test_enhanced_api_filtering()
+            
+            # Existing hierarchical system tests (for regression testing)
+            print("\n" + "="*80)
+            print("🏗️ REGRESSION TESTING (EXISTING FUNCTIONALITY)")
             print("="*80)
             
             self.test_areas_api()
