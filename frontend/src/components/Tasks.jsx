@@ -97,11 +97,12 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
 
 const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     description: '',
     priority: 'medium',
     due_date: '',
-    category: 'personal'
+    category: 'personal',
+    project_id: ''
   });
 
   useEffect(() => {
