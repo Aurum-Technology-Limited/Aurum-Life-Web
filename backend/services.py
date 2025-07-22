@@ -1178,14 +1178,19 @@ class TaskService:
         
         # Handle status changes
         if "status" in update_data:
-            if update_data["status"] == TaskStatusEnum.completed:
+            status_to_column = {
+                "todo": "to_do",
+                "in_progress": "in_progress",
+                "review": "review", 
+                "completed": "done"
+            }
+            
+            status_value = update_data["status"].value if hasattr(update_data["status"], 'value') else update_data["status"]
+            update_data["kanban_column"] = status_to_column.get(status_value, "to_do")
+            
+            if status_value == "completed":
                 update_data["completed"] = True
                 update_data["completed_at"] = datetime.utcnow()
-                update_data["kanban_column"] = "done"
-            elif update_data["status"] == TaskStatusEnum.in_progress:
-                update_data["kanban_column"] = "in_progress"
-            else:
-                update_data["kanban_column"] = "to_do"
                 
         # Handle completion toggle
         if "completed" in update_data:
@@ -1195,7 +1200,7 @@ class TaskService:
                 update_data["kanban_column"] = "done"
             else:
                 update_data["completed_at"] = None
-                update_data["status"] = TaskStatusEnum.not_started
+                update_data["status"] = TaskStatusEnum.todo
                 update_data["kanban_column"] = "to_do"
         
         update_data["updated_at"] = datetime.utcnow()
