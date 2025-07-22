@@ -152,7 +152,17 @@ const Insights = () => {
         borderWidth: 1
       }
     },
-    scales: currentView === 'overview' && insightsData?.areas?.length > 0 ? {
+    onClick: (event, activeElements) => {
+      // Handle click on Progress by Area chart
+      if (activeElements.length > 0 && insightsData?.areas) {
+        const clickedIndex = activeElements[0].index;
+        const clickedArea = insightsData.areas[clickedIndex];
+        if (clickedArea && !selectedAreaId) { // Only drill down if not already filtered
+          handleAreaClick(clickedArea.id, clickedArea.name);
+        }
+      }
+    },
+    scales: !selectedAreaId && insightsData?.areas?.length > 0 ? {
       y: {
         beginAtZero: true,
         max: 100,
