@@ -20,7 +20,7 @@ const PasswordReset = () => {
   const token = urlParams.get('token');
 
   useEffect(() => {
-    if (!token) {
+    if (!token || token.trim() === '') {
       setError('Invalid or missing reset token. Please request a new password reset.');
     }
   }, [token]);
