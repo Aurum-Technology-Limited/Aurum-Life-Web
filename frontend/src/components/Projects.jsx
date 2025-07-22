@@ -777,19 +777,19 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   </div>
                   
                   <p className="text-xs text-gray-500 mb-3">
-                    {project.completed_tasks || 0} of {project.total_tasks || 0} tasks complete
+                    {project.completed_task_count || 0} of {project.task_count || 0} tasks complete
                   </p>
 
                   {/* Enhanced Donut Chart Visualization */}
-                  {(project.total_tasks || 0) > 0 && (
+                  {(project.task_count || 0) > 0 && (
                     <div className="flex justify-center">
                       <DonutChart
                         data={{
                           labels: ['Completed', 'In Progress', 'To Do'],
                           values: [
-                            project.completed_tasks || 0,
-                            project.active_tasks || 0,
-                            Math.max(0, (project.total_tasks || 0) - (project.completed_tasks || 0) - (project.active_tasks || 0))
+                            project.completed_task_count || 0,
+                            project.active_task_count || 0,
+                            Math.max(0, (project.task_count || 0) - (project.completed_task_count || 0) - (project.active_task_count || 0))
                           ],
                           colors: [
                             '#10B981', // Green for completed
