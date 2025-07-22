@@ -330,31 +330,31 @@ const Today = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-              <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-                Today's Focus
-              </h1>
-              <p className="text-gray-400 mt-1">
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </p>
+            <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+              Today's Focus
+            </h1>
+            <p className="text-gray-400 mt-1">
+              {new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
           </div>
           
           <button
-              onClick={() => setShowAvailable(!showAvailable)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                showAvailable 
-                  ? 'bg-yellow-500 text-gray-900' 
-                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
-              }`}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Tasks</span>
-            </button>
-          </div>
+            onClick={() => setShowAvailable(!showAvailable)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              showAvailable 
+                ? 'bg-yellow-500 text-gray-900' 
+                : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
+            }`}
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Tasks</span>
+          </button>
+        </div>
 
           {/* Error Display */}
           {error && (
