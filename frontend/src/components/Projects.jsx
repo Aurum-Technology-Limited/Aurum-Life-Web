@@ -808,13 +808,13 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="text-lg font-bold text-white">
-                      {project.total_tasks || 0}
+                      {project.task_count || 0}
                     </p>
                     <p className="text-xs text-gray-500">Total Tasks</p>
                   </div>
                   <div>
                     <p className="text-lg font-bold text-white">
-                      {project.active_tasks || 0}
+                      {project.active_task_count || 0}
                     </p>
                     <p className="text-xs text-gray-500">Active Tasks</p>
                   </div>
