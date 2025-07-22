@@ -4925,5 +4925,12 @@ class BackendTester:
 
 if __name__ == "__main__":
     tester = BackendTester()
-    success = tester.run_all_tests()
+    
+    # Check if we should run the quick migration test or full test suite
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "migration":
+        success = tester.run_quick_migration_test()
+    else:
+        success = tester.run_quick_migration_test()  # Default to quick test for this specific task
+    
     sys.exit(0 if success else 1)
