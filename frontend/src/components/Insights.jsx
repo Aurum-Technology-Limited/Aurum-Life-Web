@@ -23,6 +23,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { insightsAPI } from '../services/api';
+import { useDataContext } from '../contexts/DataContext';
 import Breadcrumb from './Breadcrumb';
 
 // Register ChartJS components
