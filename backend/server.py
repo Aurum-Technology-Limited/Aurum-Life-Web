@@ -343,19 +343,19 @@ async def create_area(area_data: AreaCreate, user_id: str = Query(DEFAULT_USER_I
 @api_router.get("/areas", response_model=List[AreaResponse])
 async def get_areas(
     include_projects: bool = Query(False),
-    user_id: str = Query(DEFAULT_USER_ID)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get all areas for user"""
     try:
-        return await AreaService.get_user_areas(user_id, include_projects)
+        return await AreaService.get_user_areas(current_user.id, include_projects)
     except Exception as e:
         logger.error(f"Error getting areas: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/areas/{area_id}", response_model=AreaResponse)
-async def get_area(area_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def get_area(area_id: str, current_user: User = Depends(get_current_active_user)):
     """Get area by ID with projects"""
-    area = await AreaService.get_area(user_id, area_id)
+    area = await AreaService.get_area(current_user.id, area_id)
     if not area:
         raise HTTPException(status_code=404, detail="Area not found")
     return area
