@@ -348,7 +348,55 @@ class UserStats(BaseDocument):
     meditation_minutes: int = 0
     last_updated: datetime = Field(default_factory=datetime.utcnow)
 
-# Response models for API
+# Project Template Models
+class TaskTemplateCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    priority: PriorityEnum = PriorityEnum.medium
+    estimated_duration: Optional[int] = None  # in minutes
+
+class TaskTemplate(BaseDocument):
+    name: str
+    description: Optional[str] = None
+    priority: PriorityEnum = PriorityEnum.medium
+    estimated_duration: Optional[int] = None  # in minutes
+    template_id: str  # Reference to parent project template
+    sort_order: int = 0
+
+class ProjectTemplateCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    tasks: List[TaskTemplateCreate] = []
+
+class ProjectTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    tasks: Optional[List[TaskTemplateCreate]] = None
+
+class ProjectTemplate(BaseDocument):
+    name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    user_id: str
+    usage_count: int = 0
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ProjectTemplateResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    user_id: str
+    usage_count: int = 0
+    task_count: int = 0
+    tasks: List[TaskTemplate] = []
+    created_at: datetime
+    updated_at: datetime
+
+# Response Models for Frontend
 class TaskResponse(Task):
     is_overdue: Optional[bool] = None
     can_start: Optional[bool] = None  # Based on dependencies
