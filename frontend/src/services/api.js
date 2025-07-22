@@ -91,9 +91,13 @@ export const tasksAPI = {
   moveTaskColumn: (taskId, newColumn) => apiClient.put(`/tasks/${taskId}/column`, null, { params: { new_column: newColumn } }),
 };
 
-// Today View API
+// Enhanced Today API with Daily Task Curation
 export const todayAPI = {
   getTodayView: () => apiClient.get('/today'),
+  getAvailableTasks: () => apiClient.get('/today/available-tasks'),
+  addTaskToToday: (taskId) => apiClient.post(`/today/tasks/${taskId}`),
+  removeTaskFromToday: (taskId) => apiClient.delete(`/today/tasks/${taskId}`),
+  reorderDailyTasks: (taskIds) => apiClient.put('/today/reorder', { task_ids: taskIds })
 };
 
 // Insights API
