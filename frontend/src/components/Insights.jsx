@@ -77,55 +77,25 @@ const Insights = () => {
     }
   };
 
-  const loadAreaDrillDown = async (areaId) => {
-    try {
-      setLoading(true);
-      const response = await insightsAPI.getAreaDrillDown(areaId, selectedDateRange);
-      setDrillDownData(response.data);
-      setSelectedAreaId(areaId);
-      setCurrentView('area');
-      setError(null);
-    } catch (err) {
-      setError('Failed to load area details');
-      console.error('Error loading area drill-down:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadProjectDrillDown = async (projectId) => {
-    try {
-      setLoading(true);
-      const response = await insightsAPI.getProjectDrillDown(projectId, selectedDateRange);
-      setDrillDownData(response.data);
-      setSelectedProjectId(projectId);
-      setCurrentView('project');
-      setError(null);
-    } catch (err) {
-      setError('Failed to load project details');
-      console.error('Error loading project drill-down:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     loadInsightsData();
-  }, [selectedDateRange]);
+  }, [selectedDateRange, selectedAreaId]); // Re-fetch when date range or area changes
+
+  const handleAreaClick = (areaId, areaName) => {
+    console.log('🖱️ Area clicked:', areaId, areaName);
+    setSelectedAreaId(areaId);
+    setSelectedAreaName(areaName);
+  };
+
+  const handleBackToGlobal = () => {
+    console.log('🔄 Returning to global view');
+    setSelectedAreaId(null);
+    setSelectedAreaName('');
+  };
 
   const handleDateRangeChange = (range) => {
     setSelectedDateRange(range);
-    setCurrentView('overview');
-    setSelectedAreaId(null);
-    setSelectedProjectId(null);
-    setDrillDownData(null);
-  };
-
-  const handleBackToOverview = () => {
-    setCurrentView('overview');
-    setSelectedAreaId(null);
-    setSelectedProjectId(null);
-    setDrillDownData(null);
+    // Keep current area selection when changing date range
   };
 
   // Chart.js configurations
