@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional, Dict, Any
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, Field
 from datetime import datetime
-import uuid
 from enum import Enum
+import uuid
 
 # Base model for common fields
 class BaseDocument(BaseModel):
