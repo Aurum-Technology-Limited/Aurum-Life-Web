@@ -356,6 +356,9 @@ const Tasks = () => {
           ? { ...task, completed, completed_at: completed ? new Date().toISOString() : null }
           : task
       ));
+      
+      // Notify data context of the mutation
+      onDataMutation('task', completed ? 'complete' : 'uncomplete', { taskId, completed });
     } catch (err) {
       setError(handleApiError(err, 'Failed to update task'));
     } finally {
