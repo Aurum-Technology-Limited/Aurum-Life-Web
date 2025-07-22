@@ -332,10 +332,10 @@ async def delete_journal_entry(entry_id: str, user_id: str = Query(DEFAULT_USER_
 
 # Area endpoints
 @api_router.post("/areas", response_model=Area)
-async def create_area(area_data: AreaCreate, user_id: str = Query(DEFAULT_USER_ID)):
+async def create_area(area_data: AreaCreate, current_user: User = Depends(get_current_active_user)):
     """Create a new area"""
     try:
-        return await AreaService.create_area(user_id, area_data)
+        return await AreaService.create_area(current_user.id, area_data)
     except Exception as e:
         logger.error(f"Error creating area: {e}")
         raise HTTPException(status_code=500, detail=str(e))
