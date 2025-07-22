@@ -39,6 +39,8 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
   ];
 
   const handleNavigation = (sectionId) => {
+    console.log('🖱️ Layout: Navigation clicked for section:', sectionId);
+    console.log('🔄 Layout: Calling onSectionChange with:', sectionId);
     onSectionChange(sectionId);
     setSidebarOpen(false);
   };
