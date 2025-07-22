@@ -341,9 +341,9 @@ const Today = () => {
                   day: 'numeric' 
                 })}
               </p>
-            </div>
-            
-            <button
+          </div>
+          
+          <button
               onClick={() => setShowAvailable(!showAvailable)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 showAvailable 
