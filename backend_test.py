@@ -4431,6 +4431,12 @@ class BackendTester:
                     f"Failed to create test user: {register_result.get('error', 'Unknown error')}"
                 )
             
+            # CRITICAL: Test Unified Project Views - Task Creation and Synchronization
+            print("\n" + "="*80)
+            print("🔄 UNIFIED PROJECT VIEWS - TASK CREATION AND SYNCHRONIZATION TESTING (CRITICAL)")
+            print("="*80)
+            self.test_unified_project_views_task_creation_synchronization()
+            
             # MAIN FOCUS: Task Count Synchronization Fix Testing
             print("\n" + "="*80)
             print("🎯 TASK COUNT SYNCHRONIZATION FIX TESTING (MAIN FOCUS)")
