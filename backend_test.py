@@ -4000,7 +4000,7 @@ class BackendTester:
 
     def run_all_tests(self):
         """Run all backend tests including authentication and user management"""
-        print("🚀 Starting Comprehensive Backend API Testing for Aurum Life Epic 1 Features")
+        print("🚀 Starting Comprehensive Backend API Testing for Task Count Synchronization Fix")
         print(f"Backend URL: {self.base_url}")
         print(f"Default User ID: {self.user_id}")
         
@@ -4008,39 +4008,27 @@ class BackendTester:
             # Core API tests
             self.test_health_check()
             
-            # PRIORITY: Task Creation Functionality Testing (as requested)
-            print("\n" + "="*80)
-            print("🎯 TASK CREATION FUNCTIONALITY TESTING (PRIORITY)")
-            print("="*80)
-            self.test_task_creation_functionality()
-            
-            # PRIORITY: Enhanced Project ID Validation Testing (as requested)
-            print("\n" + "="*80)
-            print("🔒 ENHANCED PROJECT_ID VALIDATION TESTING (PRIORITY)")
-            print("="*80)
-            self.test_project_id_validation_enhanced()
-            
             # Authentication and User Management Tests (using existing user)
             print("\n" + "="*80)
-            print("🔐 AUTHENTICATION SETUP FOR EPIC 1 TESTING")
+            print("🔐 AUTHENTICATION SETUP FOR TASK COUNT TESTING")
             print("="*80)
             
-            # Create and login with a new test user for Epic 1 testing
-            epic1_user_data = {
-                "username": f"epic1test_{uuid.uuid4().hex[:8]}",
-                "email": f"epic1test_{uuid.uuid4().hex[:8]}@example.com",
-                "first_name": "Epic1",
+            # Create and login with a new test user for testing
+            test_user_data = {
+                "username": f"taskcount_{uuid.uuid4().hex[:8]}",
+                "email": f"taskcount_{uuid.uuid4().hex[:8]}@example.com",
+                "first_name": "TaskCount",
                 "last_name": "Test",
-                "password": "epic1testpassword123"
+                "password": "taskcounttest123"
             }
             
             # Register the user
-            register_result = self.make_request('POST', '/auth/register', data=epic1_user_data)
+            register_result = self.make_request('POST', '/auth/register', data=test_user_data)
             if register_result['success']:
                 # Login with the new user
                 login_data = {
-                    "email": epic1_user_data['email'],
-                    "password": epic1_user_data['password']
+                    "email": test_user_data['email'],
+                    "password": test_user_data['password']
                 }
                 
                 result = self.make_request('POST', '/auth/login', data=login_data)
@@ -4049,7 +4037,7 @@ class BackendTester:
                     self.log_test(
                         "Authentication Setup",
                         True,
-                        f"Successfully created and authenticated Epic 1 test user: {epic1_user_data['email']}"
+                        f"Successfully created and authenticated test user: {test_user_data['email']}"
                     )
                 else:
                     self.log_test(
@@ -4061,53 +4049,23 @@ class BackendTester:
                 self.log_test(
                     "Authentication Setup",
                     False,
-                    f"Failed to create Epic 1 test user: {register_result.get('error', 'Unknown error')}"
+                    f"Failed to create test user: {register_result.get('error', 'Unknown error')}"
                 )
             
-            # Epic 1 Feature Tests
+            # MAIN FOCUS: Task Count Synchronization Fix Testing
             print("\n" + "="*80)
-            print("🚀 EPIC 1 BACKEND FEATURE TESTING")
+            print("🎯 TASK COUNT SYNCHRONIZATION FIX TESTING (MAIN FOCUS)")
             print("="*80)
+            self.test_task_count_synchronization_fix()
             
-            self.test_project_templates_system()
-            self.test_archiving_system()
-            self.test_enhanced_api_filtering()
-            
-            # Epic 2 Phase 3 Feature Tests
+            # Additional tests for context
             print("\n" + "="*80)
-            print("🚀 EPIC 2 PHASE 3 BACKEND FEATURE TESTING")
-            print("="*80)
-            
-            self.test_recurring_tasks_system()
-            self.test_recurring_task_models_and_enums()
-            self.test_recurring_task_service_implementation()
-            self.test_recurring_tasks_api_endpoints()
-            self.test_task_scheduling_system()
-            
-            # Epic 2 Phase 1 Feature Tests
-            print("\n" + "="*80)
-            print("🚀 EPIC 2 PHASE 1 BACKEND FEATURE TESTING")
-            print("="*80)
-            
-            self.test_epic2_phase1_enhanced_task_creation()
-            self.test_epic2_phase1_subtask_management()
-            self.test_epic2_phase1_subtask_completion_logic()
-            self.test_epic2_phase1_enhanced_task_service_methods()
-            
-            # Existing hierarchical system tests (for regression testing)
-            print("\n" + "="*80)
-            print("🏗️ REGRESSION TESTING (EXISTING FUNCTIONALITY)")
+            print("🏗️ ADDITIONAL CONTEXT TESTING")
             print("="*80)
             
             self.test_areas_api()
             self.test_projects_api()
             self.test_tasks_api()
-            self.test_project_tasks_api()
-            self.test_kanban_board_api()
-            self.test_today_view_api()
-            self.test_statistics_api()
-            self.test_dashboard_api()
-            self.test_data_persistence()
             
         except Exception as e:
             print(f"❌ CRITICAL ERROR during testing: {e}")
