@@ -28,6 +28,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
     { id: 'insights', name: 'Insights', icon: BarChart3, description: 'Data & analytics' },
     { id: 'areas', name: 'Areas', icon: Layers, description: 'Life domains' },
     { id: 'projects', name: 'Projects', icon: FolderOpen, description: 'Active projects' },
+    { id: 'project-templates', name: 'Templates', icon: FileTemplate, description: 'Project templates' },
     { id: 'tasks', name: 'Tasks', icon: CheckSquare, description: 'Goals & productivity' },
     { id: 'habits', name: 'Habits', icon: Target, description: 'Daily routines' },
     { id: 'journal', name: 'Journal', icon: BookOpen, description: 'Reflection & writing' },
