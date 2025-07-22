@@ -51,7 +51,7 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
             <h3 className={`text-lg font-semibold mb-2 ${
               task.completed ? 'text-gray-400 line-through' : 'text-white'
             }`}>
-              {task.title}
+              {task.name || task.title || 'Unnamed Task'}
             </h3>
             <p className="text-sm text-gray-400 mb-3">{task.description}</p>
             
