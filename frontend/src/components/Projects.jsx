@@ -332,7 +332,9 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg"
+                className={`bg-gray-900/50 border rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg ${
+                  project.archived ? 'border-gray-700 opacity-75' : 'border-gray-800'
+                }`}
               >
                 {/* Project Header */}
                 <div className="flex items-start justify-between mb-4">
@@ -346,6 +348,11 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                         <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(project.priority)}`}>
                           {project.priority}
                         </span>
+                        {project.archived && (
+                          <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300">
+                            Archived
+                          </span>
+                        )}
                       </div>
                     </div>
                     {project.area_name && (
@@ -353,6 +360,17 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                     )}
                   </div>
                   <div className="flex space-x-1">
+                    <button
+                      onClick={() => handleArchive(project.id, project.archived)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        project.archived
+                          ? 'text-blue-400 hover:text-blue-300 hover:bg-gray-800'
+                          : 'text-gray-400 hover:text-yellow-400 hover:bg-gray-800'
+                      }`}
+                      title={project.archived ? 'Unarchive Project' : 'Archive Project'}
+                    >
+                      {project.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                    </button>
                     <button
                       onClick={() => handleEdit(project)}
                       className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
