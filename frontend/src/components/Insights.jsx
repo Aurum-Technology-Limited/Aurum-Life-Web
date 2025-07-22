@@ -81,7 +81,7 @@ const Insights = () => {
 
   useEffect(() => {
     loadInsightsData();
-  }, [selectedDateRange, selectedAreaId]); // Re-fetch when date range or area changes
+  }, [selectedDateRange, selectedAreaId, refreshTrigger]); // Re-fetch when data context triggers refresh
 
   const handleAreaClick = (areaId, areaName) => {
     console.log('🖱️ Area clicked:', areaId, areaName);
