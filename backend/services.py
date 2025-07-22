@@ -1176,7 +1176,16 @@ class TaskService:
 
     @staticmethod
     async def update_task(user_id: str, task_id: str, task_data: TaskUpdate) -> bool:
+        # First, get the current task to check dependencies
+        current_task = await find_document("tasks", {"id": task_id, "user_id": user_id})
+        if not current_task:
+            raise ValueError(f"Task with ID {task_id} not found or does not belong to user")
+        
         update_data = {k: v for k, v in task_data.dict().items() if v is not None}
+        
+        # Validate dependencies before allowing status changes (FR-1.1.2)
+        if "status" in update_data or "completed" in update_data:
+            await TaskService._validate_task_dependencies(current_task, update_data, user_id)
         
         # Handle status changes
         if "status" in update_data:
