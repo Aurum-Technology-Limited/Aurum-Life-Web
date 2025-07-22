@@ -110,9 +110,11 @@ function App() {
     return (
       <AuthProvider>
         <DataProvider>
-          <div className="App">
-            <PasswordReset />
-          </div>
+          <DndProvider backend={HTML5Backend}>
+            <div className="App">
+              <PasswordReset />
+            </div>
+          </DndProvider>
         </DataProvider>
       </AuthProvider>
     );
