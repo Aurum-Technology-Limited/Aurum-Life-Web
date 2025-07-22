@@ -4790,7 +4790,7 @@ class BackendTester:
             traceback.print_exc()
         
         # Print summary
-        self.print_test_summary()
+        self.print_summary()
 
     def run_all_tests(self):
         """Run all backend tests including authentication and user management"""
