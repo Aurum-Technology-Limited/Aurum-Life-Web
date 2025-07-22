@@ -17,13 +17,13 @@ import {
   TrendingUp, 
   Calendar, 
   Filter,
-  ArrowLeft,
   Target,
   CheckCircle2,
   Clock,
   AlertTriangle
 } from 'lucide-react';
 import { insightsAPI } from '../services/api';
+import Breadcrumb from './Breadcrumb';
 
 // Register ChartJS components
 ChartJS.register(
