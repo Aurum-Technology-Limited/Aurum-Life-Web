@@ -45,11 +45,18 @@ export const projectTemplatesAPI = {
 
 // Areas API with enhanced archiving support
 export const areasAPI = {
-  getAreas: (includeProjects = false) => apiClient.get('/areas', { params: { include_projects: includeProjects } }),
+  getAreas: (includeProjects = false, includeArchived = false) => apiClient.get('/areas', { 
+    params: { 
+      include_projects: includeProjects,
+      include_archived: includeArchived
+    } 
+  }),
   getArea: (areaId) => apiClient.get(`/areas/${areaId}`),
   createArea: (areaData) => apiClient.post('/areas', areaData),
   updateArea: (areaId, areaData) => apiClient.put(`/areas/${areaId}`, areaData),
   deleteArea: (areaId) => apiClient.delete(`/areas/${areaId}`),
+  archiveArea: (areaId) => apiClient.put(`/areas/${areaId}/archive`),
+  unarchiveArea: (areaId) => apiClient.put(`/areas/${areaId}/unarchive`),
 };
 
 // Projects API
