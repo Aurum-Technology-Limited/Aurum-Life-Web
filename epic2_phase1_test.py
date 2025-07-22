@@ -291,6 +291,7 @@ class Epic2Phase1Tester:
         
         # Create second subtask
         subtask_2_data = {
+            "project_id": self.test_project_id,  # Required by TaskCreate model, will be overridden
             "name": "Sub-task 2",
             "description": "Second sub-task for testing",
             "priority": "low",
