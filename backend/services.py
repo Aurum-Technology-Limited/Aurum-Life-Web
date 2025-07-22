@@ -1138,6 +1138,20 @@ class TaskService:
     async def _build_task_response(task_doc: dict, include_subtasks: bool = True) -> TaskResponse:
         task_response = TaskResponse(**task_doc)
         
+        # Map status to kanban column for consistent kanban view
+        status_to_column = {
+            "todo": "to_do",
+            "in_progress": "in_progress", 
+            "review": "review",
+            "completed": "done"
+        }
+        
+        # Set kanban_column based on status, fallback to existing kanban_column
+        if task_response.status:
+            task_response.kanban_column = status_to_column.get(task_response.status.value, task_response.kanban_column or "to_do")
+        elif not task_response.kanban_column:
+            task_response.kanban_column = "to_do"
+        
         # Check if overdue
         if task_response.due_date and not task_response.completed:
             task_response.is_overdue = task_response.due_date < datetime.utcnow()
