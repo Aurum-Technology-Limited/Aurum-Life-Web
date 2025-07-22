@@ -151,10 +151,10 @@ class PriorityEnum(str, Enum):
     high = "high"
 
 class TaskStatusEnum(str, Enum):
-    not_started = "not_started"
+    todo = "todo"
     in_progress = "in_progress"
+    review = "review"
     completed = "completed"
-    on_hold = "on_hold"
 
 class ProjectStatusEnum(str, Enum):
     not_started = "Not Started"
