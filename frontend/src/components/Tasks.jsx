@@ -240,6 +240,12 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
       // Load existing subtasks if editing
       if (task.id) {
         loadSubtasks(task.id);
+        loadTaskDependencies(task.id);
+      }
+      
+      // Load available dependencies for the project
+      if (task.project_id) {
+        loadAvailableDependencies(task.project_id);
       }
     } else {
       const tomorrow = new Date();
