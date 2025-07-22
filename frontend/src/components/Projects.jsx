@@ -22,6 +22,7 @@ import {
 import { projectsAPI, areasAPI, tasksAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import KanbanBoard from './KanbanBoard';
+import DonutChart from './ui/DonutChart';
 
 const Projects = ({ onSectionChange, filterAreaId }) => {
   const { onDataMutation } = useDataContext();
