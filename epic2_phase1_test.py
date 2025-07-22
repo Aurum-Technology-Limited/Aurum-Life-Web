@@ -103,12 +103,44 @@ class Epic2Phase1Tester:
             )
             return True
         else:
-            self.log_test(
-                "Authentication Setup",
-                False,
-                f"Failed to authenticate: {result.get('error', 'Unknown error')}"
-            )
-            return False
+            # Try to create the user first
+            print("   Login failed, attempting to create user...")
+            user_data = {
+                "username": "navtest",
+                "email": self.test_user_email,
+                "first_name": "Navigation",
+                "last_name": "Test",
+                "password": self.test_user_password
+            }
+            
+            register_result = self.make_request('POST', '/auth/register', data=user_data)
+            if register_result['success']:
+                print(f"   Created user: {self.test_user_email}")
+                
+                # Now try to login
+                result = self.make_request('POST', '/auth/login', data=login_data)
+                if result['success']:
+                    self.auth_token = result['data'].get('access_token')
+                    self.log_test(
+                        "Authentication Setup",
+                        True,
+                        f"Successfully created and authenticated user: {self.test_user_email}"
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Authentication Setup",
+                        False,
+                        f"Failed to login after user creation: {result.get('error', 'Unknown error')}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Authentication Setup",
+                    False,
+                    f"Failed to create user: {register_result.get('error', 'Unknown error')}"
+                )
+                return False
 
     def setup_test_data(self):
         """Setup test data (area and project) for Epic 2 Phase 1 testing"""
