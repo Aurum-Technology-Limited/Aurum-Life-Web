@@ -382,8 +382,12 @@ class AreaService:
         return area
 
     @staticmethod
-    async def get_user_areas(user_id: str, include_projects: bool = False) -> List[AreaResponse]:
-        areas_docs = await find_documents("areas", {"user_id": user_id})
+    async def get_user_areas(user_id: str, include_projects: bool = False, include_archived: bool = False) -> List[AreaResponse]:
+        query = {"user_id": user_id}
+        if not include_archived:
+            query["archived"] = {"$ne": True}
+            
+        areas_docs = await find_documents("areas", query)
         areas_docs.sort(key=lambda x: x.get("sort_order", 0))
         
         areas = []
@@ -392,7 +396,7 @@ class AreaService:
             
             if include_projects:
                 # Get projects for this area
-                projects = await ProjectService.get_area_projects(area_response.id)
+                projects = await ProjectService.get_area_projects(area_response.id, include_archived=include_archived)
                 area_response.projects = projects
                 area_response.project_count = len(projects)
                 area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
@@ -403,8 +407,12 @@ class AreaService:
                 area_response.total_task_count = total_tasks
                 area_response.completed_task_count = completed_tasks
             else:
-                # Just get counts
-                projects_docs = await find_documents("projects", {"user_id": user_id, "area_id": area_response.id})
+                # Just get counts (exclude archived projects unless specifically requested)
+                project_query = {"user_id": user_id, "area_id": area_response.id}
+                if not include_archived:
+                    project_query["archived"] = {"$ne": True}
+                    
+                projects_docs = await find_documents("projects", project_query)
                 area_response.project_count = len(projects_docs)
                 area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
             
