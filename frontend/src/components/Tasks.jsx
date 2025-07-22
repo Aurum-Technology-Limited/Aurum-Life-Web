@@ -104,6 +104,30 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
     category: 'personal',
     project_id: ''
   });
+  
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+
+  // Load projects when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchProjects();
+    }
+  }, [isOpen]);
+
+  const fetchProjects = async () => {
+    try {
+      setLoadingProjects(true);
+      const response = await projectsAPI.getProjects();
+      setProjects(response.data);
+    } catch (err) {
+      console.error('Error loading projects:', err);
+      // Set a default project if loading fails
+      setProjects([]);
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
 
   useEffect(() => {
     if (task) {
