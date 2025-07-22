@@ -623,6 +623,55 @@ async def get_subtasks(task_id: str, current_user: User = Depends(get_current_ac
         logger.error(f"Error getting subtasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Daily Task Curation endpoints
+@api_router.get("/today/available-tasks", response_model=List[TaskResponse])
+async def get_available_tasks_for_today(current_user: User = Depends(get_current_active_user)):
+    """Get tasks available to add to today's curated view"""
+    try:
+        return await TaskService.get_available_tasks_for_today(current_user.id)
+    except Exception as e:
+        logger.error(f"Error getting available tasks for today: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/today/tasks/{task_id}")
+async def add_task_to_today(task_id: str, current_user: User = Depends(get_current_active_user)):
+    """Add a task to today's curated list"""
+    try:
+        success = await TaskService.add_task_to_today(current_user.id, task_id)
+        if not success:
+            raise HTTPException(status_code=400, detail="Failed to add task to today")
+        return {"message": "Task added to today successfully"}
+    except ValueError as e:
+        logger.error(f"Validation error adding task to today: {e}")
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error adding task to today: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/today/tasks/{task_id}")
+async def remove_task_from_today(task_id: str, current_user: User = Depends(get_current_active_user)):
+    """Remove a task from today's curated list"""
+    try:
+        success = await TaskService.remove_task_from_today(current_user.id, task_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Task not found in today's list")
+        return {"message": "Task removed from today successfully"}
+    except Exception as e:
+        logger.error(f"Error removing task from today: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/today/reorder")
+async def reorder_daily_tasks(task_data: DailyTasksUpdate, current_user: User = Depends(get_current_active_user)):
+    """Reorder tasks in today's view"""
+    try:
+        success = await TaskService.reorder_daily_tasks(current_user.id, task_data.task_ids)
+        if not success:
+            raise HTTPException(status_code=400, detail="Failed to reorder daily tasks")
+        return {"message": "Daily tasks reordered successfully"}
+    except Exception as e:
+        logger.error(f"Error reordering daily tasks: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Chat endpoints
 @api_router.post("/chat", response_model=ChatMessage)
 async def send_chat_message(message_data: ChatMessageCreate, current_user: User = Depends(get_current_active_user)):
