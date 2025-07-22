@@ -1294,6 +1294,7 @@ class TaskService:
         columns = {
             "to_do": [],
             "in_progress": [],
+            "review": [],
             "done": []
         }
         
