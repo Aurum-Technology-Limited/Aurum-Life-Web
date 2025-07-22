@@ -443,6 +443,24 @@ class AreaService:
         return await update_document("areas", {"id": area_id, "user_id": user_id}, update_data)
 
     @staticmethod
+    async def archive_area(user_id: str, area_id: str) -> bool:
+        """Archive an area and optionally its projects"""
+        return await update_document(
+            "areas", 
+            {"id": area_id, "user_id": user_id}, 
+            {"archived": True, "updated_at": datetime.utcnow()}
+        )
+    
+    @staticmethod
+    async def unarchive_area(user_id: str, area_id: str) -> bool:
+        """Unarchive an area"""
+        return await update_document(
+            "areas", 
+            {"id": area_id, "user_id": user_id}, 
+            {"archived": False, "updated_at": datetime.utcnow()}
+        )
+
+    @staticmethod
     async def delete_area(user_id: str, area_id: str) -> bool:
         # First delete all projects (which will delete their tasks)
         projects = await find_documents("projects", {"user_id": user_id, "area_id": area_id})
