@@ -22,6 +22,11 @@ function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
 
+  // Debug effect to track activeSection changes
+  useEffect(() => {
+    console.log('🔄 Active section updated to:', activeSection);
+  }, [activeSection]);
+
   // Check if we're on password reset page
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
