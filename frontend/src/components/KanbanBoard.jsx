@@ -67,7 +67,7 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
   const handleMoveTask = async (taskId, newColumn) => {
     try {
       await tasksAPI.moveTaskColumn(taskId, newColumn);
-      loadKanbanData();
+      onTaskUpdate();
     } catch (err) {
       console.error('Error moving task:', err);
       setError('Failed to move task');
@@ -78,7 +78,7 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
         await tasksAPI.deleteTask(taskId);
-        loadKanbanData();
+        onTaskUpdate();
       } catch (err) {
         console.error('Error deleting task:', err);
         setError('Failed to delete task');
