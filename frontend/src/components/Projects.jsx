@@ -74,7 +74,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
   const loadProjects = async () => {
     try {
       setLoading(true);
-      const response = await projectsAPI.getProjects(selectedArea || null);
+      const response = await projectsAPI.getProjects(selectedArea || null, showArchived);
       setProjects(response.data);
       setError(null);
     } catch (err) {
