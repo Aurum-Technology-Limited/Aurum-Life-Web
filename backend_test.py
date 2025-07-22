@@ -2312,6 +2312,12 @@ class BackendTester:
             print("="*80)
             self.test_task_creation_functionality()
             
+            # PRIORITY: Enhanced Project ID Validation Testing (as requested)
+            print("\n" + "="*80)
+            print("🔒 ENHANCED PROJECT_ID VALIDATION TESTING (PRIORITY)")
+            print("="*80)
+            self.test_project_id_validation_enhanced()
+            
             # Authentication and User Management Tests (using existing user)
             print("\n" + "="*80)
             print("🔐 AUTHENTICATION SETUP FOR EPIC 1 TESTING")
