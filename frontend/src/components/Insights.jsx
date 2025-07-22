@@ -98,7 +98,26 @@ const Insights = () => {
     // Keep current area selection when changing date range
   };
 
-  // Chart.js configurations
+  // Generate breadcrumb items based on current state
+  const getBreadcrumbItems = () => {
+    const items = [
+      {
+        name: 'Insights',
+        onClick: selectedAreaId ? handleBackToGlobal : undefined,
+        href: selectedAreaId ? '#' : undefined
+      }
+    ];
+
+    if (selectedAreaId && selectedAreaName) {
+      items.push({
+        name: selectedAreaName,
+        href: undefined,
+        onClick: undefined
+      });
+    }
+
+    return items;
+  };
   const taskStatusChartData = {
     labels: ['Completed', 'In Progress', 'To Do', 'Overdue'],
     datasets: [
