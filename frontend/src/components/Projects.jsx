@@ -103,7 +103,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
 
   useEffect(() => {
     loadProjects();
-  }, [selectedArea]);
+  }, [selectedArea, showArchived]); // Reload when selectedArea or showArchived changes
 
   // Debug: Watch for formData changes
   useEffect(() => {
