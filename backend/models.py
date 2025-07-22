@@ -200,6 +200,7 @@ class Project(BaseDocument):
     status: ProjectStatusEnum = ProjectStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
     completion_percentage: float = 0.0
+    archived: bool = False
     sort_order: int = 0
 
 class ProjectCreate(BaseModel):
