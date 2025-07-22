@@ -257,6 +257,7 @@ class Epic2Phase1Tester:
         
         # Test 1: POST /api/tasks/{parent_task_id}/subtasks - Create subtask
         subtask_1_data = {
+            "project_id": self.test_project_id,  # Required by TaskCreate model, will be overridden
             "name": "Sub-task 1",
             "description": "First sub-task for testing",
             "priority": "medium",
