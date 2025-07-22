@@ -116,7 +116,7 @@ const KanbanBoard = ({ projectId, onBack }) => {
   const handleEditTask = (task) => {
     setEditingTask(task);
     setFormData({
-      title: task.title,
+      name: task.name || task.title || '', // Handle both field names for backward compatibility
       description: task.description || '',
       priority: task.priority || 'medium',
       due_date: task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '',
@@ -130,7 +130,7 @@ const KanbanBoard = ({ projectId, onBack }) => {
     setEditingTask(null);
     setSelectedColumn('todo');
     setFormData({
-      title: '',
+      name: '',
       description: '',
       priority: 'medium',
       due_date: '',
