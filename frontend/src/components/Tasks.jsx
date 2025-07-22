@@ -113,6 +113,40 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
   const [subtasks, setSubtasks] = useState([]);  // For managing sub-tasks
   const [newSubtask, setNewSubtask] = useState({ name: '', description: '' });  // For adding new sub-tasks
 
+  const loadSubtasks = async (taskId) => {
+    try {
+      const response = await tasksAPI.getSubtasks(taskId);
+      setSubtasks(response.data || []);
+    } catch (err) {
+      console.error('Error loading subtasks:', err);
+      setSubtasks([]);
+    }
+  };
+
+  const addSubtask = () => {
+    if (newSubtask.name.trim()) {
+      const subtask = {
+        id: `temp_${Date.now()}`, // Temporary ID for UI
+        name: newSubtask.name,
+        description: newSubtask.description,
+        completed: false,
+        isNew: true // Mark as new for backend creation
+      };
+      setSubtasks(prev => [...prev, subtask]);
+      setNewSubtask({ name: '', description: '' });
+    }
+  };
+
+  const removeSubtask = (subtaskId) => {
+    setSubtasks(prev => prev.filter(st => st.id !== subtaskId));
+  };
+
+  const toggleSubtaskComplete = (subtaskId) => {
+    setSubtasks(prev => prev.map(st => 
+      st.id === subtaskId ? { ...st, completed: !st.completed } : st
+    ));
+  };
+
   // Load projects when modal opens
   useEffect(() => {
     if (isOpen) {
