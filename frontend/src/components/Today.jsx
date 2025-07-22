@@ -356,18 +356,18 @@ const Today = () => {
           </button>
         </div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-                <span className="text-red-400">{error}</span>
-              </div>
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+              <span className="text-red-400">{error}</span>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
