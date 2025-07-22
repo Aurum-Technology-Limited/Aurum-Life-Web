@@ -50,7 +50,7 @@ const Areas = ({ onSectionChange }) => {
   const loadAreas = async () => {
     try {
       setLoading(true);
-      const response = await areasAPI.getAreas(true); // Include projects
+      const response = await areasAPI.getAreas(true, showArchived); // Include projects and optionally archived
       setAreas(response.data);
       setError(null);
     } catch (err) {
