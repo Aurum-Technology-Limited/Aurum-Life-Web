@@ -124,8 +124,12 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
       
       if (editingProject) {
         await projectsAPI.updateProject(editingProject.id, submitData);
+        // Notify data context of the mutation
+        onDataMutation('project', 'update', { projectId: editingProject.id, ...submitData });
       } else {
-        await projectsAPI.createProject(submitData);
+        const response = await projectsAPI.createProject(submitData);
+        // Notify data context of the mutation
+        onDataMutation('project', 'create', response.data || submitData);
       }
       loadProjects();
       handleCloseModal();
@@ -140,6 +144,8 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
       try {
         await projectsAPI.deleteProject(projectId);
         loadProjects();
+        // Notify data context of the mutation
+        onDataMutation('project', 'delete', { projectId });
       } catch (err) {
         console.error('Error deleting project:', err);
         setError('Failed to delete project');
