@@ -26,6 +26,7 @@ const Areas = ({ onSectionChange }) => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editingArea, setEditingArea] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
