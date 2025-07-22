@@ -585,6 +585,44 @@ async def delete_task(task_id: str, current_user: User = Depends(get_current_act
         raise HTTPException(status_code=404, detail="Task not found")
     return {"success": True, "message": "Task deleted successfully"}
 
+# Sub-task endpoints
+@api_router.post("/tasks/{parent_task_id}/subtasks", response_model=Task)
+async def create_subtask(parent_task_id: str, subtask_data: TaskCreate, current_user: User = Depends(get_current_active_user)):
+    """Create a sub-task under a parent task"""
+    try:
+        return await TaskService.create_subtask(current_user.id, parent_task_id, subtask_data)
+    except ValueError as e:
+        logger.error(f"Validation error creating subtask: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error creating subtask: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/tasks/{task_id}/with-subtasks", response_model=TaskResponse)
+async def get_task_with_subtasks(task_id: str, current_user: User = Depends(get_current_active_user)):
+    """Get a task with all its sub-tasks"""
+    task = await TaskService.get_task_with_subtasks(current_user.id, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+@api_router.get("/tasks/{task_id}/subtasks", response_model=List[TaskResponse])
+async def get_subtasks(task_id: str, current_user: User = Depends(get_current_active_user)):
+    """Get all sub-tasks of a parent task"""
+    try:
+        subtasks_docs = await find_documents("tasks", {"parent_task_id": task_id, "user_id": current_user.id})
+        subtasks_docs.sort(key=lambda x: x.get("sort_order", 0))
+        
+        subtasks = []
+        for doc in subtasks_docs:
+            subtask = await TaskService._build_task_response(doc, include_subtasks=False)
+            subtasks.append(subtask)
+        
+        return subtasks
+    except Exception as e:
+        logger.error(f"Error getting subtasks: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Chat endpoints
 @api_router.post("/chat", response_model=ChatMessage)
 async def send_chat_message(message_data: ChatMessageCreate, current_user: User = Depends(get_current_active_user)):
