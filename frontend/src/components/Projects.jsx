@@ -16,6 +16,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { projectsAPI, areasAPI, tasksAPI } from '../services/api';
+import { useDataContext } from '../contexts/DataContext';
 import KanbanBoard from './KanbanBoard';
 
 const Projects = ({ onSectionChange, filterAreaId }) => {
