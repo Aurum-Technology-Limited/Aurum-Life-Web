@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Lock, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const PasswordReset = () => {
   const { login } = useAuth();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -18,7 +15,9 @@ const PasswordReset = () => {
     confirmPassword: ''
   });
 
-  const token = searchParams.get('token');
+  // Get token from URL parameters without React Router
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
 
   useEffect(() => {
     if (!token) {
