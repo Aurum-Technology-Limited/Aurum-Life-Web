@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { areasAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
+import DonutChart from './ui/DonutChart';
 
 const Areas = ({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
