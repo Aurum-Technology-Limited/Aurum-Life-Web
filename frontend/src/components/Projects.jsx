@@ -222,8 +222,8 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
   };
 
   const getProgressPercentage = (project) => {
-    if (!project.total_tasks || project.total_tasks === 0) return 0;
-    return Math.round((project.completed_tasks / project.total_tasks) * 100);
+    if (!project.task_count || project.task_count === 0) return 0;
+    return Math.round((project.completed_task_count / project.task_count) * 100);
   };
 
   // Unified data fetching for project tasks
