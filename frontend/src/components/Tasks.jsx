@@ -23,31 +23,43 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
   };
 
   const isOverdue = task.is_overdue;
+  const isBlocked = task.can_start === false; // Task has unmet dependencies (UI-1.3.2)
 
   return (
     <div className={`p-6 rounded-xl border transition-all duration-300 group hover:scale-105 ${
       task.completed 
         ? 'border-green-400/30 bg-gradient-to-br from-green-900/20 to-gray-800/30' 
+        : isBlocked
+        ? 'border-orange-400/30 bg-gradient-to-br from-orange-900/20 to-gray-800/30 opacity-75' // Blocked tasks styling
         : isOverdue
         ? 'border-red-400/30 bg-gradient-to-br from-red-900/20 to-gray-800/30'
         : 'border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30'
     } ${loading ? 'opacity-50' : ''}`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start space-x-3 flex-1">
+          {/* Blocked task indicator (UI-1.3.2) */}
+          {isBlocked && !task.completed && (
+            <div className="mt-1 mr-2" title={`Blocked: ${task.dependency_tasks?.map(d => d.name).join(', ') || 'Prerequisites required'}`}>
+              <Lock size={16} className="text-orange-400" />
+            </div>
+          )}
+          
           <div 
             className={`w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-200 mt-1 ${
               task.completed 
                 ? 'bg-green-400 border-green-400' 
+                : isBlocked
+                ? 'border-orange-400/50 cursor-not-allowed' // Blocked styling
                 : 'border-gray-500 hover:border-yellow-400'
             } ${loading ? 'cursor-not-allowed' : ''}`}
-            onClick={() => !loading && onToggle(task.id, !task.completed)}
+            onClick={() => !loading && !isBlocked && onToggle(task.id, !task.completed)}
           >
             {loading ? (
               <Loader2 size={12} className="animate-spin text-gray-400" />
             ) : task.completed ? (
               <Check size={14} style={{ color: '#0B0D14' }} />
             ) : null}
-          </div>
+          </div>>
           <div className="flex-1">
             <h3 className={`text-lg font-semibold mb-2 ${
               task.completed ? 'text-gray-400 line-through' : 'text-white'
