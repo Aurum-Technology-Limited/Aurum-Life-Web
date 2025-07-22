@@ -34,6 +34,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
   const [selectedArea, setSelectedArea] = useState(filterAreaId || '');
   const [showKanban, setShowKanban] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
