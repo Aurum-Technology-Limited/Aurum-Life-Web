@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckSquare, Plus, Calendar, Flag, Clock, Check, X, Loader2, AlertCircle } from 'lucide-react';
 import { tasksAPI, projectsAPI, handleApiError } from '../services/api';
+import { useDataContext } from '../contexts/DataContext';
 
 const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
   const getPriorityColor = (priority) => {
