@@ -478,14 +478,14 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                     className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
                   >
                     <BarChart3 className="h-4 w-4" />
-                    <span>Kanban</span>
+                    <span>Kanban View</span>
                   </button>
                   <button 
                     onClick={() => onSectionChange && onSectionChange('tasks', { projectId: project.id })}
                     className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>Tasks</span>
+                    <span>List View</span>
                   </button>
                 </div>
               </div>
