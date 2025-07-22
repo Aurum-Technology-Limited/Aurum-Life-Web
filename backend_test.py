@@ -2746,6 +2746,385 @@ class BackendTester:
                     f"Failed to revert sub-task to incomplete: {result.get('error', 'Unknown error')}"
                 )
 
+    def test_unified_project_views_task_creation_synchronization(self):
+        """Test Unified Project Views - Task Creation and Synchronization (Critical User Issues)"""
+        print("\n=== UNIFIED PROJECT VIEWS - TASK CREATION AND SYNCHRONIZATION TESTING ===")
+        print("Testing critical user-reported issues:")
+        print("1. Task creation in Kanban view doesn't work")
+        print("2. Tasks created in List view don't show up in Kanban view")
+        
+        if not self.auth_token:
+            self.log_test("Unified Project Views Setup", False, "No auth token available for testing")
+            return
+        
+        # Setup: Create test area and project for unified testing
+        area_data = {
+            "name": "Unified Views Test Area",
+            "description": "Area for testing unified project views",
+            "icon": "🔄",
+            "color": "#4A90E2"
+        }
+        
+        area_result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+        if not area_result['success']:
+            self.log_test("Unified Views Setup - Create Area", False, f"Failed to create test area: {area_result.get('error', 'Unknown error')}")
+            return
+        
+        test_area_id = area_result['data']['id']
+        self.created_resources['areas'].append(test_area_id)
+        
+        project_data = {
+            "area_id": test_area_id,
+            "name": "Unified Views Test Project",
+            "description": "Project for testing unified views and task synchronization",
+            "status": "In Progress",
+            "priority": "high"
+        }
+        
+        project_result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+        if not project_result['success']:
+            self.log_test("Unified Views Setup - Create Project", False, f"Failed to create test project: {project_result.get('error', 'Unknown error')}")
+            return
+        
+        test_project_id = project_result['data']['id']
+        self.created_resources['projects'].append(test_project_id)
+        
+        print(f"\n   Test Setup Complete: Area={test_area_id}, Project={test_project_id}")
+        
+        # === 1. PROJECT DATA STRUCTURE TESTING ===
+        print("\n--- 1. PROJECT DATA STRUCTURE TESTING ---")
+        
+        # Test GET /api/projects/{id} to ensure project data includes correct task information
+        result = self.make_request('GET', f'/projects/{test_project_id}', params={'include_tasks': True}, use_auth=True)
+        self.log_test(
+            "GET Project with Tasks - Data Structure",
+            result['success'],
+            f"Project data retrieved with task information" if result['success'] else f"Failed to get project data: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            project_data = result['data']
+            required_fields = ['id', 'name', 'area_id', 'task_count', 'completed_task_count', 'active_task_count']
+            missing_fields = [field for field in required_fields if field not in project_data]
+            
+            self.log_test(
+                "Project Data Structure - Required Fields",
+                len(missing_fields) == 0,
+                f"All required fields present" if len(missing_fields) == 0 else f"Missing fields: {missing_fields}"
+            )
+            
+            # Verify task count fields are numeric
+            task_count_fields = ['task_count', 'completed_task_count', 'active_task_count']
+            non_numeric = [field for field in task_count_fields if not isinstance(project_data.get(field), (int, float))]
+            
+            self.log_test(
+                "Project Data Structure - Task Count Fields",
+                len(non_numeric) == 0,
+                f"All task count fields are numeric" if len(non_numeric) == 0 else f"Non-numeric task count fields: {non_numeric}"
+            )
+        
+        # Test GET /api/projects/{id}/tasks to verify project-specific task retrieval
+        result = self.make_request('GET', f'/projects/{test_project_id}/tasks', use_auth=True)
+        self.log_test(
+            "GET Project Tasks - Project-Specific Retrieval",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} tasks for project" if result['success'] else f"Failed to get project tasks: {result.get('error', 'Unknown error')}"
+        )
+        
+        # === 2. TASK CREATION AND STATUS MANAGEMENT ===
+        print("\n--- 2. TASK CREATION AND STATUS MANAGEMENT ---")
+        
+        # Test POST /api/tasks with project_id to create tasks for specific project
+        task_creation_tests = [
+            {
+                "name": "Todo Task for Kanban Testing",
+                "description": "Task to test todo status in kanban view",
+                "project_id": test_project_id,
+                "status": "todo",
+                "priority": "high",
+                "category": "testing"
+            },
+            {
+                "name": "In Progress Task for Kanban Testing", 
+                "description": "Task to test in_progress status in kanban view",
+                "project_id": test_project_id,
+                "status": "in_progress",
+                "priority": "medium",
+                "category": "testing"
+            },
+            {
+                "name": "Review Task for Kanban Testing",
+                "description": "Task to test review status in kanban view", 
+                "project_id": test_project_id,
+                "status": "review",
+                "priority": "low",
+                "category": "testing"
+            },
+            {
+                "name": "Completed Task for Kanban Testing",
+                "description": "Task to test completed status in kanban view",
+                "project_id": test_project_id,
+                "status": "completed",
+                "priority": "medium",
+                "category": "testing",
+                "completed": True
+            }
+        ]
+        
+        created_task_ids = []
+        for i, task_data in enumerate(task_creation_tests):
+            result = self.make_request('POST', '/tasks', data=task_data, use_auth=True)
+            self.log_test(
+                f"POST Create Task {i+1} - Status: {task_data['status']}",
+                result['success'],
+                f"Created task: {result['data'].get('name', 'Unknown')} with status {task_data['status']}" if result['success'] else f"Failed to create task: {result.get('error', 'Unknown error')}"
+            )
+            
+            if result['success']:
+                created_task_ids.append(result['data']['id'])
+                self.created_resources['tasks'].append(result['data']['id'])
+                
+                # Verify task data structure includes all necessary fields for both views
+                task_response = result['data']
+                required_task_fields = ['id', 'name', 'project_id', 'status', 'completed', 'priority']
+                missing_task_fields = [field for field in required_task_fields if field not in task_response]
+                
+                self.log_test(
+                    f"Task {i+1} Data Structure - Required Fields",
+                    len(missing_task_fields) == 0,
+                    f"All required task fields present" if len(missing_task_fields) == 0 else f"Missing task fields: {missing_task_fields}"
+                )
+        
+        # Test task completion toggle (PUT /api/tasks/{id} with completed: true/false)
+        if created_task_ids:
+            test_task_id = created_task_ids[0]  # Use first created task
+            
+            # Toggle to completed
+            result = self.make_request('PUT', f'/tasks/{test_task_id}', data={'completed': True}, use_auth=True)
+            self.log_test(
+                "PUT Task Completion Toggle - Set Completed",
+                result['success'],
+                "Task marked as completed successfully" if result['success'] else f"Failed to complete task: {result.get('error', 'Unknown error')}"
+            )
+            
+            # Toggle back to incomplete
+            result = self.make_request('PUT', f'/tasks/{test_task_id}', data={'completed': False}, use_auth=True)
+            self.log_test(
+                "PUT Task Completion Toggle - Set Incomplete",
+                result['success'],
+                "Task marked as incomplete successfully" if result['success'] else f"Failed to uncomplete task: {result.get('error', 'Unknown error')}"
+            )
+        
+        # === 3. KANBAN-SPECIFIC OPERATIONS ===
+        print("\n--- 3. KANBAN-SPECIFIC OPERATIONS ---")
+        
+        # Test GET kanban board to verify task status mapping
+        result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+        self.log_test(
+            "GET Kanban Board - Task Status Mapping",
+            result['success'],
+            f"Retrieved kanban board for project" if result['success'] else f"Failed to get kanban board: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            kanban_data = result['data']
+            columns = kanban_data.get('columns', {})
+            
+            # Verify kanban columns exist
+            expected_columns = ['to_do', 'in_progress', 'review', 'done']
+            missing_columns = [col for col in expected_columns if col not in columns]
+            
+            self.log_test(
+                "Kanban Board - Column Structure",
+                len(missing_columns) == 0,
+                f"All expected columns present: {list(columns.keys())}" if len(missing_columns) == 0 else f"Missing columns: {missing_columns}"
+            )
+            
+            # Verify tasks appear in correct columns based on status
+            column_task_counts = {col: len(tasks) for col, tasks in columns.items()}
+            total_kanban_tasks = sum(column_task_counts.values())
+            
+            self.log_test(
+                "Kanban Board - Task Distribution",
+                total_kanban_tasks >= len(created_task_ids),
+                f"Kanban shows {total_kanban_tasks} tasks, created {len(created_task_ids)} tasks. Distribution: {column_task_counts}"
+            )
+            
+            # Verify task status mapping (todo → To Do column, in_progress → In Progress column, etc.)
+            status_mapping_correct = True
+            status_mapping_details = []
+            
+            for column, tasks in columns.items():
+                for task in tasks:
+                    task_status = task.get('status', '')
+                    expected_column = self._get_expected_kanban_column(task_status)
+                    if expected_column != column:
+                        status_mapping_correct = False
+                        status_mapping_details.append(f"Task '{task.get('name', 'Unknown')}' has status '{task_status}' but is in column '{column}' (expected '{expected_column}')")
+            
+            self.log_test(
+                "Kanban Board - Status Mapping Accuracy",
+                status_mapping_correct,
+                "All tasks are in correct columns based on their status" if status_mapping_correct else f"Status mapping issues: {'; '.join(status_mapping_details)}"
+            )
+        
+        # Test moving tasks between columns (if endpoint exists)
+        if created_task_ids:
+            test_task_id = created_task_ids[0]
+            
+            # Test moving task to different column
+            result = self.make_request('PUT', f'/tasks/{test_task_id}/column', params={'new_column': 'in_progress'}, use_auth=True)
+            self.log_test(
+                "PUT Move Task Between Columns - To In Progress",
+                result['success'],
+                "Task moved to in_progress column successfully" if result['success'] else f"Failed to move task: {result.get('error', 'Unknown error')}"
+            )
+            
+            # Verify task appears in new column
+            if result['success']:
+                kanban_result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+                if kanban_result['success']:
+                    updated_columns = kanban_result['data'].get('columns', {})
+                    task_found_in_progress = any(task.get('id') == test_task_id for task in updated_columns.get('in_progress', []))
+                    
+                    self.log_test(
+                        "Kanban Column Move Verification",
+                        task_found_in_progress,
+                        "Task found in in_progress column after move" if task_found_in_progress else "Task not found in expected column after move"
+                    )
+        
+        # === 4. DATA CONSISTENCY VERIFICATION ===
+        print("\n--- 4. DATA CONSISTENCY VERIFICATION ---")
+        
+        # Create a task via API and verify it appears in project task list
+        consistency_task_data = {
+            "name": "Data Consistency Test Task",
+            "description": "Task to verify data consistency between views",
+            "project_id": test_project_id,
+            "status": "todo",
+            "priority": "high",
+            "category": "consistency_test"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=consistency_task_data, use_auth=True)
+        self.log_test(
+            "POST Create Task - Data Consistency Test",
+            result['success'],
+            f"Created consistency test task" if result['success'] else f"Failed to create consistency test task: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            consistency_task_id = result['data']['id']
+            self.created_resources['tasks'].append(consistency_task_id)
+            
+            # Verify task appears in project task list
+            project_tasks_result = self.make_request('GET', f'/projects/{test_project_id}/tasks', use_auth=True)
+            if project_tasks_result['success']:
+                project_tasks = project_tasks_result['data']
+                task_found_in_list = any(task.get('id') == consistency_task_id for task in project_tasks)
+                
+                self.log_test(
+                    "Data Consistency - Task in Project List",
+                    task_found_in_list,
+                    "New task appears in project task list" if task_found_in_list else "New task missing from project task list"
+                )
+            
+            # Verify task appears in kanban view
+            kanban_result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+            if kanban_result['success']:
+                kanban_columns = kanban_result['data'].get('columns', {})
+                task_found_in_kanban = False
+                for column, tasks in kanban_columns.items():
+                    if any(task.get('id') == consistency_task_id for task in tasks):
+                        task_found_in_kanban = True
+                        break
+                
+                self.log_test(
+                    "Data Consistency - Task in Kanban View",
+                    task_found_in_kanban,
+                    "New task appears in kanban view" if task_found_in_kanban else "New task missing from kanban view"
+                )
+            
+            # Update task status and verify it appears in correct Kanban column
+            result = self.make_request('PUT', f'/tasks/{consistency_task_id}', data={'status': 'in_progress'}, use_auth=True)
+            if result['success']:
+                # Check kanban again
+                kanban_result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+                if kanban_result['success']:
+                    updated_columns = kanban_result['data'].get('columns', {})
+                    task_in_correct_column = any(task.get('id') == consistency_task_id for task in updated_columns.get('in_progress', []))
+                    
+                    self.log_test(
+                        "Data Consistency - Status Update Reflection",
+                        task_in_correct_column,
+                        "Task status update reflected in correct kanban column" if task_in_correct_column else "Task status update not reflected in kanban view"
+                    )
+        
+        # Test that task operations work across different status values
+        status_transition_tests = [
+            ('todo', 'in_progress'),
+            ('in_progress', 'review'),
+            ('review', 'completed'),
+            ('completed', 'todo')  # Reset cycle
+        ]
+        
+        if created_task_ids:
+            test_task_id = created_task_ids[1] if len(created_task_ids) > 1 else created_task_ids[0]
+            
+            for from_status, to_status in status_transition_tests:
+                # Update task status
+                result = self.make_request('PUT', f'/tasks/{test_task_id}', data={'status': to_status}, use_auth=True)
+                self.log_test(
+                    f"Status Transition - {from_status} to {to_status}",
+                    result['success'],
+                    f"Task status updated from {from_status} to {to_status}" if result['success'] else f"Failed to update status: {result.get('error', 'Unknown error')}"
+                )
+                
+                # Verify task appears in correct kanban column
+                if result['success']:
+                    kanban_result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+                    if kanban_result['success']:
+                        columns = kanban_result['data'].get('columns', {})
+                        expected_column = self._get_expected_kanban_column(to_status)
+                        task_in_expected_column = any(task.get('id') == test_task_id for task in columns.get(expected_column, []))
+                        
+                        self.log_test(
+                            f"Status Transition Verification - {to_status} in {expected_column}",
+                            task_in_expected_column,
+                            f"Task correctly appears in {expected_column} column" if task_in_expected_column else f"Task not found in expected {expected_column} column"
+                        )
+        
+        # Final verification: Check project task counts are updated correctly
+        final_project_result = self.make_request('GET', f'/projects/{test_project_id}', use_auth=True)
+        if final_project_result['success']:
+            project_data = final_project_result['data']
+            final_task_count = project_data.get('task_count', 0)
+            final_completed_count = project_data.get('completed_task_count', 0)
+            final_active_count = project_data.get('active_task_count', 0)
+            
+            self.log_test(
+                "Final Project Task Count Verification",
+                final_task_count >= len(created_task_ids),
+                f"Project shows {final_task_count} total tasks, {final_completed_count} completed, {final_active_count} active (created {len(created_task_ids)} test tasks)"
+            )
+        
+        print(f"\n✅ UNIFIED PROJECT VIEWS TESTING COMPLETED")
+        print(f"   Created {len(created_task_ids)} test tasks across different statuses")
+        print(f"   Verified task creation, status management, kanban operations, and data consistency")
+        print(f"   Test Area: {test_area_id}, Test Project: {test_project_id}")
+
+    def _get_expected_kanban_column(self, task_status):
+        """Helper method to map task status to expected kanban column"""
+        status_to_column = {
+            'todo': 'to_do',
+            'not_started': 'to_do',
+            'in_progress': 'in_progress',
+            'review': 'review',
+            'completed': 'done',
+            'done': 'done'
+        }
+        return status_to_column.get(task_status, 'to_do')
+
     def test_epic2_phase1_enhanced_task_service_methods(self):
         """Test Epic 2 Phase 1: Enhanced TaskService Methods"""
         print("\n=== EPIC 2 PHASE 1: ENHANCED TASK SERVICE METHODS TESTING ===")
