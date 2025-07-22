@@ -253,12 +253,14 @@ class TaskCreate(BaseModel):
     status: TaskStatusEnum = TaskStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
     due_date: Optional[datetime] = None
+    due_time: Optional[str] = None  # Time in HH:MM format
     reminder_date: Optional[datetime] = None
     category: str = "general"
     dependency_task_ids: List[str] = []
     recurrence: RecurrenceEnum = RecurrenceEnum.none
     recurrence_interval: int = 1
     estimated_duration: Optional[int] = None
+    sub_task_completion_required: bool = False
 
 class TaskUpdate(BaseModel):
     name: Optional[str] = None
@@ -266,6 +268,7 @@ class TaskUpdate(BaseModel):
     status: Optional[TaskStatusEnum] = None
     priority: Optional[PriorityEnum] = None
     due_date: Optional[datetime] = None
+    due_time: Optional[str] = None  # Time in HH:MM format
     reminder_date: Optional[datetime] = None
     category: Optional[str] = None
     completed: Optional[bool] = None
@@ -275,6 +278,7 @@ class TaskUpdate(BaseModel):
     kanban_column: Optional[str] = None
     sort_order: Optional[int] = None
     estimated_duration: Optional[int] = None
+    sub_task_completion_required: Optional[bool] = None
 
 # Course models
 class Course(BaseDocument):
