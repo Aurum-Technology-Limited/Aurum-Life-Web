@@ -415,6 +415,9 @@ const Tasks = () => {
     try {
       await tasksAPI.deleteTask(taskId);
       setTasks(prev => prev.filter(task => task.id !== taskId));
+      
+      // Notify data context of the mutation
+      onDataMutation('task', 'delete', { taskId });
     } catch (err) {
       setError(handleApiError(err, 'Failed to delete task'));
     }
