@@ -260,7 +260,10 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
 
   const handleBackFromKanban = () => {
     setShowKanban(false);
+    setShowListView(false);
     setSelectedProjectId(null);
+    setSelectedProject(null);
+    setProjectTasks([]);
   };
 
   const isOverdue = (dueDate) => {
