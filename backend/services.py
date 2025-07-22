@@ -1478,8 +1478,9 @@ class StatsService:
 
     @staticmethod
     async def get_today_view(user_id: str) -> TodayView:
-        """Get today's focused view with tasks and habits"""
+        """Get today's focused view with curated tasks"""
         today_tasks = await TaskService.get_today_tasks(user_id)
+        available_tasks = await TaskService.get_available_tasks_for_today(user_id)
         habits = await HabitService.get_user_habits(user_id)
         
         # Calculate totals
@@ -1491,7 +1492,9 @@ class StatsService:
             date=datetime.now(),
             tasks=today_tasks,
             habits=habits,
+            available_tasks=available_tasks,
             total_tasks=total_tasks,
             completed_tasks=completed_tasks,
-            estimated_duration=estimated_duration
+            estimated_duration=estimated_duration,
+            pomodoro_sessions=0  # TODO: Implement pomodoro session tracking
         )
