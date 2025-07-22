@@ -17,7 +17,9 @@ import {
   Archive,
   ArchiveRestore,
   Eye,
-  EyeOff
+  EyeOff,
+  List,
+  ArrowLeft
 } from 'lucide-react';
 import { projectsAPI, areasAPI, tasksAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
