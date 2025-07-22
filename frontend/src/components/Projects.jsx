@@ -269,6 +269,18 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
             </p>
           </div>
           <div className="flex items-center space-x-4">
+            {/* Archive Toggle */}
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                showArchived 
+                  ? 'bg-gray-700 text-white border border-gray-600' 
+                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
+              }`}
+            >
+              {showArchived ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <span>{showArchived ? 'Hide Archived' : 'Show Archived'}</span>
+            </button>
             {/* Area Filter */}
             <select
               value={selectedArea}
