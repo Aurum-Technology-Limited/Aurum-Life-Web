@@ -251,6 +251,124 @@ class JournalService:
     async def delete_entry(user_id: str, entry_id: str) -> bool:
         return await delete_document("journal_entries", {"id": entry_id, "user_id": user_id})
 
+class ProjectTemplateService:
+    @staticmethod
+    async def create_template(user_id: str, template_data: ProjectTemplateCreate) -> ProjectTemplate:
+        template = ProjectTemplate(user_id=user_id, **template_data.dict(exclude={'tasks'}))
+        template_dict = template.dict()
+        await create_document("project_templates", template_dict)
+        
+        # Create task templates
+        for i, task_data in enumerate(template_data.tasks):
+            task_template = TaskTemplate(
+                template_id=template.id,
+                user_id=user_id,
+                sort_order=i + 1,
+                **task_data.dict()
+            )
+            await create_document("task_templates", task_template.dict())
+        
+        return template
+
+    @staticmethod
+    async def get_user_templates(user_id: str) -> List[ProjectTemplateResponse]:
+        templates_docs = await find_documents("project_templates", {"user_id": user_id})
+        templates = []
+        
+        for doc in templates_docs:
+            template_response = ProjectTemplateResponse(**doc)
+            
+            # Get task templates for this template
+            task_templates_docs = await find_documents("task_templates", {"template_id": template_response.id})
+            task_templates_docs.sort(key=lambda x: x.get("sort_order", 0))
+            template_response.tasks = [TaskTemplate(**task_doc) for task_doc in task_templates_docs]
+            template_response.task_count = len(task_templates_docs)
+            
+            templates.append(template_response)
+        
+        return templates
+
+    @staticmethod
+    async def get_template(user_id: str, template_id: str) -> Optional[ProjectTemplateResponse]:
+        template_doc = await find_document("project_templates", {"id": template_id, "user_id": user_id})
+        if not template_doc:
+            return None
+            
+        template_response = ProjectTemplateResponse(**template_doc)
+        
+        # Get task templates
+        task_templates_docs = await find_documents("task_templates", {"template_id": template_id})
+        task_templates_docs.sort(key=lambda x: x.get("sort_order", 0))
+        template_response.tasks = [TaskTemplate(**task_doc) for task_doc in task_templates_docs]
+        template_response.task_count = len(task_templates_docs)
+        
+        return template_response
+
+    @staticmethod
+    async def update_template(user_id: str, template_id: str, template_data: ProjectTemplateUpdate) -> bool:
+        update_data = {k: v for k, v in template_data.dict(exclude={'tasks'}).items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow()
+        
+        # Update the template
+        success = await update_document("project_templates", {"id": template_id, "user_id": user_id}, update_data)
+        
+        # Update task templates if provided
+        if template_data.tasks is not None:
+            # Delete existing task templates
+            await delete_document("task_templates", {"template_id": template_id})
+            
+            # Create new task templates
+            for i, task_data in enumerate(template_data.tasks):
+                task_template = TaskTemplate(
+                    template_id=template_id,
+                    user_id=user_id,
+                    sort_order=i + 1,
+                    **task_data.dict()
+                )
+                await create_document("task_templates", task_template.dict())
+        
+        return success
+
+    @staticmethod
+    async def delete_template(user_id: str, template_id: str) -> bool:
+        # First delete all task templates
+        await delete_document("task_templates", {"template_id": template_id})
+        
+        # Then delete the project template
+        return await delete_document("project_templates", {"id": template_id, "user_id": user_id})
+
+    @staticmethod
+    async def use_template(user_id: str, template_id: str, project_data: ProjectCreate) -> Project:
+        """Create a new project from a template"""
+        # Get the template
+        template = await ProjectTemplateService.get_template(user_id, template_id)
+        if not template:
+            raise ValueError("Template not found")
+        
+        # Create the project
+        project = await ProjectService.create_project(user_id, project_data)
+        
+        # Create tasks from template
+        for task_template in template.tasks:
+            task_data = TaskCreate(
+                name=task_template.name,
+                description=task_template.description,
+                priority=task_template.priority,
+                estimated_duration=task_template.estimated_duration,
+                project_id=project.id
+            )
+            await TaskService.create_task(user_id, task_data)
+        
+        # Increment usage count
+        await update_document(
+            "project_templates", 
+            {"id": template_id, "user_id": user_id}, 
+            {"usage_count": template.usage_count + 1, "updated_at": datetime.utcnow()}
+        )
+        
+        return project
+
+
 class AreaService:
     @staticmethod
     async def create_area(user_id: str, area_data: AreaCreate) -> Area:
