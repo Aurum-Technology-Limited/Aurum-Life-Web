@@ -294,7 +294,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
             project_id: project.id
           });
         }
-        await loadProjectTasks(project.id); // Reload shared data
+        onTaskUpdate(); // Use shared callback to reload data
         setShowTaskModal(false);
         setEditingTask(null);
         setTaskFormData({
