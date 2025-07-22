@@ -10,7 +10,11 @@ import {
   AlertCircle,
   X,
   Save,
-  Layers
+  Layers,
+  Archive,
+  ArchiveRestore,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { areasAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
