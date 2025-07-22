@@ -422,7 +422,7 @@ const Today = () => {
                     <Calendar className="mx-auto h-16 w-16 text-gray-600 mb-4" />
                     <h3 className="text-lg font-medium text-gray-400 mb-2">No tasks for today</h3>
                     <p className="text-gray-500 mb-4">
-                      Drag tasks from the available list or click "Add Tasks" to get started
+                      Drag tasks from the available list or use "Browse Available Tasks" to get started
                     </p>
                     <button
                       onClick={() => setShowAvailable(true)}
