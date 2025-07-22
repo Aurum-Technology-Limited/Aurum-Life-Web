@@ -406,6 +406,7 @@ class Epic2Phase1Tester:
         
         # Test create_subtask() method with validation
         subtask_validation_data = {
+            "project_id": self.test_project_id,  # Required by TaskCreate model, will be overridden
             "name": "Validation Sub-task",
             "description": "Sub-task for testing create_subtask validation",
             "priority": "low",
