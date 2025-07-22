@@ -329,7 +329,7 @@ const Areas = ({ onSectionChange }) => {
                           className="h-2 rounded-full transition-all duration-300"
                           style={{
                             backgroundColor: area.color,
-                            width: `${area.total_tasks > 0 ? (area.completed_tasks / area.total_tasks) * 100 : 0}%`
+                            width: `${area.total_task_count > 0 ? (area.completed_task_count / area.total_task_count) * 100 : 0}%`
                           }}
                         />
                       </div>
