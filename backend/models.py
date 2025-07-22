@@ -408,8 +408,11 @@ class TaskResponse(Task):
 class ProjectResponse(Project):
     task_count: Optional[int] = None
     completed_task_count: Optional[int] = None
+    active_task_count: Optional[int] = None
+    completion_percentage: Optional[float] = None
     area_name: Optional[str] = None
     is_overdue: Optional[bool] = None
+    archived: bool = False
     tasks: Optional[List[TaskResponse]] = []
 
 class AreaResponse(BaseModel):
