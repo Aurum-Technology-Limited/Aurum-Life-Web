@@ -40,37 +40,12 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
     high: 'text-red-400 bg-red-400/10 border-red-400/20'
   };
 
-  const loadKanbanData = async () => {
-    try {
-      setLoading(true);
-      const [projectResponse, kanbanResponse] = await Promise.all([
-        projectsAPI.getProject(projectId, true),
-        projectsAPI.getKanbanBoard(projectId)
-      ]);
-      
-      setProject(projectResponse.data);
-      setKanbanData(kanbanResponse.data);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load kanban data');
-      console.error('Error loading kanban:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (projectId) {
-      loadKanbanData();
-    }
-  }, [projectId]);
-
   const handleCreateTask = async (e) => {
     e.preventDefault();
     try {
       const taskData = {
         ...formData,
-        project_id: projectId,
+        project_id: project.id,
         due_date: formData.due_date || null
       };
       
@@ -80,7 +55,8 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
         await tasksAPI.createTask(taskData);
       }
       
-      loadKanbanData();
+      // Use shared callback to refresh data
+      onTaskUpdate();
       handleCloseModal();
     } catch (err) {
       console.error('Error saving task:', err);
