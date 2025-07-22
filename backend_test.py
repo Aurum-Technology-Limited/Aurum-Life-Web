@@ -3607,6 +3607,397 @@ class BackendTester:
                 f"Error reading requirements.txt: {e}"
             )
 
+    def test_task_count_synchronization_fix(self):
+        """Test Area and Project Task Count Synchronization Fix - MAIN FOCUS"""
+        print("\n=== TASK COUNT SYNCHRONIZATION FIX TESTING ===")
+        print("Testing the fix for area and project cards displaying correct active task counts")
+        
+        if not self.auth_token:
+            self.log_test("Task Count Sync Setup", False, "No auth token available for testing")
+            return
+        
+        # Step 1: Create test area
+        area_data = {
+            "name": "Task Count Test Area",
+            "description": "Area for testing task count synchronization",
+            "icon": "🧪",
+            "color": "#FF6B6B"
+        }
+        
+        area_result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+        self.log_test(
+            "Create Test Area for Task Count Testing",
+            area_result['success'],
+            f"Created area: {area_result['data'].get('name', 'Unknown')}" if area_result['success'] else f"Failed: {area_result.get('error', 'Unknown error')}"
+        )
+        
+        if not area_result['success']:
+            return
+            
+        test_area_id = area_result['data']['id']
+        self.created_resources['areas'].append(test_area_id)
+        
+        # Step 2: Create test projects in the area
+        project1_data = {
+            "area_id": test_area_id,
+            "name": "Project 1 - Task Count Test",
+            "description": "First project for task count testing",
+            "status": "In Progress",
+            "priority": "high"
+        }
+        
+        project1_result = self.make_request('POST', '/projects', data=project1_data, use_auth=True)
+        self.log_test(
+            "Create Test Project 1",
+            project1_result['success'],
+            f"Created project: {project1_result['data'].get('name', 'Unknown')}" if project1_result['success'] else f"Failed: {project1_result.get('error', 'Unknown error')}"
+        )
+        
+        if not project1_result['success']:
+            return
+            
+        project1_id = project1_result['data']['id']
+        self.created_resources['projects'].append(project1_id)
+        
+        project2_data = {
+            "area_id": test_area_id,
+            "name": "Project 2 - Task Count Test",
+            "description": "Second project for task count testing",
+            "status": "In Progress",
+            "priority": "medium"
+        }
+        
+        project2_result = self.make_request('POST', '/projects', data=project2_data, use_auth=True)
+        self.log_test(
+            "Create Test Project 2",
+            project2_result['success'],
+            f"Created project: {project2_result['data'].get('name', 'Unknown')}" if project2_result['success'] else f"Failed: {project2_result.get('error', 'Unknown error')}"
+        )
+        
+        if not project2_result['success']:
+            return
+            
+        project2_id = project2_result['data']['id']
+        self.created_resources['projects'].append(project2_id)
+        
+        # Step 3: Create tasks in both projects
+        tasks_data = [
+            # Project 1 tasks
+            {"project_id": project1_id, "name": "Task 1.1 - Active", "description": "Active task in project 1", "priority": "high", "completed": False},
+            {"project_id": project1_id, "name": "Task 1.2 - Completed", "description": "Completed task in project 1", "priority": "medium", "completed": True},
+            {"project_id": project1_id, "name": "Task 1.3 - Active", "description": "Another active task in project 1", "priority": "low", "completed": False},
+            # Project 2 tasks
+            {"project_id": project2_id, "name": "Task 2.1 - Active", "description": "Active task in project 2", "priority": "high", "completed": False},
+            {"project_id": project2_id, "name": "Task 2.2 - Active", "description": "Another active task in project 2", "priority": "medium", "completed": False},
+            {"project_id": project2_id, "name": "Task 2.3 - Completed", "description": "Completed task in project 2", "priority": "low", "completed": True},
+            {"project_id": project2_id, "name": "Task 2.4 - Completed", "description": "Another completed task in project 2", "priority": "medium", "completed": True},
+        ]
+        
+        created_tasks = []
+        for i, task_data in enumerate(tasks_data):
+            result = self.make_request('POST', '/tasks', data=task_data, use_auth=True)
+            if result['success']:
+                task_id = result['data']['id']
+                created_tasks.append(task_id)
+                self.created_resources['tasks'].append(task_id)
+                
+                # Mark completed tasks as completed
+                if task_data.get('completed'):
+                    update_result = self.make_request('PUT', f'/tasks/{task_id}', 
+                                                    data={"completed": True}, use_auth=True)
+                    if not update_result['success']:
+                        print(f"   Warning: Failed to mark task {task_id} as completed")
+            
+            self.log_test(
+                f"Create Task {i+1} ({task_data['name'][:20]}...)",
+                result['success'],
+                f"Task created in {'Project 1' if task_data['project_id'] == project1_id else 'Project 2'}" if result['success'] else f"Failed: {result.get('error', 'Unknown error')}"
+            )
+        
+        # Step 4: Test GET /api/projects - Verify task counts are correctly calculated
+        print("\n--- TESTING PROJECT TASK COUNTS ---")
+        projects_result = self.make_request('GET', '/projects', use_auth=True)
+        self.log_test(
+            "GET Projects - Task Count Verification",
+            projects_result['success'],
+            f"Retrieved {len(projects_result['data']) if projects_result['success'] else 0} projects for task count verification"
+        )
+        
+        if projects_result['success']:
+            projects = projects_result['data']
+            
+            # Find our test projects
+            test_project1 = next((p for p in projects if p['id'] == project1_id), None)
+            test_project2 = next((p for p in projects if p['id'] == project2_id), None)
+            
+            if test_project1:
+                expected_task_count = 3  # 3 tasks in project 1
+                expected_completed = 1   # 1 completed task
+                expected_active = 2      # 2 active tasks
+                
+                self.log_test(
+                    "Project 1 - Task Count Accuracy",
+                    test_project1.get('task_count') == expected_task_count,
+                    f"Expected: {expected_task_count}, Got: {test_project1.get('task_count', 'None')}"
+                )
+                
+                self.log_test(
+                    "Project 1 - Completed Task Count Accuracy",
+                    test_project1.get('completed_task_count') == expected_completed,
+                    f"Expected: {expected_completed}, Got: {test_project1.get('completed_task_count', 'None')}"
+                )
+                
+                self.log_test(
+                    "Project 1 - Active Task Count Accuracy",
+                    test_project1.get('active_task_count') == expected_active,
+                    f"Expected: {expected_active}, Got: {test_project1.get('active_task_count', 'None')}"
+                )
+            
+            if test_project2:
+                expected_task_count = 4  # 4 tasks in project 2
+                expected_completed = 2   # 2 completed tasks
+                expected_active = 2      # 2 active tasks
+                
+                self.log_test(
+                    "Project 2 - Task Count Accuracy",
+                    test_project2.get('task_count') == expected_task_count,
+                    f"Expected: {expected_task_count}, Got: {test_project2.get('task_count', 'None')}"
+                )
+                
+                self.log_test(
+                    "Project 2 - Completed Task Count Accuracy",
+                    test_project2.get('completed_task_count') == expected_completed,
+                    f"Expected: {expected_completed}, Got: {test_project2.get('completed_task_count', 'None')}"
+                )
+                
+                self.log_test(
+                    "Project 2 - Active Task Count Accuracy",
+                    test_project2.get('active_task_count') == expected_active,
+                    f"Expected: {expected_active}, Got: {test_project2.get('active_task_count', 'None')}"
+                )
+        
+        # Step 5: Test GET /api/areas with include_projects=true - Verify area task counts
+        print("\n--- TESTING AREA TASK COUNTS ---")
+        areas_result = self.make_request('GET', '/areas', params={'include_projects': True}, use_auth=True)
+        self.log_test(
+            "GET Areas with Projects - Task Count Verification",
+            areas_result['success'],
+            f"Retrieved {len(areas_result['data']) if areas_result['success'] else 0} areas with projects for task count verification"
+        )
+        
+        if areas_result['success']:
+            areas = areas_result['data']
+            
+            # Find our test area
+            test_area = next((a for a in areas if a['id'] == test_area_id), None)
+            
+            if test_area:
+                expected_total_tasks = 7     # 3 + 4 tasks across both projects
+                expected_completed_tasks = 3 # 1 + 2 completed tasks across both projects
+                
+                self.log_test(
+                    "Area - Total Task Count Accuracy",
+                    test_area.get('total_task_count') == expected_total_tasks,
+                    f"Expected: {expected_total_tasks}, Got: {test_area.get('total_task_count', 'None')}"
+                )
+                
+                self.log_test(
+                    "Area - Completed Task Count Accuracy",
+                    test_area.get('completed_task_count') == expected_completed_tasks,
+                    f"Expected: {expected_completed_tasks}, Got: {test_area.get('completed_task_count', 'None')}"
+                )
+                
+                # Verify project counts within area
+                self.log_test(
+                    "Area - Project Count Accuracy",
+                    test_area.get('project_count') == 2,
+                    f"Expected: 2, Got: {test_area.get('project_count', 'None')}"
+                )
+        
+        # Step 6: Test task creation and count synchronization
+        print("\n--- TESTING TASK CREATION AND COUNT SYNCHRONIZATION ---")
+        new_task_data = {
+            "project_id": project1_id,
+            "name": "New Task - Sync Test",
+            "description": "Task to test real-time count synchronization",
+            "priority": "medium",
+            "completed": False
+        }
+        
+        new_task_result = self.make_request('POST', '/tasks', data=new_task_data, use_auth=True)
+        self.log_test(
+            "Create New Task for Sync Test",
+            new_task_result['success'],
+            f"Created task: {new_task_result['data'].get('name', 'Unknown')}" if new_task_result['success'] else f"Failed: {new_task_result.get('error', 'Unknown error')}"
+        )
+        
+        if new_task_result['success']:
+            new_task_id = new_task_result['data']['id']
+            self.created_resources['tasks'].append(new_task_id)
+            
+            # Verify project counts updated
+            updated_projects_result = self.make_request('GET', '/projects', use_auth=True)
+            if updated_projects_result['success']:
+                updated_projects = updated_projects_result['data']
+                updated_project1 = next((p for p in updated_projects if p['id'] == project1_id), None)
+                
+                if updated_project1:
+                    expected_new_count = 4  # Was 3, now should be 4
+                    expected_new_active = 3 # Was 2, now should be 3
+                    
+                    self.log_test(
+                        "Project 1 - Updated Task Count After New Task",
+                        updated_project1.get('task_count') == expected_new_count,
+                        f"Expected: {expected_new_count}, Got: {updated_project1.get('task_count', 'None')}"
+                    )
+                    
+                    self.log_test(
+                        "Project 1 - Updated Active Task Count After New Task",
+                        updated_project1.get('active_task_count') == expected_new_active,
+                        f"Expected: {expected_new_active}, Got: {updated_project1.get('active_task_count', 'None')}"
+                    )
+            
+            # Verify area counts updated
+            updated_areas_result = self.make_request('GET', '/areas', params={'include_projects': True}, use_auth=True)
+            if updated_areas_result['success']:
+                updated_areas = updated_areas_result['data']
+                updated_area = next((a for a in updated_areas if a['id'] == test_area_id), None)
+                
+                if updated_area:
+                    expected_new_total = 8  # Was 7, now should be 8
+                    
+                    self.log_test(
+                        "Area - Updated Total Task Count After New Task",
+                        updated_area.get('total_task_count') == expected_new_total,
+                        f"Expected: {expected_new_total}, Got: {updated_area.get('total_task_count', 'None')}"
+                    )
+        
+        # Step 7: Test task completion toggle and count synchronization
+        print("\n--- TESTING TASK COMPLETION TOGGLE AND COUNT SYNCHRONIZATION ---")
+        if created_tasks:
+            # Toggle completion of an active task
+            test_task_id = created_tasks[0]  # First task (should be active)
+            
+            completion_result = self.make_request('PUT', f'/tasks/{test_task_id}', 
+                                                data={"completed": True}, use_auth=True)
+            self.log_test(
+                "Toggle Task Completion",
+                completion_result['success'],
+                f"Marked task as completed" if completion_result['success'] else f"Failed: {completion_result.get('error', 'Unknown error')}"
+            )
+            
+            if completion_result['success']:
+                # Verify counts updated after completion
+                final_projects_result = self.make_request('GET', '/projects', use_auth=True)
+                if final_projects_result['success']:
+                    final_projects = final_projects_result['data']
+                    final_project1 = next((p for p in final_projects if p['id'] == project1_id), None)
+                    
+                    if final_project1:
+                        # Task count should remain same, but completed/active should change
+                        expected_completed = 2  # Was 1, now should be 2
+                        expected_active = 2     # Was 3, now should be 2 (one moved from active to completed)
+                        
+                        self.log_test(
+                            "Project 1 - Completed Count After Task Toggle",
+                            final_project1.get('completed_task_count') == expected_completed,
+                            f"Expected: {expected_completed}, Got: {final_project1.get('completed_task_count', 'None')}"
+                        )
+                        
+                        self.log_test(
+                            "Project 1 - Active Count After Task Toggle",
+                            final_project1.get('active_task_count') == expected_active,
+                            f"Expected: {expected_active}, Got: {final_project1.get('active_task_count', 'None')}"
+                        )
+        
+        # Step 8: Test data consistency verification
+        print("\n--- TESTING DATA CONSISTENCY VERIFICATION ---")
+        
+        # Compare task counts from projects endpoint vs tasks endpoint
+        all_tasks_result = self.make_request('GET', '/tasks', use_auth=True)
+        if all_tasks_result['success']:
+            all_tasks = all_tasks_result['data']
+            
+            # Count tasks by project
+            project1_tasks = [t for t in all_tasks if t.get('project_id') == project1_id]
+            project2_tasks = [t for t in all_tasks if t.get('project_id') == project2_id]
+            
+            project1_completed = len([t for t in project1_tasks if t.get('completed')])
+            project1_active = len([t for t in project1_tasks if not t.get('completed')])
+            
+            project2_completed = len([t for t in project2_tasks if t.get('completed')])
+            project2_active = len([t for t in project2_tasks if not t.get('completed')])
+            
+            # Get project data for comparison
+            projects_for_comparison = self.make_request('GET', '/projects', use_auth=True)
+            if projects_for_comparison['success']:
+                projects = projects_for_comparison['data']
+                proj1 = next((p for p in projects if p['id'] == project1_id), None)
+                proj2 = next((p for p in projects if p['id'] == project2_id), None)
+                
+                if proj1:
+                    self.log_test(
+                        "Data Consistency - Project 1 Task Count Match",
+                        len(project1_tasks) == proj1.get('task_count', 0),
+                        f"Tasks endpoint: {len(project1_tasks)}, Projects endpoint: {proj1.get('task_count', 0)}"
+                    )
+                    
+                    self.log_test(
+                        "Data Consistency - Project 1 Completed Count Match",
+                        project1_completed == proj1.get('completed_task_count', 0),
+                        f"Tasks endpoint: {project1_completed}, Projects endpoint: {proj1.get('completed_task_count', 0)}"
+                    )
+                    
+                    self.log_test(
+                        "Data Consistency - Project 1 Active Count Match",
+                        project1_active == proj1.get('active_task_count', 0),
+                        f"Tasks endpoint: {project1_active}, Projects endpoint: {proj1.get('active_task_count', 0)}"
+                    )
+                
+                if proj2:
+                    self.log_test(
+                        "Data Consistency - Project 2 Task Count Match",
+                        len(project2_tasks) == proj2.get('task_count', 0),
+                        f"Tasks endpoint: {len(project2_tasks)}, Projects endpoint: {proj2.get('task_count', 0)}"
+                    )
+                    
+                    self.log_test(
+                        "Data Consistency - Project 2 Completed Count Match",
+                        project2_completed == proj2.get('completed_task_count', 0),
+                        f"Tasks endpoint: {project2_completed}, Projects endpoint: {proj2.get('completed_task_count', 0)}"
+                    )
+                    
+                    self.log_test(
+                        "Data Consistency - Project 2 Active Count Match",
+                        project2_active == proj2.get('active_task_count', 0),
+                        f"Tasks endpoint: {project2_active}, Projects endpoint: {proj2.get('active_task_count', 0)}"
+                    )
+        
+        # Step 9: Test user_id filtering (ensure no cross-user contamination)
+        print("\n--- TESTING USER_ID FILTERING ---")
+        
+        # This test verifies that task counts only include tasks belonging to the authenticated user
+        # We can't easily test cross-user contamination without creating another user,
+        # but we can verify that all returned tasks belong to the current user
+        
+        if all_tasks_result['success']:
+            all_tasks = all_tasks_result['data']
+            current_user_result = self.make_request('GET', '/auth/me', use_auth=True)
+            
+            if current_user_result['success']:
+                current_user_id = current_user_result['data']['id']
+                
+                # Check that all tasks belong to current user
+                user_tasks_match = all([t.get('user_id') == current_user_id for t in all_tasks])
+                
+                self.log_test(
+                    "User ID Filtering - All Tasks Belong to Current User",
+                    user_tasks_match,
+                    f"All {len(all_tasks)} tasks belong to user {current_user_id}" if user_tasks_match else "Some tasks belong to other users (SECURITY ISSUE)"
+                )
+        
+        print("\n--- TASK COUNT SYNCHRONIZATION FIX TESTING COMPLETED ---")
+
     def run_all_tests(self):
         """Run all backend tests including authentication and user management"""
         print("🚀 Starting Comprehensive Backend API Testing for Aurum Life Epic 1 Features")
