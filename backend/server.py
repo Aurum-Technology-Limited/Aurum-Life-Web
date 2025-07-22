@@ -483,6 +483,22 @@ async def update_project(project_id: str, project_data: ProjectUpdate, current_u
         raise HTTPException(status_code=404, detail="Project not found")
     return {"success": True, "message": "Project updated successfully"}
 
+@api_router.put("/projects/{project_id}/archive")
+async def archive_project(project_id: str, current_user: User = Depends(get_current_active_user)):
+    """Archive a project"""
+    success = await ProjectService.archive_project(current_user.id, project_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Project archived successfully"}
+
+@api_router.put("/projects/{project_id}/unarchive")
+async def unarchive_project(project_id: str, current_user: User = Depends(get_current_active_user)):
+    """Unarchive a project"""
+    success = await ProjectService.unarchive_project(current_user.id, project_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Project unarchived successfully"}
+
 @api_router.delete("/projects/{project_id}", response_model=dict)
 async def delete_project(project_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete a project and all its tasks"""
