@@ -69,6 +69,9 @@ function App() {
       case 'project-templates':
         console.log('📋 Rendering ProjectTemplates component');
         return <ProjectTemplates {...props} />;
+      case 'recurring-tasks':
+        console.log('🔄 Rendering RecurringTasks component');
+        return <RecurringTasks {...props} />;
       case 'habits':
         console.log('🎯 Rendering Habits component');
         return <Habits {...props} />;
