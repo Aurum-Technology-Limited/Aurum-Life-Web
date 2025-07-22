@@ -226,7 +226,7 @@ class RecurringTaskInstance(BaseDocument):
     skipped: bool = False  # User can skip individual instances
     
     # Task behavior
-    status: TaskStatusEnum = TaskStatusEnum.not_started
+    status: TaskStatusEnum = TaskStatusEnum.todo
     kanban_column: str = "to_do"
     sort_order: int = 0
     
