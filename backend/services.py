@@ -560,6 +560,24 @@ class ProjectService:
         return await update_document("projects", {"id": project_id, "user_id": user_id}, update_data)
 
     @staticmethod
+    async def archive_project(user_id: str, project_id: str) -> bool:
+        """Archive a project"""
+        return await update_document(
+            "projects", 
+            {"id": project_id, "user_id": user_id}, 
+            {"archived": True, "updated_at": datetime.utcnow()}
+        )
+    
+    @staticmethod
+    async def unarchive_project(user_id: str, project_id: str) -> bool:
+        """Unarchive a project"""
+        return await update_document(
+            "projects", 
+            {"id": project_id, "user_id": user_id}, 
+            {"archived": False, "updated_at": datetime.utcnow()}
+        )
+
+    @staticmethod
     async def delete_project(user_id: str, project_id: str) -> bool:
         # First delete all tasks in this project
         await delete_document("tasks", {"project_id": project_id, "user_id": user_id})
