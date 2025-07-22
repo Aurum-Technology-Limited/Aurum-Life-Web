@@ -525,10 +525,10 @@ async def send_chat_message(message_data: ChatMessageCreate, current_user: User 
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/chat/{session_id}", response_model=List[ChatMessage])
-async def get_chat_messages(session_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def get_chat_messages(session_id: str, current_user: User = Depends(get_current_active_user)):
     """Get chat messages for a session"""
     try:
-        return await ChatService.get_session_messages(user_id, session_id)
+        return await ChatService.get_session_messages(current_user.id, session_id)
     except Exception as e:
         logger.error(f"Error getting chat messages: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -544,19 +544,19 @@ async def get_all_courses():
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/courses/enrolled", response_model=List[CourseResponse])
-async def get_enrolled_courses(user_id: str = Query(DEFAULT_USER_ID)):
+async def get_enrolled_courses(current_user: User = Depends(get_current_active_user)):
     """Get user's enrolled courses"""
     try:
-        return await CourseService.get_user_courses(user_id)
+        return await CourseService.get_user_courses(current_user.id)
     except Exception as e:
         logger.error(f"Error getting enrolled courses: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/courses/{course_id}/enroll", response_model=dict)
-async def enroll_in_course(course_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def enroll_in_course(course_id: str, current_user: User = Depends(get_current_active_user)):
     """Enroll user in a course"""
     try:
-        enrollment = await CourseService.enroll_user(user_id, course_id)
+        enrollment = await CourseService.enroll_user(current_user.id, course_id)
         return {"success": True, "message": "Successfully enrolled in course", "enrollment_id": enrollment.id}
     except Exception as e:
         logger.error(f"Error enrolling in course: {e}")
@@ -564,19 +564,19 @@ async def enroll_in_course(course_id: str, user_id: str = Query(DEFAULT_USER_ID)
 
 # Stats endpoints
 @api_router.get("/stats", response_model=UserStats)
-async def get_user_stats(user_id: str = Query(DEFAULT_USER_ID)):
+async def get_user_stats(current_user: User = Depends(get_current_active_user)):
     """Get user statistics"""
     try:
-        return await StatsService.get_user_stats(user_id)
+        return await StatsService.get_user_stats(current_user.id)
     except Exception as e:
         logger.error(f"Error getting user stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/stats/update", response_model=UserStats)
-async def update_user_stats(user_id: str = Query(DEFAULT_USER_ID)):
+async def update_user_stats(current_user: User = Depends(get_current_active_user)):
     """Update and recalculate user statistics"""
     try:
-        return await StatsService.update_user_stats(user_id)
+        return await StatsService.update_user_stats(current_user.id)
     except Exception as e:
         logger.error(f"Error updating user stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
