@@ -1864,10 +1864,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Epic 2 Phase 1: Enhanced Task Creation with New Fields"
-    - "Epic 2 Phase 1: Sub-task Management API System"
-    - "Epic 2 Phase 1: Sub-task Completion Logic System"
-    - "Epic 2 Phase 1: Enhanced TaskService Methods"
+    - "Task Dependencies Frontend Implementation - Phase 1"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
