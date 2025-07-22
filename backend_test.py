@@ -5258,11 +5258,42 @@ class BackendTester:
 if __name__ == "__main__":
     tester = BackendTester()
     
-    # Check if we should run the quick migration test or full test suite
+    # Check if we should run the task dependencies test
     import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "migration":
-        success = tester.run_quick_migration_test()
-    else:
-        success = tester.run_quick_migration_test()  # Default to quick test for this specific task
+    if len(sys.argv) > 1 and sys.argv[1] == "dependencies":
+        print("🚀 Starting Task Dependencies Backend Implementation Testing")
+        print(f"Backend URL: {tester.base_url}")
+        
+        try:
+            # Health check first
+            tester.test_health_check()
+            
+            # Authentication setup (required for protected endpoints)
+            tester.test_user_registration()
+            tester.test_user_login()
+            
+            # Main task dependencies test
+            tester.test_task_dependencies_backend_implementation()
+            
+        except Exception as e:
+            print(f"\n❌ CRITICAL ERROR during testing: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        finally:
+            tester.cleanup_auth_test_data()
+            tester.cleanup_test_data()
+            tester.print_summary()
+        
+        # Exit with appropriate code
+        total_tests = len(tester.test_results)
+        failed_tests = len([t for t in tester.test_results if not t['success']])
+        sys.exit(0 if failed_tests == 0 else 1)
     
-    sys.exit(0 if success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "migration":
+        success = tester.run_quick_migration_test()
+        sys.exit(0 if success else 1)
+    else:
+        # Default to quick test for backward compatibility
+        success = tester.run_quick_migration_test()
+        sys.exit(0 if success else 1)
