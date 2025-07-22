@@ -59,7 +59,8 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
             ) : task.completed ? (
               <Check size={14} style={{ color: '#0B0D14' }} />
             ) : null}
-          </div>>
+          </div>
+          
           <div className="flex-1">
             <h3 className={`text-lg font-semibold mb-2 ${
               task.completed ? 'text-gray-400 line-through' : 'text-white'
