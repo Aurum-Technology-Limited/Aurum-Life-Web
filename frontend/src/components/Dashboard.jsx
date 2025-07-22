@@ -93,13 +93,6 @@ const Dashboard = ({ onSectionChange }) => {
         <p className="text-xl text-gray-300 max-w-3xl mx-auto">
           Track your progress, build lasting habits, and unlock your potential with personalized insights and coaching.
         </p>
-        {dashboardData?.user && (
-          <div className="mt-4 inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20">
-            <span className="text-yellow-400 font-medium">Level {dashboardData.user.level}</span>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-300">{dashboardData.user.total_points} points</span>
-          </div>
-        )}
       </div>
 
       {/* Stats Grid */}
