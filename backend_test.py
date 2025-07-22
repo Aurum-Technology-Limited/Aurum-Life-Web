@@ -1178,13 +1178,21 @@ class BackendTester:
             self.log_test("Task Dependencies Testing Setup", False, "No auth token available for testing")
             return
         
-        # Setup: Create test project and tasks for dependency testing
-        areas_result = self.make_request('GET', '/areas', use_auth=True)
-        if not areas_result['success'] or not areas_result['data']:
-            self.log_test("Task Dependencies Setup", False, "No areas found to create test project")
+        # Setup: Create test area first
+        area_data = {
+            "name": "Task Dependencies Test Area",
+            "description": "Area for testing task dependencies",
+            "icon": "🧪",
+            "color": "#FF6B6B"
+        }
+        
+        area_result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+        if not area_result['success']:
+            self.log_test("Task Dependencies Setup - Create Area", False, f"Failed to create test area: {area_result.get('error', 'Unknown error')}")
             return
         
-        test_area_id = areas_result['data'][0]['id']
+        test_area_id = area_result['data']['id']
+        self.created_resources['areas'].append(test_area_id)
         
         # Create test project
         project_data = {
@@ -1197,11 +1205,17 @@ class BackendTester:
         
         project_result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
         if not project_result['success']:
-            self.log_test("Task Dependencies Setup", False, "Failed to create test project")
+            self.log_test("Task Dependencies Setup - Create Project", False, f"Failed to create test project: {project_result.get('error', 'Unknown error')}")
             return
         
         test_project_id = project_result['data']['id']
         self.created_resources['projects'].append(test_project_id)
+        
+        self.log_test(
+            "Task Dependencies Setup",
+            True,
+            f"Created test area and project successfully"
+        )
         
         # Create prerequisite tasks (Task A and Task B)
         task_a_data = {
