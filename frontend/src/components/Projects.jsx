@@ -586,8 +586,16 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     );
   };
 
-  if (showKanban && selectedProjectId) {
-    return <KanbanBoard projectId={selectedProjectId} onBack={handleBackFromKanban} />;
+  if (showKanban && selectedProject) {
+    return (
+      <KanbanBoard 
+        project={selectedProject}
+        tasks={projectTasks}
+        onBack={handleBackFromKanban}
+        onTaskUpdate={() => loadProjectTasks(selectedProject.id)}
+        loading={projectTasksLoading}
+      />
+    );
   }
 
   if (showListView && selectedProject) {
