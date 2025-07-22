@@ -35,12 +35,12 @@ apiClient.interceptors.response.use(
 
 // Project Templates API
 export const projectTemplatesAPI = {
-  getTemplates: () => api.get('/project-templates'),
-  getTemplate: (templateId) => api.get(`/project-templates/${templateId}`),
-  createTemplate: (templateData) => api.post('/project-templates', templateData),
-  updateTemplate: (templateId, templateData) => api.put(`/project-templates/${templateId}`, templateData),
-  deleteTemplate: (templateId) => api.delete(`/project-templates/${templateId}`),
-  useTemplate: (templateId, projectData) => api.post(`/project-templates/${templateId}/use`, projectData)
+  getTemplates: () => apiClient.get('/project-templates'),
+  getTemplate: (templateId) => apiClient.get(`/project-templates/${templateId}`),
+  createTemplate: (templateData) => apiClient.post('/project-templates', templateData),
+  updateTemplate: (templateId, templateData) => apiClient.put(`/project-templates/${templateId}`, templateData),
+  deleteTemplate: (templateId) => apiClient.delete(`/project-templates/${templateId}`),
+  useTemplate: (templateId, projectData) => apiClient.post(`/project-templates/${templateId}/use`, projectData)
 };
 
 // Areas API with enhanced archiving support
