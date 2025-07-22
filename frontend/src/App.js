@@ -47,31 +47,44 @@ function App() {
     
     switch (activeSection) {
       case 'today':
+        console.log('📅 Rendering Today component');
         return <Today {...props} />;
       case 'insights':
+        console.log('📊 Rendering Insights component');
         return <Insights {...props} />;
       case 'areas':
+        console.log('🗂️ Rendering Areas component');
         return <Areas {...props} />;
       case 'projects':
+        console.log('📁 Rendering Projects component');
         return <Projects {...props} />;
       case 'habits':
+        console.log('🎯 Rendering Habits component');
         return <Habits {...props} />;
       case 'journal':
+        console.log('📖 Rendering Journal component');
         return <Journal {...props} />;
       case 'mindfulness':
+        console.log('🧘 Rendering Mindfulness component');
         return <Mindfulness {...props} />;
       case 'tasks':
+        console.log('✅ Rendering Tasks component');
         return <Tasks {...props} />;
       case 'learning':
+        console.log('📚 Rendering Learning component');
         return <Learning {...props} />;
       case 'ai-coach':
+        console.log('🤖 Rendering AICoach component');
         return <AICoach {...props} />;
       case 'achievements':
+        console.log('🏆 Rendering Achievements component');
         return <Achievements {...props} />;
       case 'profile':
+        console.log('👤 Rendering Profile component');
         return <Profile {...props} />;
       case 'dashboard':
       default:
+        console.log('🏠 Rendering Dashboard component');
         return <Dashboard {...props} />;
     }
   };
