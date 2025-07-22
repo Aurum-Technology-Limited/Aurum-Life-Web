@@ -207,7 +207,72 @@ class RecurringTaskTemplate(BaseDocument):
     last_generated: Optional[datetime] = None  # Last time instances were created
     next_due: Optional[datetime] = None  # Next scheduled instance
 
-# Area models
+class RecurringTaskInstance(BaseDocument):
+    """Individual instance of a recurring task"""
+    user_id: str
+    template_id: str  # Reference to RecurringTaskTemplate
+    name: str
+    description: str = ""
+    priority: PriorityEnum = PriorityEnum.medium
+    project_id: str
+    category: str = "general"
+    estimated_duration: Optional[int] = None
+    
+    # Instance-specific fields
+    due_date: datetime
+    due_time: Optional[str] = None
+    completed: bool = False
+    completed_at: Optional[datetime] = None
+    skipped: bool = False  # User can skip individual instances
+    
+    # Task behavior
+    status: TaskStatusEnum = TaskStatusEnum.not_started
+    kanban_column: str = "to_do"
+    sort_order: int = 0
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class RecurringTaskCreate(BaseModel):
+    name: str
+    description: str = ""
+    priority: PriorityEnum = PriorityEnum.medium
+    project_id: str
+    category: str = "general"
+    estimated_duration: Optional[int] = None
+    recurrence_pattern: RecurrencePattern
+    due_time: Optional[str] = None  # Default time for instances
+
+class RecurringTaskUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    priority: Optional[PriorityEnum] = None
+    category: Optional[str] = None
+    estimated_duration: Optional[int] = None
+    recurrence_pattern: Optional[RecurrencePattern] = None
+    is_active: Optional[bool] = None
+    due_time: Optional[str] = None
+
+class RecurringTaskResponse(BaseModel):
+    id: str
+    user_id: str
+    name: str
+    description: str
+    priority: PriorityEnum
+    project_id: str
+    project_name: Optional[str] = None
+    category: str
+    estimated_duration: Optional[int] = None
+    recurrence_pattern: RecurrencePattern
+    is_active: bool
+    created_at: datetime
+    last_generated: Optional[datetime] = None
+    next_due: Optional[datetime] = None
+    due_time: Optional[str] = None
+    
+    # Statistics
+    total_instances: int = 0
+    completed_instances: int = 0
+    completion_rate: float = 0.0
 class Area(BaseDocument):
     user_id: str
     name: str
