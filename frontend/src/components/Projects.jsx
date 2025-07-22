@@ -144,6 +144,24 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     }
   };
 
+  const handleArchive = async (projectId, isArchived) => {
+    try {
+      if (isArchived) {
+        await projectsAPI.unarchiveProject(projectId);
+        // Notify data context of the mutation
+        onDataMutation('project', 'unarchive', { projectId });
+      } else {
+        await projectsAPI.archiveProject(projectId);
+        // Notify data context of the mutation  
+        onDataMutation('project', 'archive', { projectId });
+      }
+      loadProjects();
+    } catch (err) {
+      console.error('Error archiving/unarchiving project:', err);
+      setError(`Failed to ${isArchived ? 'unarchive' : 'archive'} project`);
+    }
+  };
+
   const handleDelete = async (projectId) => {
     if (window.confirm('Are you sure? This will delete all tasks in this project.')) {
       try {
