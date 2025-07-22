@@ -36,7 +36,11 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
   const [editingProject, setEditingProject] = useState(null);
   const [selectedArea, setSelectedArea] = useState(filterAreaId || '');
   const [showKanban, setShowKanban] = useState(false);
+  const [showListView, setShowListView] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projectTasks, setProjectTasks] = useState([]);
+  const [projectTasksLoading, setProjectTasksLoading] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
