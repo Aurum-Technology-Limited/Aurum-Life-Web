@@ -131,14 +131,14 @@ class Epic2Phase1Tester:
                     self.log_test(
                         "Authentication Setup",
                         False,
-                        f"Failed to login after user creation: {result.get('error', 'Unknown error')}"
+                        f"Failed to login after user creation: {result.get('error', 'Unknown error')} - Status: {result.get('status_code')}"
                     )
                     return False
             else:
                 self.log_test(
                     "Authentication Setup",
                     False,
-                    f"Failed to create user: {register_result.get('error', 'Unknown error')}"
+                    f"Failed to create user: {register_result.get('error', 'Unknown error')} - Status: {register_result.get('status_code')} - Data: {register_result.get('data')}"
                 )
                 return False
 
