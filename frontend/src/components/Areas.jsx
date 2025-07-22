@@ -320,23 +320,47 @@ const Areas = ({ onSectionChange }) => {
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
-                  {area.total_tasks > 0 && (
-                    <div className="mt-4">
+                  {/* Progress Visualization */}
+                  <div className="mt-4">
+                    {/* Traditional Progress Bar */}
+                    <div className="mb-4">
                       <div className="w-full bg-gray-800 rounded-full h-2">
                         <div
                           className="h-2 rounded-full transition-all duration-300"
                           style={{
                             backgroundColor: area.color,
-                            width: `${(area.completed_tasks / area.total_tasks) * 100}%`
+                            width: `${area.total_tasks > 0 ? (area.completed_tasks / area.total_tasks) * 100 : 0}%`
                           }}
                         />
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        {area.completed_tasks || 0} of {area.total_tasks} tasks complete
+                        {area.completed_tasks || 0} of {area.total_tasks || 0} tasks complete
                       </p>
                     </div>
-                  )}
+
+                    {/* Enhanced Donut Chart Visualization */}
+                    {area.total_tasks > 0 && (
+                      <div className="flex justify-center mt-4">
+                        <DonutChart
+                          data={{
+                            labels: ['Completed', 'Active', 'Not Started'],
+                            values: [
+                              area.completed_tasks || 0,
+                              Math.max(0, (area.total_tasks || 0) - (area.completed_tasks || 0)),
+                              0 // For now, we don't distinguish between active and not started
+                            ],
+                            colors: [
+                              '#10B981', // Green for completed
+                              area.color, // Area color for active
+                              '#6B7280', // Gray for not started
+                            ]
+                          }}
+                          size="sm"
+                          showLegend={false}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
