@@ -604,6 +604,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
         project={selectedProject}
         tasks={projectTasks}
         onBack={handleBackFromKanban}
+        onTaskUpdate={() => loadProjectTasks(selectedProject.id)}
         loading={projectTasksLoading}
       />
     );
