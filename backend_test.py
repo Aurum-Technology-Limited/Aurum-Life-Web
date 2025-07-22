@@ -13,7 +13,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://4699e2b9-e04f-4653-9721-50f992f0e120.preview.emergentagent.com/api"
+BACKEND_URL = "https://51758ad4-104d-4da5-aaac-b17ee855cd03.preview.emergentagent.com/api"
 DEFAULT_USER_ID = "demo-user-123"
 
 class BackendTester:
