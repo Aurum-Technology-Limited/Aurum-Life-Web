@@ -166,7 +166,7 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
     );
   }
 
-  if (error && !kanbanData) {
+  if (error && !tasks) {
     return (
       <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
         <div className="max-w-7xl mx-auto">
@@ -175,7 +175,7 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
             <h3 className="text-lg font-medium text-red-400 mb-2">Error Loading Kanban Board</h3>
             <p className="text-red-300">{error}</p>
             <button
-              onClick={loadKanbanData}
+              onClick={onTaskUpdate}
               className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
             >
               Try Again
