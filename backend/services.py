@@ -585,6 +585,310 @@ class ProjectService:
         # Then delete the project
         return await delete_document("projects", {"id": project_id, "user_id": user_id})
 
+class RecurringTaskService:
+    @staticmethod
+    async def create_recurring_task(user_id: str, task_data: RecurringTaskCreate) -> RecurringTaskTemplate:
+        """Create a new recurring task template"""
+        # Validate project exists
+        project = await find_document("projects", {"id": task_data.project_id, "user_id": user_id})
+        if not project:
+            raise ValueError("Project not found")
+        
+        # Calculate next due date based on pattern
+        next_due = RecurringTaskService._calculate_next_due_date(
+            task_data.recurrence_pattern, 
+            datetime.now()
+        )
+        
+        template = RecurringTaskTemplate(
+            user_id=user_id,
+            next_due=next_due,
+            **task_data.dict()
+        )
+        
+        await create_document("recurring_task_templates", template.dict())
+        return template
+
+    @staticmethod
+    async def get_user_recurring_tasks(user_id: str) -> List[RecurringTaskResponse]:
+        """Get all recurring task templates for a user"""
+        templates_docs = await find_documents("recurring_task_templates", {"user_id": user_id})
+        
+        responses = []
+        for doc in templates_docs:
+            template_response = RecurringTaskResponse(**doc)
+            
+            # Get project name
+            if template_response.project_id:
+                project = await find_document("projects", {"id": template_response.project_id})
+                if project:
+                    template_response.project_name = project["name"]
+            
+            # Calculate statistics
+            instances = await find_documents("recurring_task_instances", {
+                "template_id": template_response.id
+            })
+            
+            template_response.total_instances = len(instances)
+            template_response.completed_instances = len([i for i in instances if i.get("completed")])
+            
+            if template_response.total_instances > 0:
+                template_response.completion_rate = (
+                    template_response.completed_instances / template_response.total_instances * 100
+                )
+            
+            responses.append(template_response)
+        
+        return responses
+
+    @staticmethod
+    async def update_recurring_task(user_id: str, template_id: str, task_data: RecurringTaskUpdate) -> bool:
+        """Update a recurring task template"""
+        update_data = {k: v for k, v in task_data.dict().items() if v is not None}
+        
+        # If recurrence pattern changed, recalculate next due date
+        if "recurrence_pattern" in update_data:
+            next_due = RecurringTaskService._calculate_next_due_date(
+                update_data["recurrence_pattern"], 
+                datetime.now()
+            )
+            update_data["next_due"] = next_due
+        
+        update_data["updated_at"] = datetime.utcnow()
+        
+        return await update_document("recurring_task_templates", {
+            "id": template_id, 
+            "user_id": user_id
+        }, update_data)
+
+    @staticmethod
+    async def delete_recurring_task(user_id: str, template_id: str) -> bool:
+        """Delete a recurring task template and all its instances"""
+        # Delete all instances first
+        await delete_document("recurring_task_instances", {"template_id": template_id})
+        
+        # Delete the template
+        return await delete_document("recurring_task_templates", {
+            "id": template_id, 
+            "user_id": user_id
+        })
+
+    @staticmethod
+    async def generate_recurring_task_instances():
+        """Scheduled job to generate recurring task instances"""
+        try:
+            now = datetime.now()
+            
+            # Find templates that need new instances
+            templates_docs = await find_documents("recurring_task_templates", {
+                "is_active": True,
+                "$or": [
+                    {"next_due": {"$lte": now}},
+                    {"next_due": None}
+                ]
+            })
+            
+            for template_doc in templates_docs:
+                template = RecurringTaskTemplate(**template_doc)
+                
+                # Check if we should create instances for this template
+                if await RecurringTaskService._should_generate_instances(template, now):
+                    instances = await RecurringTaskService._generate_instances_for_template(
+                        template, now
+                    )
+                    
+                    # Create the instances
+                    for instance in instances:
+                        await create_document("recurring_task_instances", instance.dict())
+                    
+                    # Update template's last_generated and next_due
+                    next_due = RecurringTaskService._calculate_next_due_date(
+                        template.recurrence_pattern, 
+                        now
+                    )
+                    
+                    await update_document("recurring_task_templates", {
+                        "id": template.id
+                    }, {
+                        "last_generated": now,
+                        "next_due": next_due
+                    })
+                    
+                    print(f"Generated {len(instances)} instances for template {template.name}")
+            
+        except Exception as e:
+            print(f"Error generating recurring task instances: {e}")
+
+    @staticmethod
+    async def _should_generate_instances(template: RecurringTaskTemplate, now: datetime) -> bool:
+        """Check if we should generate new instances for a template"""
+        if not template.is_active:
+            return False
+        
+        # Check if we've reached max instances
+        if template.recurrence_pattern.max_instances:
+            existing_count = len(await find_documents("recurring_task_instances", {
+                "template_id": template.id
+            }))
+            if existing_count >= template.recurrence_pattern.max_instances:
+                return False
+        
+        # Check if we've passed end date
+        if template.recurrence_pattern.end_date and now > template.recurrence_pattern.end_date:
+            return False
+        
+        return True
+
+    @staticmethod
+    async def _generate_instances_for_template(template: RecurringTaskTemplate, now: datetime) -> List[RecurringTaskInstance]:
+        """Generate task instances for a template"""
+        instances = []
+        pattern = template.recurrence_pattern
+        
+        # Generate instances for the next period (next 30 days max)
+        end_date = min(
+            now + timedelta(days=30),
+            pattern.end_date or now + timedelta(days=365)
+        )
+        
+        current_date = template.next_due or now
+        
+        while current_date <= end_date:
+            # Don't create instances too far in the past
+            if current_date >= now - timedelta(days=1):
+                instance = RecurringTaskInstance(
+                    user_id=template.user_id,
+                    template_id=template.id,
+                    name=template.name,
+                    description=template.description,
+                    priority=template.priority,
+                    project_id=template.project_id,
+                    category=template.category,
+                    estimated_duration=template.estimated_duration,
+                    due_date=current_date
+                )
+                instances.append(instance)
+            
+            # Calculate next occurrence
+            current_date = RecurringTaskService._calculate_next_occurrence(
+                current_date, pattern
+            )
+            
+            # Prevent infinite loops
+            if len(instances) >= 100:
+                break
+        
+        return instances
+
+    @staticmethod
+    def _calculate_next_due_date(pattern: RecurrencePattern, from_date: datetime) -> datetime:
+        """Calculate the next due date based on recurrence pattern"""
+        if pattern.type == RecurrenceEnum.none:
+            return from_date
+        
+        return RecurringTaskService._calculate_next_occurrence(from_date, pattern)
+
+    @staticmethod
+    def _calculate_next_occurrence(from_date: datetime, pattern: RecurrencePattern) -> datetime:
+        """Calculate next occurrence based on recurrence pattern"""
+        if pattern.type == RecurrenceEnum.daily:
+            return from_date + timedelta(days=pattern.interval)
+        
+        elif pattern.type == RecurrenceEnum.weekly:
+            if pattern.weekdays:
+                # Find next occurrence on specified weekdays
+                current_weekday = from_date.weekday()  # 0 = Monday
+                target_weekdays = [
+                    ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].index(day.value)
+                    for day in pattern.weekdays
+                ]
+                target_weekdays.sort()
+                
+                # Find next target weekday
+                next_weekday = None
+                for weekday in target_weekdays:
+                    if weekday > current_weekday:
+                        next_weekday = weekday
+                        break
+                
+                if next_weekday is None:
+                    # Go to first weekday of next week
+                    next_weekday = target_weekdays[0]
+                    days_ahead = 7 - current_weekday + next_weekday
+                else:
+                    days_ahead = next_weekday - current_weekday
+                
+                return from_date + timedelta(days=days_ahead)
+            else:
+                return from_date + timedelta(weeks=pattern.interval)
+        
+        elif pattern.type == RecurrenceEnum.monthly:
+            # Add months (approximate - may need adjustment for day overflow)
+            next_month = from_date.month + pattern.interval
+            next_year = from_date.year + (next_month - 1) // 12
+            next_month = ((next_month - 1) % 12) + 1
+            
+            # Handle day overflow (e.g., Jan 31 -> Feb 28)
+            day = pattern.month_day or from_date.day
+            try:
+                return from_date.replace(year=next_year, month=next_month, day=day)
+            except ValueError:
+                # Day doesn't exist in target month, use last day of month
+                import calendar
+                last_day = calendar.monthrange(next_year, next_month)[1]
+                return from_date.replace(year=next_year, month=next_month, day=last_day)
+        
+        # Default fallback
+        return from_date + timedelta(days=1)
+
+    @staticmethod
+    async def get_recurring_task_instances(user_id: str, template_id: Optional[str] = None, 
+                                          start_date: Optional[datetime] = None,
+                                          end_date: Optional[datetime] = None) -> List[RecurringTaskInstance]:
+        """Get recurring task instances with optional filtering"""
+        query = {"user_id": user_id}
+        
+        if template_id:
+            query["template_id"] = template_id
+        
+        if start_date or end_date:
+            date_query = {}
+            if start_date:
+                date_query["$gte"] = start_date
+            if end_date:
+                date_query["$lte"] = end_date
+            query["due_date"] = date_query
+        
+        instances_docs = await find_documents("recurring_task_instances", query)
+        instances_docs.sort(key=lambda x: x.get("due_date", datetime.min))
+        
+        return [RecurringTaskInstance(**doc) for doc in instances_docs]
+
+    @staticmethod
+    async def complete_recurring_task_instance(user_id: str, instance_id: str) -> bool:
+        """Mark a recurring task instance as complete"""
+        return await update_document("recurring_task_instances", {
+            "id": instance_id,
+            "user_id": user_id
+        }, {
+            "completed": True,
+            "completed_at": datetime.utcnow(),
+            "status": TaskStatusEnum.completed,
+            "kanban_column": "done"
+        })
+
+    @staticmethod
+    async def skip_recurring_task_instance(user_id: str, instance_id: str) -> bool:
+        """Skip a recurring task instance"""
+        return await update_document("recurring_task_instances", {
+            "id": instance_id,
+            "user_id": user_id
+        }, {
+            "skipped": True,
+            "status": TaskStatusEnum.completed  # Consider it done but skipped
+        })
+
+
 class TaskService:
     @staticmethod
     async def create_task(user_id: str, task_data: TaskCreate) -> Task:
