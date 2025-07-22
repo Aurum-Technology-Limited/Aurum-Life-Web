@@ -99,9 +99,11 @@ function App() {
   if (isPasswordResetPage) {
     return (
       <AuthProvider>
-        <div className="App">
-          <PasswordReset />
-        </div>
+        <DataProvider>
+          <div className="App">
+            <PasswordReset />
+          </div>
+        </DataProvider>
       </AuthProvider>
     );
   }
