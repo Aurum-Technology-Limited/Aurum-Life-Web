@@ -199,31 +199,6 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
           
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Project
-            </label>
-            <select
-              value={formData.project_id}
-              onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
-              required
-              disabled={loading || loadingProjects}
-            >
-              {loadingProjects ? (
-                <option value="">Loading projects...</option>
-              ) : projects.length > 0 ? (
-                projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name} ({project.area_name})
-                  </option>
-                ))
-              ) : (
-                <option value="">No projects available</option>
-              )}
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
               Description
             </label>
             <textarea
