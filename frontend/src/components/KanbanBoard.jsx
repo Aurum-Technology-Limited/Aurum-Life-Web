@@ -231,7 +231,7 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
         {/* Kanban Board */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {columns.map((column) => {
-            const columnTasks = kanbanData?.columns?.[column.id] || [];
+            const columnTasks = tasksByColumn[column.id] || [];
             const taskCount = columnTasks.length;
 
             return (
