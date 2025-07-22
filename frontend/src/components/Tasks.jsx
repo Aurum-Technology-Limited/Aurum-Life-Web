@@ -283,7 +283,18 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
     
     try {
       // Save the main task first
-      await onSave(submitData);
+      const savedTask = await onSave(submitData);
+      const taskId = savedTask?.id || task?.id;
+      
+      // Save dependencies if they've changed
+      if (taskId && selectedDependencyIds.length >= 0) { // >= 0 to handle empty array (removing all dependencies)
+        try {
+          await tasksAPI.updateTaskDependencies(taskId, selectedDependencyIds);
+        } catch (err) {
+          console.error('Error saving task dependencies:', err);
+          // Don't throw here - task was saved successfully, just dependencies failed
+        }
+      }
       
       // If creating a new task and we have subtasks, create them
       if (!task && subtasks.length > 0) {
