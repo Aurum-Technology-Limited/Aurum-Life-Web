@@ -3,9 +3,6 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Default user ID for demo
-const DEFAULT_USER_ID = 'demo-user-123';
-
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API,
