@@ -327,8 +327,8 @@ const Today = () => {
   return (
     <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
       <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
                 Today's Focus
