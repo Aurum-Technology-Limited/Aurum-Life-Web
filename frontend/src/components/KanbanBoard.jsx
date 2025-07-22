@@ -210,10 +210,10 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
           </div>
           <div className="text-right">
             <p className="text-lg font-medium text-white">
-              {kanbanData?.completed_tasks || 0} / {kanbanData?.total_tasks || 0} Complete
+              {completedTasks} / {totalTasks} Complete
             </p>
             <p className="text-sm text-gray-400">
-              {Math.round(((kanbanData?.completed_tasks || 0) / Math.max(kanbanData?.total_tasks || 1, 1)) * 100)}% Progress
+              {Math.round((completedTasks / Math.max(totalTasks, 1)) * 100)}% Progress
             </p>
           </div>
         </div>
