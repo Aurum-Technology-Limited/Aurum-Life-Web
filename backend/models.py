@@ -354,7 +354,7 @@ class TaskCreate(BaseModel):
     parent_task_id: Optional[str] = None
     name: str
     description: str = ""
-    status: TaskStatusEnum = TaskStatusEnum.not_started
+    status: TaskStatusEnum = TaskStatusEnum.todo
     priority: PriorityEnum = PriorityEnum.medium
     due_date: Optional[datetime] = None
     due_time: Optional[str] = None  # Time in HH:MM format
