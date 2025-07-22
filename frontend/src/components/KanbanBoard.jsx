@@ -14,16 +14,13 @@ import {
 } from 'lucide-react';
 import { projectsAPI, tasksAPI } from '../services/api';
 
-const KanbanBoard = ({ projectId, onBack }) => {
-  const [project, setProject] = useState(null);
-  const [kanbanData, setKanbanData] = useState(null);
-  const [loading, setLoading] = useState(true);
+const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
   const [error, setError] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState('todo');
   const [editingTask, setEditingTask] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',  // Changed from 'title' to 'name' to match backend
+    name: '',
     description: '',
     priority: 'medium',
     due_date: '',
