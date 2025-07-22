@@ -316,6 +316,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
 };
 
 const Tasks = () => {
+  const { onDataMutation } = useDataContext();
   const [tasks, setTasks] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
