@@ -413,6 +413,80 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             </div>
           </div>
           
+          {/* Sub-tasks Section */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-300">Sub-tasks</h4>
+              <span className="text-xs text-gray-500">{subtasks.length} sub-tasks</span>
+            </div>
+            
+            {/* Add new sub-task */}
+            <div className="bg-gray-800 rounded-lg p-3 mb-3">
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={newSubtask.name}
+                  onChange={(e) => setNewSubtask({ ...newSubtask, name: e.target.value })}
+                  placeholder="Sub-task name"
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-gray-700 border border-gray-600 text-white focus:border-yellow-400 focus:outline-none"
+                />
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={newSubtask.description}
+                    onChange={(e) => setNewSubtask({ ...newSubtask, description: e.target.value })}
+                    placeholder="Description (optional)"
+                    className="flex-1 px-3 py-2 text-sm rounded-lg bg-gray-700 border border-gray-600 text-white focus:border-yellow-400 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={addSubtask}
+                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                    disabled={!newSubtask.name.trim()}
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Sub-tasks list */}
+            {subtasks.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {subtasks.map((subtask) => (
+                  <div key={subtask.id} className="bg-gray-800 rounded-lg p-3 flex items-center justify-between">
+                    <div className="flex items-center space-x-3 flex-1">
+                      <input
+                        type="checkbox"
+                        checked={subtask.completed}
+                        onChange={() => toggleSubtaskComplete(subtask.id)}
+                        className="rounded bg-gray-700 border-gray-600 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
+                      />
+                      <div className="flex-1">
+                        <div className={`text-sm font-medium ${subtask.completed ? 'line-through text-gray-500' : 'text-white'}`}>
+                          {subtask.name}
+                          {subtask.isNew && <span className="ml-2 text-xs text-blue-400">(New)</span>}
+                        </div>
+                        {subtask.description && (
+                          <div className={`text-xs mt-1 ${subtask.completed ? 'text-gray-600' : 'text-gray-400'}`}>
+                            {subtask.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeSubtask(subtask.id)}
+                      className="p-1 text-gray-400 hover:text-red-400 rounded transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
