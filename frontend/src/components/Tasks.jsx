@@ -112,6 +112,12 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
   const [loadingProjects, setLoadingProjects] = useState(false);
   const [subtasks, setSubtasks] = useState([]);  // For managing sub-tasks
   const [newSubtask, setNewSubtask] = useState({ name: '', description: '' });  // For adding new sub-tasks
+  
+  // Task Dependencies state (UI-1.3.1)
+  const [dependencies, setDependencies] = useState([]);
+  const [availableDependencies, setAvailableDependencies] = useState([]);
+  const [loadingDependencies, setLoadingDependencies] = useState(false);
+  const [selectedDependencyIds, setSelectedDependencyIds] = useState([]);
 
   const loadSubtasks = async (taskId) => {
     try {
