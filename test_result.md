@@ -725,7 +725,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Project Templates System Implementation"
+    - "Archiving System for Areas and Projects"
+    - "Enhanced API Filtering for Archive Support"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
