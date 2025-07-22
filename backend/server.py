@@ -378,10 +378,10 @@ async def delete_area(area_id: str, current_user: User = Depends(get_current_act
 
 # Project endpoints
 @api_router.post("/projects", response_model=Project)
-async def create_project(project_data: ProjectCreate, user_id: str = Query(DEFAULT_USER_ID)):
+async def create_project(project_data: ProjectCreate, current_user: User = Depends(get_current_active_user)):
     """Create a new project"""
     try:
-        return await ProjectService.create_project(user_id, project_data)
+        return await ProjectService.create_project(current_user.id, project_data)
     except Exception as e:
         logger.error(f"Error creating project: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -389,11 +389,11 @@ async def create_project(project_data: ProjectCreate, user_id: str = Query(DEFAU
 @api_router.get("/projects", response_model=List[ProjectResponse])
 async def get_projects(
     area_id: str = Query(None),
-    user_id: str = Query(DEFAULT_USER_ID)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get all projects for user, optionally filtered by area"""
     try:
-        return await ProjectService.get_user_projects(user_id, area_id)
+        return await ProjectService.get_user_projects(current_user.id, area_id)
     except Exception as e:
         logger.error(f"Error getting projects: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -402,18 +402,18 @@ async def get_projects(
 async def get_project(
     project_id: str, 
     include_tasks: bool = Query(False),
-    user_id: str = Query(DEFAULT_USER_ID)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get project by ID"""
-    project = await ProjectService.get_project(user_id, project_id, include_tasks)
+    project = await ProjectService.get_project(current_user.id, project_id, include_tasks)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
 
 @api_router.put("/projects/{project_id}", response_model=dict)
-async def update_project(project_id: str, project_data: ProjectUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+async def update_project(project_id: str, project_data: ProjectUpdate, current_user: User = Depends(get_current_active_user)):
     """Update a project"""
-    success = await ProjectService.update_project(user_id, project_id, project_data)
+    success = await ProjectService.update_project(current_user.id, project_id, project_data)
     if not success:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"success": True, "message": "Project updated successfully"}
