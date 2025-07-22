@@ -236,7 +236,35 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Project *
+              </label>
+              <select
+                value={formData.project_id}
+                onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                disabled={loading || loadingProjects}
+                required
+              >
+                <option value="">Select a project</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name} ({project.area_name})
+                  </option>
+                ))}
+              </select>
+              {loadingProjects && (
+                <p className="text-xs text-gray-400 mt-1">Loading projects...</p>
+              )}
+              {!loadingProjects && projects.length === 0 && (
+                <p className="text-xs text-red-400 mt-1">
+                  No projects available. Please create a project first.
+                </p>
+              )}
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Priority
@@ -252,7 +280,9 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                 <option value="high">High</option>
               </select>
             </div>
-            
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Due Date
@@ -265,26 +295,26 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                 disabled={loading}
               />
             </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Category
-            </label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
-              disabled={loading}
-            >
-              <option value="personal">Personal</option>
-              <option value="learning">Learning</option>
-              <option value="health">Health</option>
-              <option value="work">Work</option>
-              <option value="mindfulness">Mindfulness</option>
-              <option value="coaching">Coaching</option>
-              <option value="planning">Planning</option>
-            </select>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Category
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                disabled={loading}
+              >
+                <option value="personal">Personal</option>
+                <option value="learning">Learning</option>
+                <option value="health">Health</option>
+                <option value="work">Work</option>
+                <option value="mindfulness">Mindfulness</option>
+                <option value="coaching">Coaching</option>
+                <option value="planning">Planning</option>
+              </select>
+            </div>
           </div>
           
           <div className="flex space-x-3 pt-4">
