@@ -76,7 +76,7 @@ const PasswordReset = () => {
   };
 
   const handleBackToLogin = () => {
-    navigate('/');
+    window.location.href = '/';
   };
 
   if (success) {
