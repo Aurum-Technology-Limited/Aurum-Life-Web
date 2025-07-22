@@ -102,12 +102,16 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
     description: '',
     priority: 'medium',
     due_date: '',
+    due_time: '',  // New field for time
     category: 'personal',
-    project_id: ''
+    project_id: '',
+    sub_task_completion_required: false  // New field for sub-task completion requirement
   });
   
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
+  const [subtasks, setSubtasks] = useState([]);  // For managing sub-tasks
+  const [newSubtask, setNewSubtask] = useState({ name: '', description: '' });  // For adding new sub-tasks
 
   // Load projects when modal opens
   useEffect(() => {
