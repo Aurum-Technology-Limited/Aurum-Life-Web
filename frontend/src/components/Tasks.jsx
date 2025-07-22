@@ -559,6 +559,83 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             )}
           </div>
           
+          {/* Task Dependencies Section (UI-1.3.1) */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-300">Prerequisites</h4>
+              <span className="text-xs text-gray-500">{selectedDependencyIds.length} dependencies</span>
+            </div>
+            
+            {loadingDependencies ? (
+              <div className="bg-gray-800 rounded-lg p-4 flex items-center justify-center">
+                <Loader2 size={16} className="animate-spin text-gray-400 mr-2" />
+                <span className="text-sm text-gray-400">Loading available tasks...</span>
+              </div>
+            ) : availableDependencies.length > 0 ? (
+              <div className="bg-gray-800 rounded-lg p-3 max-h-32 overflow-y-auto">
+                <div className="text-xs text-gray-500 mb-2">
+                  Select tasks that must be completed before this task can start:
+                </div>
+                <div className="space-y-2">
+                  {availableDependencies.map((depTask) => (
+                    <label key={depTask.id} className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedDependencyIds.includes(depTask.id)}
+                        onChange={() => handleDependencyToggle(depTask.id)}
+                        className="rounded bg-gray-700 border-gray-600 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-sm font-medium truncate ${
+                          depTask.completed ? 'line-through text-gray-500' : 'text-white'
+                        }`}>
+                          {depTask.name}
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className={`inline-block w-2 h-2 rounded-full ${
+                            depTask.completed ? 'bg-green-400' :
+                            depTask.priority === 'high' ? 'bg-red-400' :
+                            depTask.priority === 'medium' ? 'bg-yellow-400' : 'bg-green-400'
+                          }`}></span>
+                          <span className="text-xs text-gray-500 capitalize">
+                            {depTask.status?.replace('_', ' ') || 'todo'}
+                          </span>
+                          {depTask.completed && (
+                            <span className="text-xs text-green-400">✓ Complete</span>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gray-800 rounded-lg p-4 text-center">
+                <span className="text-sm text-gray-500">
+                  No other tasks available as prerequisites
+                </span>
+              </div>
+            )}
+            
+            {/* Show current dependencies */}
+            {selectedDependencyIds.length > 0 && (
+              <div className="mt-3">
+                <div className="text-xs text-gray-500 mb-2">Selected prerequisites:</div>
+                <div className="bg-gray-700 rounded-lg p-2 text-xs">
+                  {selectedDependencyIds.map((depId, index) => {
+                    const depTask = availableDependencies.find(t => t.id === depId);
+                    return (
+                      <span key={depId} className="text-yellow-400">
+                        {depTask?.name || 'Unknown Task'}
+                        {index < selectedDependencyIds.length - 1 && ', '}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+          
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
