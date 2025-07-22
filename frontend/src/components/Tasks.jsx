@@ -69,6 +69,23 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
             </h3>
             <p className="text-sm text-gray-400 mb-3">{task.description}</p>
             
+            {/* Blocked status indicator (UI-1.3.2 & UI-1.3.3) */}
+            {isBlocked && !task.completed && (
+              <div className="bg-orange-900/20 border border-orange-400/30 rounded-lg p-2 mb-3">
+                <div className="flex items-center space-x-2">
+                  <Lock size={14} className="text-orange-400 flex-shrink-0" />
+                  <div className="text-xs">
+                    <div className="text-orange-400 font-medium">Prerequisites required</div>
+                    {task.dependency_tasks && task.dependency_tasks.length > 0 && (
+                      <div className="text-gray-400 mt-1">
+                        Complete: {task.dependency_tasks.map(dep => dep.name).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="flex items-center space-x-4 text-sm">
               <div className="flex items-center space-x-1">
                 <Calendar size={14} className="text-gray-400" />
