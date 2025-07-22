@@ -1170,6 +1170,338 @@ class BackendTester:
                     f"Projects in deleted area: {project_count_after} (should be 0)"
                 )
 
+    def test_task_dependencies_backend_implementation(self):
+        """Test Task Dependencies Backend Implementation - Phase 1"""
+        print("\n=== TASK DEPENDENCIES BACKEND IMPLEMENTATION TESTING ===")
+        
+        if not self.auth_token:
+            self.log_test("Task Dependencies Testing Setup", False, "No auth token available for testing")
+            return
+        
+        # Setup: Create test project and tasks for dependency testing
+        areas_result = self.make_request('GET', '/areas', use_auth=True)
+        if not areas_result['success'] or not areas_result['data']:
+            self.log_test("Task Dependencies Setup", False, "No areas found to create test project")
+            return
+        
+        test_area_id = areas_result['data'][0]['id']
+        
+        # Create test project
+        project_data = {
+            "area_id": test_area_id,
+            "name": "Task Dependencies Test Project",
+            "description": "Project for testing task dependencies",
+            "status": "In Progress",
+            "priority": "high"
+        }
+        
+        project_result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+        if not project_result['success']:
+            self.log_test("Task Dependencies Setup", False, "Failed to create test project")
+            return
+        
+        test_project_id = project_result['data']['id']
+        self.created_resources['projects'].append(test_project_id)
+        
+        # Create prerequisite tasks (Task A and Task B)
+        task_a_data = {
+            "project_id": test_project_id,
+            "name": "Prerequisite Task A",
+            "description": "First prerequisite task",
+            "status": "todo",
+            "priority": "high"
+        }
+        
+        task_a_result = self.make_request('POST', '/tasks', data=task_a_data, use_auth=True)
+        self.log_test(
+            "Create Prerequisite Task A",
+            task_a_result['success'],
+            f"Created prerequisite task A: {task_a_result['data'].get('name', 'Unknown')}" if task_a_result['success'] else f"Failed to create task A: {task_a_result.get('error', 'Unknown error')}"
+        )
+        
+        if not task_a_result['success']:
+            return
+        
+        task_a_id = task_a_result['data']['id']
+        self.created_resources['tasks'].append(task_a_id)
+        
+        task_b_data = {
+            "project_id": test_project_id,
+            "name": "Prerequisite Task B", 
+            "description": "Second prerequisite task",
+            "status": "todo",
+            "priority": "medium"
+        }
+        
+        task_b_result = self.make_request('POST', '/tasks', data=task_b_data, use_auth=True)
+        self.log_test(
+            "Create Prerequisite Task B",
+            task_b_result['success'],
+            f"Created prerequisite task B: {task_b_result['data'].get('name', 'Unknown')}" if task_b_result['success'] else f"Failed to create task B: {task_b_result.get('error', 'Unknown error')}"
+        )
+        
+        if not task_b_result['success']:
+            return
+        
+        task_b_id = task_b_result['data']['id']
+        self.created_resources['tasks'].append(task_b_id)
+        
+        # Create dependent task (Task C) with dependencies on A and B
+        task_c_data = {
+            "project_id": test_project_id,
+            "name": "Dependent Task C",
+            "description": "Task that depends on A and B",
+            "status": "todo",
+            "priority": "high",
+            "dependency_task_ids": [task_a_id, task_b_id]
+        }
+        
+        task_c_result = self.make_request('POST', '/tasks', data=task_c_data, use_auth=True)
+        self.log_test(
+            "Create Dependent Task C",
+            task_c_result['success'],
+            f"Created dependent task C with dependencies: {task_c_result['data'].get('name', 'Unknown')}" if task_c_result['success'] else f"Failed to create task C: {task_c_result.get('error', 'Unknown error')}"
+        )
+        
+        if not task_c_result['success']:
+            return
+        
+        task_c_id = task_c_result['data']['id']
+        self.created_resources['tasks'].append(task_c_id)
+        
+        # TEST 1: DEPENDENCY VALIDATION - Try to move dependent task to in_progress while dependencies incomplete
+        print("\n   --- DEPENDENCY VALIDATION TESTING ---")
+        
+        update_data = {"status": "in_progress"}
+        result = self.make_request('PUT', f'/tasks/{task_c_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "Dependency Validation - Block in_progress Status",
+            not result['success'] and result['status_code'] == 400,
+            f"Task correctly blocked from in_progress status (status: {result['status_code']})" if not result['success'] else "Task incorrectly allowed to move to in_progress"
+        )
+        
+        # Verify error message lists prerequisite tasks (FR-1.1.3)
+        if not result['success'] and 'data' in result and 'detail' in result['data']:
+            error_message = result['data']['detail']
+            contains_task_a = "Prerequisite Task A" in error_message
+            contains_task_b = "Prerequisite Task B" in error_message
+            self.log_test(
+                "Dependency Error Message - Lists Prerequisites",
+                contains_task_a and contains_task_b,
+                f"Error message correctly lists prerequisite tasks" if contains_task_a and contains_task_b else f"Error message incomplete: {error_message}"
+            )
+        
+        # TEST 2: Try to move to review status
+        update_data = {"status": "review"}
+        result = self.make_request('PUT', f'/tasks/{task_c_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "Dependency Validation - Block review Status",
+            not result['success'] and result['status_code'] == 400,
+            f"Task correctly blocked from review status" if not result['success'] else "Task incorrectly allowed to move to review"
+        )
+        
+        # TEST 3: Try to mark as completed
+        update_data = {"status": "completed"}
+        result = self.make_request('PUT', f'/tasks/{task_c_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "Dependency Validation - Block completed Status",
+            not result['success'] and result['status_code'] == 400,
+            f"Task correctly blocked from completed status" if not result['success'] else "Task incorrectly allowed to complete"
+        )
+        
+        # TEST 4: Try to mark completed via completion toggle
+        update_data = {"completed": True}
+        result = self.make_request('PUT', f'/tasks/{task_c_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "Dependency Validation - Block Completion Toggle",
+            not result['success'] and result['status_code'] == 400,
+            f"Task correctly blocked from completion toggle" if not result['success'] else "Task incorrectly allowed completion toggle"
+        )
+        
+        # TEST 5: Verify task without dependencies can be updated normally
+        update_data = {"status": "in_progress"}
+        result = self.make_request('PUT', f'/tasks/{task_a_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "No Dependencies - Allow Status Update",
+            result['success'],
+            f"Task without dependencies correctly allowed status update" if result['success'] else f"Task without dependencies incorrectly blocked: {result.get('error', 'Unknown error')}"
+        )
+        
+        # TEST 6: DEPENDENCY MANAGEMENT ENDPOINTS
+        print("\n   --- DEPENDENCY MANAGEMENT ENDPOINTS TESTING ---")
+        
+        # Test GET /api/tasks/{id}/dependencies
+        result = self.make_request('GET', f'/tasks/{task_c_id}/dependencies', use_auth=True)
+        self.log_test(
+            "GET Task Dependencies Endpoint",
+            result['success'],
+            f"Retrieved task dependencies successfully" if result['success'] else f"Failed to get dependencies: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            deps_data = result['data']
+            expected_fields = ['task_id', 'dependency_task_ids', 'dependency_tasks', 'can_start']
+            missing_fields = [field for field in expected_fields if field not in deps_data]
+            
+            self.log_test(
+                "Dependencies Response Structure",
+                len(missing_fields) == 0,
+                f"All expected fields present" if len(missing_fields) == 0 else f"Missing fields: {missing_fields}"
+            )
+            
+            # Verify dependency task IDs are correct
+            returned_dep_ids = set(deps_data.get('dependency_task_ids', []))
+            expected_dep_ids = {task_a_id, task_b_id}
+            self.log_test(
+                "Dependencies - Correct Task IDs",
+                returned_dep_ids == expected_dep_ids,
+                f"Dependency task IDs match expected" if returned_dep_ids == expected_dep_ids else f"Expected {expected_dep_ids}, got {returned_dep_ids}"
+            )
+            
+            # Verify can_start is False (dependencies not complete)
+            self.log_test(
+                "Dependencies - Can Start Status",
+                deps_data.get('can_start') == False,
+                f"Can start correctly set to False" if deps_data.get('can_start') == False else f"Can start incorrectly set to {deps_data.get('can_start')}"
+            )
+        
+        # Test PUT /api/tasks/{id}/dependencies - Update dependencies
+        new_dependency_ids = [task_a_id]  # Remove task B dependency
+        result = self.make_request('PUT', f'/tasks/{task_c_id}/dependencies', data=new_dependency_ids, use_auth=True)
+        self.log_test(
+            "PUT Update Task Dependencies",
+            result['success'],
+            f"Updated task dependencies successfully" if result['success'] else f"Failed to update dependencies: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Verify the update worked
+        if result['success']:
+            result = self.make_request('GET', f'/tasks/{task_c_id}/dependencies', use_auth=True)
+            if result['success']:
+                updated_deps = result['data'].get('dependency_task_ids', [])
+                self.log_test(
+                    "Dependencies Update Verification",
+                    updated_deps == [task_a_id],
+                    f"Dependencies correctly updated to {updated_deps}" if updated_deps == [task_a_id] else f"Dependencies not updated correctly: {updated_deps}"
+                )
+        
+        # Test GET /api/projects/{id}/tasks/available-dependencies
+        result = self.make_request('GET', f'/projects/{test_project_id}/tasks/available-dependencies', params={'task_id': task_c_id}, use_auth=True)
+        self.log_test(
+            "GET Available Dependencies Endpoint",
+            result['success'],
+            f"Retrieved available dependency tasks successfully" if result['success'] else f"Failed to get available dependencies: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            available_tasks = result['data']
+            # Should include task A and B but not task C itself
+            available_ids = [task['id'] for task in available_tasks]
+            self.log_test(
+                "Available Dependencies - Excludes Self",
+                task_c_id not in available_ids,
+                f"Available dependencies correctly excludes self" if task_c_id not in available_ids else "Available dependencies incorrectly includes self"
+            )
+            
+            self.log_test(
+                "Available Dependencies - Includes Other Tasks",
+                task_a_id in available_ids and task_b_id in available_ids,
+                f"Available dependencies includes other project tasks" if task_a_id in available_ids and task_b_id in available_ids else f"Available dependencies missing expected tasks: {available_ids}"
+            )
+        
+        # TEST 7: DEPENDENCY BUSINESS LOGIC
+        print("\n   --- DEPENDENCY BUSINESS LOGIC TESTING ---")
+        
+        # Test circular dependency prevention
+        circular_deps = [task_c_id]  # Task C depends on itself
+        result = self.make_request('PUT', f'/tasks/{task_c_id}/dependencies', data=circular_deps, use_auth=True)
+        self.log_test(
+            "Circular Dependency Prevention",
+            not result['success'] and result['status_code'] == 400,
+            f"Circular dependency correctly prevented" if not result['success'] else "Circular dependency incorrectly allowed"
+        )
+        
+        # Test non-existent dependency task
+        fake_task_id = "fake-task-id-12345"
+        invalid_deps = [fake_task_id]
+        result = self.make_request('PUT', f'/tasks/{task_c_id}/dependencies', data=invalid_deps, use_auth=True)
+        self.log_test(
+            "Non-existent Dependency Validation",
+            not result['success'] and result['status_code'] == 400,
+            f"Non-existent dependency correctly rejected" if not result['success'] else "Non-existent dependency incorrectly allowed"
+        )
+        
+        # TEST 8: Complete dependency workflow
+        print("\n   --- DEPENDENCY WORKFLOW TESTING ---")
+        
+        # Reset task C dependencies to both A and B
+        both_deps = [task_a_id, task_b_id]
+        result = self.make_request('PUT', f'/tasks/{task_c_id}/dependencies', data=both_deps, use_auth=True)
+        
+        # Complete Task A
+        update_data = {"completed": True}
+        result = self.make_request('PUT', f'/tasks/{task_a_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "Complete Prerequisite Task A",
+            result['success'],
+            f"Task A completed successfully" if result['success'] else f"Failed to complete Task A: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Task C should still be blocked (Task B not complete)
+        update_data = {"status": "in_progress"}
+        result = self.make_request('PUT', f'/tasks/{task_c_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "Partial Dependencies - Still Blocked",
+            not result['success'] and result['status_code'] == 400,
+            f"Task C correctly still blocked with partial dependencies" if not result['success'] else "Task C incorrectly allowed with partial dependencies"
+        )
+        
+        # Complete Task B
+        update_data = {"completed": True}
+        result = self.make_request('PUT', f'/tasks/{task_b_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "Complete Prerequisite Task B",
+            result['success'],
+            f"Task B completed successfully" if result['success'] else f"Failed to complete Task B: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Now Task C should be allowed to proceed
+        update_data = {"status": "in_progress"}
+        result = self.make_request('PUT', f'/tasks/{task_c_id}', data=update_data, use_auth=True)
+        self.log_test(
+            "All Dependencies Complete - Allow Progress",
+            result['success'],
+            f"Task C correctly allowed to progress after all dependencies complete" if result['success'] else f"Task C incorrectly blocked after dependencies complete: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Verify can_start is now True
+        result = self.make_request('GET', f'/tasks/{task_c_id}/dependencies', use_auth=True)
+        if result['success']:
+            can_start = result['data'].get('can_start')
+            self.log_test(
+                "Dependencies Complete - Can Start True",
+                can_start == True,
+                f"Can start correctly set to True after dependencies complete" if can_start == True else f"Can start incorrectly set to {can_start}"
+            )
+        
+        # TEST 9: ERROR HANDLING
+        print("\n   --- ERROR HANDLING TESTING ---")
+        
+        # Test 400 errors for dependency validation failures (already tested above)
+        # Test validation of non-existent dependency tasks (already tested above)
+        
+        # Test invalid task ID in dependencies endpoint
+        result = self.make_request('GET', f'/tasks/invalid-task-id/dependencies', use_auth=True)
+        self.log_test(
+            "Invalid Task ID - Dependencies Endpoint",
+            not result['success'] and result['status_code'] == 404,
+            f"Invalid task ID correctly returns 404" if not result['success'] and result['status_code'] == 404 else f"Invalid task ID handling incorrect: status {result['status_code']}"
+        )
+        
+        print(f"\n   ✅ TASK DEPENDENCIES BACKEND IMPLEMENTATION TESTING COMPLETED")
+        print(f"   📊 Tested: Dependency validation, management endpoints, business logic, and error handling")
+        print(f"   🔒 Verified: Tasks blocked when dependencies incomplete, clear error messages, workflow completion")
+
     def cleanup_test_data(self):
         """Clean up any remaining test data"""
         print("\n=== CLEANUP ===")
