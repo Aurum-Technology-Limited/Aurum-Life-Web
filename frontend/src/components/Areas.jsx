@@ -16,6 +16,7 @@ import { areasAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 
 const Areas = ({ onSectionChange }) => {
+  const { onDataMutation } = useDataContext();
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
