@@ -45,10 +45,8 @@ const Insights = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDateRange, setSelectedDateRange] = useState('all_time');
-  const [currentView, setCurrentView] = useState('overview'); // 'overview', 'area', 'project'
-  const [selectedAreaId, setSelectedAreaId] = useState(null);
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [drillDownData, setDrillDownData] = useState(null);
+  const [selectedAreaId, setSelectedAreaId] = useState(null); // For drill-down functionality
+  const [selectedAreaName, setSelectedAreaName] = useState(''); // For breadcrumb display
 
   const dateRangeOptions = [
     { value: 'weekly', label: 'Last 7 Days' },
