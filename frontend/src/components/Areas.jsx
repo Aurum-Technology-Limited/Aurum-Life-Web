@@ -13,6 +13,7 @@ import {
   Layers
 } from 'lucide-react';
 import { areasAPI } from '../services/api';
+import { useDataContext } from '../contexts/DataContext';
 
 const Areas = ({ onSectionChange }) => {
   const [areas, setAreas] = useState([]);
