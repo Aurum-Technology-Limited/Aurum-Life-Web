@@ -105,6 +105,21 @@
 user_problem_statement: "Build Aurum Life personal growth platform with habit tracking, journaling, task management, mindfulness, learning, AI coaching, and achievements system"
 
 backend:
+  - task: "Unified Project Views - Task Creation and Synchronization"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py, /app/backend/models.py, /app/backend/services.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "User reported critical issues: 1) Task creation in Kanban view doesn't work, 2) Tasks created in List view don't show up in Kanban view. Need comprehensive testing of unified state management between List and Kanban views."
+        - working: false
+          agent: "testing"
+          comment: "🔍 UNIFIED PROJECT VIEWS TESTING COMPLETED - 84.5% SUCCESS RATE WITH CRITICAL ISSUES IDENTIFIED. Comprehensive testing executed covering complete unified state management system: ✅ PROJECT DATA STRUCTURE TESTING - GET /api/projects/{id} working with task information, all required fields present (id, name, area_id, task_count, completed_task_count, active_task_count), task count fields properly numeric, project-specific task retrieval working ✅ PARTIAL TASK CREATION SUCCESS - Tasks with 'in_progress' and 'completed' status create successfully, tasks with 'todo' and 'review' status FAIL with unknown errors, task data structure includes all necessary fields for both views ✅ KANBAN OPERATIONS WORKING - Kanban board retrieval successful, task status mapping accurate for supported statuses, task movement between columns functional, column verification shows MISSING 'review' column (only has to_do, in_progress, done) ✅ DATA CONSISTENCY VERIFIED - Tasks appear in both project task list and kanban view when created successfully, task status updates reflect correctly in kanban columns, project task counts update accurately ❌ CRITICAL ISSUES IDENTIFIED: 1) Backend doesn't support 'todo' and 'review' task statuses, 2) Kanban board missing 'review' column, 3) Some status transitions fail (in_progress→review, completed→todo). ROOT CAUSE: Backend task status enum appears to be incomplete - only supports subset of statuses that frontend expects. USER ISSUES ASSESSMENT: Issue 1 'Task creation in Kanban view doesn't work' is PARTIALLY TRUE (works for some statuses, fails for others), Issue 2 'Tasks created in List view don't show up in Kanban view' is FALSE (tasks do appear when created successfully). RECOMMENDATION: Update backend TaskStatusEnum to support all required statuses including 'todo' and 'review', add missing 'review' column to kanban board structure."
+
   - task: "Task Area and Project Task Count Synchronization Fix"
     implemented: true
     working: true
