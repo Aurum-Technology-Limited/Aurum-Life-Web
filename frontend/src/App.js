@@ -108,16 +108,18 @@ function App() {
 
   return (
     <AuthProvider>
-      <div className="App">
-        <ProtectedRoute>
-          <Layout 
-            activeSection={activeSection} 
-            onSectionChange={handleSectionChange}
-          >
-            {renderActiveSection()}
-          </Layout>
-        </ProtectedRoute>
-      </div>
+      <DataProvider>
+        <div className="App">
+          <ProtectedRoute>
+            <Layout 
+              activeSection={activeSection} 
+              onSectionChange={handleSectionChange}
+            >
+              {renderActiveSection()}
+            </Layout>
+          </ProtectedRoute>
+        </div>
+      </DataProvider>
     </AuthProvider>
   );
 }
