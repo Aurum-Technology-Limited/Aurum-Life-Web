@@ -329,7 +329,7 @@ const Today = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-            <div>
+          <div>
               <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
                 Today's Focus
               </h1>
