@@ -100,6 +100,24 @@ export const todayAPI = {
   reorderDailyTasks: (taskIds) => apiClient.put('/today/reorder', { task_ids: taskIds })
 };
 
+// Recurring Tasks API
+export const recurringTasksAPI = {
+  getRecurringTasks: () => apiClient.get('/recurring-tasks'),
+  createRecurringTask: (taskData) => apiClient.post('/recurring-tasks', taskData),
+  updateRecurringTask: (templateId, taskData) => apiClient.put(`/recurring-tasks/${templateId}`, taskData),
+  deleteRecurringTask: (templateId) => apiClient.delete(`/recurring-tasks/${templateId}`),
+  getRecurringTaskInstances: (templateId, startDate = null, endDate = null) => 
+    apiClient.get(`/recurring-tasks/${templateId}/instances`, { 
+      params: { 
+        ...(startDate && { start_date: startDate }),
+        ...(endDate && { end_date: endDate })
+      } 
+    }),
+  completeRecurringTaskInstance: (instanceId) => apiClient.put(`/recurring-task-instances/${instanceId}/complete`),
+  skipRecurringTaskInstance: (instanceId) => apiClient.put(`/recurring-task-instances/${instanceId}/skip`),
+  generateRecurringTaskInstances: () => apiClient.post('/recurring-tasks/generate-instances')
+};
+
 // Insights API
 export const insightsAPI = {
   getInsights: (dateRange = 'all_time', areaId = null) => {
