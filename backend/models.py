@@ -167,6 +167,45 @@ class RecurrenceEnum(str, Enum):
     daily = "daily"
     weekly = "weekly"
     monthly = "monthly"
+    custom = "custom"  # For flexible patterns like "every Mon/Wed"
+
+class WeekdayEnum(str, Enum):
+    monday = "monday"
+    tuesday = "tuesday"
+    wednesday = "wednesday"
+    thursday = "thursday"
+    friday = "friday"
+    saturday = "saturday"
+    sunday = "sunday"
+
+# Enhanced Recurrence Models
+class RecurrencePattern(BaseModel):
+    """Flexible recurrence pattern configuration"""
+    type: RecurrenceEnum = RecurrenceEnum.none
+    interval: int = 1  # Every X days/weeks/months
+    weekdays: Optional[List[WeekdayEnum]] = None  # For weekly: specific days (e.g., Mon/Wed/Fri)
+    month_day: Optional[int] = None  # For monthly: specific day of month (1-31)
+    end_date: Optional[datetime] = None  # When to stop creating instances
+    max_instances: Optional[int] = None  # Maximum number of instances to create
+
+class RecurringTaskTemplate(BaseDocument):
+    """Template for recurring tasks - stores the pattern and task details"""
+    user_id: str
+    name: str
+    description: str = ""
+    priority: PriorityEnum = PriorityEnum.medium
+    project_id: str
+    category: str = "general"
+    estimated_duration: Optional[int] = None
+    
+    # Recurrence configuration
+    recurrence_pattern: RecurrencePattern
+    
+    # Template settings
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    last_generated: Optional[datetime] = None  # Last time instances were created
+    next_due: Optional[datetime] = None  # Next scheduled instance
 
 # Area models
 class Area(BaseDocument):
