@@ -9,6 +9,7 @@ import Today from './components/Today';
 import Areas from './components/Areas';
 import Projects from './components/Projects';
 import ProjectTemplates from './components/ProjectTemplates';
+import RecurringTasks from './components/RecurringTasks';
 import Habits from './components/Habits';
 import Journal from './components/Journal';
 import Mindfulness from './components/Mindfulness';
