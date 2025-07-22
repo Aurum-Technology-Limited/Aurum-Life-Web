@@ -42,6 +42,7 @@ ChartJS.register(
 const Insights = () => {
   console.log('📊 Insights component initialized!');
   
+  const { refreshTrigger } = useDataContext();
   const [insightsData, setInsightsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
