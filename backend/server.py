@@ -361,17 +361,17 @@ async def get_area(area_id: str, current_user: User = Depends(get_current_active
     return area
 
 @api_router.put("/areas/{area_id}", response_model=dict)
-async def update_area(area_id: str, area_data: AreaUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+async def update_area(area_id: str, area_data: AreaUpdate, current_user: User = Depends(get_current_active_user)):
     """Update an area"""
-    success = await AreaService.update_area(user_id, area_id, area_data)
+    success = await AreaService.update_area(current_user.id, area_id, area_data)
     if not success:
         raise HTTPException(status_code=404, detail="Area not found")
     return {"success": True, "message": "Area updated successfully"}
 
 @api_router.delete("/areas/{area_id}", response_model=dict)
-async def delete_area(area_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def delete_area(area_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete an area and all its projects/tasks"""
-    success = await AreaService.delete_area(user_id, area_id)
+    success = await AreaService.delete_area(current_user.id, area_id)
     if not success:
         raise HTTPException(status_code=404, detail="Area not found")
     return {"success": True, "message": "Area deleted successfully"}
