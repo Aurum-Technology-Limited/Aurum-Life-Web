@@ -40,6 +40,33 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
     high: 'text-red-400 bg-red-400/10 border-red-400/20'
   };
 
+  // Organize tasks by status/column
+  const organizeTasksByColumn = () => {
+    const organizedTasks = {
+      todo: [],
+      'in-progress': [],
+      review: [],
+      completed: []
+    };
+
+    (tasks || []).forEach(task => {
+      const status = task.status || 'todo';
+      // Map status to column ID
+      const columnId = status === 'in_progress' ? 'in-progress' : status;
+      if (organizedTasks[columnId]) {
+        organizedTasks[columnId].push(task);
+      } else {
+        organizedTasks.todo.push(task); // Default to todo if status not recognized
+      }
+    });
+
+    return organizedTasks;
+  };
+
+  const tasksByColumn = organizeTasksByColumn();
+  const totalTasks = tasks?.length || 0;
+  const completedTasks = (tasks || []).filter(task => task.completed || task.status === 'completed').length;
+
   const handleCreateTask = async (e) => {
     e.preventDefault();
     try {
