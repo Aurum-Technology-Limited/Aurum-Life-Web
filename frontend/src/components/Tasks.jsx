@@ -121,6 +121,14 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
       setLoadingProjects(true);
       const response = await projectsAPI.getProjects();
       setProjects(response.data);
+      
+      // Set default project if none is selected and we're creating a new task
+      if (!task && response.data.length > 0 && !formData.project_id) {
+        setFormData(prev => ({
+          ...prev,
+          project_id: response.data[0].id
+        }));
+      }
     } catch (err) {
       console.error('Error loading projects:', err);
       // Set a default project if loading fails
