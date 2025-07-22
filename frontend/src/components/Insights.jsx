@@ -58,9 +58,17 @@ const Insights = () => {
   const loadInsightsData = async () => {
     try {
       setLoading(true);
-      const response = await insightsAPI.getInsights(selectedDateRange);
-      setInsightsData(response.data);
       setError(null);
+      
+      // Build API URL with filters
+      let apiUrl = `/insights?date_range=${selectedDateRange}`;
+      if (selectedAreaId) {
+        apiUrl += `&area_id=${selectedAreaId}`;
+      }
+      
+      const response = await insightsAPI.getInsights(selectedDateRange, selectedAreaId);
+      setInsightsData(response.data);
+      console.log('📊 Insights data loaded:', response.data);
     } catch (err) {
       setError('Failed to load insights data');
       console.error('Error loading insights:', err);
