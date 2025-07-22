@@ -388,10 +388,16 @@ const Tasks = () => {
             ? { ...task, ...formData }
             : task
         ));
+        
+        // Notify data context of the mutation
+        onDataMutation('task', 'update', { taskId: editingTask.id, ...formData });
       } else {
         const response = await tasksAPI.createTask(formData);
         // Add to local state
         setTasks(prev => [...prev, response.data]);
+        
+        // Notify data context of the mutation
+        onDataMutation('task', 'create', response.data);
       }
       
       setModalOpen(false);
