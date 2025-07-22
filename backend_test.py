@@ -1752,25 +1752,43 @@ class BackendTester:
             print("🔐 AUTHENTICATION SETUP FOR EPIC 1 TESTING")
             print("="*80)
             
-            # Login with existing test user
-            login_data = {
-                "email": "navtest@example.com",
-                "password": "password123"
+            # Create and login with a new test user for Epic 1 testing
+            epic1_user_data = {
+                "username": f"epic1test_{uuid.uuid4().hex[:8]}",
+                "email": f"epic1test_{uuid.uuid4().hex[:8]}@example.com",
+                "first_name": "Epic1",
+                "last_name": "Test",
+                "password": "epic1testpassword123"
             }
             
-            result = self.make_request('POST', '/auth/login', data=login_data)
-            if result['success']:
-                self.auth_token = result['data'].get('access_token')
-                self.log_test(
-                    "Authentication Setup",
-                    True,
-                    f"Successfully authenticated with existing user: navtest@example.com"
-                )
+            # Register the user
+            register_result = self.make_request('POST', '/auth/register', data=epic1_user_data)
+            if register_result['success']:
+                # Login with the new user
+                login_data = {
+                    "email": epic1_user_data['email'],
+                    "password": epic1_user_data['password']
+                }
+                
+                result = self.make_request('POST', '/auth/login', data=login_data)
+                if result['success']:
+                    self.auth_token = result['data'].get('access_token')
+                    self.log_test(
+                        "Authentication Setup",
+                        True,
+                        f"Successfully created and authenticated Epic 1 test user: {epic1_user_data['email']}"
+                    )
+                else:
+                    self.log_test(
+                        "Authentication Setup",
+                        False,
+                        f"Failed to authenticate new user: {result.get('error', 'Unknown error')}"
+                    )
             else:
                 self.log_test(
                     "Authentication Setup",
                     False,
-                    f"Failed to authenticate: {result.get('error', 'Unknown error')}"
+                    f"Failed to create Epic 1 test user: {register_result.get('error', 'Unknown error')}"
                 )
             
             # Epic 1 Feature Tests
