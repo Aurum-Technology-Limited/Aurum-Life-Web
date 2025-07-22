@@ -550,6 +550,9 @@ async def create_task(task_data: TaskCreate, current_user: User = Depends(get_cu
     """Create a new task"""
     try:
         return await TaskService.create_task(current_user.id, task_data)
+    except ValueError as e:
+        logger.error(f"Validation error creating task: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
