@@ -63,7 +63,7 @@ const PasswordReset = () => {
         setSuccess(true);
         // Redirect to login after 3 seconds
         setTimeout(() => {
-          navigate('/');
+          window.location.href = '/';
         }, 3000);
       } else {
         setError(data.message || 'Failed to reset password');
