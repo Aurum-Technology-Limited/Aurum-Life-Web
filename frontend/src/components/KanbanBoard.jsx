@@ -267,7 +267,7 @@ const KanbanBoard = ({ projectId, onBack }) => {
                       {/* Task Header */}
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-medium text-white text-sm leading-tight">
-                          {task.title}
+                          {task.name || task.title}
                         </h4>
                         <div className="relative">
                           <button
