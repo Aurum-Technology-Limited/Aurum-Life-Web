@@ -230,6 +230,7 @@ class Task(BaseDocument):
     status: TaskStatusEnum = TaskStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
     due_date: Optional[datetime] = None
+    due_time: Optional[str] = None  # Time in HH:MM format (e.g., "14:30")
     reminder_date: Optional[datetime] = None
     category: str = "general"
     completed: bool = False
@@ -241,6 +242,8 @@ class Task(BaseDocument):
     kanban_column: str = "to_do"  # to_do, in_progress, done
     sort_order: int = 0
     estimated_duration: Optional[int] = None  # in minutes
+    # Sub-task completion tracking
+    sub_task_completion_required: bool = False  # If true, main task complete only when all sub-tasks complete
 
 class TaskCreate(BaseModel):
     project_id: str
