@@ -590,6 +590,17 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     return <KanbanBoard projectId={selectedProjectId} onBack={handleBackFromKanban} />;
   }
 
+  if (showListView && selectedProject) {
+    return (
+      <ProjectListView 
+        project={selectedProject}
+        tasks={projectTasks}
+        onBack={handleBackFromKanban}
+        loading={projectTasksLoading}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
