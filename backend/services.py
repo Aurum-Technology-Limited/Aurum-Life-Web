@@ -483,8 +483,12 @@ class ProjectService:
         return project
 
     @staticmethod
-    async def get_area_projects(area_id: str) -> List[ProjectResponse]:
-        projects_docs = await find_documents("projects", {"area_id": area_id})
+    async def get_area_projects(area_id: str, include_archived: bool = False) -> List[ProjectResponse]:
+        query = {"area_id": area_id}
+        if not include_archived:
+            query["archived"] = {"$ne": True}
+            
+        projects_docs = await find_documents("projects", query)
         projects_docs.sort(key=lambda x: x.get("sort_order", 0))
         
         projects = []
@@ -495,10 +499,12 @@ class ProjectService:
         return projects
 
     @staticmethod
-    async def get_user_projects(user_id: str, area_id: str = None) -> List[ProjectResponse]:
+    async def get_user_projects(user_id: str, area_id: str = None, include_archived: bool = False) -> List[ProjectResponse]:
         query = {"user_id": user_id}
         if area_id:
             query["area_id"] = area_id
+        if not include_archived:
+            query["archived"] = {"$ne": True}
             
         projects_docs = await find_documents("projects", query)
         projects_docs.sort(key=lambda x: x.get("sort_order", 0))
