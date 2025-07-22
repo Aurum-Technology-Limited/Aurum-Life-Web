@@ -456,13 +456,31 @@ class UserDashboard(BaseModel):
     areas: List[AreaResponse]
     today_tasks: List[TaskResponse]
 
+# Daily Task Curation Models
+class DailyTask(BaseDocument):
+    user_id: str
+    task_id: str
+    date: datetime  # The date this task was added to daily view
+    sort_order: int = 0
+    added_at: datetime = Field(default_factory=datetime.utcnow)
+
+class DailyTaskCreate(BaseModel):
+    task_id: str
+    date: Optional[datetime] = None  # Defaults to today
+
+class DailyTasksUpdate(BaseModel):
+    task_ids: List[str]  # Reorder tasks for today
+
+# Enhanced Today View Models
 class TodayView(BaseModel):
     date: datetime
-    tasks: List[TaskResponse]
+    tasks: List[TaskResponse]  # Curated daily tasks
     habits: List[HabitResponse]
+    available_tasks: List[TaskResponse]  # Tasks available to add to today
     total_tasks: int
     completed_tasks: int
     estimated_duration: int  # Total estimated time in minutes
+    pomodoro_sessions: int = 0  # Number of completed pomodoro sessions today
 
 class KanbanBoard(BaseModel):
     project_id: str
