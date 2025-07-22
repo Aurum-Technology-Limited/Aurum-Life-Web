@@ -672,6 +672,105 @@ async def reorder_daily_tasks(task_data: DailyTasksUpdate, current_user: User = 
         logger.error(f"Error reordering daily tasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Recurring Tasks endpoints
+@api_router.get("/recurring-tasks", response_model=List[RecurringTaskResponse])
+async def get_recurring_tasks(current_user: User = Depends(get_current_active_user)):
+    """Get all recurring task templates for the user"""
+    try:
+        return await RecurringTaskService.get_user_recurring_tasks(current_user.id)
+    except Exception as e:
+        logger.error(f"Error getting recurring tasks: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/recurring-tasks", response_model=RecurringTaskTemplate)
+async def create_recurring_task(task_data: RecurringTaskCreate, current_user: User = Depends(get_current_active_user)):
+    """Create a new recurring task template"""
+    try:
+        return await RecurringTaskService.create_recurring_task(current_user.id, task_data)
+    except ValueError as e:
+        logger.error(f"Validation error creating recurring task: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error creating recurring task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/recurring-tasks/{template_id}")
+async def update_recurring_task(template_id: str, task_data: RecurringTaskUpdate, current_user: User = Depends(get_current_active_user)):
+    """Update a recurring task template"""
+    try:
+        success = await RecurringTaskService.update_recurring_task(current_user.id, template_id, task_data)
+        if not success:
+            raise HTTPException(status_code=404, detail="Recurring task template not found")
+        return {"message": "Recurring task updated successfully"}
+    except Exception as e:
+        logger.error(f"Error updating recurring task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/recurring-tasks/{template_id}")
+async def delete_recurring_task(template_id: str, current_user: User = Depends(get_current_active_user)):
+    """Delete a recurring task template and all its instances"""
+    try:
+        success = await RecurringTaskService.delete_recurring_task(current_user.id, template_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Recurring task template not found")
+        return {"message": "Recurring task deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting recurring task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/recurring-tasks/{template_id}/instances", response_model=List[RecurringTaskInstance])
+async def get_recurring_task_instances(
+    template_id: str,
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get instances of a recurring task template"""
+    try:
+        start_dt = datetime.fromisoformat(start_date) if start_date else None
+        end_dt = datetime.fromisoformat(end_date) if end_date else None
+        
+        return await RecurringTaskService.get_recurring_task_instances(
+            current_user.id, template_id, start_dt, end_dt
+        )
+    except Exception as e:
+        logger.error(f"Error getting recurring task instances: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/recurring-task-instances/{instance_id}/complete")
+async def complete_recurring_task_instance(instance_id: str, current_user: User = Depends(get_current_active_user)):
+    """Complete a recurring task instance"""
+    try:
+        success = await RecurringTaskService.complete_recurring_task_instance(current_user.id, instance_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Recurring task instance not found")
+        return {"message": "Recurring task instance completed"}
+    except Exception as e:
+        logger.error(f"Error completing recurring task instance: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/recurring-task-instances/{instance_id}/skip")
+async def skip_recurring_task_instance(instance_id: str, current_user: User = Depends(get_current_active_user)):
+    """Skip a recurring task instance"""
+    try:
+        success = await RecurringTaskService.skip_recurring_task_instance(current_user.id, instance_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Recurring task instance not found")
+        return {"message": "Recurring task instance skipped"}
+    except Exception as e:
+        logger.error(f"Error skipping recurring task instance: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/recurring-tasks/generate-instances")
+async def trigger_recurring_task_generation(current_user: User = Depends(get_current_active_user)):
+    """Manually trigger recurring task instance generation (admin/testing)"""
+    try:
+        await RecurringTaskService.generate_recurring_task_instances()
+        return {"message": "Recurring task instances generated successfully"}
+    except Exception as e:
+        logger.error(f"Error generating recurring task instances: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Chat endpoints
 @api_router.post("/chat", response_model=ChatMessage)
 async def send_chat_message(message_data: ChatMessageCreate, current_user: User = Depends(get_current_active_user)):
