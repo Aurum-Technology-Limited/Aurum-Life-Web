@@ -41,7 +41,7 @@ class UserUpdate(BaseModel):
     profile_data: Optional[Dict[str, Any]] = None
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class UserResponse(BaseModel):
