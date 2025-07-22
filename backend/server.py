@@ -476,38 +476,38 @@ async def create_task(task_data: TaskCreate, current_user: User = Depends(get_cu
 @api_router.get("/tasks", response_model=List[TaskResponse])
 async def get_tasks(
     project_id: str = Query(None),
-    user_id: str = Query(DEFAULT_USER_ID)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get all tasks for user, optionally filtered by project"""
     try:
-        return await TaskService.get_user_tasks(user_id, project_id)
+        return await TaskService.get_user_tasks(current_user.id, project_id)
     except Exception as e:
         logger.error(f"Error getting tasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/tasks/{task_id}", response_model=dict)
-async def update_task(task_id: str, task_data: TaskUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+async def update_task(task_id: str, task_data: TaskUpdate, current_user: User = Depends(get_current_active_user)):
     """Update a task"""
-    success = await TaskService.update_task(user_id, task_id, task_data)
+    success = await TaskService.update_task(current_user.id, task_id, task_data)
     if not success:
         raise HTTPException(status_code=404, detail="Task not found")
     return {"success": True, "message": "Task updated successfully"}
 
 @api_router.delete("/tasks/{task_id}", response_model=dict)
-async def delete_task(task_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def delete_task(task_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete a task"""
-    success = await TaskService.delete_task(user_id, task_id)
+    success = await TaskService.delete_task(current_user.id, task_id)
     if not success:
         raise HTTPException(status_code=404, detail="Task not found")
     return {"success": True, "message": "Task deleted successfully"}
 
 # Chat endpoints
 @api_router.post("/chat", response_model=ChatMessage)
-async def send_chat_message(message_data: ChatMessageCreate, user_id: str = Query(DEFAULT_USER_ID)):
+async def send_chat_message(message_data: ChatMessageCreate, current_user: User = Depends(get_current_active_user)):
     """Send a chat message"""
     try:
         # Save user message
-        user_message = await ChatService.create_message(user_id, message_data)
+        user_message = await ChatService.create_message(current_user.id, message_data)
         
         # Generate AI response if user message
         if message_data.message_type == MessageTypeEnum.user:
@@ -517,7 +517,7 @@ async def send_chat_message(message_data: ChatMessageCreate, user_id: str = Quer
                 message_type=MessageTypeEnum.ai,
                 content=ai_response_text
             )
-            await ChatService.create_message(user_id, ai_message_data)
+            await ChatService.create_message(current_user.id, ai_message_data)
         
         return user_message
     except Exception as e:
