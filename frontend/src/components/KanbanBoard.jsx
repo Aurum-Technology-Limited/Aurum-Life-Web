@@ -23,7 +23,7 @@ const KanbanBoard = ({ projectId, onBack }) => {
   const [selectedColumn, setSelectedColumn] = useState('todo');
   const [editingTask, setEditingTask] = useState(null);
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',  // Changed from 'title' to 'name' to match backend
     description: '',
     priority: 'medium',
     due_date: '',
