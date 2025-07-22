@@ -15,7 +15,7 @@ import {
   FolderOpen,
   User,
   BarChart3,
-  FileTemplate
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
