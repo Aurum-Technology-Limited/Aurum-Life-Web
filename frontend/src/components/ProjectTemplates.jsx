@@ -269,7 +269,7 @@ const ProjectTemplates = ({ onSectionChange }) => {
         {/* Templates Grid */}
         {templates.length === 0 ? (
           <div className="text-center py-12">
-            <FileTemplate className="mx-auto h-16 w-16 text-gray-600 mb-4" />
+            <FileText className="mx-auto h-16 w-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-medium text-gray-400 mb-2">No templates yet</h3>
             <p className="text-gray-500 mb-6">Create your first project template to get started</p>
             <button
