@@ -416,6 +416,22 @@ async def update_area(area_id: str, area_data: AreaUpdate, current_user: User = 
         raise HTTPException(status_code=404, detail="Area not found")
     return {"success": True, "message": "Area updated successfully"}
 
+@api_router.put("/areas/{area_id}/archive")
+async def archive_area(area_id: str, current_user: User = Depends(get_current_active_user)):
+    """Archive an area"""
+    success = await AreaService.archive_area(current_user.id, area_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Area not found")
+    return {"message": "Area archived successfully"}
+
+@api_router.put("/areas/{area_id}/unarchive")
+async def unarchive_area(area_id: str, current_user: User = Depends(get_current_active_user)):
+    """Unarchive an area"""
+    success = await AreaService.unarchive_area(current_user.id, area_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Area not found")
+    return {"message": "Area unarchived successfully"}
+
 @api_router.delete("/areas/{area_id}", response_model=dict)
 async def delete_area(area_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete an area and all its projects/tasks"""
