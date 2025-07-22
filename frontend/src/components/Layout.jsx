@@ -88,10 +88,19 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
         <nav className="mt-8 px-4">
           {navigation.map((item) => {
             const isActive = activeSection === item.id;
+            
+            // Debug logging for insights button specifically
+            if (item.id === 'insights') {
+              console.log('🔍 Debug: Rendering insights button with id:', item.id);
+            }
+            
             return (
               <button
                 key={item.id}
-                onClick={() => handleNavigation(item.id)}
+                onClick={() => {
+                  console.log('🖱️ Button clicked with item.id:', item.id);
+                  handleNavigation(item.id);
+                }}
                 className={`
                   w-full flex items-center px-4 py-3 mb-2 rounded-lg text-left
                   transition-all duration-200 group hover:scale-105
