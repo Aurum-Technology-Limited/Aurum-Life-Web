@@ -1175,6 +1175,69 @@ class TaskService:
         return task_response
 
     @staticmethod
+    async def get_task_with_dependencies(user_id: str, task_id: str) -> Optional[TaskResponse]:
+        """Get a task with its dependencies populated"""
+        return await TaskService.get_task_with_subtasks(user_id, task_id)
+
+    @staticmethod
+    async def update_task_dependencies(user_id: str, task_id: str, dependency_ids: List[str]) -> bool:
+        """Update the dependency list for a task"""
+        # Validate that the task exists
+        task_doc = await find_document("tasks", {"id": task_id, "user_id": user_id})
+        if not task_doc:
+            return False
+        
+        # Validate that all dependency tasks exist and belong to the user
+        if dependency_ids:
+            dependency_docs = await find_documents("tasks", {
+                "id": {"$in": dependency_ids}, 
+                "user_id": user_id
+            })
+            
+            found_ids = [doc["id"] for doc in dependency_docs]
+            missing_ids = [dep_id for dep_id in dependency_ids if dep_id not in found_ids]
+            
+            if missing_ids:
+                raise ValueError(f"The following dependency tasks were not found: {', '.join(missing_ids)}")
+            
+            # Prevent circular dependencies
+            if task_id in dependency_ids:
+                raise ValueError("A task cannot depend on itself")
+        
+        # Update the task with new dependencies
+        return await update_document("tasks", {"id": task_id, "user_id": user_id}, {
+            "dependency_task_ids": dependency_ids,
+            "updated_at": datetime.utcnow()
+        })
+
+    @staticmethod
+    async def get_available_dependency_tasks(user_id: str, project_id: str, exclude_task_id: Optional[str] = None) -> List[dict]:
+        """Get tasks that can be used as dependencies for a specific task"""
+        query = {
+            "user_id": user_id,
+            "project_id": project_id,
+            "parent_task_id": None  # Only main tasks can be dependencies
+        }
+        
+        # Exclude the current task to prevent self-dependency
+        if exclude_task_id:
+            query["id"] = {"$ne": exclude_task_id}
+        
+        tasks_docs = await find_documents("tasks", query)
+        
+        # Return simplified task data for dependency selection
+        return [
+            {
+                "id": task["id"],
+                "name": task["name"],
+                "status": task.get("status", "todo"),
+                "completed": task.get("completed", False),
+                "priority": task.get("priority", "medium")
+            }
+            for task in tasks_docs
+        ]
+
+    @staticmethod
     async def _validate_task_dependencies(current_task: dict, update_data: dict, user_id: str):
         """
         Validate task dependencies before allowing status changes (FR-1.1.2)
