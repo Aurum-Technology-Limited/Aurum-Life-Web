@@ -528,8 +528,11 @@ class ProjectService:
     async def _build_project_response(project_doc: dict, include_tasks: bool = False) -> ProjectResponse:
         project_response = ProjectResponse(**project_doc)
         
-        # Get task counts
-        tasks_docs = await find_documents("tasks", {"project_id": project_response.id})
+        # Get task counts - FIXED: Filter by user_id to ensure data consistency
+        tasks_docs = await find_documents("tasks", {
+            "project_id": project_response.id,
+            "user_id": project_doc["user_id"]  # Add user_id filter
+        })
         project_response.task_count = len(tasks_docs)
         project_response.completed_task_count = len([t for t in tasks_docs if t.get("completed", False)])
         
