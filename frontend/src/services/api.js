@@ -33,7 +33,17 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Areas API
+// Project Templates API
+export const projectTemplatesAPI = {
+  getTemplates: () => api.get('/project-templates'),
+  getTemplate: (templateId) => api.get(`/project-templates/${templateId}`),
+  createTemplate: (templateData) => api.post('/project-templates', templateData),
+  updateTemplate: (templateId, templateData) => api.put(`/project-templates/${templateId}`, templateData),
+  deleteTemplate: (templateId) => api.delete(`/project-templates/${templateId}`),
+  useTemplate: (templateId, projectData) => api.post(`/project-templates/${templateId}/use`, projectData)
+};
+
+// Areas API with enhanced archiving support
 export const areasAPI = {
   getAreas: (includeProjects = false) => apiClient.get('/areas', { params: { include_projects: includeProjects } }),
   getArea: (areaId) => apiClient.get(`/areas/${areaId}`),
