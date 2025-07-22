@@ -77,12 +77,17 @@ export const projectsAPI = {
   getKanbanBoard: (projectId) => apiClient.get(`/projects/${projectId}/kanban`),
 };
 
-// Enhanced Tasks API
+// Enhanced Tasks API with Sub-task support
 export const tasksAPI = {
   getTasks: (projectId = null) => apiClient.get('/tasks', { params: projectId ? { project_id: projectId } : {} }),
+  getTask: (taskId) => apiClient.get(`/tasks/${taskId}`),
+  getTaskWithSubtasks: (taskId) => apiClient.get(`/tasks/${taskId}/with-subtasks`),
+  getSubtasks: (parentTaskId) => apiClient.get(`/tasks/${parentTaskId}/subtasks`),
   createTask: (taskData) => apiClient.post('/tasks', taskData),
+  createSubtask: (parentTaskId, subtaskData) => apiClient.post(`/tasks/${parentTaskId}/subtasks`, subtaskData),
   updateTask: (taskId, taskData) => apiClient.put(`/tasks/${taskId}`, taskData),
   deleteTask: (taskId) => apiClient.delete(`/tasks/${taskId}`),
+  getTodayTasks: () => apiClient.get('/today'),
   moveTaskColumn: (taskId, newColumn) => apiClient.put(`/tasks/${taskId}/column`, null, { params: { new_column: newColumn } }),
 };
 
