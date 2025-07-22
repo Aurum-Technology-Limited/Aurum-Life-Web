@@ -149,7 +149,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
         priority: 'medium',
         due_date: tomorrow.toISOString().split('T')[0],
         category: 'personal',
-        project_id: projects.length > 0 ? projects[0].id : '' // Default to first project
+        project_id: '' // Will be set after projects load
       });
     }
   }, [task, isOpen, projects]);
