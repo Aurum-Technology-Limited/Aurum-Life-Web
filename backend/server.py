@@ -572,10 +572,17 @@ async def get_tasks(
 @api_router.put("/tasks/{task_id}", response_model=dict)
 async def update_task(task_id: str, task_data: TaskUpdate, current_user: User = Depends(get_current_active_user)):
     """Update a task"""
-    success = await TaskService.update_task(current_user.id, task_id, task_data)
-    if not success:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return {"success": True, "message": "Task updated successfully"}
+    try:
+        success = await TaskService.update_task(current_user.id, task_id, task_data)
+        if not success:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return {"success": True, "message": "Task updated successfully"}
+    except ValueError as e:
+        # Handle dependency validation errors (FR-1.1.3)
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error updating task {task_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.delete("/tasks/{task_id}", response_model=dict)
 async def delete_task(task_id: str, current_user: User = Depends(get_current_active_user)):
