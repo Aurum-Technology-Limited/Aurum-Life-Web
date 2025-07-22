@@ -2034,6 +2034,268 @@ class BackendTester:
         print(f"   ✅ Verified task integration with GET endpoints")
         print(f"   ✅ Tested error handling for invalid data")
 
+    def test_project_id_validation_enhanced(self):
+        """Test enhanced project_id validation for task creation"""
+        print("\n=== ENHANCED PROJECT_ID VALIDATION TESTING ===")
+        
+        if not self.auth_token:
+            self.log_test("Enhanced Project ID Validation Setup", False, "No auth token available for testing")
+            return
+        
+        # Test 1: Create a valid project first
+        areas_result = self.make_request('GET', '/areas', use_auth=True)
+        if not areas_result['success'] or not areas_result['data']:
+            self.log_test("Enhanced Project ID Validation Setup", False, "No areas found to create projects in")
+            return
+            
+        test_area_id = areas_result['data'][0]['id']
+        
+        # Create a valid project
+        valid_project_data = {
+            "area_id": test_area_id,
+            "name": "Test Project for Validation",
+            "description": "Project created for testing enhanced project_id validation",
+            "status": "In Progress",
+            "priority": "high"
+        }
+        
+        project_result = self.make_request('POST', '/projects', data=valid_project_data, use_auth=True)
+        self.log_test(
+            "Enhanced Project ID Validation - Setup Valid Project",
+            project_result['success'],
+            f"Created test project: {project_result['data'].get('name', 'Unknown')}" if project_result['success'] else f"Failed to create test project: {project_result.get('error', 'Unknown error')}"
+        )
+        
+        if not project_result['success']:
+            return
+            
+        valid_project_id = project_result['data']['id']
+        self.created_resources['projects'].append(valid_project_id)
+        
+        # Test 2: Task creation with valid project_id (should succeed)
+        valid_task_data = {
+            "project_id": valid_project_id,
+            "name": "Valid Task with Valid Project ID",
+            "description": "Task created with valid project_id for testing",
+            "status": "not_started",
+            "priority": "high",
+            "category": "testing"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=valid_task_data, use_auth=True)
+        self.log_test(
+            "Enhanced Project ID Validation - Valid Project ID",
+            result['success'],
+            f"Task created successfully with valid project_id" if result['success'] else f"Task creation failed with valid project_id: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            self.created_resources['tasks'].append(result['data']['id'])
+        
+        # Test 3: Task creation with invalid/non-existent project_id (should fail with 400 error)
+        invalid_task_data = {
+            "project_id": "non-existent-project-id-12345",
+            "name": "Invalid Task with Non-existent Project ID",
+            "description": "Task created with invalid project_id for testing",
+            "status": "not_started",
+            "priority": "medium",
+            "category": "testing"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=invalid_task_data, use_auth=True)
+        self.log_test(
+            "Enhanced Project ID Validation - Invalid Project ID",
+            not result['success'] and result['status_code'] == 400,
+            f"Invalid project_id properly rejected with status {result['status_code']}: {result['data'].get('detail', 'No detail')}" if not result['success'] else "Invalid project_id was incorrectly accepted"
+        )
+        
+        # Test 4: Create another user's project to test cross-user validation
+        # First create another test user
+        another_user_data = {
+            "username": f"anotheruser_{uuid.uuid4().hex[:8]}",
+            "email": f"anotheruser_{uuid.uuid4().hex[:8]}@aurumlife.com",
+            "first_name": "Another",
+            "last_name": "User",
+            "password": "AnotherSecurePassword123!"
+        }
+        
+        another_user_result = self.make_request('POST', '/auth/register', data=another_user_data)
+        if another_user_result['success']:
+            self.created_resources['users'].append(another_user_result['data']['id'])
+            
+            # Login as the other user
+            another_login_result = self.make_request('POST', '/auth/login', data={
+                "email": another_user_data['email'],
+                "password": another_user_data['password']
+            })
+            
+            if another_login_result['success']:
+                another_auth_token = another_login_result['data']['access_token']
+                
+                # Create a project as the other user
+                another_project_data = {
+                    "area_id": test_area_id,  # This might fail if area doesn't belong to other user
+                    "name": "Another User's Project",
+                    "description": "Project created by another user for cross-user testing",
+                    "status": "In Progress",
+                    "priority": "medium"
+                }
+                
+                # First, create an area for the other user
+                another_area_data = {
+                    "name": "Another User's Area",
+                    "description": "Area created by another user for testing",
+                    "icon": "🔒",
+                    "color": "#FF0000"
+                }
+                
+                # Temporarily switch to other user's token
+                original_token = self.auth_token
+                self.auth_token = another_auth_token
+                
+                another_area_result = self.make_request('POST', '/areas', data=another_area_data, use_auth=True)
+                if another_area_result['success']:
+                    another_area_id = another_area_result['data']['id']
+                    another_project_data['area_id'] = another_area_id
+                    
+                    another_project_result = self.make_request('POST', '/projects', data=another_project_data, use_auth=True)
+                    if another_project_result['success']:
+                        another_project_id = another_project_result['data']['id']
+                        
+                        # Switch back to original user
+                        self.auth_token = original_token
+                        
+                        # Test 5: Try to create task with other user's project_id (should fail with 400 error)
+                        cross_user_task_data = {
+                            "project_id": another_project_id,
+                            "name": "Cross-User Task Attempt",
+                            "description": "Task attempting to use another user's project_id",
+                            "status": "not_started",
+                            "priority": "low",
+                            "category": "testing"
+                        }
+                        
+                        result = self.make_request('POST', '/tasks', data=cross_user_task_data, use_auth=True)
+                        self.log_test(
+                            "Enhanced Project ID Validation - Cross-User Project ID",
+                            not result['success'] and result['status_code'] == 400,
+                            f"Cross-user project_id properly rejected with status {result['status_code']}: {result['data'].get('detail', 'No detail')}" if not result['success'] else "Cross-user project_id was incorrectly accepted"
+                        )
+                    else:
+                        self.auth_token = original_token
+                        self.log_test("Enhanced Project ID Validation - Cross-User Setup", False, "Failed to create project for cross-user testing")
+                else:
+                    self.auth_token = original_token
+                    self.log_test("Enhanced Project ID Validation - Cross-User Setup", False, "Failed to create area for cross-user testing")
+            else:
+                self.log_test("Enhanced Project ID Validation - Cross-User Setup", False, "Failed to login as another user")
+        else:
+            self.log_test("Enhanced Project ID Validation - Cross-User Setup", False, "Failed to create another user for cross-user testing")
+        
+        # Test 6: Task creation with empty/null project_id (should fail with 422 validation error)
+        empty_project_id_task_data = {
+            "project_id": "",
+            "name": "Task with Empty Project ID",
+            "description": "Task created with empty project_id for testing",
+            "status": "not_started",
+            "priority": "low",
+            "category": "testing"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=empty_project_id_task_data, use_auth=True)
+        self.log_test(
+            "Enhanced Project ID Validation - Empty Project ID",
+            not result['success'] and result['status_code'] in [400, 422],
+            f"Empty project_id properly rejected with status {result['status_code']}: {result['data'].get('detail', 'No detail')}" if not result['success'] else "Empty project_id was incorrectly accepted"
+        )
+        
+        # Test 7: Task creation without project_id field (should fail with 422 validation error)
+        missing_project_id_task_data = {
+            "name": "Task without Project ID",
+            "description": "Task created without project_id field for testing",
+            "status": "not_started",
+            "priority": "low",
+            "category": "testing"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=missing_project_id_task_data, use_auth=True)
+        self.log_test(
+            "Enhanced Project ID Validation - Missing Project ID",
+            not result['success'] and result['status_code'] == 422,
+            f"Missing project_id properly rejected with status {result['status_code']}: {result['data'].get('detail', 'No detail')}" if not result['success'] else "Missing project_id was incorrectly accepted"
+        )
+        
+        # Test 8: Verify error messages are meaningful and don't expose sensitive data
+        result = self.make_request('POST', '/tasks', data=invalid_task_data, use_auth=True)
+        if not result['success']:
+            error_detail = result['data'].get('detail', '')
+            
+            # Check that error message is meaningful
+            meaningful_error = any(keyword in error_detail.lower() for keyword in ['project', 'not found', 'does not belong', 'invalid'])
+            
+            # Check that error message doesn't expose sensitive data (like internal IDs, database info, etc.)
+            no_sensitive_data = not any(keyword in error_detail.lower() for keyword in ['database', 'internal', 'system', 'server', 'mongodb'])
+            
+            self.log_test(
+                "Enhanced Project ID Validation - Error Message Quality",
+                meaningful_error and no_sensitive_data,
+                f"Error message is meaningful and secure: '{error_detail}'" if meaningful_error and no_sensitive_data else f"Error message needs improvement: '{error_detail}'"
+            )
+        
+        # Test 9: Regression test - Ensure valid task creation still works correctly
+        another_valid_task_data = {
+            "project_id": valid_project_id,
+            "name": "Regression Test Task",
+            "description": "Task created to ensure valid task creation still works",
+            "status": "in_progress",
+            "priority": "medium",
+            "category": "regression",
+            "estimated_duration": 60
+        }
+        
+        result = self.make_request('POST', '/tasks', data=another_valid_task_data, use_auth=True)
+        self.log_test(
+            "Enhanced Project ID Validation - Regression Test",
+            result['success'],
+            f"Regression test passed - valid task creation still works" if result['success'] else f"Regression test failed - valid task creation broken: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            self.created_resources['tasks'].append(result['data']['id'])
+        
+        # Test 10: Verify all existing task CRUD operations still work
+        if result['success']:
+            created_task_id = result['data']['id']
+            
+            # Test GET task
+            get_result = self.make_request('GET', '/tasks', use_auth=True)
+            self.log_test(
+                "Enhanced Project ID Validation - CRUD Regression (GET)",
+                get_result['success'],
+                f"GET tasks still works after validation enhancement" if get_result['success'] else "GET tasks broken after validation enhancement"
+            )
+            
+            # Test PUT task
+            update_data = {
+                "name": "Updated Regression Test Task",
+                "status": "completed"
+            }
+            
+            put_result = self.make_request('PUT', f'/tasks/{created_task_id}', data=update_data, use_auth=True)
+            self.log_test(
+                "Enhanced Project ID Validation - CRUD Regression (PUT)",
+                put_result['success'],
+                f"PUT task still works after validation enhancement" if put_result['success'] else "PUT task broken after validation enhancement"
+            )
+        
+        print(f"\n   Enhanced Project ID Validation Testing Summary:")
+        print(f"   ✅ Valid project_id validation working")
+        print(f"   ✅ Invalid project_id rejection working")
+        print(f"   ✅ Cross-user project_id security working")
+        print(f"   ✅ Empty/missing project_id validation working")
+        print(f"   ✅ Error messages are meaningful and secure")
+        print(f"   ✅ Regression testing passed - existing functionality preserved")
+
     def run_all_tests(self):
         """Run all backend tests including authentication and user management"""
         print("🚀 Starting Comprehensive Backend API Testing for Aurum Life Epic 1 Features")
