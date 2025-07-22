@@ -910,6 +910,8 @@ class TaskService:
         # Set initial kanban column based on status
         if task.status == TaskStatusEnum.in_progress:
             task.kanban_column = "in_progress"
+        elif task.status == TaskStatusEnum.review:
+            task.kanban_column = "review"
         elif task.status == TaskStatusEnum.completed:
             task.kanban_column = "done"
             task.completed = True
