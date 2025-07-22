@@ -175,6 +175,7 @@ class Area(BaseDocument):
     description: str = ""
     icon: str = "🎯"
     color: str = "#F4B400"
+    archived: bool = False
     sort_order: int = 0
 
 class AreaCreate(BaseModel):
