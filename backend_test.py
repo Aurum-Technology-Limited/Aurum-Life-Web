@@ -4650,6 +4650,148 @@ class BackendTester:
             if delete_result['success']:
                 print(f"     Cleaned up test task: {task_id}")
 
+    def test_task_status_migration_verification(self):
+        """Test Task Status Migration Verification - Quick Test"""
+        print("\n=== TASK STATUS MIGRATION VERIFICATION - QUICK TEST ===")
+        
+        if not self.auth_token:
+            self.log_test("Task Status Migration Setup", False, "No auth token available for testing")
+            return
+        
+        # Test 1: Basic Task Retrieval - Test GET /api/tasks to verify no validation errors
+        result = self.make_request('GET', '/tasks', use_auth=True)
+        self.log_test(
+            "GET Tasks - Basic Retrieval (No Validation Errors)",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} tasks without validation errors" if result['success'] else f"Task retrieval failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        task_data = result['data'] if result['success'] else []
+        
+        # Test 2: Status Validation - Verify no tasks have old status values
+        if result['success'] and task_data:
+            valid_statuses = ['todo', 'in_progress', 'review', 'completed']
+            invalid_status_tasks = []
+            status_distribution = {'todo': 0, 'in_progress': 0, 'review': 0, 'completed': 0, 'other': 0}
+            
+            for task in task_data:
+                task_status = task.get('status', 'unknown')
+                if task_status in valid_statuses:
+                    status_distribution[task_status] += 1
+                else:
+                    status_distribution['other'] += 1
+                    invalid_status_tasks.append({
+                        'id': task.get('id'),
+                        'name': task.get('name'),
+                        'status': task_status
+                    })
+            
+            self.log_test(
+                "Task Status Validation - No Old Status Values",
+                len(invalid_status_tasks) == 0,
+                f"All tasks have valid status values. Distribution: {status_distribution}" if len(invalid_status_tasks) == 0 else f"Found {len(invalid_status_tasks)} tasks with invalid status: {invalid_status_tasks}"
+            )
+            
+            # Verify status distribution is reasonable (should have tasks in 'todo' status after migration)
+            self.log_test(
+                "Task Status Distribution - Migration Success",
+                status_distribution['todo'] > 0,
+                f"Tasks successfully migrated to 'todo' status: {status_distribution['todo']} tasks" if status_distribution['todo'] > 0 else f"No tasks found with 'todo' status - migration may have failed"
+            )
+        else:
+            self.log_test(
+                "Task Status Validation - No Tasks Found",
+                True,  # Not necessarily an error if no tasks exist
+                "No tasks found to validate status migration"
+            )
+        
+        # Test 3: Dashboard Functionality - Test GET /api/areas to ensure dashboard loads
+        result = self.make_request('GET', '/areas', use_auth=True)
+        self.log_test(
+            "GET Areas - Dashboard Functionality",
+            result['success'],
+            f"Areas endpoint working - retrieved {len(result['data']) if result['success'] else 0} areas" if result['success'] else f"Areas retrieval failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 4: Dashboard Functionality - Test GET /api/projects to verify project data works
+        result = self.make_request('GET', '/projects', use_auth=True)
+        self.log_test(
+            "GET Projects - Dashboard Functionality",
+            result['success'],
+            f"Projects endpoint working - retrieved {len(result['data']) if result['success'] else 0} projects" if result['success'] else f"Projects retrieval failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 5: Comprehensive Dashboard Load Test
+        result = self.make_request('GET', '/dashboard', use_auth=True)
+        self.log_test(
+            "GET Dashboard - Complete Load Test",
+            result['success'],
+            f"Dashboard loads successfully without validation errors" if result['success'] else f"Dashboard load failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 6: Today View - Should work with migrated task statuses
+        result = self.make_request('GET', '/today', use_auth=True)
+        self.log_test(
+            "GET Today View - Post-Migration Functionality",
+            result['success'],
+            f"Today view loads successfully with migrated task statuses" if result['success'] else f"Today view failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 7: Kanban Board - Test with a project to ensure status mapping works
+        projects_result = self.make_request('GET', '/projects', use_auth=True)
+        if projects_result['success'] and projects_result['data']:
+            test_project_id = projects_result['data'][0]['id']
+            
+            result = self.make_request('GET', f'/projects/{test_project_id}/kanban', use_auth=True)
+            self.log_test(
+                "GET Kanban Board - Status Mapping Verification",
+                result['success'],
+                f"Kanban board loads successfully with migrated statuses" if result['success'] else f"Kanban board failed: {result.get('error', 'Unknown error')}"
+            )
+            
+            if result['success']:
+                kanban_data = result['data']
+                columns = kanban_data.get('columns', {})
+                expected_columns = ['to_do', 'in_progress', 'review', 'done']
+                missing_columns = [col for col in expected_columns if col not in columns]
+                
+                self.log_test(
+                    "Kanban Board - Column Structure Verification",
+                    len(missing_columns) == 0,
+                    f"All expected kanban columns present: {list(columns.keys())}" if len(missing_columns) == 0 else f"Missing kanban columns: {missing_columns}"
+                )
+        else:
+            self.log_test(
+                "Kanban Board Test - No Projects Available",
+                True,  # Not an error if no projects exist
+                "No projects available for kanban board testing"
+            )
+
+    def run_quick_migration_test(self):
+        """Run quick task status migration verification test only"""
+        print("🚀 Starting Task Status Migration Verification - Quick Test")
+        print(f"Backend URL: {self.base_url}")
+        print("=" * 80)
+        
+        try:
+            # Health check first
+            self.test_health_check()
+            
+            # Authentication (required for protected endpoints)
+            self.test_user_registration()
+            self.test_user_login()
+            
+            # Main migration verification test
+            self.test_task_status_migration_verification()
+            
+        except Exception as e:
+            print(f"\n❌ CRITICAL ERROR during testing: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # Print summary
+        self.print_test_summary()
+
     def run_all_tests(self):
         """Run all backend tests including authentication and user management"""
         print("🚀 Starting Comprehensive Backend API Testing for Task Count Synchronization Fix")
