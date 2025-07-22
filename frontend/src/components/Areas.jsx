@@ -314,7 +314,7 @@ const Areas = ({ onSectionChange }) => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-white">
-                        {area.total_tasks || 0}
+                        {area.total_task_count || 0}
                       </p>
                       <p className="text-xs text-gray-500">Total Tasks</p>
                     </div>
