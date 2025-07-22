@@ -89,6 +89,12 @@ export const tasksAPI = {
   deleteTask: (taskId) => apiClient.delete(`/tasks/${taskId}`),
   getTodayTasks: () => apiClient.get('/today'),
   moveTaskColumn: (taskId, newColumn) => apiClient.put(`/tasks/${taskId}/column`, null, { params: { new_column: newColumn } }),
+  // Task Dependencies API (Phase 1)
+  getTaskDependencies: (taskId) => apiClient.get(`/tasks/${taskId}/dependencies`),
+  updateTaskDependencies: (taskId, dependencyIds) => apiClient.put(`/tasks/${taskId}/dependencies`, dependencyIds),
+  getAvailableDependencyTasks: (projectId, excludeTaskId = null) => apiClient.get(`/projects/${projectId}/tasks/available-dependencies`, { 
+    params: excludeTaskId ? { task_id: excludeTaskId } : {} 
+  }),
 };
 
 // Enhanced Today API with Daily Task Curation
