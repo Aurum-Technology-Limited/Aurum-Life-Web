@@ -87,8 +87,8 @@ export const dashboardAPI = {
 
 // User API
 export const userAPI = {
-  getUser: (userId = DEFAULT_USER_ID) => apiClient.get(`/users/${userId}`),
-  updateUser: (userData, userId = DEFAULT_USER_ID) => apiClient.put(`/users/${userId}`, userData),
+  getUser: (userId) => apiClient.get(`/users/${userId}`),
+  updateUser: (userData, userId) => apiClient.put(`/users/${userId}`, userData),
   createUser: (userData) => apiClient.post('/users', userData),
 };
 
