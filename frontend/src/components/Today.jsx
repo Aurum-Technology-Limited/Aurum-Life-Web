@@ -509,7 +509,7 @@ const Today = () => {
           </div>
         </div>
       </div>
-    </div>
+    </DndProvider>
   );
 };
 
