@@ -588,6 +588,11 @@ class ProjectService:
 class TaskService:
     @staticmethod
     async def create_task(user_id: str, task_data: TaskCreate) -> Task:
+        # Validate that the project exists and belongs to the user
+        project = await find_document("projects", {"id": task_data.project_id, "user_id": user_id})
+        if not project:
+            raise ValueError(f"Project with ID {task_data.project_id} not found or does not belong to user")
+        
         # Get the current max sort_order for this project
         tasks = await find_documents("tasks", {"user_id": user_id, "project_id": task_data.project_id, "parent_task_id": task_data.parent_task_id})
         max_sort_order = max([task.get("sort_order", 0) for task in tasks] + [0])
