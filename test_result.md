@@ -104,6 +104,7 @@
 
 user_problem_statement: "Build Aurum Life personal growth platform with habit tracking, journaling, task management, mindfulness, learning, AI coaching, and achievements system"
 
+backend:
   - task: "Project Templates System Implementation"
     implemented: true
     working: "NA"
@@ -140,7 +141,6 @@ user_problem_statement: "Build Aurum Life personal growth platform with habit tr
           agent: "main"
           comment: "Enhanced get_user_areas and get_user_projects methods with include_archived parameters, updated corresponding API endpoints to support optional archived item filtering while maintaining backward compatibility"
 
-backend:
   - task: "Authentication System Implementation"
     implemented: true
     working: true
