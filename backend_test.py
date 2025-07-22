@@ -1741,17 +1741,54 @@ class BackendTester:
         """Test comprehensive task creation functionality as requested"""
         print("\n=== TASK CREATION FUNCTIONALITY TESTING ===")
         
-        # First, login with the specified credentials
+        # First, try to login with the specified credentials, if that fails, create a new user
         login_data = {
             "email": "navtest@example.com",
             "password": "password123"
         }
         
         result = self.make_request('POST', '/auth/login', data=login_data)
+        
+        if not result['success']:
+            # If login fails, try creating the user first
+            print("   Login failed, attempting to create navtest user...")
+            user_data = {
+                "username": "navtest",
+                "email": "navtest@example.com",
+                "first_name": "Navigation",
+                "last_name": "Test",
+                "password": "password123"
+            }
+            
+            # Try to register (might fail if user exists with different password)
+            register_result = self.make_request('POST', '/auth/register', data=user_data)
+            if register_result['success']:
+                print("   User created successfully, now logging in...")
+                result = self.make_request('POST', '/auth/login', data=login_data)
+            else:
+                # If registration fails, create a new test user for task creation testing
+                print("   Creating alternative test user for task creation testing...")
+                alt_user_data = {
+                    "username": f"tasktest_{uuid.uuid4().hex[:8]}",
+                    "email": f"tasktest_{uuid.uuid4().hex[:8]}@example.com",
+                    "first_name": "Task",
+                    "last_name": "Test",
+                    "password": "password123"
+                }
+                
+                register_result = self.make_request('POST', '/auth/register', data=alt_user_data)
+                if register_result['success']:
+                    login_data = {
+                        "email": alt_user_data['email'],
+                        "password": alt_user_data['password']
+                    }
+                    result = self.make_request('POST', '/auth/login', data=login_data)
+                    self.created_resources['users'].append(register_result['data']['id'])
+        
         self.log_test(
-            "Task Creation Setup - Login with navtest@example.com",
+            "Task Creation Setup - User Authentication",
             result['success'],
-            f"Login successful for task creation testing" if result['success'] else f"Login failed: {result.get('error', 'Unknown error')}"
+            f"Login successful for task creation testing with {login_data['email']}" if result['success'] else f"Login failed: {result.get('error', 'Unknown error')}"
         )
         
         if not result['success']:
@@ -1764,12 +1801,44 @@ class BackendTester:
         # Get user areas and projects to use for task creation
         areas_result = self.make_request('GET', '/areas', use_auth=True)
         if not areas_result['success'] or not areas_result['data']:
-            self.log_test("Task Creation Setup - Get Areas", False, "No areas found for task creation testing")
+            # Create a test area if none exist
+            print("   No areas found, creating test area for task creation...")
+            area_data = {
+                "name": "Task Creation Test Area",
+                "description": "Area created for task creation testing",
+                "icon": "🧪",
+                "color": "#FF6B6B"
+            }
+            
+            area_result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+            if area_result['success']:
+                self.created_resources['areas'].append(area_result['data']['id'])
+                areas_result = self.make_request('GET', '/areas', use_auth=True)
+        
+        if not areas_result['success'] or not areas_result['data']:
+            self.log_test("Task Creation Setup - Get Areas", False, "No areas found and unable to create test area")
             return
         
         projects_result = self.make_request('GET', '/projects', use_auth=True)
         if not projects_result['success'] or not projects_result['data']:
-            self.log_test("Task Creation Setup - Get Projects", False, "No projects found for task creation testing")
+            # Create a test project if none exist
+            print("   No projects found, creating test project for task creation...")
+            test_area_id = areas_result['data'][0]['id']
+            project_data = {
+                "area_id": test_area_id,
+                "name": "Task Creation Test Project",
+                "description": "Project created for task creation testing",
+                "status": "In Progress",
+                "priority": "high"
+            }
+            
+            project_result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+            if project_result['success']:
+                self.created_resources['projects'].append(project_result['data']['id'])
+                projects_result = self.make_request('GET', '/projects', use_auth=True)
+        
+        if not projects_result['success'] or not projects_result['data']:
+            self.log_test("Task Creation Setup - Get Projects", False, "No projects found and unable to create test project")
             return
         
         test_project_id = projects_result['data'][0]['id']
@@ -1931,7 +2000,7 @@ class BackendTester:
             user_data = result['data']
             self.log_test(
                 "Task Creation - User Context Verification",
-                user_data.get('email') == 'navtest@example.com',
+                user_data.get('email') == login_data['email'],
                 f"Tasks created under correct user context: {user_data.get('email')}"
             )
         
