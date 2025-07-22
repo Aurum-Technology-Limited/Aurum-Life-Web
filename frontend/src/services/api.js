@@ -59,13 +59,20 @@ export const areasAPI = {
   unarchiveArea: (areaId) => apiClient.put(`/areas/${areaId}/unarchive`),
 };
 
-// Projects API
+// Projects API with enhanced archiving support
 export const projectsAPI = {
-  getProjects: (areaId = null) => apiClient.get('/projects', { params: areaId ? { area_id: areaId } : {} }),
+  getProjects: (areaId = null, includeArchived = false) => apiClient.get('/projects', { 
+    params: { 
+      ...(areaId && { area_id: areaId }),
+      include_archived: includeArchived
+    } 
+  }),
   getProject: (projectId, includeTasks = false) => apiClient.get(`/projects/${projectId}`, { params: { include_tasks: includeTasks } }),
   createProject: (projectData) => apiClient.post('/projects', projectData),
   updateProject: (projectId, projectData) => apiClient.put(`/projects/${projectId}`, projectData),
   deleteProject: (projectId) => apiClient.delete(`/projects/${projectId}`),
+  archiveProject: (projectId) => apiClient.put(`/projects/${projectId}/archive`),
+  unarchiveProject: (projectId) => apiClient.put(`/projects/${projectId}/unarchive`),
   getProjectTasks: (projectId) => apiClient.get(`/projects/${projectId}/tasks`),
   getKanbanBoard: (projectId) => apiClient.get(`/projects/${projectId}/kanban`),
 };
