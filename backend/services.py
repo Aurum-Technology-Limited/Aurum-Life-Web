@@ -535,6 +535,7 @@ class ProjectService:
         })
         project_response.task_count = len(tasks_docs)
         project_response.completed_task_count = len([t for t in tasks_docs if t.get("completed", False)])
+        project_response.active_task_count = len([t for t in tasks_docs if not t.get("completed", False)])
         
         # Calculate completion percentage
         if project_response.task_count > 0:
