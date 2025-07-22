@@ -84,7 +84,13 @@ export const todayAPI = {
 
 // Insights API
 export const insightsAPI = {
-  getInsights: (dateRange = 'all_time') => apiClient.get(`/insights?date_range=${dateRange}`),
+  getInsights: (dateRange = 'all_time', areaId = null) => {
+    let url = `/insights?date_range=${dateRange}`;
+    if (areaId) {
+      url += `&area_id=${areaId}`;
+    }
+    return apiClient.get(url);
+  },
   getAreaDrillDown: (areaId, dateRange = 'all_time') => apiClient.get(`/insights/areas/${areaId}?date_range=${dateRange}`),
   getProjectDrillDown: (projectId, dateRange = 'all_time') => apiClient.get(`/insights/projects/${projectId}?date_range=${dateRange}`),
 };
