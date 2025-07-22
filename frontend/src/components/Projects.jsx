@@ -322,7 +322,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
       if (window.confirm('Are you sure you want to delete this task?')) {
         try {
           await tasksAPI.deleteTask(taskId);
-          await loadProjectTasks(project.id); // Reload shared data
+          onTaskUpdate(); // Use shared callback to reload data
         } catch (err) {
           console.error('Error deleting task:', err);
         }
