@@ -20,6 +20,7 @@ import { useDataContext } from '../contexts/DataContext';
 import KanbanBoard from './KanbanBoard';
 
 const Projects = ({ onSectionChange, filterAreaId }) => {
+  const { onDataMutation } = useDataContext();
   const [projects, setProjects] = useState([]);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
