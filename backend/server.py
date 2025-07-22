@@ -592,6 +592,48 @@ async def delete_task(task_id: str, current_user: User = Depends(get_current_act
         raise HTTPException(status_code=404, detail="Task not found")
     return {"success": True, "message": "Task deleted successfully"}
 
+# Task Dependencies Endpoints (SR-1.1)
+@api_router.get("/tasks/{task_id}/dependencies", response_model=dict)
+async def get_task_dependencies(task_id: str, current_user: User = Depends(get_current_active_user)):
+    """Get task dependencies and their completion status"""
+    try:
+        task_with_deps = await TaskService.get_task_with_dependencies(current_user.id, task_id)
+        if not task_with_deps:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return {
+            "task_id": task_id,
+            "dependency_task_ids": task_with_deps.dependency_task_ids,
+            "dependency_tasks": task_with_deps.dependency_tasks,
+            "can_start": task_with_deps.can_start
+        }
+    except Exception as e:
+        logger.error(f"Error getting task dependencies for {task_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.put("/tasks/{task_id}/dependencies", response_model=dict)
+async def update_task_dependencies(task_id: str, dependency_ids: List[str], current_user: User = Depends(get_current_active_user)):
+    """Update task dependencies"""
+    try:
+        success = await TaskService.update_task_dependencies(current_user.id, task_id, dependency_ids)
+        if not success:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return {"success": True, "message": "Task dependencies updated successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error updating task dependencies for {task_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/projects/{project_id}/tasks/available-dependencies", response_model=List[dict])
+async def get_available_dependency_tasks(project_id: str, task_id: Optional[str] = None, current_user: User = Depends(get_current_active_user)):
+    """Get tasks that can be used as dependencies for a specific task"""
+    try:
+        available_tasks = await TaskService.get_available_dependency_tasks(current_user.id, project_id, task_id)
+        return available_tasks
+    except Exception as e:
+        logger.error(f"Error getting available dependency tasks for project {project_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 # Sub-task endpoints
 @api_router.post("/tasks/{parent_task_id}/subtasks", response_model=Task)
 async def create_subtask(parent_task_id: str, subtask_data: TaskCreate, current_user: User = Depends(get_current_active_user)):
