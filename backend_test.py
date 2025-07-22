@@ -1737,6 +1737,234 @@ class BackendTester:
         self.make_request('DELETE', f'/areas/{active_area_id}', use_auth=True)
         self.make_request('DELETE', f'/areas/{archived_area_id}', use_auth=True)
 
+    def test_task_creation_functionality(self):
+        """Test comprehensive task creation functionality as requested"""
+        print("\n=== TASK CREATION FUNCTIONALITY TESTING ===")
+        
+        # First, login with the specified credentials
+        login_data = {
+            "email": "navtest@example.com",
+            "password": "password123"
+        }
+        
+        result = self.make_request('POST', '/auth/login', data=login_data)
+        self.log_test(
+            "Task Creation Setup - Login with navtest@example.com",
+            result['success'],
+            f"Login successful for task creation testing" if result['success'] else f"Login failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            self.log_test("Task Creation Testing", False, "Cannot proceed without authentication")
+            return
+        
+        # Store the auth token
+        self.auth_token = result['data'].get('access_token')
+        
+        # Get user areas and projects to use for task creation
+        areas_result = self.make_request('GET', '/areas', use_auth=True)
+        if not areas_result['success'] or not areas_result['data']:
+            self.log_test("Task Creation Setup - Get Areas", False, "No areas found for task creation testing")
+            return
+        
+        projects_result = self.make_request('GET', '/projects', use_auth=True)
+        if not projects_result['success'] or not projects_result['data']:
+            self.log_test("Task Creation Setup - Get Projects", False, "No projects found for task creation testing")
+            return
+        
+        test_project_id = projects_result['data'][0]['id']
+        test_project_name = projects_result['data'][0]['name']
+        
+        self.log_test(
+            "Task Creation Setup - Project Context",
+            True,
+            f"Using project: {test_project_name} (ID: {test_project_id})"
+        )
+        
+        # Test 1: Create basic task with name, description, project_id
+        basic_task_data = {
+            "project_id": test_project_id,
+            "name": "Task Creation Test - Basic Task",
+            "description": "Basic task created during task creation functionality testing"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=basic_task_data, use_auth=True)
+        self.log_test(
+            "POST /api/tasks - Basic Task Creation",
+            result['success'],
+            f"Created basic task: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to create basic task: {result.get('error', 'Unknown error')}"
+        )
+        
+        basic_task_id = result['data'].get('id') if result['success'] else None
+        if basic_task_id:
+            self.created_resources['tasks'].append(basic_task_id)
+        
+        # Test 2: Create task with all optional fields
+        from datetime import datetime, timedelta
+        comprehensive_task_data = {
+            "project_id": test_project_id,
+            "name": "Task Creation Test - Comprehensive Task",
+            "description": "Comprehensive task with all optional fields",
+            "priority": "high",
+            "due_date": (datetime.now() + timedelta(days=7)).isoformat(),
+            "category": "testing",
+            "estimated_duration": 120
+        }
+        
+        result = self.make_request('POST', '/tasks', data=comprehensive_task_data, use_auth=True)
+        self.log_test(
+            "POST /api/tasks - Comprehensive Task Creation",
+            result['success'],
+            f"Created comprehensive task: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to create comprehensive task: {result.get('error', 'Unknown error')}"
+        )
+        
+        comprehensive_task_id = result['data'].get('id') if result['success'] else None
+        if comprehensive_task_id:
+            self.created_resources['tasks'].append(comprehensive_task_id)
+        
+        # Test 3: Create task with minimal data (just name and project_id)
+        minimal_task_data = {
+            "project_id": test_project_id,
+            "name": "Task Creation Test - Minimal Task"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=minimal_task_data, use_auth=True)
+        self.log_test(
+            "POST /api/tasks - Minimal Task Creation",
+            result['success'],
+            f"Created minimal task: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to create minimal task: {result.get('error', 'Unknown error')}"
+        )
+        
+        minimal_task_id = result['data'].get('id') if result['success'] else None
+        if minimal_task_id:
+            self.created_resources['tasks'].append(minimal_task_id)
+        
+        # Test 4: Test error handling when project_id is missing
+        missing_project_data = {
+            "name": "Task Creation Test - Missing Project ID",
+            "description": "Task without project_id should fail"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=missing_project_data, use_auth=True)
+        self.log_test(
+            "POST /api/tasks - Missing project_id Error Handling",
+            not result['success'],
+            f"Missing project_id properly rejected" if not result['success'] else "Missing project_id was incorrectly accepted"
+        )
+        
+        # Test 5: Test error handling when project_id is invalid
+        invalid_project_data = {
+            "project_id": "invalid-project-id-12345",
+            "name": "Task Creation Test - Invalid Project ID",
+            "description": "Task with invalid project_id should fail"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=invalid_project_data, use_auth=True)
+        self.log_test(
+            "POST /api/tasks - Invalid project_id Error Handling",
+            not result['success'],
+            f"Invalid project_id properly rejected" if not result['success'] else "Invalid project_id was incorrectly accepted"
+        )
+        
+        # Test 6: Test error handling when name is missing
+        missing_name_data = {
+            "project_id": test_project_id,
+            "description": "Task without name should fail"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=missing_name_data, use_auth=True)
+        self.log_test(
+            "POST /api/tasks - Missing name Error Handling",
+            not result['success'],
+            f"Missing name properly rejected" if not result['success'] else "Missing name was incorrectly accepted"
+        )
+        
+        # Test 7: Verify task appears in GET /api/tasks
+        result = self.make_request('GET', '/tasks', use_auth=True)
+        self.log_test(
+            "GET /api/tasks - Task Retrieval Integration",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} tasks including newly created ones"
+        )
+        
+        if result['success']:
+            task_names = [task.get('name', 'Unknown') for task in result['data']]
+            created_task_found = any('Task Creation Test' in name for name in task_names)
+            self.log_test(
+                "GET /api/tasks - Created Tasks Verification",
+                created_task_found,
+                f"Created tasks found in task list" if created_task_found else "Created tasks not found in task list"
+            )
+        
+        # Test 8: Verify task appears in project's task list
+        result = self.make_request('GET', f'/projects/{test_project_id}/tasks', use_auth=True)
+        self.log_test(
+            "GET /api/projects/{id}/tasks - Project Task List Integration",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} tasks for project"
+        )
+        
+        if result['success']:
+            project_task_names = [task.get('name', 'Unknown') for task in result['data']]
+            created_task_in_project = any('Task Creation Test' in name for name in project_task_names)
+            self.log_test(
+                "Project Task List - Created Tasks Verification",
+                created_task_in_project,
+                f"Created tasks found in project task list" if created_task_in_project else "Created tasks not found in project task list"
+            )
+        
+        # Test 9: Test individual task retrieval (if we have a task ID)
+        if basic_task_id:
+            # Note: There's no individual task GET endpoint in the current API, so we'll test via project tasks
+            result = self.make_request('GET', f'/projects/{test_project_id}/tasks', use_auth=True)
+            if result['success']:
+                basic_task = next((task for task in result['data'] if task.get('id') == basic_task_id), None)
+                self.log_test(
+                    "Individual Task Retrieval",
+                    basic_task is not None,
+                    f"Basic task retrievable individually: {basic_task.get('name', 'Unknown') if basic_task else 'Not found'}"
+                )
+        
+        # Test 10: Test task creation with authentication context
+        result = self.make_request('GET', '/auth/me', use_auth=True)
+        if result['success']:
+            user_data = result['data']
+            self.log_test(
+                "Task Creation - User Context Verification",
+                user_data.get('email') == 'navtest@example.com',
+                f"Tasks created under correct user context: {user_data.get('email')}"
+            )
+        
+        # Test 11: Test task creation without authentication
+        result = self.make_request('POST', '/tasks', data=basic_task_data, use_auth=False)
+        self.log_test(
+            "POST /api/tasks - Unauthenticated Access",
+            not result['success'] and result['status_code'] in [401, 403],
+            f"Unauthenticated task creation properly rejected (status: {result['status_code']})" if not result['success'] else "Unauthenticated task creation was incorrectly accepted"
+        )
+        
+        # Test 12: Test task creation with invalid authentication
+        original_token = self.auth_token
+        self.auth_token = "invalid.jwt.token"
+        
+        result = self.make_request('POST', '/tasks', data=basic_task_data, use_auth=True)
+        self.log_test(
+            "POST /api/tasks - Invalid Authentication",
+            not result['success'] and result['status_code'] == 401,
+            f"Invalid authentication properly rejected (status: {result['status_code']})" if not result['success'] else "Invalid authentication was incorrectly accepted"
+        )
+        
+        # Restore valid token
+        self.auth_token = original_token
+        
+        print(f"\n   📊 TASK CREATION TESTING SUMMARY:")
+        print(f"   ✅ Created {len([t for t in self.created_resources['tasks'] if t])} test tasks successfully")
+        print(f"   ✅ Verified project_id is mandatory field")
+        print(f"   ✅ Verified name is mandatory field") 
+        print(f"   ✅ Tested authentication and project context")
+        print(f"   ✅ Verified task integration with GET endpoints")
+        print(f"   ✅ Tested error handling for invalid data")
+
     def run_all_tests(self):
         """Run all backend tests including authentication and user management"""
         print("🚀 Starting Comprehensive Backend API Testing for Aurum Life Epic 1 Features")
