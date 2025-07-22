@@ -643,32 +643,188 @@ class TaskService:
 
     @staticmethod
     async def get_today_tasks(user_id: str) -> List[TaskResponse]:
+        """Get curated tasks for today's view"""
         today = datetime.now().date()
-        today_start = datetime.combine(today, datetime.min.time())
-        today_end = datetime.combine(today, datetime.max.time())
         
-        # Query for tasks due today or overdue
-        pipeline = [
-            {
-                "$match": {
-                    "user_id": user_id,
-                    "$or": [
-                        {"due_date": {"$gte": today_start, "$lte": today_end}},
-                        {"due_date": {"$lt": today_start}, "completed": False}
-                    ]
-                }
-            },
-            {"$sort": {"priority": -1, "due_date": 1}}
-        ]
+        # Get tasks specifically added to today's view
+        daily_tasks_docs = await find_documents("daily_tasks", {
+            "user_id": user_id,
+            "date": {
+                "$gte": datetime.combine(today, datetime.min.time()),
+                "$lte": datetime.combine(today, datetime.max.time())
+            }
+        })
         
-        tasks_docs = await aggregate_documents("tasks", pipeline)
+        if daily_tasks_docs:
+            # Sort by user-defined order
+            daily_tasks_docs.sort(key=lambda x: x.get("sort_order", 0))
+            task_ids = [dt["task_id"] for dt in daily_tasks_docs]
+            
+            # Get the actual task data
+            tasks_docs = await find_documents("tasks", {
+                "id": {"$in": task_ids},
+                "user_id": user_id
+            })
+            
+            # Build task responses
+            tasks = []
+            for task_doc in tasks_docs:
+                task = await TaskService._build_task_response(task_doc, include_subtasks=True)
+                tasks.append(task)
+            
+            # Sort tasks by daily_tasks sort_order
+            task_order_map = {dt["task_id"]: dt["sort_order"] for dt in daily_tasks_docs}
+            tasks.sort(key=lambda t: task_order_map.get(t.id, 999))
+            
+            return tasks
+        else:
+            # Fallback to original behavior: tasks due today or overdue
+            today_start = datetime.combine(today, datetime.min.time())
+            today_end = datetime.combine(today, datetime.max.time())
+            
+            # Query for tasks due today or overdue
+            pipeline = [
+                {
+                    "$match": {
+                        "user_id": user_id,
+                        "$or": [
+                            {"due_date": {"$gte": today_start, "$lte": today_end}},
+                            {"due_date": {"$lt": today_start}, "completed": False}
+                        ]
+                    }
+                },
+                {"$sort": {"priority": -1, "due_date": 1}}
+            ]
+            
+            # Get tasks from aggregation pipeline
+            tasks_docs = await aggregate_documents("tasks", pipeline)
+            
+            tasks = []
+            for doc in tasks_docs:
+                task = await TaskService._build_task_response(doc, include_subtasks=False)
+                tasks.append(task)
+            
+            return tasks
+
+    @staticmethod
+    async def get_available_tasks_for_today(user_id: str) -> List[TaskResponse]:
+        """Get tasks available to add to today's view (not yet added)"""
+        today = datetime.now().date()
+        
+        # Get task IDs already in today's view
+        daily_tasks_docs = await find_documents("daily_tasks", {
+            "user_id": user_id,
+            "date": {
+                "$gte": datetime.combine(today, datetime.min.time()),
+                "$lte": datetime.combine(today, datetime.max.time())
+            }
+        })
+        
+        existing_task_ids = [dt["task_id"] for dt in daily_tasks_docs]
+        
+        # Get all incomplete tasks not in today's view
+        query = {
+            "user_id": user_id,
+            "completed": False,
+            "parent_task_id": None  # Only main tasks, not sub-tasks
+        }
+        
+        if existing_task_ids:
+            query["id"] = {"$nin": existing_task_ids}
+        
+        tasks_docs = await find_documents("tasks", query)
+        
+        # Sort by priority and due date
+        tasks_docs.sort(key=lambda x: (
+            0 if x.get("priority") == "high" else 1 if x.get("priority") == "medium" else 2,
+            x.get("due_date") or datetime.max
+        ))
+        
+        # Limit to top 20 to avoid overwhelming the UI
+        tasks_docs = tasks_docs[:20]
+        
         tasks = []
-        
         for doc in tasks_docs:
             task = await TaskService._build_task_response(doc, include_subtasks=False)
             tasks.append(task)
         
         return tasks
+
+    @staticmethod
+    async def add_task_to_today(user_id: str, task_id: str) -> bool:
+        """Add a task to today's curated list"""
+        today = datetime.now().date()
+        
+        # Verify task exists and belongs to user
+        task = await find_document("tasks", {"id": task_id, "user_id": user_id})
+        if not task:
+            raise ValueError("Task not found")
+        
+        # Check if task is already in today's view
+        existing = await find_document("daily_tasks", {
+            "user_id": user_id,
+            "task_id": task_id,
+            "date": {
+                "$gte": datetime.combine(today, datetime.min.time()),
+                "$lte": datetime.combine(today, datetime.max.time())
+            }
+        })
+        
+        if existing:
+            return True  # Already added
+        
+        # Get current max sort_order for today
+        daily_tasks = await find_documents("daily_tasks", {
+            "user_id": user_id,
+            "date": {
+                "$gte": datetime.combine(today, datetime.min.time()),
+                "$lte": datetime.combine(today, datetime.max.time())
+            }
+        })
+        
+        max_sort_order = max([dt.get("sort_order", 0) for dt in daily_tasks] + [0])
+        
+        # Create daily task entry
+        daily_task = DailyTask(
+            user_id=user_id,
+            task_id=task_id,
+            date=datetime.combine(today, datetime.min.time()),
+            sort_order=max_sort_order + 1
+        )
+        
+        await create_document("daily_tasks", daily_task.dict())
+        return True
+
+    @staticmethod
+    async def remove_task_from_today(user_id: str, task_id: str) -> bool:
+        """Remove a task from today's curated list"""
+        today = datetime.now().date()
+        
+        return await delete_document("daily_tasks", {
+            "user_id": user_id,
+            "task_id": task_id,
+            "date": {
+                "$gte": datetime.combine(today, datetime.min.time()),
+                "$lte": datetime.combine(today, datetime.max.time())
+            }
+        })
+
+    @staticmethod
+    async def reorder_daily_tasks(user_id: str, task_ids: List[str]) -> bool:
+        """Reorder tasks in today's view"""
+        today = datetime.now().date()
+        
+        for i, task_id in enumerate(task_ids):
+            await update_document("daily_tasks", {
+                "user_id": user_id,
+                "task_id": task_id,
+                "date": {
+                    "$gte": datetime.combine(today, datetime.min.time()),
+                    "$lte": datetime.combine(today, datetime.max.time())
+                }
+            }, {"sort_order": i + 1})
+        
+        return True
 
     @staticmethod
     async def _build_task_response(task_doc: dict, include_subtasks: bool = True) -> TaskResponse:
