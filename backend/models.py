@@ -410,12 +410,22 @@ class ProjectResponse(Project):
     is_overdue: Optional[bool] = None
     tasks: Optional[List[TaskResponse]] = []
 
-class AreaResponse(Area):
-    project_count: Optional[int] = None
-    completed_project_count: Optional[int] = None
-    total_task_count: Optional[int] = None
-    completed_task_count: Optional[int] = None
-    projects: Optional[List[ProjectResponse]] = []
+class AreaResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    color: str
+    icon: str
+    user_id: str
+    sort_order: int = 0
+    archived: bool = False
+    created_at: datetime
+    updated_at: datetime
+    project_count: int = 0
+    completed_project_count: int = 0
+    total_task_count: int = 0
+    completed_task_count: int = 0
+    projects: Optional[List['ProjectResponse']] = None
 
 class HabitResponse(Habit):
     progress_percentage: Optional[float] = None
