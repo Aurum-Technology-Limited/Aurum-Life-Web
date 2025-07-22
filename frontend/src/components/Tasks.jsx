@@ -153,6 +153,48 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
     ));
   };
 
+  // Load available dependency tasks
+  const loadAvailableDependencies = async (projectId) => {
+    if (!projectId) return;
+    
+    try {
+      setLoadingDependencies(true);
+      const response = await tasksAPI.getAvailableDependencyTasks(projectId, task?.id);
+      setAvailableDependencies(response.data || []);
+    } catch (err) {
+      console.error('Error loading available dependencies:', err);
+      setAvailableDependencies([]);
+    } finally {
+      setLoadingDependencies(false);
+    }
+  };
+
+  // Load current task dependencies
+  const loadTaskDependencies = async (taskId) => {
+    if (!taskId) return;
+    
+    try {
+      const response = await tasksAPI.getTaskDependencies(taskId);
+      const depData = response.data || {};
+      setSelectedDependencyIds(depData.dependency_task_ids || []);
+      setDependencies(depData.dependency_tasks || []);
+    } catch (err) {
+      console.error('Error loading task dependencies:', err);
+      setSelectedDependencyIds([]);
+      setDependencies([]);
+    }
+  };
+
+  const handleDependencyToggle = (dependencyId) => {
+    setSelectedDependencyIds(prev => {
+      if (prev.includes(dependencyId)) {
+        return prev.filter(id => id !== dependencyId);
+      } else {
+        return [...prev, dependencyId];
+      }
+    });
+  };
+
   // Load projects when modal opens
   useEffect(() => {
     if (isOpen) {
