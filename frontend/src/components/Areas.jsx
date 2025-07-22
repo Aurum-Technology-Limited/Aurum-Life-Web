@@ -65,8 +65,12 @@ const Areas = ({ onSectionChange }) => {
     try {
       if (editingArea) {
         await areasAPI.updateArea(editingArea.id, formData);
+        // Notify data context of the mutation
+        onDataMutation('area', 'update', { areaId: editingArea.id, ...formData });
       } else {
-        await areasAPI.createArea(formData);
+        const response = await areasAPI.createArea(formData);
+        // Notify data context of the mutation
+        onDataMutation('area', 'create', response.data || formData);
       }
       loadAreas();
       handleCloseModal();
@@ -81,6 +85,8 @@ const Areas = ({ onSectionChange }) => {
       try {
         await areasAPI.deleteArea(areaId);
         loadAreas();
+        // Notify data context of the mutation
+        onDataMutation('area', 'delete', { areaId });
       } catch (err) {
         console.error('Error deleting area:', err);
         setError('Failed to delete area');
