@@ -85,6 +85,24 @@ const Areas = ({ onSectionChange }) => {
     }
   };
 
+  const handleArchive = async (areaId, isArchived) => {
+    try {
+      if (isArchived) {
+        await areasAPI.unarchiveArea(areaId);
+        // Notify data context of the mutation
+        onDataMutation('area', 'unarchive', { areaId });
+      } else {
+        await areasAPI.archiveArea(areaId);
+        // Notify data context of the mutation  
+        onDataMutation('area', 'archive', { areaId });
+      }
+      loadAreas();
+    } catch (err) {
+      console.error('Error archiving/unarchiving area:', err);
+      setError(`Failed to ${isArchived ? 'unarchive' : 'archive'} area`);
+    }
+  };
+
   const handleDelete = async (areaId) => {
     if (window.confirm('Are you sure? This will delete all projects and tasks in this area.')) {
       try {
