@@ -452,12 +452,13 @@ async def create_project(project_data: ProjectCreate, current_user: User = Depen
 
 @api_router.get("/projects", response_model=List[ProjectResponse])
 async def get_projects(
-    area_id: str = Query(None),
+    area_id: Optional[str] = Query(None, description="Filter by area ID"),
+    include_archived: bool = Query(False, description="Include archived projects"),
     current_user: User = Depends(get_current_active_user)
 ):
     """Get all projects for user, optionally filtered by area"""
     try:
-        return await ProjectService.get_user_projects(current_user.id, area_id)
+        return await ProjectService.get_user_projects(current_user.id, area_id, include_archived)
     except Exception as e:
         logger.error(f"Error getting projects: {e}")
         raise HTTPException(status_code=500, detail=str(e))
