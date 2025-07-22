@@ -1175,6 +1175,50 @@ class TaskService:
         return task_response
 
     @staticmethod
+    async def _validate_task_dependencies(current_task: dict, update_data: dict, user_id: str):
+        """
+        Validate task dependencies before allowing status changes (FR-1.1.2)
+        Raises ValueError if dependencies are not met
+        """
+        dependency_task_ids = current_task.get("dependency_task_ids", [])
+        if not dependency_task_ids:
+            return  # No dependencies to check
+        
+        # Check what status/completion we're trying to set
+        new_status = None
+        new_completed = None
+        
+        if "status" in update_data:
+            status_value = update_data["status"].value if hasattr(update_data["status"], 'value') else update_data["status"]
+            new_status = status_value
+        
+        if "completed" in update_data:
+            new_completed = update_data["completed"]
+        
+        # Only validate if trying to move beyond 'todo' status
+        blocked_statuses = ["in_progress", "review", "completed"]
+        if new_status in blocked_statuses or new_completed is True:
+            # Get dependency tasks to check their completion status
+            dependency_docs = await find_documents("tasks", {
+                "id": {"$in": dependency_task_ids}, 
+                "user_id": user_id
+            })
+            
+            # Check if all dependencies are completed
+            incomplete_dependencies = []
+            for dep_id in dependency_task_ids:
+                dep_task = next((d for d in dependency_docs if d["id"] == dep_id), None)
+                if not dep_task:
+                    incomplete_dependencies.append(f"Task {dep_id} (not found)")
+                elif not dep_task.get("completed", False):
+                    incomplete_dependencies.append(dep_task.get("name", f"Task {dep_id}"))
+            
+            # If there are incomplete dependencies, block the status change (FR-1.1.3)
+            if incomplete_dependencies:
+                incomplete_list = ", ".join(incomplete_dependencies)
+                raise ValueError(f"Cannot update task status. The following prerequisite tasks must be completed first: {incomplete_list}")
+
+    @staticmethod
     async def update_task(user_id: str, task_id: str, task_data: TaskUpdate) -> bool:
         # First, get the current task to check dependencies
         current_task = await find_document("tasks", {"id": task_id, "user_id": user_id})
