@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./App.css";
 import { AuthProvider } from './contexts/AuthContext';
+import { DataProvider } from './contexts/DataContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
