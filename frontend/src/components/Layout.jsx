@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   Brain, 
-  Target, 
   BookOpen, 
   Heart, 
   CheckSquare, 
