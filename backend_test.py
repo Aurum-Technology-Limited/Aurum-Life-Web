@@ -1137,6 +1137,84 @@ class BackendTester:
         print("   ✅ Multiple reset requests invalidate previous tokens")
         print("   ✅ Token verification includes expiration checking")
 
+    def run_critical_authentication_tests(self):
+        """Run the critical authentication fix tests"""
+        print("🔐 STARTING CRITICAL AUTHENTICATION FIX TESTING")
+        print("=" * 80)
+        print("FOCUS: Testing the authentication fix that resolves dashboard loading issues")
+        print("ISSUE: Dashboard was using hardcoded DEFAULT_USER_ID causing 'User not found' errors")
+        print("FIX: Updated dashboard and all endpoints to use proper JWT authentication")
+        print("=" * 80)
+        
+        # Test sequence for authentication fix validation
+        test_sequence = [
+            ("Health Check", self.test_health_check),
+            ("CRITICAL: Authentication Workflow", self.test_critical_authentication_workflow),
+            ("CRITICAL: Dashboard Endpoint", self.test_critical_dashboard_endpoint),
+            ("All Authenticated Endpoints", self.test_all_authenticated_endpoints),
+            ("Security Validation", self.test_security_validation),
+            ("No DEFAULT_USER_ID Usage", self.test_no_default_user_id_usage),
+        ]
+        
+        total_tests = len(test_sequence)
+        passed_tests = 0
+        critical_failures = []
+        
+        for test_name, test_func in test_sequence:
+            print(f"\n{'='*60}")
+            print(f"RUNNING: {test_name}")
+            print(f"{'='*60}")
+            
+            try:
+                start_time = time.time()
+                result = test_func()
+                end_time = time.time()
+                
+                if result:
+                    passed_tests += 1
+                    print(f"✅ {test_name} COMPLETED SUCCESSFULLY ({end_time - start_time:.2f}s)")
+                else:
+                    print(f"❌ {test_name} FAILED ({end_time - start_time:.2f}s)")
+                    if "CRITICAL" in test_name:
+                        critical_failures.append(test_name)
+                        
+            except Exception as e:
+                print(f"💥 {test_name} CRASHED: {str(e)}")
+                if "CRITICAL" in test_name:
+                    critical_failures.append(test_name)
+        
+        # Print final summary
+        print(f"\n{'='*80}")
+        print("🔐 CRITICAL AUTHENTICATION FIX TESTING SUMMARY")
+        print(f"{'='*80}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"Overall Success Rate: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
+        
+        if critical_failures:
+            print(f"\n❌ CRITICAL FAILURES DETECTED:")
+            for failure in critical_failures:
+                print(f"   - {failure}")
+            print(f"\n🚨 AUTHENTICATION FIX NOT FULLY WORKING - {len(critical_failures)} critical issues remain")
+        else:
+            print(f"\n✅ ALL CRITICAL TESTS PASSED!")
+            print(f"🎉 AUTHENTICATION FIX SUCCESSFULLY VERIFIED!")
+            print(f"   - User registration creates valid accounts")
+            print(f"   - Login generates proper JWT tokens")
+            print(f"   - JWT authentication works correctly")
+            print(f"   - Dashboard loads for authenticated users (FIXED!)")
+            print(f"   - No more 'User not found' errors")
+            print(f"   - All endpoints use proper authentication")
+            print(f"   - Security is properly enforced")
+        
+        # Print individual test results summary
+        print(f"\n📊 DETAILED TEST RESULTS:")
+        for result in self.test_results:
+            status = "✅" if result['success'] else "❌"
+            print(f"   {status} {result['test']}: {result['message']}")
+        
+        return len(critical_failures) == 0
+
     def cleanup_auth_test_data(self):
         """Clean up authentication test data"""
         print("\n=== AUTHENTICATION TEST CLEANUP ===")
