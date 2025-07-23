@@ -65,8 +65,18 @@ const Areas = ({ onSectionChange }) => {
     }
   };
 
+  const loadPillars = async () => {
+    try {
+      const response = await pillarsAPI.getPillars(false, false, false); // Just basic pillar data
+      setPillars(response.data);
+    } catch (err) {
+      console.error('Error loading pillars:', err);
+    }
+  };
+
   useEffect(() => {
     loadAreas();
+    loadPillars();
   }, [showArchived]); // Reload when showArchived changes
 
   const handleSubmit = async (e) => {
