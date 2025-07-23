@@ -605,10 +605,6 @@ class CalendarEvent(BaseModel):
     project_name: Optional[str] = None
     area_name: Optional[str] = None
 
-# Enable forward references
-TaskResponse.model_rebuild()
-ProjectResponse.model_rebuild()
-AreaResponse.model_rebuild()
 
 # Pillar Hierarchy Models
 class Pillar(BaseDocument):
