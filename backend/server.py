@@ -374,6 +374,83 @@ async def use_project_template(template_id: str, project_data: ProjectCreate, cu
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+# Pillar endpoints
+@api_router.post("/pillars", response_model=Pillar)
+async def create_pillar(pillar_data: PillarCreate, current_user: User = Depends(get_current_active_user)):
+    """Create a new pillar"""
+    try:
+        return await PillarService.create_pillar(current_user.id, pillar_data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error creating pillar: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/pillars", response_model=List[PillarResponse])
+async def get_pillars(
+    include_sub_pillars: bool = Query(True, description="Include nested sub-pillars"),
+    include_areas: bool = Query(False, description="Include linked areas"),
+    include_archived: bool = Query(False, description="Include archived pillars"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get all pillars for user"""
+    try:
+        return await PillarService.get_user_pillars(current_user.id, include_sub_pillars, include_areas, include_archived)
+    except Exception as e:
+        logger.error(f"Error getting pillars: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/pillars/{pillar_id}", response_model=PillarResponse)
+async def get_pillar(
+    pillar_id: str, 
+    include_sub_pillars: bool = Query(True, description="Include nested sub-pillars"),
+    include_areas: bool = Query(False, description="Include linked areas"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get pillar by ID"""
+    pillar = await PillarService.get_pillar(current_user.id, pillar_id, include_sub_pillars, include_areas)
+    if not pillar:
+        raise HTTPException(status_code=404, detail="Pillar not found")
+    return pillar
+
+@api_router.put("/pillars/{pillar_id}", response_model=dict)
+async def update_pillar(pillar_id: str, pillar_data: PillarUpdate, current_user: User = Depends(get_current_active_user)):
+    """Update a pillar"""
+    try:
+        success = await PillarService.update_pillar(current_user.id, pillar_id, pillar_data)
+        if not success:
+            raise HTTPException(status_code=404, detail="Pillar not found")
+        return {"success": True, "message": "Pillar updated successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error updating pillar: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/pillars/{pillar_id}/archive")
+async def archive_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user)):
+    """Archive a pillar"""
+    success = await PillarService.archive_pillar(current_user.id, pillar_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Pillar not found")
+    return {"message": "Pillar archived successfully"}
+
+@api_router.put("/pillars/{pillar_id}/unarchive")
+async def unarchive_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user)):
+    """Unarchive a pillar"""
+    success = await PillarService.unarchive_pillar(current_user.id, pillar_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Pillar not found")
+    return {"message": "Pillar unarchived successfully"}
+
+@api_router.delete("/pillars/{pillar_id}", response_model=dict)
+async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user)):
+    """Delete a pillar and unlink associated areas"""
+    success = await PillarService.delete_pillar(current_user.id, pillar_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Pillar not found")
+    return {"success": True, "message": "Pillar deleted successfully"}
+
 # Area endpoints
 @api_router.post("/areas", response_model=Area)
 async def create_area(area_data: AreaCreate, current_user: User = Depends(get_current_active_user)):
