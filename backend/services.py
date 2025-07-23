@@ -164,63 +164,6 @@ class UserService:
         
         return True
 
-class HabitService:
-    @staticmethod
-    async def create_habit(user_id: str, habit_data: HabitCreate) -> Habit:
-        habit = Habit(user_id=user_id, **habit_data.dict())
-        habit_dict = habit.dict()
-        await create_document("habits", habit_dict)
-        return habit
-
-    @staticmethod
-    async def get_user_habits(user_id: str) -> List[HabitResponse]:
-        habits_docs = await find_documents("habits", {"user_id": user_id})
-        habits = []
-        for doc in habits_docs:
-            habit = HabitResponse(**doc)
-            # Calculate progress percentage
-            habit.progress_percentage = (habit.current_streak / habit.target_days * 100) if habit.target_days > 0 else 0
-            habits.append(habit)
-        return habits
-
-    @staticmethod
-    async def update_habit(habit_id: str, habit_data: HabitUpdate) -> bool:
-        update_data = {k: v for k, v in habit_data.dict().items() if v is not None}
-        update_data["updated_at"] = datetime.utcnow()
-        return await update_document("habits", {"id": habit_id}, update_data)
-
-    @staticmethod
-    async def toggle_habit_completion(user_id: str, habit_id: str, completed: bool) -> bool:
-        habit_doc = await find_document("habits", {"id": habit_id, "user_id": user_id})
-        if not habit_doc:
-            return False
-
-        today = datetime.now().date()
-        last_completed = habit_doc.get("last_completed_date")
-        
-        update_data = {
-            "is_completed_today": completed,
-            "updated_at": datetime.utcnow()
-        }
-        
-        if completed:
-            # Check if this is a new completion (not same day)
-            if not last_completed or datetime.fromisoformat(last_completed.replace('Z', '+00:00')).date() < today:
-                update_data["current_streak"] = habit_doc.get("current_streak", 0) + 1
-                update_data["total_completed"] = habit_doc.get("total_completed", 0) + 1
-            update_data["last_completed_date"] = datetime.utcnow()
-        else:
-            # If uncompleting and it was completed today, reduce streak
-            if habit_doc.get("is_completed_today", False):
-                update_data["current_streak"] = max(0, habit_doc.get("current_streak", 0) - 1)
-                update_data["total_completed"] = max(0, habit_doc.get("total_completed", 0) - 1)
-        
-        return await update_document("habits", {"id": habit_id}, update_data)
-
-    @staticmethod
-    async def delete_habit(user_id: str, habit_id: str) -> bool:
-        return await delete_document("habits", {"id": habit_id, "user_id": user_id})
-
 class JournalService:
     @staticmethod
     async def create_entry(user_id: str, entry_data: JournalEntryCreate) -> JournalEntry:
