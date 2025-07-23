@@ -403,15 +403,7 @@ class AreaService:
         if not area_doc:
             return None
             
-        area_response = AreaResponse(**area_doc)
-        
-        # Get projects for this area
-        projects = await ProjectService.get_area_projects(area_id)
-        area_response.projects = projects
-        area_response.project_count = len(projects)
-        area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
-        
-        return area_response
+        return await AreaService._build_area_response(area_doc, include_projects=True)
 
     @staticmethod
     async def update_area(user_id: str, area_id: str, area_data: AreaUpdate) -> bool:
