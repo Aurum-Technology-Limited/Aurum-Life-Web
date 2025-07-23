@@ -662,3 +662,9 @@ class PillarResponse(BaseModel):
     
     # Linked areas for visualization
     areas: Optional[List['AreaResponse']] = None
+
+# Enable forward references
+TaskResponse.model_rebuild()
+ProjectResponse.model_rebuild()
+AreaResponse.model_rebuild()
+PillarResponse.model_rebuild()
