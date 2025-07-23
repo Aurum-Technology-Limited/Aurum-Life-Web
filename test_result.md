@@ -107,6 +107,21 @@
 user_problem_statement: "Build Aurum Life personal growth platform with habit tracking, journaling, task management, mindfulness, learning, AI coaching, and achievements system"
 
 backend:
+  - task: "Insights Page Runtime Error Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/services.py, /app/frontend/src/components/Insights.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "User reported runtime error in Insights page: 'Cannot read properties of undefined (reading 'completed')'. Error occurred when accessing task_status_breakdown.completed property."
+        - working: true
+          agent: "main"
+          comment: "Fixed Insights runtime error by restoring task_status_breakdown structure in backend InsightsService. Added proper task status calculation logic, null safety checks in frontend, and verified API returns correct data structure. Backend API tested successfully with all required fields present."
+
   - task: "Pillar Hierarchy Frontend Implementation - Phase 2"
     implemented: true
     working: true
