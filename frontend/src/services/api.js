@@ -171,15 +171,6 @@ export const userAPI = {
   createUser: (userData) => apiClient.post('/users', userData),
 };
 
-// Habits API
-export const habitsAPI = {
-  getHabits: () => apiClient.get('/habits'),
-  createHabit: (habitData) => apiClient.post('/habits', habitData),
-  updateHabit: (habitId, habitData) => apiClient.put(`/habits/${habitId}`, habitData),
-  toggleHabit: (habitId, completed) => apiClient.post(`/habits/${habitId}/toggle`, { habit_id: habitId, completed }),
-  deleteHabit: (habitId) => apiClient.delete(`/habits/${habitId}`),
-};
-
 // Journal API
 export const journalAPI = {
   getEntries: (skip = 0, limit = 20) => apiClient.get('/journal', { params: { skip, limit } }),
