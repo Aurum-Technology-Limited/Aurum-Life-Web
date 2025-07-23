@@ -29,6 +29,11 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
     status: 'todo'
   });
 
+  // Drag and Drop state (UI-3.3.2)
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [optimisticTasks, setOptimisticTasks] = useState([]);
+  const [dragError, setDragError] = useState(null);
+
   const columns = [
     { id: 'todo', title: 'To Do', color: 'text-gray-400 bg-gray-700' },
     { id: 'in-progress', title: 'In Progress', color: 'text-blue-400 bg-blue-600' },
