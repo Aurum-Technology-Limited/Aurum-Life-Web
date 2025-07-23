@@ -87,6 +87,37 @@ class PasswordResetResponse(BaseModel):
     message: str
     success: bool
 
+# Habit models
+class Habit(BaseDocument):
+    user_id: str
+    name: str
+    description: str = ""
+    category: str = "health"
+    target_days: int = 30
+    current_streak: int = 0
+    total_completed: int = 0
+    is_completed_today: bool = False
+    last_completed_date: Optional[datetime] = None
+    color: str = "#F4B400"
+
+class HabitCreate(BaseModel):
+    name: str
+    description: str = ""
+    category: str = "health"
+    target_days: int = 30
+    color: str = "#F4B400"
+
+class HabitUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    target_days: Optional[int] = None
+    color: Optional[str] = None
+
+class HabitCompletion(BaseModel):
+    habit_id: str
+    completed: bool
+
 # Journal models
 class MoodEnum(str, Enum):
     optimistic = "optimistic"
@@ -418,6 +449,8 @@ class UserBadge(BaseDocument):
 # Stats models
 class UserStats(BaseDocument):
     user_id: str
+    total_habits: int = 0
+    habits_completed_today: int = 0
     total_journal_entries: int = 0
     total_tasks: int = 0
     tasks_completed: int = 0
@@ -515,6 +548,9 @@ class AreaResponse(BaseModel):
     completed_task_count: int = 0
     projects: Optional[List['ProjectResponse']] = None
 
+class HabitResponse(Habit):
+    progress_percentage: Optional[float] = None
+
 class CourseResponse(Course):
     progress_percentage: Optional[int] = None
     is_enrolled: Optional[bool] = None
@@ -522,6 +558,7 @@ class CourseResponse(Course):
 class UserDashboard(BaseModel):
     user: User
     stats: UserStats
+    recent_habits: List[HabitResponse]
     recent_tasks: List[TaskResponse]
     recent_courses: List[CourseResponse]
     recent_achievements: List[UserBadge]
@@ -547,6 +584,7 @@ class DailyTasksUpdate(BaseModel):
 class TodayView(BaseModel):
     date: datetime
     tasks: List[TaskResponse]  # Curated daily tasks
+    habits: List[HabitResponse]
     available_tasks: List[TaskResponse]  # Tasks available to add to today
     total_tasks: int
     completed_tasks: int
@@ -561,7 +599,7 @@ class KanbanBoard(BaseModel):
 class CalendarEvent(BaseModel):
     id: str
     title: str
-    type: str  # "task", "project_deadline"
+    type: str  # "task", "habit", "project_deadline"
     date: datetime
     priority: Optional[str] = None
     project_name: Optional[str] = None
