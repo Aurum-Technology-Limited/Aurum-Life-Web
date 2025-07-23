@@ -220,15 +220,13 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
 
   // Draggable Task Card Component (UI-3.3.1)
   const DraggableTaskCard = ({ task, columnId }) => {
-    const [{ isDragging }, drag] = useDrag({
+    const [{ isDragging }, drag] = useDrag(() => ({
       type: 'task',
       item: { ...task, sourceColumn: columnId },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
-      begin: () => handleDragStart(task),
-      end: () => handleDragEnd(),
-    });
+    }));
 
     const isBlocked = task.can_start === false;
     
@@ -313,9 +311,9 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
 
   // Droppable Column Component (UI-3.3.1)
   const DroppableColumn = ({ column, children }) => {
-    const [{ isOver, canDrop }, drop] = useDrop({
+    const [{ isOver, canDrop }, drop] = useDrop(() => ({
       accept: 'task',
-      drop: (item) => {
+      drop: (item, monitor) => {
         if (item.sourceColumn !== column.id) {
           handleDrop(item, column.id);
         }
@@ -324,7 +322,7 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
         isOver: monitor.isOver(),
         canDrop: monitor.canDrop(),
       }),
-    });
+    }));
 
     return (
       <div
