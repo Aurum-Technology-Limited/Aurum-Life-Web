@@ -14,9 +14,10 @@ import {
   Archive,
   ArchiveRestore,
   Eye,
-  EyeOff
+  EyeOff,
+  Mountain
 } from 'lucide-react';
-import { areasAPI } from '../services/api';
+import { areasAPI, pillarsAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import DonutChart from './ui/DonutChart';
 
