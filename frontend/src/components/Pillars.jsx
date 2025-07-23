@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 const Pillars = () => {
-  const { onDataMutation } = useContext(DataContext);
+  const { onDataMutation } = useDataContext();
   const [pillars, setPillars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
