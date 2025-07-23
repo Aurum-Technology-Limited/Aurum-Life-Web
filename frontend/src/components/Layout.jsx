@@ -16,7 +16,8 @@ import {
   User,
   BarChart3,
   FileText,
-  Repeat
+  Repeat,
+  Mountain
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
