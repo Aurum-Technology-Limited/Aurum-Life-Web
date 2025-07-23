@@ -247,25 +247,25 @@ async def get_dashboard(current_user: User = Depends(get_current_active_user)):
 
 # Habit endpoints
 @api_router.post("/habits", response_model=Habit)
-async def create_habit(habit_data: HabitCreate, user_id: str = Query(DEFAULT_USER_ID)):
+async def create_habit(habit_data: HabitCreate, current_user: User = Depends(get_current_active_user)):
     """Create a new habit"""
     try:
-        return await HabitService.create_habit(user_id, habit_data)
+        return await HabitService.create_habit(current_user.id, habit_data)
     except Exception as e:
         logger.error(f"Error creating habit: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/habits", response_model=List[HabitResponse])
-async def get_habits(user_id: str = Query(DEFAULT_USER_ID)):
+async def get_habits(current_user: User = Depends(get_current_active_user)):
     """Get all habits for user"""
     try:
-        return await HabitService.get_user_habits(user_id)
+        return await HabitService.get_user_habits(current_user.id)
     except Exception as e:
         logger.error(f"Error getting habits: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/habits/{habit_id}", response_model=dict)
-async def update_habit(habit_id: str, habit_data: HabitUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+async def update_habit(habit_id: str, habit_data: HabitUpdate, current_user: User = Depends(get_current_active_user)):
     """Update a habit"""
     success = await HabitService.update_habit(habit_id, habit_data)
     if not success:
@@ -273,17 +273,17 @@ async def update_habit(habit_id: str, habit_data: HabitUpdate, user_id: str = Qu
     return {"success": True, "message": "Habit updated successfully"}
 
 @api_router.post("/habits/{habit_id}/toggle", response_model=dict)
-async def toggle_habit(habit_id: str, completion: HabitCompletion, user_id: str = Query(DEFAULT_USER_ID)):
+async def toggle_habit(habit_id: str, completion: HabitCompletion, current_user: User = Depends(get_current_active_user)):
     """Toggle habit completion"""
-    success = await HabitService.toggle_habit_completion(user_id, habit_id, completion.completed)
+    success = await HabitService.toggle_habit_completion(current_user.id, habit_id, completion.completed)
     if not success:
         raise HTTPException(status_code=404, detail="Habit not found")
     return {"success": True, "message": "Habit completion updated"}
 
 @api_router.delete("/habits/{habit_id}", response_model=dict)
-async def delete_habit(habit_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def delete_habit(habit_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete a habit"""
-    success = await HabitService.delete_habit(user_id, habit_id)
+    success = await HabitService.delete_habit(current_user.id, habit_id)
     if not success:
         raise HTTPException(status_code=404, detail="Habit not found")
     return {"success": True, "message": "Habit deleted successfully"}
