@@ -59,6 +59,8 @@
 ## agent_communication:
 ##     -agent: "main"  # or "testing" or "user"
 ##     -message: "Communication message between agents"
+##     -agent: "main"
+##     -message: "Starting Pillar Hierarchy implementation - Phase 1: Backend Foundation. Will implement Pillar model, API endpoints, and Area-Pillar linking as per user confirmation."
 
 # Protocol Guidelines for Main agent
 #
