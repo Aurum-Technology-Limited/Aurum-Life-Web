@@ -17,7 +17,7 @@ import {
   EyeOff,
   Mountain
 } from 'lucide-react';
-import { areasAPI, pillarsAPI } from '../services/api';
+import { areasAPI, api } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import DonutChart from './ui/DonutChart';
 
