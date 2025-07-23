@@ -56,7 +56,10 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
       completed: []
     };
 
-    (tasks || []).forEach(task => {
+    // Use optimistic tasks if available, otherwise use props tasks
+    const currentTasks = optimisticTasks.length > 0 ? optimisticTasks : (tasks || []);
+
+    currentTasks.forEach(task => {
       const status = task.status || 'todo';
       // Map status to column ID
       const columnId = status === 'in_progress' ? 'in-progress' : status;
@@ -71,8 +74,8 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
   };
 
   const tasksByColumn = organizeTasksByColumn();
-  const totalTasks = tasks?.length || 0;
-  const completedTasks = (tasks || []).filter(task => task.completed || task.status === 'completed').length;
+  const totalTasks = (optimisticTasks.length > 0 ? optimisticTasks : tasks)?.length || 0;
+  const completedTasks = (optimisticTasks.length > 0 ? optimisticTasks : tasks || []).filter(task => task.completed || task.status === 'completed').length;
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
