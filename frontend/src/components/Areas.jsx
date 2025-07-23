@@ -149,7 +149,8 @@ const Areas = ({ onSectionChange }) => {
       name: area.name,
       description: area.description || '',
       color: area.color || '#F4B400',
-      icon: area.icon || 'target'
+      icon: area.icon || 'target',
+      pillar_id: area.pillar_id || ''
     });
     setShowModal(true);
   };
