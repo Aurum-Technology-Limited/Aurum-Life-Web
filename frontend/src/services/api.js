@@ -43,6 +43,28 @@ export const projectTemplatesAPI = {
   useTemplate: (templateId, projectData) => apiClient.post(`/project-templates/${templateId}/use`, projectData)
 };
 
+// Pillars API
+export const pillarsAPI = {
+  getPillars: (includeSubPillars = true, includeAreas = false, includeArchived = false) => apiClient.get('/pillars', {
+    params: {
+      include_sub_pillars: includeSubPillars,
+      include_areas: includeAreas,
+      include_archived: includeArchived
+    }
+  }),
+  getPillar: (pillarId, includeSubPillars = true, includeAreas = false) => apiClient.get(`/pillars/${pillarId}`, {
+    params: {
+      include_sub_pillars: includeSubPillars,
+      include_areas: includeAreas
+    }
+  }),
+  createPillar: (pillarData) => apiClient.post('/pillars', pillarData),
+  updatePillar: (pillarId, pillarData) => apiClient.put(`/pillars/${pillarId}`, pillarData),
+  archivePillar: (pillarId) => apiClient.put(`/pillars/${pillarId}/archive`),
+  unarchivePillar: (pillarId) => apiClient.put(`/pillars/${pillarId}/unarchive`),
+  deletePillar: (pillarId) => apiClient.delete(`/pillars/${pillarId}`)
+};
+
 // Areas API with enhanced archiving support
 export const areasAPI = {
   getAreas: (includeProjects = false, includeArchived = false) => apiClient.get('/areas', { 
