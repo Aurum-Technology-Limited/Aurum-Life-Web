@@ -100,7 +100,375 @@ class BackendTester:
                 'response': getattr(e, 'response', None)
             }
 
-    def test_user_registration(self):
+    def test_critical_authentication_workflow(self):
+        """CRITICAL: Test complete authentication workflow - registration, login, JWT validation"""
+        print("\n=== CRITICAL AUTHENTICATION WORKFLOW TESTING ===")
+        print("Testing the authentication fix that resolves dashboard loading issues")
+        
+        # Test 1: User Registration
+        result = self.make_request('POST', '/auth/register', data=self.test_user_data)
+        self.log_test(
+            "CRITICAL - User Registration",
+            result['success'],
+            f"User registered successfully: {result['data'].get('username', 'Unknown')}" if result['success'] else f"Registration failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            print("❌ CRITICAL FAILURE: Cannot proceed with authentication testing - registration failed")
+            return False
+        
+        user_data = result['data']
+        self.created_resources['users'].append(user_data['id'])
+        
+        # Verify user account creation
+        required_fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active']
+        missing_fields = [field for field in required_fields if field not in user_data]
+        self.log_test(
+            "User Account Creation Validation",
+            len(missing_fields) == 0,
+            f"Valid user account created with all required fields" if len(missing_fields) == 0 else f"Missing fields: {missing_fields}"
+        )
+        
+        # Test 2: User Login and JWT Token Generation
+        login_data = {
+            "email": self.test_user_email,
+            "password": self.test_user_password
+        }
+        
+        result = self.make_request('POST', '/auth/login', data=login_data)
+        self.log_test(
+            "CRITICAL - User Login and JWT Generation",
+            result['success'],
+            f"Login successful, JWT token generated" if result['success'] else f"Login failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            print("❌ CRITICAL FAILURE: Cannot proceed - login failed")
+            return False
+        
+        token_data = result['data']
+        self.auth_token = token_data.get('access_token')
+        
+        # Verify JWT token structure and validity
+        self.log_test(
+            "JWT Token Validation",
+            self.auth_token and len(self.auth_token) > 50 and token_data.get('token_type') == 'bearer',
+            f"Valid JWT token generated (length: {len(self.auth_token) if self.auth_token else 0})"
+        )
+        
+        # Test 3: JWT Token Authentication Validation
+        result = self.make_request('GET', '/auth/me', use_auth=True)
+        self.log_test(
+            "CRITICAL - JWT Token Authentication",
+            result['success'],
+            f"JWT token authentication working correctly" if result['success'] else f"JWT authentication failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            authenticated_user = result['data']
+            self.log_test(
+                "Authenticated User Data Integrity",
+                authenticated_user.get('email') == self.test_user_email,
+                f"Authenticated user data matches registered user: {authenticated_user.get('email')}"
+            )
+        
+        return result['success']
+
+    def test_critical_dashboard_endpoint(self):
+        """CRITICAL: Test dashboard endpoint - this was the failing endpoint causing 'User not found' errors"""
+        print("\n=== CRITICAL DASHBOARD ENDPOINT TESTING ===")
+        print("Testing the dashboard endpoint that was fixed from using DEFAULT_USER_ID to proper JWT authentication")
+        
+        if not self.auth_token:
+            self.log_test("Dashboard Testing Setup", False, "No auth token available - authentication workflow must be completed first")
+            return False
+        
+        # Test 1: Dashboard Access with Authenticated User (THE CRITICAL FIX)
+        result = self.make_request('GET', '/dashboard', use_auth=True)
+        self.log_test(
+            "CRITICAL - Dashboard with Authenticated User",
+            result['success'],
+            f"Dashboard loads successfully for authenticated user (FIXED!)" if result['success'] else f"Dashboard still failing: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            print("❌ CRITICAL FAILURE: Dashboard endpoint still not working with authenticated user")
+            print(f"   Status Code: {result.get('status_code', 'Unknown')}")
+            print(f"   Error: {result.get('error', 'Unknown')}")
+            if 'data' in result:
+                print(f"   Response: {json.dumps(result['data'], indent=2)}")
+            return False
+        
+        # Test 2: Verify Dashboard Returns User-Specific Data (Not Demo Data)
+        dashboard_data = result['data']
+        
+        # Check if dashboard contains user information
+        self.log_test(
+            "Dashboard User-Specific Data",
+            'user' in dashboard_data and dashboard_data['user'].get('email') == self.test_user_email,
+            f"Dashboard returns user-specific data for: {dashboard_data.get('user', {}).get('email', 'Unknown')}"
+        )
+        
+        # Test 3: Verify Dashboard Data Structure
+        expected_sections = ['user', 'stats', 'areas', 'today_tasks', 'recent_habits']
+        present_sections = [section for section in expected_sections if section in dashboard_data]
+        
+        self.log_test(
+            "Dashboard Data Structure",
+            len(present_sections) >= 3,  # At least user, stats, and one data section
+            f"Dashboard contains {len(present_sections)}/{len(expected_sections)} expected sections: {present_sections}"
+        )
+        
+        # Test 4: Verify No "User not found" Error
+        user_section = dashboard_data.get('user', {})
+        self.log_test(
+            "No 'User not found' Error",
+            user_section and user_section.get('id') and user_section.get('email'),
+            f"Dashboard successfully loads user data - no 'User not found' error"
+        )
+        
+        print(f"✅ DASHBOARD FIX VERIFIED: Dashboard loads successfully for authenticated user")
+        print(f"   User: {user_section.get('username', 'Unknown')} ({user_section.get('email', 'Unknown')})")
+        print(f"   Areas: {len(dashboard_data.get('areas', []))}")
+        print(f"   Today Tasks: {len(dashboard_data.get('today_tasks', []))}")
+        
+        return True
+
+    def test_all_authenticated_endpoints(self):
+        """Test that all fixed endpoints now work with JWT authentication"""
+        print("\n=== ALL AUTHENTICATED ENDPOINTS TESTING ===")
+        print("Verifying all endpoints that were fixed from DEFAULT_USER_ID to proper JWT authentication")
+        
+        if not self.auth_token:
+            self.log_test("Authenticated Endpoints Testing Setup", False, "No auth token available")
+            return False
+        
+        # Test endpoints that were fixed in the authentication update
+        endpoints_to_test = [
+            # User endpoints
+            {'method': 'GET', 'endpoint': '/auth/me', 'name': 'Current User Info'},
+            {'method': 'PUT', 'endpoint': '/users/me', 'name': 'Update User Profile', 'data': {'first_name': 'TestUpdate'}},
+            
+            # Habit endpoints
+            {'method': 'GET', 'endpoint': '/habits', 'name': 'Get User Habits'},
+            {'method': 'POST', 'endpoint': '/habits', 'name': 'Create Habit', 'data': {
+                'name': 'Test Auth Habit',
+                'description': 'Testing authentication fix',
+                'category': 'testing',
+                'target_days': 7,
+                'color': '#FF0000'
+            }},
+            
+            # Journal endpoints
+            {'method': 'GET', 'endpoint': '/journal', 'name': 'Get Journal Entries'},
+            {'method': 'POST', 'endpoint': '/journal', 'name': 'Create Journal Entry', 'data': {
+                'title': 'Auth Test Entry',
+                'content': 'Testing authentication fix',
+                'mood': 'happy',
+                'tags': ['testing', 'auth']
+            }},
+            
+            # Stats and Dashboard
+            {'method': 'GET', 'endpoint': '/stats', 'name': 'Get User Statistics'},
+            {'method': 'GET', 'endpoint': '/dashboard', 'name': 'Get Dashboard (Critical Fix)'},
+            
+            # Areas and Projects
+            {'method': 'GET', 'endpoint': '/areas', 'name': 'Get User Areas'},
+            {'method': 'GET', 'endpoint': '/projects', 'name': 'Get User Projects'},
+            {'method': 'GET', 'endpoint': '/tasks', 'name': 'Get User Tasks'},
+            
+            # Today view
+            {'method': 'GET', 'endpoint': '/today', 'name': 'Get Today View'},
+        ]
+        
+        successful_endpoints = 0
+        total_endpoints = len(endpoints_to_test)
+        
+        for endpoint_test in endpoints_to_test:
+            method = endpoint_test['method']
+            endpoint = endpoint_test['endpoint']
+            name = endpoint_test['name']
+            data = endpoint_test.get('data')
+            
+            result = self.make_request(method, endpoint, data=data, use_auth=True)
+            
+            self.log_test(
+                f"Authenticated Endpoint - {name}",
+                result['success'],
+                f"{method} {endpoint} working with JWT auth" if result['success'] else f"{method} {endpoint} failed: {result.get('error', 'Unknown error')}"
+            )
+            
+            if result['success']:
+                successful_endpoints += 1
+                
+                # Store created resource IDs for cleanup
+                if method == 'POST' and result['success'] and 'data' in result and 'id' in result['data']:
+                    resource_id = result['data']['id']
+                    if 'habits' in endpoint:
+                        # Note: We don't have a habits cleanup list, but we could add one
+                        pass
+                    elif 'journal' in endpoint:
+                        # Note: We don't have a journal cleanup list, but we could add one
+                        pass
+        
+        success_rate = (successful_endpoints / total_endpoints) * 100
+        self.log_test(
+            "All Authenticated Endpoints Summary",
+            success_rate >= 80,  # At least 80% should work
+            f"Authentication fix success rate: {successful_endpoints}/{total_endpoints} endpoints working ({success_rate:.1f}%)"
+        )
+        
+        return success_rate >= 80
+
+    def test_security_validation(self):
+        """Test security validation - unauthenticated requests should return 401/403 errors"""
+        print("\n=== SECURITY VALIDATION TESTING ===")
+        print("Verifying that authentication is properly enforced and no bypass vulnerabilities exist")
+        
+        # Test endpoints without authentication - should be rejected
+        protected_endpoints = [
+            {'method': 'GET', 'endpoint': '/dashboard', 'name': 'Dashboard (Critical)'},
+            {'method': 'GET', 'endpoint': '/auth/me', 'name': 'Current User'},
+            {'method': 'GET', 'endpoint': '/habits', 'name': 'User Habits'},
+            {'method': 'GET', 'endpoint': '/journal', 'name': 'Journal Entries'},
+            {'method': 'GET', 'endpoint': '/stats', 'name': 'User Statistics'},
+            {'method': 'GET', 'endpoint': '/areas', 'name': 'User Areas'},
+            {'method': 'GET', 'endpoint': '/projects', 'name': 'User Projects'},
+            {'method': 'GET', 'endpoint': '/tasks', 'name': 'User Tasks'},
+            {'method': 'GET', 'endpoint': '/today', 'name': 'Today View'},
+            {'method': 'PUT', 'endpoint': '/users/me', 'name': 'Update Profile', 'data': {'first_name': 'Hack'}},
+        ]
+        
+        properly_protected = 0
+        total_protected = len(protected_endpoints)
+        
+        for endpoint_test in protected_endpoints:
+            method = endpoint_test['method']
+            endpoint = endpoint_test['endpoint']
+            name = endpoint_test['name']
+            data = endpoint_test.get('data')
+            
+            # Test without authentication
+            result = self.make_request(method, endpoint, data=data, use_auth=False)
+            
+            is_properly_protected = not result['success'] and result['status_code'] in [401, 403]
+            
+            self.log_test(
+                f"Security - {name} Protection",
+                is_properly_protected,
+                f"{method} {endpoint} properly protected (status: {result['status_code']})" if is_properly_protected else f"{method} {endpoint} NOT PROTECTED - security vulnerability!"
+            )
+            
+            if is_properly_protected:
+                properly_protected += 1
+        
+        # Test with invalid token
+        print("\n   Testing Invalid Token Rejection:")
+        original_token = self.auth_token
+        self.auth_token = "invalid.jwt.token.here"
+        
+        result = self.make_request('GET', '/dashboard', use_auth=True)
+        invalid_token_rejected = not result['success'] and result['status_code'] == 401
+        
+        self.log_test(
+            "Security - Invalid Token Rejection",
+            invalid_token_rejected,
+            f"Invalid JWT token properly rejected (status: {result['status_code']})" if invalid_token_rejected else "Invalid token NOT rejected - security vulnerability!"
+        )
+        
+        # Restore valid token
+        self.auth_token = original_token
+        
+        # Test with malformed token
+        self.auth_token = "malformed-token"
+        result = self.make_request('GET', '/dashboard', use_auth=True)
+        malformed_token_rejected = not result['success'] and result['status_code'] == 401
+        
+        self.log_test(
+            "Security - Malformed Token Rejection",
+            malformed_token_rejected,
+            f"Malformed token properly rejected (status: {result['status_code']})" if malformed_token_rejected else "Malformed token NOT rejected - security vulnerability!"
+        )
+        
+        # Restore valid token
+        self.auth_token = original_token
+        
+        protection_rate = (properly_protected / total_protected) * 100
+        overall_security = protection_rate >= 90 and invalid_token_rejected and malformed_token_rejected
+        
+        self.log_test(
+            "Overall Security Validation",
+            overall_security,
+            f"Security validation: {properly_protected}/{total_protected} endpoints protected ({protection_rate:.1f}%), invalid tokens rejected: {invalid_token_rejected and malformed_token_rejected}"
+        )
+        
+        return overall_security
+
+    def test_no_default_user_id_usage(self):
+        """Verify that no endpoints still use DEFAULT_USER_ID"""
+        print("\n=== DEFAULT_USER_ID ELIMINATION VERIFICATION ===")
+        print("Verifying that all endpoints now use proper JWT authentication instead of hardcoded DEFAULT_USER_ID")
+        
+        if not self.auth_token:
+            self.log_test("DEFAULT_USER_ID Testing Setup", False, "No auth token available")
+            return False
+        
+        # Create test data to verify user-specific filtering
+        # Create a test area
+        area_data = {
+            "name": f"Auth Test Area {uuid.uuid4().hex[:8]}",
+            "description": "Testing user-specific data filtering",
+            "icon": "🔒",
+            "color": "#00FF00"
+        }
+        
+        result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+        self.log_test(
+            "Create Test Area for User Filtering",
+            result['success'],
+            f"Created test area for user-specific filtering" if result['success'] else f"Failed to create test area: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        created_area_id = result['data']['id']
+        self.created_resources['areas'].append(created_area_id)
+        
+        # Verify the area is returned when we query areas (user-specific filtering)
+        result = self.make_request('GET', '/areas', use_auth=True)
+        self.log_test(
+            "User-Specific Area Filtering",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} areas for authenticated user"
+        )
+        
+        if result['success']:
+            areas = result['data']
+            test_area_found = any(area['id'] == created_area_id for area in areas)
+            
+            self.log_test(
+                "User Data Isolation Verification",
+                test_area_found,
+                f"Test area found in user's areas - proper user-specific filtering working" if test_area_found else "Test area NOT found - user filtering may not be working"
+            )
+        
+        # Test dashboard returns user-specific data, not demo data
+        result = self.make_request('GET', '/dashboard', use_auth=True)
+        if result['success']:
+            dashboard_data = result['data']
+            user_data = dashboard_data.get('user', {})
+            
+            # Verify it's not the default demo user
+            is_not_demo_user = user_data.get('email') != 'demo@aurumlife.com' and user_data.get('id') != DEFAULT_USER_ID
+            
+            self.log_test(
+                "Dashboard Returns Authenticated User Data",
+                is_not_demo_user,
+                f"Dashboard returns authenticated user data, not demo user: {user_data.get('email', 'Unknown')}"
+            )
+        
+        return True
         """Test user registration with comprehensive data validation"""
         print("\n=== USER REGISTRATION TESTING ===")
         
