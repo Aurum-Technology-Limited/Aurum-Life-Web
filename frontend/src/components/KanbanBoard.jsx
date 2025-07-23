@@ -123,15 +123,6 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
   };
 
   // Enhanced Drag & Drop Handlers (FR-3.1.1, FR-3.1.2, UI-3.3.2)
-  const handleDragStart = (task) => {
-    setDraggedTask(task);
-    setDragError(null);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedTask(null);
-  };
-
   const handleDrop = async (task, targetColumn) => {
     if (!task || !targetColumn || task.status === targetColumn) {
       return;
