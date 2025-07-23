@@ -290,39 +290,39 @@ async def delete_habit(habit_id: str, current_user: User = Depends(get_current_a
 
 # Journal endpoints
 @api_router.post("/journal", response_model=JournalEntry)
-async def create_journal_entry(entry_data: JournalEntryCreate, user_id: str = Query(DEFAULT_USER_ID)):
+async def create_journal_entry(entry_data: JournalEntryCreate, current_user: User = Depends(get_current_active_user)):
     """Create a new journal entry"""
     try:
-        return await JournalService.create_entry(user_id, entry_data)
+        return await JournalService.create_entry(current_user.id, entry_data)
     except Exception as e:
         logger.error(f"Error creating journal entry: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/journal", response_model=List[JournalEntry])
 async def get_journal_entries(
-    user_id: str = Query(DEFAULT_USER_ID),
+    current_user: User = Depends(get_current_active_user),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100)
 ):
     """Get journal entries for user"""
     try:
-        return await JournalService.get_user_entries(user_id, skip, limit)
+        return await JournalService.get_user_entries(current_user.id, skip, limit)
     except Exception as e:
         logger.error(f"Error getting journal entries: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/journal/{entry_id}", response_model=dict)
-async def update_journal_entry(entry_id: str, entry_data: JournalEntryUpdate, user_id: str = Query(DEFAULT_USER_ID)):
+async def update_journal_entry(entry_id: str, entry_data: JournalEntryUpdate, current_user: User = Depends(get_current_active_user)):
     """Update a journal entry"""
-    success = await JournalService.update_entry(user_id, entry_id, entry_data)
+    success = await JournalService.update_entry(current_user.id, entry_id, entry_data)
     if not success:
         raise HTTPException(status_code=404, detail="Journal entry not found")
     return {"success": True, "message": "Journal entry updated successfully"}
 
 @api_router.delete("/journal/{entry_id}", response_model=dict)
-async def delete_journal_entry(entry_id: str, user_id: str = Query(DEFAULT_USER_ID)):
+async def delete_journal_entry(entry_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete a journal entry"""
-    success = await JournalService.delete_entry(user_id, entry_id)
+    success = await JournalService.delete_entry(current_user.id, entry_id)
     if not success:
         raise HTTPException(status_code=404, detail="Journal entry not found")
     return {"success": True, "message": "Journal entry deleted successfully"}
