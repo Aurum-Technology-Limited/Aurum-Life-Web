@@ -380,6 +380,8 @@ async def create_area(area_data: AreaCreate, current_user: User = Depends(get_cu
     """Create a new area"""
     try:
         return await AreaService.create_area(current_user.id, area_data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating area: {e}")
         raise HTTPException(status_code=500, detail=str(e))
