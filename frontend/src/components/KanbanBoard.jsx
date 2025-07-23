@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { 
   Plus, 
   MoreVertical, 
@@ -10,7 +11,8 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
-  X
+  X,
+  GripVertical
 } from 'lucide-react';
 import { projectsAPI, tasksAPI } from '../services/api';
 
