@@ -30,7 +30,6 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
   });
 
   // Drag and Drop state (UI-3.3.2)
-  const [draggedTask, setDraggedTask] = useState(null);
   const [optimisticTasks, setOptimisticTasks] = useState([]);
   const [dragError, setDragError] = useState(null);
 
