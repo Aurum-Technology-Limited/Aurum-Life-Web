@@ -107,6 +107,21 @@
 user_problem_statement: "Build Aurum Life personal growth platform with habit tracking, journaling, task management, mindfulness, learning, AI coaching, and achievements system"
 
 backend:
+  - task: "Pillars Modal Dark Theme Styling Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Pillars.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "User reported white elements in Pillars modal that should be dark themed to match Aurum's design."
+        - working: true
+          agent: "main"
+          comment: "Fixed Pillars modal styling to match Aurum's dark theme: Updated modal background from bg-white to bg-gray-900, changed input fields to bg-gray-800 with gray borders, updated text colors to white/gray-300, changed button styling to dark theme, updated pillar cards to use gray-900 backgrounds, applied consistent dark styling throughout component."
+
   - task: "Insights Page Runtime Error Fix"
     implemented: true
     working: true
