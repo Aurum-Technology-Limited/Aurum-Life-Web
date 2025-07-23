@@ -392,30 +392,7 @@ class AreaService:
         
         areas = []
         for doc in areas_docs:
-            area_response = AreaResponse(**doc)
-            
-            if include_projects:
-                # Get projects for this area
-                projects = await ProjectService.get_area_projects(area_response.id, include_archived=include_archived)
-                area_response.projects = projects
-                area_response.project_count = len(projects)
-                area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
-                
-                # Calculate task counts
-                total_tasks = sum([p.task_count or 0 for p in projects])
-                completed_tasks = sum([p.completed_task_count or 0 for p in projects])
-                area_response.total_task_count = total_tasks
-                area_response.completed_task_count = completed_tasks
-            else:
-                # Just get counts (exclude archived projects unless specifically requested)
-                project_query = {"user_id": user_id, "area_id": area_response.id}
-                if not include_archived:
-                    project_query["archived"] = {"$ne": True}
-                    
-                projects_docs = await find_documents("projects", project_query)
-                area_response.project_count = len(projects_docs)
-                area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
-            
+            area_response = await AreaService._build_area_response(doc, include_projects)
             areas.append(area_response)
         
         return areas
