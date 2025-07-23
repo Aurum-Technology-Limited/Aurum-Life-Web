@@ -1883,7 +1883,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Task Dependencies Frontend Implementation - Phase 1"
+    - "Enhanced Drag & Drop Backend Integration - Phase 2"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
