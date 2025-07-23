@@ -271,8 +271,8 @@ const Pillars = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pillars</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-white">Pillars</h1>
+          <p className="text-gray-400 mt-1">
             Organize your life domains and track high-level progress
           </p>
         </div>
@@ -288,10 +288,10 @@ const Pillars = () => {
       {/* Pillars List */}
       <div className="space-y-3">
         {pillars.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <Layers className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No pillars yet</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="text-center py-12 bg-gray-900 border border-gray-800 rounded-lg">
+            <Layers className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">No pillars yet</h3>
+            <p className="text-gray-400 mb-4">
               Create your first pillar to organize your life domains
             </p>
             <button
