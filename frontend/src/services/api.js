@@ -227,3 +227,26 @@ export const isApiError = (error) => {
 export const getApiErrorStatus = (error) => {
   return error.response?.status;
 };
+
+// Default export with all APIs
+export const api = apiClient;
+
+export default {
+  client: apiClient,
+  areas: areasAPI,
+  projects: projectsAPI,
+  tasks: tasksAPI,
+  habits: habitsAPI,
+  journal: journalAPI,
+  chat: chatAPI,
+  courses: coursesAPI,
+  stats: statsAPI,
+  health: healthAPI,
+  dashboard: dashboardAPI,
+  today: todayAPI,
+  user: userAPI,
+  projectTemplates: projectTemplatesAPI,
+  pillars: pillarsAPI,
+  recurringTasks: recurringTasksAPI,
+  insights: insightsAPI
+};
