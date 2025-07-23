@@ -271,9 +271,17 @@ const Areas = ({ onSectionChange }) => {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-400">
-                          {area.projects?.length || 0} projects
-                        </p>
+                        <div className="flex items-center space-x-2 text-sm text-gray-400">
+                          {area.pillar_name && (
+                            <span className="flex items-center space-x-1">
+                              <Mountain className="h-3 w-3" />
+                              <span>{area.pillar_name}</span>
+                            </span>
+                          )}
+                          <span>
+                            {area.projects?.length || 0} projects
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex space-x-1">
