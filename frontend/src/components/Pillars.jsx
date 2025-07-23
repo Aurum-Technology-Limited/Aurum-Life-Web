@@ -309,40 +309,40 @@ const Pillars = () => {
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-900 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-800">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+              <h2 className="text-xl font-bold text-white mb-4">
                 {editingPillar ? 'Edit Pillar' : 'Create New Pillar'}
               </h2>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Name *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Description
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="3"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Icon
                   </label>
                   <div className="grid grid-cols-6 gap-2">
@@ -352,7 +352,7 @@ const Pillars = () => {
                         type="button"
                         onClick={() => setFormData({...formData, icon})}
                         className={`p-2 text-lg rounded-lg border-2 transition-colors ${
-                          formData.icon === icon ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                          formData.icon === icon ? 'border-blue-500 bg-blue-500/20' : 'border-gray-700 hover:border-gray-600 bg-gray-800'
                         }`}
                       >
                         {icon}
@@ -362,7 +362,7 @@ const Pillars = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Color
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -372,7 +372,7 @@ const Pillars = () => {
                         type="button"
                         onClick={() => setFormData({...formData, color})}
                         className={`w-8 h-8 rounded-full border-2 transition-all ${
-                          formData.color === color ? 'border-gray-400 scale-110' : 'border-gray-200'
+                          formData.color === color ? 'border-white scale-110' : 'border-gray-600'
                         }`}
                         style={{ backgroundColor: color }}
                       />
@@ -381,13 +381,13 @@ const Pillars = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Parent Pillar
                   </label>
                   <select
                     value={formData.parent_pillar_id}
                     onChange={(e) => setFormData({...formData, parent_pillar_id: e.target.value})}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">None (Root Pillar)</option>
                     {getAvailableParentPillars().map(pillar => (
@@ -399,7 +399,7 @@ const Pillars = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Time Allocation (%)
                   </label>
                   <input
@@ -409,7 +409,7 @@ const Pillars = () => {
                     step="0.1"
                     value={formData.time_allocation_percentage}
                     onChange={(e) => setFormData({...formData, time_allocation_percentage: e.target.value})}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., 25.0"
                   />
                 </div>
@@ -418,7 +418,7 @@ const Pillars = () => {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="px-4 py-2 text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
                   >
                     Cancel
                   </button>
