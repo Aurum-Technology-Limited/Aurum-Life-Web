@@ -29,6 +29,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
     { id: 'dashboard', name: 'Dashboard', icon: Brain, description: 'Overview & insights' },
     { id: 'today', name: 'Today', icon: Calendar, description: 'Today\'s tasks & focus' },
     { id: 'insights', name: 'Insights', icon: BarChart3, description: 'Data & analytics' },
+    { id: 'pillars', name: 'Pillars', icon: Mountain, description: 'Life domains hierarchy' },
     { id: 'areas', name: 'Areas', icon: Layers, description: 'Life domains' },
     { id: 'projects', name: 'Projects', icon: FolderOpen, description: 'Active projects' },
     { id: 'project-templates', name: 'Templates', icon: FileText, description: 'Project templates' },
