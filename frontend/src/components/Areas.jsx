@@ -24,6 +24,7 @@ import DonutChart from './ui/DonutChart';
 const Areas = ({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
   const [areas, setAreas] = useState([]);
+  const [pillars, setPillars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -33,7 +34,8 @@ const Areas = ({ onSectionChange }) => {
     name: '',
     description: '',
     color: '#F4B400',
-    icon: 'target'
+    icon: 'target',
+    pillar_id: ''
   });
 
   const iconOptions = [
