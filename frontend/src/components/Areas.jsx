@@ -67,7 +67,13 @@ const Areas = ({ onSectionChange }) => {
 
   const loadPillars = async () => {
     try {
-      const response = await pillarsAPI.getPillars(false, false, false); // Just basic pillar data
+      const response = await api.get('/pillars', {
+        params: {
+          include_sub_pillars: false,
+          include_areas: false,
+          include_archived: false
+        }
+      });
       setPillars(response.data);
     } catch (err) {
       console.error('Error loading pillars:', err);
