@@ -1574,6 +1574,49 @@ class InsightsService:
         # Get areas with project data for insights
         areas = await AreaService.get_user_areas(user_id, include_projects=True)
         
+        # Calculate task status breakdown
+        task_status_breakdown = {
+            "completed": 0,
+            "in_progress": 0,
+            "todo": 0,
+            "overdue": 0
+        }
+        
+        # Get all tasks to calculate status breakdown
+        from database import find_documents
+        all_tasks = await find_documents("tasks", {"user_id": user_id})
+        
+        for task_doc in all_tasks:
+            status = task_doc.get("status", "todo")
+            if status == "completed":
+                task_status_breakdown["completed"] += 1
+            elif status == "in_progress":
+                task_status_breakdown["in_progress"] += 1
+            elif status == "review":
+                # Map 'review' to 'in_progress' for frontend compatibility
+                task_status_breakdown["in_progress"] += 1
+            else:  # todo and any other status
+                task_status_breakdown["todo"] += 1
+            
+            # Check for overdue tasks (simplified logic)
+            due_date = task_doc.get("due_date")
+            if due_date and not task_doc.get("completed", False):
+                from datetime import datetime
+                try:
+                    if isinstance(due_date, str):
+                        due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+                    if due_date < datetime.utcnow():
+                        task_status_breakdown["overdue"] += 1
+                        # Remove from other categories to avoid double counting
+                        if status == "completed":
+                            task_status_breakdown["completed"] -= 1
+                        elif status in ["in_progress", "review"]:
+                            task_status_breakdown["in_progress"] -= 1
+                        else:
+                            task_status_breakdown["todo"] -= 1
+                except:
+                    pass  # Skip invalid dates
+        
         # Build insights payload
         insights = {
             "overview": {
@@ -1584,6 +1627,15 @@ class InsightsService:
                 "completed_tasks": stats.tasks_completed,
                 "completion_rate": (stats.tasks_completed / stats.total_tasks * 100) if stats.total_tasks > 0 else 0
             },
+            "overall_stats": {
+                "total_tasks": stats.total_tasks,
+                "completed_tasks": stats.tasks_completed,
+                "in_progress_tasks": task_status_breakdown["in_progress"],
+                "todo_tasks": task_status_breakdown["todo"],
+                "overdue_tasks": task_status_breakdown["overdue"],
+                "completion_rate": (stats.tasks_completed / stats.total_tasks * 100) if stats.total_tasks > 0 else 0
+            },
+            "task_status_breakdown": task_status_breakdown,
             "areas": []
         }
         
@@ -1599,7 +1651,10 @@ class InsightsService:
                 "total_task_count": area.total_task_count,
                 "completed_task_count": area.completed_task_count,
                 "completion_rate": (area.completed_task_count / area.total_task_count * 100) if area.total_task_count > 0 else 0,
-                "projects": []
+                "projects": [],
+                # Add compatibility fields for frontend
+                "total_tasks": area.total_task_count,
+                "completed_tasks": area.completed_task_count
             }
             
             # Add project-level data if available
