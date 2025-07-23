@@ -79,9 +79,6 @@ function App() {
       case 'journal':
         console.log('📖 Rendering Journal component');
         return <Journal {...props} />;
-      case 'mindfulness':
-        console.log('🧘 Rendering Mindfulness component');
-        return <Mindfulness {...props} />;
       case 'tasks':
         console.log('✅ Rendering Tasks component');
         return <Tasks {...props} />;
