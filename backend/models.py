@@ -291,6 +291,7 @@ class AreaCreate(BaseModel):
     color: str = "#F4B400"
 
 class AreaUpdate(BaseModel):
+    pillar_id: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
     icon: Optional[str] = None
