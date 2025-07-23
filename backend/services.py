@@ -461,14 +461,36 @@ class AreaService:
         )
 
     @staticmethod
-    async def delete_area(user_id: str, area_id: str) -> bool:
-        # First delete all projects (which will delete their tasks)
-        projects = await find_documents("projects", {"user_id": user_id, "area_id": area_id})
-        for project in projects:
-            await ProjectService.delete_project(user_id, project["id"])
+    async def _build_area_response(area_doc: dict, include_projects: bool = False) -> AreaResponse:
+        """Build area response with pillar name and project data"""
+        area_response = AreaResponse(**area_doc)
         
-        # Then delete the area
-        return await delete_document("areas", {"id": area_id, "user_id": user_id})
+        # Get pillar name if area is linked to a pillar
+        if area_response.pillar_id:
+            pillar_doc = await find_document("pillars", {"id": area_response.pillar_id})
+            if pillar_doc:
+                area_response.pillar_name = pillar_doc["name"]
+        
+        if include_projects:
+            # Get projects for this area
+            projects = await ProjectService.get_area_projects(area_response.id, include_archived=False)
+            area_response.projects = projects
+            area_response.project_count = len(projects)
+            area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
+            
+            # Calculate task counts
+            total_tasks = sum([p.task_count or 0 for p in projects])
+            completed_tasks = sum([p.completed_task_count or 0 for p in projects])
+            area_response.total_task_count = total_tasks
+            area_response.completed_task_count = completed_tasks
+        else:
+            # Just get counts (exclude archived projects unless specifically requested)
+            project_query = {"user_id": area_response.user_id, "area_id": area_response.id, "archived": {"$ne": True}}
+            projects_docs = await find_documents("projects", project_query)
+            area_response.project_count = len(projects_docs)
+            area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
+        
+        return area_response
 
 class ProjectService:
     @staticmethod
