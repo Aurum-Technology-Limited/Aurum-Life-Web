@@ -161,10 +161,10 @@ const Pillars = () => {
     const isExpanded = expandedPillars.has(pillar.id);
 
     return (
-      <div key={pillar.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div key={pillar.id} className="bg-gray-900 rounded-lg shadow-sm border border-gray-800">
         {/* Main Pillar Row */}
         <div 
-          className="p-4 hover:bg-gray-50 transition-colors"
+          className="p-4 hover:bg-gray-800 transition-colors"
           style={{ marginLeft: `${depth * 20}px` }}
         >
           <div className="flex items-center justify-between">
@@ -172,12 +172,12 @@ const Pillars = () => {
               {/* Expand/Collapse Button */}
               <button
                 onClick={() => toggleExpanded(pillar.id)}
-                className={`p-1 rounded hover:bg-gray-200 transition-colors ${!hasSubPillars ? 'invisible' : ''}`}
+                className={`p-1 rounded hover:bg-gray-700 transition-colors ${!hasSubPillars ? 'invisible' : ''}`}
               >
                 {isExpanded ? (
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-gray-500" />
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
                 )}
               </button>
 
@@ -192,15 +192,15 @@ const Pillars = () => {
               {/* Pillar Details */}
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
-                  <h3 className="text-lg font-medium text-gray-900">{pillar.name}</h3>
+                  <h3 className="text-lg font-medium text-white">{pillar.name}</h3>
                   {pillar.time_allocation_percentage && (
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-400">
                       ({pillar.time_allocation_percentage}%)
                     </span>
                   )}
                 </div>
                 {pillar.description && (
-                  <p className="text-sm text-gray-600 mt-1">{pillar.description}</p>
+                  <p className="text-sm text-gray-400 mt-1">{pillar.description}</p>
                 )}
                 
                 {/* Progress Summary */}
@@ -225,21 +225,21 @@ const Pillars = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handleEdit(pillar)}
-                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                className="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Edit Pillar"
               >
                 <Edit2 className="h-4 w-4" />
               </button>
               <button
                 onClick={() => handleArchive(pillar.id)}
-                className="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Archive Pillar"
               >
                 <Archive className="h-4 w-4" />
               </button>
               <button
                 onClick={() => handleDelete(pillar.id)}
-                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Delete Pillar"
               >
                 <Trash2 className="h-4 w-4" />
@@ -250,7 +250,7 @@ const Pillars = () => {
 
         {/* Sub-Pillars */}
         {hasSubPillars && isExpanded && (
-          <div className="border-t border-gray-100">
+          <div className="border-t border-gray-800">
             {pillar.sub_pillars.map(subPillar => renderPillar(subPillar, depth + 1))}
           </div>
         )}
