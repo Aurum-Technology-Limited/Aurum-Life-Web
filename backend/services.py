@@ -1566,255 +1566,322 @@ class CourseService:
 
 class InsightsService:
     @staticmethod
-    async def get_insights_data(user_id: str, date_range: str = 'all_time'):
-        """Get comprehensive insights data for visualization"""
-        from datetime import datetime, timedelta
+    async def get_insights_data(user_id: str, date_range: str = "all_time") -> dict:
+        """Get comprehensive insights data for the user"""
         
-        # Calculate date range filter
-        now = datetime.utcnow()
-        date_filter = {}
+        # Get basic stats
+        stats = await StatsService.get_user_stats(user_id)
         
-        if date_range == 'weekly':
-            week_ago = now - timedelta(days=7)
-            date_filter = {"created_at": {"$gte": week_ago}}
-        elif date_range == 'monthly':
-            month_ago = now - timedelta(days=30)
-            date_filter = {"created_at": {"$gte": month_ago}}
-        elif date_range == 'yearly':
-            year_ago = now - timedelta(days=365)
-            date_filter = {"created_at": {"$gte": year_ago}}
-        # 'all_time' uses no date filter
+        # Get areas with project data for insights
+        areas = await AreaService.get_user_areas(user_id, include_projects=True)
         
-        # Base filter for user
-        base_filter = {"user_id": user_id}
-        if date_filter:
-            base_filter.update(date_filter)
-        
-        # Overall Task Status Counts
-        total_tasks = await count_documents("tasks", base_filter)
-        completed_tasks = await count_documents("tasks", {**base_filter, "status": "completed"})
-        in_progress_tasks = await count_documents("tasks", {**base_filter, "status": "in-progress"})
-        todo_tasks = await count_documents("tasks", {**base_filter, "status": "todo"})
-        overdue_tasks = 0  # We'll calculate this separately
-        
-        # Get tasks that are overdue
-        overdue_filter = {
-            **base_filter,
-            "due_date": {"$lt": now},
-            "status": {"$ne": "completed"}
+        # Build insights payload
+        insights = {
+            "overview": {
+                "total_areas": stats.total_areas,
+                "total_projects": stats.total_projects,
+                "completed_projects": stats.completed_projects,
+                "total_tasks": stats.total_tasks,
+                "completed_tasks": stats.tasks_completed,
+                "completion_rate": (stats.tasks_completed / stats.total_tasks * 100) if stats.total_tasks > 0 else 0
+            },
+            "areas": []
         }
-        overdue_tasks = await count_documents("tasks", overdue_filter)
         
-        # Areas with their progress
-        areas = await find_documents("areas", {"user_id": user_id})
-        areas_data = []
-        
+        # Add area-level insights
         for area in areas:
-            area_projects = await find_documents("projects", {"user_id": user_id, "area_id": area["id"]})
-            area_tasks = []
+            area_insight = {
+                "id": area.id,
+                "name": area.name,
+                "color": area.color,
+                "icon": area.icon,
+                "project_count": area.project_count,
+                "completed_project_count": area.completed_project_count,
+                "total_task_count": area.total_task_count,
+                "completed_task_count": area.completed_task_count,
+                "completion_rate": (area.completed_task_count / area.total_task_count * 100) if area.total_task_count > 0 else 0,
+                "projects": []
+            }
             
-            # Get all tasks for projects in this area
-            for project in area_projects:
-                project_tasks = await find_documents("tasks", {"user_id": user_id, "project_id": project["id"]})
-                area_tasks.extend(project_tasks)
+            # Add project-level data if available
+            if area.projects:
+                for project in area.projects:
+                    project_insight = {
+                        "id": project.id,
+                        "name": project.name,
+                        "status": project.status,
+                        "priority": project.priority,
+                        "task_count": project.task_count or 0,
+                        "completed_task_count": project.completed_task_count or 0,
+                        "completion_percentage": project.completion_percentage or 0
+                    }
+                    area_insight["projects"].append(project_insight)
             
-            # Apply date filtering to tasks
-            if date_filter.get("created_at"):
-                area_tasks = [t for t in area_tasks if t["created_at"] >= date_filter["created_at"]["$gte"]]
-            
-            total_area_tasks = len(area_tasks)
-            completed_area_tasks = len([t for t in area_tasks if t["status"] == "completed"])
-            
-            completion_percentage = (completed_area_tasks / total_area_tasks * 100) if total_area_tasks > 0 else 0
-            
-            areas_data.append({
-                "id": area["id"],
-                "name": area["name"],
-                "color": area.get("color", "#F4B400"),
-                "total_projects": len(area_projects),
-                "total_tasks": total_area_tasks,
-                "completed_tasks": completed_area_tasks,
-                "completion_percentage": round(completion_percentage, 1),
-                "projects": []  # Will be populated when drilling down
-            })
+            insights["areas"].append(area_insight)
         
-        # Projects overview
-        all_projects = await find_documents("projects", {"user_id": user_id})
-        projects_data = []
-        
-        for project in all_projects:
-            project_tasks = await find_documents("tasks", {"user_id": user_id, "project_id": project["id"]})
-            
-            # Apply date filtering
-            if date_filter.get("created_at"):
-                project_tasks = [t for t in project_tasks if t["created_at"] >= date_filter["created_at"]["$gte"]]
-            
-            total_project_tasks = len(project_tasks)
-            completed_project_tasks = len([t for t in project_tasks if t["status"] == "completed"])
-            
-            completion_percentage = (completed_project_tasks / total_project_tasks * 100) if total_project_tasks > 0 else 0
-            
-            projects_data.append({
-                "id": project["id"],
-                "name": project["name"],
-                "area_id": project.get("area_id"),
-                "status": project.get("status", "Not Started"),
-                "priority": project.get("priority", "medium"),
-                "total_tasks": total_project_tasks,
-                "completed_tasks": completed_project_tasks,
-                "completion_percentage": round(completion_percentage, 1)
-            })
-        
-        # Time-based analytics
-        productivity_by_day = {}  # Could implement daily completion tracking
-        
-        return {
-            "date_range": date_range,
-            "generated_at": now.isoformat(),
-            "overall_stats": {
-                "total_tasks": total_tasks,
-                "completed_tasks": completed_tasks,
-                "in_progress_tasks": in_progress_tasks,
-                "todo_tasks": todo_tasks,
-                "overdue_tasks": overdue_tasks,
-                "completion_rate": round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0, 1)
-            },
-            "task_status_breakdown": {
-                "completed": completed_tasks,
-                "in_progress": in_progress_tasks,
-                "todo": todo_tasks,
-                "overdue": overdue_tasks
-            },
-            "areas": areas_data,
-            "projects": projects_data,
-            "productivity_trends": productivity_by_day
-        }
-
+        return insights
+    
     @staticmethod
-    async def get_area_drill_down(user_id: str, area_id: str, date_range: str = 'all_time'):
+    async def get_area_drill_down(user_id: str, area_id: str, date_range: str = "all_time") -> dict:
         """Get detailed breakdown for a specific area"""
-        from datetime import datetime, timedelta
         
-        # Calculate date range filter
-        now = datetime.utcnow()
-        date_filter = {}
-        
-        if date_range == 'weekly':
-            week_ago = now - timedelta(days=7)
-            date_filter = {"created_at": {"$gte": week_ago}}
-        elif date_range == 'monthly':
-            month_ago = now - timedelta(days=30)
-            date_filter = {"created_at": {"$gte": month_ago}}
-        elif date_range == 'yearly':
-            year_ago = now - timedelta(days=365)
-            date_filter = {"created_at": {"$gte": year_ago}}
-        
-        # Get area info
-        area = await find_document("areas", {"id": area_id, "user_id": user_id})
+        # Get the area with projects
+        area = await AreaService.get_area(user_id, area_id)
         if not area:
             raise ValueError("Area not found")
         
-        # Get projects in this area
-        projects = await find_documents("projects", {"user_id": user_id, "area_id": area_id})
-        projects_data = []
-        
-        for project in projects:
-            project_tasks = await find_documents("tasks", {"user_id": user_id, "project_id": project["id"]})
-            
-            # Apply date filtering
-            if date_filter.get("created_at"):
-                project_tasks = [t for t in project_tasks if t["created_at"] >= date_filter["created_at"]["$gte"]]
-            
-            total_tasks = len(project_tasks)
-            completed_tasks = len([t for t in project_tasks if t["status"] == "completed"])
-            in_progress_tasks = len([t for t in project_tasks if t["status"] == "in-progress"])
-            todo_tasks = len([t for t in project_tasks if t["status"] == "todo"])
-            
-            completion_percentage = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
-            
-            projects_data.append({
-                "id": project["id"],
-                "name": project["name"],
-                "status": project.get("status", "Not Started"),
-                "priority": project.get("priority", "medium"),
-                "total_tasks": total_tasks,
-                "completed_tasks": completed_tasks,
-                "in_progress_tasks": in_progress_tasks,
-                "todo_tasks": todo_tasks,
-                "completion_percentage": round(completion_percentage, 1)
-            })
-        
-        return {
+        # Build drill-down data
+        drill_down = {
             "area": {
-                "id": area["id"],
-                "name": area["name"],
-                "color": area.get("color", "#F4B400")
+                "id": area.id,
+                "name": area.name,
+                "description": area.description,
+                "color": area.color,
+                "icon": area.icon
             },
-            "projects": projects_data,
-            "date_range": date_range
+            "summary": {
+                "project_count": area.project_count,
+                "completed_project_count": area.completed_project_count,
+                "total_task_count": area.total_task_count,
+                "completed_task_count": area.completed_task_count,
+                "completion_rate": (area.completed_task_count / area.total_task_count * 100) if area.total_task_count > 0 else 0
+            },
+            "projects": []
         }
-
+        
+        # Add detailed project information
+        if area.projects:
+            for project in area.projects:
+                project_detail = {
+                    "id": project.id,
+                    "name": project.name,
+                    "description": project.description,
+                    "status": project.status,
+                    "priority": project.priority,
+                    "deadline": project.deadline.isoformat() if project.deadline else None,
+                    "task_count": project.task_count or 0,
+                    "completed_task_count": project.completed_task_count or 0,
+                    "active_task_count": project.active_task_count or 0,
+                    "completion_percentage": project.completion_percentage or 0,
+                    "created_at": project.created_at.isoformat()
+                }
+                drill_down["projects"].append(project_detail)
+        
+        return drill_down
+    
     @staticmethod
-    async def get_project_drill_down(user_id: str, project_id: str, date_range: str = 'all_time'):
+    async def get_project_drill_down(user_id: str, project_id: str, date_range: str = "all_time") -> dict:
         """Get detailed task breakdown for a specific project"""
-        from datetime import datetime, timedelta
         
-        # Calculate date range filter
-        now = datetime.utcnow()
-        date_filter = {}
-        
-        if date_range == 'weekly':
-            week_ago = now - timedelta(days=7)
-            date_filter = {"created_at": {"$gte": week_ago}}
-        elif date_range == 'monthly':
-            month_ago = now - timedelta(days=30)
-            date_filter = {"created_at": {"$gte": month_ago}}
-        elif date_range == 'yearly':
-            year_ago = now - timedelta(days=365)
-            date_filter = {"created_at": {"$gte": year_ago}}
-        
-        # Get project info
-        project = await find_document("projects", {"id": project_id, "user_id": user_id})
+        # Get the project
+        project = await ProjectService.get_project(user_id, project_id, include_tasks=True)
         if not project:
             raise ValueError("Project not found")
         
-        # Get area info
-        area = None
-        if project.get("area_id"):
-            area = await find_document("areas", {"id": project["area_id"], "user_id": user_id})
+        # Get area information
+        area = await AreaService.get_area(user_id, project.area_id) if project.area_id else None
         
-        # Get tasks for this project
-        tasks = await find_documents("tasks", {"user_id": user_id, "project_id": project_id})
-        
-        # Apply date filtering
-        if date_filter.get("created_at"):
-            tasks = [t for t in tasks if t["created_at"] >= date_filter["created_at"]["$gte"]]
-        
-        # Sort tasks by priority and due date
-        def task_sort_key(task):
-            priority_order = {"high": 0, "medium": 1, "low": 2}
-            return (
-                priority_order.get(task.get("priority", "medium"), 1),
-                task.get("due_date") or "9999-12-31"
-            )
-        
-        tasks.sort(key=task_sort_key)
-        
-        return {
+        # Build drill-down data
+        drill_down = {
             "project": {
-                "id": project["id"],
-                "name": project["name"],
-                "status": project.get("status", "Not Started"),
-                "priority": project.get("priority", "medium")
+                "id": project.id,
+                "name": project.name,
+                "description": project.description,
+                "status": project.status,
+                "priority": project.priority,
+                "deadline": project.deadline.isoformat() if project.deadline else None,
+                "area_name": area.name if area else None
             },
-            "area": {
-                "id": area["id"] if area else None,
-                "name": area["name"] if area else None,
-                "color": area.get("color", "#F4B400") if area else "#F4B400"
-            } if area else None,
-            "tasks": tasks,
-            "date_range": date_range
+            "summary": {
+                "task_count": project.task_count or 0,
+                "completed_task_count": project.completed_task_count or 0,
+                "active_task_count": project.active_task_count or 0,
+                "completion_percentage": project.completion_percentage or 0
+            },
+            "tasks": []
         }
+        
+        # Add detailed task information
+        if project.tasks:
+            for task in project.tasks:
+                task_detail = {
+                    "id": task.id,
+                    "name": task.name,
+                    "description": task.description,
+                    "status": task.status,
+                    "priority": task.priority,
+                    "due_date": task.due_date.isoformat() if task.due_date else None,
+                    "due_time": task.due_time,
+                    "completed": task.completed,
+                    "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                    "is_overdue": task.is_overdue,
+                    "created_at": task.created_at.isoformat()
+                }
+                drill_down["tasks"].append(task_detail)
+        
+        return drill_down
+
+class PillarService:
+    @staticmethod
+    async def create_pillar(user_id: str, pillar_data: PillarCreate) -> Pillar:
+        """Create a new pillar"""
+        # Get current max sort_order for user's pillars
+        pillars = await find_documents("pillars", {"user_id": user_id})
+        max_sort_order = max([pillar.get("sort_order", 0) for pillar in pillars] + [0])
+        
+        # Validate parent pillar if specified
+        if pillar_data.parent_pillar_id:
+            parent_pillar = await find_document("pillars", {
+                "id": pillar_data.parent_pillar_id, 
+                "user_id": user_id
+            })
+            if not parent_pillar:
+                raise ValueError("Parent pillar not found")
+        
+        pillar = Pillar(
+            user_id=user_id, 
+            sort_order=max_sort_order + 1, 
+            **pillar_data.dict()
+        )
+        pillar_dict = pillar.dict()
+        await create_document("pillars", pillar_dict)
+        return pillar
+    
+    @staticmethod
+    async def get_user_pillars(user_id: str, include_sub_pillars: bool = True, include_areas: bool = False, include_archived: bool = False) -> List[PillarResponse]:
+        """Get all pillars for a user with optional nested structure"""
+        query = {"user_id": user_id}
+        if not include_archived:
+            query["archived"] = {"$ne": True}
+        
+        pillars_docs = await find_documents("pillars", query)
+        pillars_docs.sort(key=lambda x: x.get("sort_order", 0))
+        
+        pillars = []
+        for doc in pillars_docs:
+            pillar_response = await PillarService._build_pillar_response(doc, include_sub_pillars, include_areas)
+            pillars.append(pillar_response)
+        
+        # If including sub-pillars, organize into hierarchy (only return root pillars)
+        if include_sub_pillars:
+            return [p for p in pillars if not p.parent_pillar_id]
+        
+        return pillars
+    
+    @staticmethod
+    async def get_pillar(user_id: str, pillar_id: str, include_sub_pillars: bool = True, include_areas: bool = False) -> Optional[PillarResponse]:
+        """Get a specific pillar by ID"""
+        pillar_doc = await find_document("pillars", {"id": pillar_id, "user_id": user_id})
+        if not pillar_doc:
+            return None
+        
+        return await PillarService._build_pillar_response(pillar_doc, include_sub_pillars, include_areas)
+    
+    @staticmethod
+    async def update_pillar(user_id: str, pillar_id: str, pillar_data: PillarUpdate) -> bool:
+        """Update a pillar"""
+        # Validate parent pillar if being changed
+        if pillar_data.parent_pillar_id:
+            # Check if parent exists
+            parent_pillar = await find_document("pillars", {
+                "id": pillar_data.parent_pillar_id, 
+                "user_id": user_id
+            })
+            if not parent_pillar:
+                raise ValueError("Parent pillar not found")
+            
+            # Prevent circular reference
+            if pillar_data.parent_pillar_id == pillar_id:
+                raise ValueError("Pillar cannot be its own parent")
+        
+        update_data = {k: v for k, v in pillar_data.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow()
+        return await update_document("pillars", {"id": pillar_id, "user_id": user_id}, update_data)
+    
+    @staticmethod
+    async def archive_pillar(user_id: str, pillar_id: str) -> bool:
+        """Archive a pillar (and optionally its sub-pillars)"""
+        update_data = {"archived": True, "updated_at": datetime.utcnow()}
+        return await update_document("pillars", {"id": pillar_id, "user_id": user_id}, update_data)
+    
+    @staticmethod
+    async def unarchive_pillar(user_id: str, pillar_id: str) -> bool:
+        """Unarchive a pillar"""
+        update_data = {"archived": False, "updated_at": datetime.utcnow()}
+        return await update_document("pillars", {"id": pillar_id, "user_id": user_id}, update_data)
+    
+    @staticmethod
+    async def delete_pillar(user_id: str, pillar_id: str) -> bool:
+        """Delete a pillar and unlink associated areas"""
+        # First, unlink all areas from this pillar
+        await update_document("areas", {"pillar_id": pillar_id, "user_id": user_id}, {"pillar_id": None})
+        
+        # Delete sub-pillars first
+        sub_pillars = await find_documents("pillars", {"parent_pillar_id": pillar_id, "user_id": user_id})
+        for sub_pillar in sub_pillars:
+            await PillarService.delete_pillar(user_id, sub_pillar["id"])
+        
+        # Delete the pillar itself
+        return await delete_document("pillars", {"id": pillar_id, "user_id": user_id})
+    
+    @staticmethod
+    async def _build_pillar_response(pillar_doc: dict, include_sub_pillars: bool = True, include_areas: bool = False) -> PillarResponse:
+        """Build a comprehensive pillar response with nested data"""
+        pillar_response = PillarResponse(**pillar_doc)
+        
+        # Get parent pillar name if applicable
+        if pillar_response.parent_pillar_id:
+            parent_doc = await find_document("pillars", {"id": pillar_response.parent_pillar_id})
+            if parent_doc:
+                pillar_response.parent_pillar_name = parent_doc["name"]
+        
+        # Get sub-pillars if requested
+        if include_sub_pillars:
+            sub_pillars_docs = await find_documents("pillars", {
+                "parent_pillar_id": pillar_response.id,
+                "archived": {"$ne": True}
+            })
+            sub_pillars_docs.sort(key=lambda x: x.get("sort_order", 0))
+            
+            sub_pillars = []
+            for sub_doc in sub_pillars_docs:
+                sub_pillar = await PillarService._build_pillar_response(sub_doc, True, False)
+                sub_pillars.append(sub_pillar)
+            pillar_response.sub_pillars = sub_pillars
+        
+        # Get linked areas and calculate progress
+        areas_docs = await find_documents("areas", {
+            "pillar_id": pillar_response.id,
+            "user_id": pillar_response.user_id,
+            "archived": {"$ne": True}
+        })
+        
+        pillar_response.area_count = len(areas_docs)
+        
+        # Calculate project and task statistics
+        total_projects = 0
+        total_tasks = 0
+        completed_tasks = 0
+        
+        areas = []
+        for area_doc in areas_docs:
+            area_response = await AreaService._build_area_response(area_doc, include_projects=True)
+            areas.append(area_response)
+            
+            total_projects += area_response.project_count
+            total_tasks += area_response.total_task_count
+            completed_tasks += area_response.completed_task_count
+        
+        pillar_response.project_count = total_projects
+        pillar_response.task_count = total_tasks
+        pillar_response.completed_task_count = completed_tasks
+        pillar_response.progress_percentage = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+        
+        # Include areas if requested
+        if include_areas:
+            pillar_response.areas = areas
+        
+        return pillar_response
 
 class StatsService:
     @staticmethod
