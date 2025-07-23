@@ -424,7 +424,17 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
           </div>
         )}
 
-        {/* Kanban Board */}
+        {/* Drag Error Display (UI-3.3.2) */}
+        {dragError && (
+          <div className="bg-orange-900/20 border border-orange-600 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-orange-400 mr-2" />
+              <span className="text-orange-400">{dragError}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Kanban Board with Drag & Drop (UI-3.3.1) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {columns.map((column) => {
             const columnTasks = tasksByColumn[column.id] || [];
@@ -444,128 +454,32 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
                   <button
                     onClick={() => handleAddTask(column.id)}
                     className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                    title={`Add task to ${column.title}`}
                   >
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
 
-                {/* Column Tasks */}
-                <div className="flex-1 space-y-3 min-h-[400px]">
-                  {columnTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className={`p-4 bg-gray-900/30 border rounded-lg hover:border-gray-600 transition-all duration-200 cursor-pointer ${
-                        isOverdue(task.due_date) && task.status !== 'completed'
-                          ? 'border-red-600/50 bg-red-900/10'
-                          : 'border-gray-800'
-                      }`}
-                    >
-                      {/* Task Header */}
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-medium text-white text-sm leading-tight">
-                          {task.name || task.title}
-                        </h4>
-                        <div className="relative">
-                          <button
-                            className="p-1 text-gray-400 hover:text-white rounded"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Could implement dropdown menu here
-                            }}
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                        </div>
+                {/* Droppable Column with Tasks */}
+                <DroppableColumn column={column}>
+                  <div className="space-y-3">
+                    {columnTasks.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <div className="text-4xl mb-2">📋</div>
+                        <div className="text-sm">Drop tasks here</div>
+                        <div className="text-xs text-gray-600">or click + to add</div>
                       </div>
-
-                      {/* Task Description */}
-                      {task.description && (
-                        <p className="text-xs text-gray-400 mb-3 line-clamp-2">
-                          {task.description}
-                        </p>
-                      )}
-
-                      {/* Task Meta */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 text-xs rounded-full ${priorityColors[task.priority] || priorityColors.medium}`}>
-                            {task.priority}
-                          </span>
-                        </div>
-                        
-                        {task.due_date && (
-                          <div className={`flex items-center space-x-1 text-xs ${
-                            isOverdue(task.due_date) && task.status !== 'completed'
-                              ? 'text-red-400'
-                              : 'text-gray-400'
-                          }`}>
-                            <Clock className="h-3 w-3" />
-                            <span>
-                              {new Date(task.due_date).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Task Actions */}
-                      <div className="flex space-x-1 mt-3 pt-3 border-t border-gray-800">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditTask(task);
-                          }}
-                          className="flex-1 flex items-center justify-center space-x-1 px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded transition-colors"
-                        >
-                          <Edit2 className="h-3 w-3" />
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteTask(task.id);
-                          }}
-                          className="flex-1 flex items-center justify-center space-x-1 px-2 py-1 text-xs bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded transition-colors"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          <span>Delete</span>
-                        </button>
-                      </div>
-
-                      {/* Move Task Buttons */}
-                      <div className="flex space-x-1 mt-2">
-                        {columns.map((col) => {
-                          if (col.id === task.status) return null;
-                          return (
-                            <button
-                              key={col.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMoveTask(task.id, col.id);
-                              }}
-                              className="flex-1 px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded transition-colors"
-                            >
-                              → {col.title}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Empty State */}
-                  {taskCount === 0 && (
-                    <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-                      <Circle className="h-8 w-8 mb-2" />
-                      <p className="text-sm">No tasks in {column.title.toLowerCase()}</p>
-                      <button
-                        onClick={() => handleAddTask(column.id)}
-                        className="mt-2 px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded transition-colors"
-                      >
-                        Add Task
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      columnTasks.map((task) => (
+                        <DraggableTaskCard 
+                          key={task.id} 
+                          task={task} 
+                          columnId={column.id}
+                        />
+                      ))
+                    )}
+                  </div>
+                </DroppableColumn>
               </div>
             );
           })}
