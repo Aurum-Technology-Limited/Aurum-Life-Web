@@ -120,6 +120,65 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
     }
   };
 
+  // Enhanced Drag & Drop Handlers (FR-3.1.1, FR-3.1.2, UI-3.3.2)
+  const handleDragStart = (task) => {
+    setDraggedTask(task);
+    setDragError(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTask(null);
+  };
+
+  const handleDrop = async (task, targetColumn) => {
+    if (!task || !targetColumn || task.status === targetColumn) {
+      return;
+    }
+
+    // Map column IDs to status values
+    const columnToStatus = {
+      'todo': 'todo',
+      'in-progress': 'in_progress', 
+      'review': 'review',
+      'completed': 'completed'
+    };
+
+    const newStatus = columnToStatus[targetColumn];
+    if (!newStatus) {
+      console.error('Invalid target column:', targetColumn);
+      return;
+    }
+
+    // Optimistic update (UI-3.3.2)
+    const originalTasks = tasks;
+    const optimisticTaskUpdate = tasks.map(t => 
+      t.id === task.id 
+        ? { ...t, status: newStatus, kanban_column: targetColumn }
+        : t
+    );
+    setOptimisticTasks(optimisticTaskUpdate);
+
+    try {
+      // Update task status via API (FR-3.1.2)
+      await tasksAPI.updateTask(task.id, { status: newStatus });
+      
+      // Refresh data to get the latest state
+      onTaskUpdate();
+      setOptimisticTasks([]);
+      setDragError(null);
+      
+    } catch (err) {
+      console.error('Error updating task status:', err);
+      
+      // Revert optimistic update on error (UI-3.3.2)
+      setOptimisticTasks([]);
+      setDragError(`Failed to move "${task.name}" to ${targetColumn.replace('-', ' ')}`);
+      
+      // Clear error after 5 seconds
+      setTimeout(() => setDragError(null), 5000);
+    }
+  };
+
   const handleEditTask = (task) => {
     setEditingTask(task);
     setFormData({
