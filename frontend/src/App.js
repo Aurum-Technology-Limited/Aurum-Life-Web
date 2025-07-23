@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Today from './components/Today';
+import Pillars from './components/Pillars';
 import Areas from './components/Areas';
 import Projects from './components/Projects';
 import ProjectTemplates from './components/ProjectTemplates';
