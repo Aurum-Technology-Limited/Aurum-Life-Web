@@ -5204,6 +5204,12 @@ class BackendTester:
             print("="*80)
             self.test_task_count_synchronization_fix()
             
+            # PHASE 2: Enhanced Drag & Drop Backend Integration Testing
+            print("\n" + "="*80)
+            print("🎯 ENHANCED DRAG & DROP BACKEND INTEGRATION - PHASE 2 TESTING (MAIN FOCUS)")
+            print("="*80)
+            self.test_enhanced_drag_drop_backend_integration()
+            
             # Additional tests for context
             print("\n" + "="*80)
             print("🏗️ ADDITIONAL CONTEXT TESTING")
