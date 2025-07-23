@@ -63,6 +63,9 @@ function App() {
       case 'insights':
         console.log('📊 Rendering Insights component');
         return <Insights {...props} />;
+      case 'pillars':
+        console.log('⛰️ Rendering Pillars component');
+        return <Pillars {...props} />;
       case 'areas':
         console.log('🗂️ Rendering Areas component');
         return <Areas {...props} />;
