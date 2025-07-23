@@ -6387,99 +6387,22 @@ class BackendTester:
 if __name__ == "__main__":
     tester = BackendTester()
     
-    # Check if we should run the comprehensive task dependencies test
-    import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "comprehensive_dependencies":
-        print("🚀 Starting Comprehensive Task Dependencies System Testing - Production Validation")
-        print(f"Backend URL: {tester.base_url}")
-        
-        try:
-            # Health check first
-            tester.test_health_check()
-            
-            # Authentication setup (required for protected endpoints)
-            tester.test_user_registration()
-            tester.test_user_login()
-            
-            # Main comprehensive task dependencies test
-            tester.test_comprehensive_task_dependencies_system()
-            
-        except Exception as e:
-            print(f"\n❌ CRITICAL ERROR during testing: {e}")
-            import traceback
-            traceback.print_exc()
-        
-        finally:
-            tester.cleanup_auth_test_data()
-            tester.cleanup_test_data()
-            tester.print_summary()
+    # Run the critical authentication fix testing
+    print("🔐 STARTING CRITICAL AUTHENTICATION FIX TESTING")
+    print("=" * 80)
+    print("FOCUS: Testing the authentication fix that resolves dashboard loading issues")
+    print("ISSUE: Dashboard was using hardcoded DEFAULT_USER_ID causing 'User not found' errors")
+    print("FIX: Updated dashboard and all endpoints to use proper JWT authentication")
+    print("=" * 80)
+    
+    try:
+        success = tester.run_critical_authentication_tests()
         
         # Exit with appropriate code
-        total_tests = len(tester.test_results)
-        failed_tests = len([t for t in tester.test_results if not t['success']])
-        sys.exit(0 if failed_tests == 0 else 1)
-    
-    # Check if we should run the task dependencies test
-    elif len(sys.argv) > 1 and sys.argv[1] == "dependencies":
-        print("🚀 Starting Task Dependencies Backend Implementation Testing")
-        print(f"Backend URL: {tester.base_url}")
-        
-        try:
-            # Health check first
-            tester.test_health_check()
-            
-            # Authentication setup (required for protected endpoints)
-            tester.test_user_registration()
-            tester.test_user_login()
-            
-            # Main task dependencies test
-            tester.test_task_dependencies_backend_implementation()
-            
-        except Exception as e:
-            print(f"\n❌ CRITICAL ERROR during testing: {e}")
-            import traceback
-            traceback.print_exc()
-        
-        finally:
-            tester.cleanup_auth_test_data()
-            tester.cleanup_test_data()
-            tester.print_summary()
-        
-        # Exit with appropriate code
-        total_tests = len(tester.test_results)
-        failed_tests = len([t for t in tester.test_results if not t['success']])
-        sys.exit(0 if failed_tests == 0 else 1)
-    
-    elif len(sys.argv) > 1 and sys.argv[1] == "migration":
-        success = tester.run_quick_migration_test()
         sys.exit(0 if success else 1)
-    else:
-        # Default to comprehensive dependencies test for production validation
-        print("🚀 Starting Comprehensive Task Dependencies System Testing - Production Validation")
-        print(f"Backend URL: {tester.base_url}")
         
-        try:
-            # Health check first
-            tester.test_health_check()
-            
-            # Authentication setup (required for protected endpoints)
-            tester.test_user_registration()
-            tester.test_user_login()
-            
-            # Main comprehensive task dependencies test
-            tester.test_comprehensive_task_dependencies_system()
-            
-        except Exception as e:
-            print(f"\n❌ CRITICAL ERROR during testing: {e}")
-            import traceback
-            traceback.print_exc()
-        
-        finally:
-            tester.cleanup_auth_test_data()
-            tester.cleanup_test_data()
-            tester.print_summary()
-        
-        # Exit with appropriate code
-        total_tests = len(tester.test_results)
-        failed_tests = len([t for t in tester.test_results if not t['success']])
-        sys.exit(0 if failed_tests == 0 else 1)
+    except Exception as e:
+        print(f"\n💥 CRITICAL ERROR during authentication testing: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
