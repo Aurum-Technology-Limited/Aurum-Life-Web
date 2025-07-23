@@ -227,7 +227,6 @@ export default {
   areas: areasAPI,
   projects: projectsAPI,
   tasks: tasksAPI,
-  habits: habitsAPI,
   journal: journalAPI,
   chat: chatAPI,
   courses: coursesAPI,
