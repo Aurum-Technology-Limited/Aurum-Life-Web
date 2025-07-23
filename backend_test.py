@@ -5969,6 +5969,12 @@ class BackendTester:
             print("="*80)
             self.test_enhanced_drag_drop_backend_integration()
             
+            # PILLAR HIERARCHY BACKEND IMPLEMENTATION - PHASE 1 TESTING
+            print("\n" + "="*80)
+            print("🏛️ PILLAR HIERARCHY BACKEND IMPLEMENTATION - PHASE 1 TESTING (HIGH PRIORITY)")
+            print("="*80)
+            self.test_pillar_hierarchy_backend_implementation()
+            
             # Additional tests for context
             print("\n" + "="*80)
             print("🏗️ ADDITIONAL CONTEXT TESTING")
