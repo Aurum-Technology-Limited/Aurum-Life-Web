@@ -407,6 +407,12 @@ class AreaService:
 
     @staticmethod
     async def update_area(user_id: str, area_id: str, area_data: AreaUpdate) -> bool:
+        # Validate pillar_id if being set
+        if area_data.pillar_id:
+            pillar_doc = await find_document("pillars", {"id": area_data.pillar_id, "user_id": user_id})
+            if not pillar_doc:
+                raise ValueError("Pillar not found")
+        
         update_data = {k: v for k, v in area_data.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
         return await update_document("areas", {"id": area_id, "user_id": user_id}, update_data)
