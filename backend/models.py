@@ -275,6 +275,7 @@ class RecurringTaskResponse(BaseModel):
     completion_rate: float = 0.0
 class Area(BaseDocument):
     user_id: str
+    pillar_id: Optional[str] = None  # Link to parent pillar
     name: str
     description: str = ""
     icon: str = "🎯"
