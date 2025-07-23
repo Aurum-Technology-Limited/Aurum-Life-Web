@@ -238,10 +238,10 @@ async def update_user(user_data: UserUpdate, user_id: str = DEFAULT_USER_ID):
 
 # Dashboard endpoint
 @api_router.get("/dashboard", response_model=UserDashboard)
-async def get_dashboard(user_id: str = Query(DEFAULT_USER_ID)):
+async def get_dashboard(current_user: User = Depends(get_current_active_user)):
     """Get dashboard data for user"""
     try:
-        return await StatsService.get_dashboard_data(user_id)
+        return await StatsService.get_dashboard_data(current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
