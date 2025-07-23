@@ -226,8 +226,6 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
         className={`bg-gray-800 rounded-lg p-4 mb-3 border border-gray-700 cursor-move transition-all duration-200 hover:border-gray-600 group ${
           isDragging ? 'opacity-50 rotate-1 scale-105' : ''
         } ${
-          draggedTask?.id === task.id ? 'shadow-lg shadow-yellow-400/20' : ''
-        } ${
           isBlocked ? 'opacity-75 border-orange-400/30' : ''
         }`}
         style={{
