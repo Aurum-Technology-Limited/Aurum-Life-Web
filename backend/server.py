@@ -221,17 +221,14 @@ async def create_user(user_data: UserCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/users/{user_id}", response_model=User)
-async def get_user(user_id: str = DEFAULT_USER_ID):
-    """Get user by ID"""
-    user = await UserService.get_user(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+async def get_user(current_user: User = Depends(get_current_active_user)):
+    """Get current user"""
+    return current_user
 
 @api_router.put("/users/{user_id}", response_model=dict)
-async def update_user(user_data: UserUpdate, user_id: str = DEFAULT_USER_ID):
+async def update_user(user_data: UserUpdate, current_user: User = Depends(get_current_active_user)):
     """Update user"""
-    success = await UserService.update_user(user_id, user_data)
+    success = await UserService.update_user(current_user.id, user_data)
     if not success:
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "message": "User updated successfully"}
