@@ -536,6 +536,8 @@ class AreaResponse(BaseModel):
     color: str
     icon: str
     user_id: str
+    pillar_id: Optional[str] = None
+    pillar_name: Optional[str] = None  # For display purposes
     sort_order: int = 0
     archived: bool = False
     created_at: datetime
