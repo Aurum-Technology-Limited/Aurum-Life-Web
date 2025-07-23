@@ -428,6 +428,24 @@ const Areas = ({ onSectionChange }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Pillar
+                  </label>
+                  <select
+                    value={formData.pillar_id}
+                    onChange={(e) => setFormData({ ...formData, pillar_id: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  >
+                    <option value="">No Pillar</option>
+                    {pillars.map((pillar) => (
+                      <option key={pillar.id} value={pillar.id}>
+                        {pillar.icon} {pillar.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Icon
                   </label>
                   <div className="grid grid-cols-5 gap-2">
