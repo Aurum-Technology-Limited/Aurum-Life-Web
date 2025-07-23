@@ -459,6 +459,16 @@ class AreaService:
         
         return area_response
 
+    @staticmethod
+    async def delete_area(user_id: str, area_id: str) -> bool:
+        # First delete all projects (which will delete their tasks)  
+        projects = await find_documents("projects", {"user_id": user_id, "area_id": area_id})
+        for project in projects:
+            await ProjectService.delete_project(user_id, project["id"])
+        
+        # Then delete the area
+        return await delete_document("areas", {"id": area_id, "user_id": user_id})
+
 class ProjectService:
     @staticmethod
     async def create_project(user_id: str, project_data: ProjectCreate) -> Project:
