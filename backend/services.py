@@ -1929,8 +1929,6 @@ class StatsService:
             "courses_enrolled": courses_enrolled,
             "courses_completed": courses_completed,
             "badges_earned": badges_earned,
-            "meditation_sessions": 127,  # Placeholder
-            "meditation_minutes": 1110,  # Placeholder
             "last_updated": datetime.utcnow()
         }
         
