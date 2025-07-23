@@ -14,7 +14,6 @@ import Projects from './components/Projects';
 import ProjectTemplates from './components/ProjectTemplates';
 import RecurringTasks from './components/RecurringTasks';
 import Journal from './components/Journal';
-import Mindfulness from './components/Mindfulness';
 import Tasks from './components/Tasks';
 import Learning from './components/Learning';
 import AICoach from './components/AICoach';
