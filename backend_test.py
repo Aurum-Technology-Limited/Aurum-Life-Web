@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for Aurum Life Authentication and User Profile Management System
-Tests Authentication, User Registration, Login, JWT tokens, Protected Routes, and User Profile Management
+CRITICAL AUTHENTICATION FIX TESTING - Dashboard Loading Resolution
+Tests the complete authentication fix that was applied to resolve "User not found" errors
+when trying to access the dashboard after successful login.
+
+FOCUS AREAS:
+1. Authentication workflow validation (registration, login, JWT)
+2. Dashboard endpoint testing with authenticated user (CRITICAL - this was the failing endpoint)
+3. All authenticated endpoints verification
+4. Security validation (unauthenticated requests return 401)
 """
 
 import requests
