@@ -124,12 +124,12 @@ const Insights = () => {
     labels: ['Completed', 'In Progress', 'To Do', 'Overdue'],
     datasets: [
       {
-        data: insightsData ? [
-          insightsData.task_status_breakdown.completed,
-          insightsData.task_status_breakdown.in_progress,
-          insightsData.task_status_breakdown.todo,
-          insightsData.task_status_breakdown.overdue
-        ] : [],
+        data: insightsData?.task_status_breakdown ? [
+          insightsData.task_status_breakdown.completed || 0,
+          insightsData.task_status_breakdown.in_progress || 0,
+          insightsData.task_status_breakdown.todo || 0,
+          insightsData.task_status_breakdown.overdue || 0
+        ] : [0, 0, 0, 0],
         backgroundColor: [
           '#10B981', // Green for completed
           '#F59E0B', // Yellow for in progress
