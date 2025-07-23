@@ -1964,7 +1964,6 @@ class StatsService:
             raise ValueError("User not found")
         
         # Get recent data
-        recent_habits = await HabitService.get_user_habits(user_id)
         recent_tasks = await TaskService.get_user_tasks(user_id)
         recent_courses = await CourseService.get_user_courses(user_id)
         today_tasks = await TaskService.get_today_tasks(user_id)
@@ -1978,7 +1977,6 @@ class StatsService:
         return UserDashboard(
             user=user,
             stats=stats,
-            recent_habits=recent_habits[:5],  # Limit to 5 most recent
             recent_tasks=recent_tasks[:5],
             recent_courses=recent_courses[:3],
             recent_achievements=recent_achievements,
