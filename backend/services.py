@@ -419,12 +419,8 @@ class AreaService:
 
     @staticmethod
     async def archive_area(user_id: str, area_id: str) -> bool:
-        """Archive an area and optionally its projects"""
-        return await update_document(
-            "areas", 
-            {"id": area_id, "user_id": user_id}, 
-            {"archived": True, "updated_at": datetime.utcnow()}
-        )
+        update_data = {"archived": True, "updated_at": datetime.utcnow()}
+        return await update_document("areas", {"id": area_id, "user_id": user_id}, update_data)
     
     @staticmethod
     async def unarchive_area(user_id: str, area_id: str) -> bool:
