@@ -1989,7 +1989,6 @@ class StatsService:
         """Get today's focused view with curated tasks"""
         today_tasks = await TaskService.get_today_tasks(user_id)
         available_tasks = await TaskService.get_available_tasks_for_today(user_id)
-        habits = await HabitService.get_user_habits(user_id)
         
         # Calculate totals
         total_tasks = len(today_tasks)
@@ -1999,7 +1998,6 @@ class StatsService:
         return TodayView(
             date=datetime.now(),
             tasks=today_tasks,
-            habits=habits,
             available_tasks=available_tasks,
             total_tasks=total_tasks,
             completed_tasks=completed_tasks,
