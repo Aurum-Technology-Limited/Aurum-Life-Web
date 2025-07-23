@@ -218,6 +218,133 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
     return new Date(dueDate) < new Date();
   };
 
+  // Draggable Task Card Component (UI-3.3.1)
+  const DraggableTaskCard = ({ task, columnId }) => {
+    const [{ isDragging }, drag] = useDrag({
+      type: 'task',
+      item: { ...task, sourceColumn: columnId },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+      begin: () => handleDragStart(task),
+      end: () => handleDragEnd(),
+    });
+
+    const isBlocked = task.can_start === false;
+    
+    return (
+      <div
+        ref={drag}
+        className={`bg-gray-800 rounded-lg p-4 mb-3 border border-gray-700 cursor-move transition-all duration-200 hover:border-gray-600 group ${
+          isDragging ? 'opacity-50 rotate-1 scale-105' : ''
+        } ${
+          draggedTask?.id === task.id ? 'shadow-lg shadow-yellow-400/20' : ''
+        } ${
+          isBlocked ? 'opacity-75 border-orange-400/30' : ''
+        }`}
+        style={{
+          transform: isDragging ? 'rotate(2deg)' : 'none',
+        }}
+      >
+        {/* Drag Handle */}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <GripVertical size={16} className="text-gray-500 group-hover:text-gray-400" />
+            {isBlocked && (
+              <div className="text-orange-400" title="Task has unmet dependencies">
+                🔒
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => handleEditTask(task)}
+              className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-blue-400 transition-all"
+            >
+              <Edit2 size={14} />
+            </button>
+            <button
+              onClick={() => handleDeleteTask(task.id)}
+              className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 transition-all"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Task Content */}
+        <h4 className="text-white font-medium mb-2 line-clamp-2">
+          {task.name || task.title || 'Unnamed Task'}
+        </h4>
+        
+        {task.description && (
+          <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+            {task.description}
+          </p>
+        )}
+
+        {/* Task Metadata */}
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-2">
+            {/* Priority */}
+            <span className={`px-2 py-1 rounded-full border ${priorityColors[task.priority] || priorityColors.medium}`}>
+              {task.priority || 'medium'}
+            </span>
+            
+            {/* Due Date */}
+            {task.due_date && (
+              <div className={`flex items-center space-x-1 ${
+                isOverdue(task.due_date) && !task.completed ? 'text-red-400' : 'text-gray-400'
+              }`}>
+                <Calendar size={12} />
+                <span>{new Date(task.due_date).toLocaleDateString()}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="text-gray-500">
+            #{task.id?.slice(-6) || 'N/A'}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Droppable Column Component (UI-3.3.1)
+  const DroppableColumn = ({ column, children }) => {
+    const [{ isOver, canDrop }, drop] = useDrop({
+      accept: 'task',
+      drop: (item) => {
+        if (item.sourceColumn !== column.id) {
+          handleDrop(item, column.id);
+        }
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+    });
+
+    return (
+      <div
+        ref={drop}
+        className={`bg-gray-900/50 rounded-xl p-4 border-2 transition-all duration-200 ${
+          isOver && canDrop
+            ? 'border-yellow-400 bg-yellow-400/5 shadow-lg' 
+            : isOver
+            ? 'border-red-400 bg-red-400/5'
+            : 'border-gray-800 hover:border-gray-700'
+        }`}
+        style={{
+          minHeight: '500px',
+        }}
+      >
+        {children}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
