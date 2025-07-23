@@ -604,3 +604,60 @@ class CalendarEvent(BaseModel):
 TaskResponse.model_rebuild()
 ProjectResponse.model_rebuild()
 AreaResponse.model_rebuild()
+
+# Pillar Hierarchy Models
+class Pillar(BaseDocument):
+    user_id: str
+    name: str
+    description: str = ""
+    icon: str = "🎯"
+    color: str = "#F4B400"
+    parent_pillar_id: Optional[str] = None  # For nested pillars
+    sort_order: int = 0
+    archived: bool = False
+    time_allocation_percentage: Optional[float] = None  # % of time/focus allocated to this pillar
+
+class PillarCreate(BaseModel):
+    name: str
+    description: str = ""
+    icon: str = "🎯"  
+    color: str = "#F4B400"
+    parent_pillar_id: Optional[str] = None
+    time_allocation_percentage: Optional[float] = None
+
+class PillarUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    parent_pillar_id: Optional[str] = None
+    sort_order: Optional[int] = None
+    time_allocation_percentage: Optional[float] = None
+
+class PillarResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    icon: str
+    color: str
+    user_id: str
+    parent_pillar_id: Optional[str] = None
+    sort_order: int = 0
+    archived: bool = False
+    time_allocation_percentage: Optional[float] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    # Hierarchy tracking
+    sub_pillars: Optional[List['PillarResponse']] = []
+    parent_pillar_name: Optional[str] = None
+    
+    # Progress tracking
+    area_count: int = 0
+    project_count: int = 0
+    task_count: int = 0
+    completed_task_count: int = 0
+    progress_percentage: float = 0.0
+    
+    # Linked areas for visualization
+    areas: Optional[List['AreaResponse']] = None
