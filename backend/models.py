@@ -284,6 +284,7 @@ class Area(BaseDocument):
     sort_order: int = 0
 
 class AreaCreate(BaseModel):
+    pillar_id: Optional[str] = None
     name: str
     description: str = ""
     icon: str = "🎯"
