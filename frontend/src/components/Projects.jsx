@@ -32,6 +32,7 @@ import DonutChart from './ui/DonutChart';
 
 const Projects = ({ onSectionChange, filterAreaId }) => {
   const { onDataMutation } = useDataContext();
+  const { user, token, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState([]);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
