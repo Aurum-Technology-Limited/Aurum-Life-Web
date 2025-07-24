@@ -237,41 +237,80 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user, token, showBrowserNotification, fetchNotifications]);
 
-  // Polling for new notifications
+  // Enhanced polling for new notifications with smarter frequency
   useEffect(() => {
-    if (!user || !token) return;
+    if (!user || !token) {
+      setConnectionStatus('disconnected');
+      return;
+    }
+
+    setConnectionStatus('connecting');
 
     const pollNotifications = async () => {
-      const newNotifications = await fetchNotifications();
-      
-      // Check for new unread notifications and show browser notifications
-      if (preferences?.browser_notifications && browserPermission === 'granted') {
-        const previousNotificationIds = new Set(notifications.map(n => n.id));
-        const newUnreadNotifications = newNotifications.filter(
-          n => !n.read && !previousNotificationIds.has(n.id)
-        );
+      try {
+        const newNotifications = await fetchNotifications();
+        setConnectionStatus('connected');
         
-        // Show browser notifications for new unread notifications
-        newUnreadNotifications.forEach(notification => {
-          showBrowserNotification(
-            notification.title,
-            notification.message,
-            {
-              tag: `notification-${notification.id}`,
-              data: notification
-            }
+        // Check for new unread notifications and show browser notifications
+        if (preferences?.browser_notifications && browserPermission === 'granted') {
+          const previousNotificationIds = new Set(notifications.map(n => n.id));
+          const newUnreadNotifications = newNotifications.filter(
+            n => !n.read && !previousNotificationIds.has(n.id)
           );
-        });
+          
+          // Show browser notifications for new unread notifications
+          newUnreadNotifications.forEach(notification => {
+            showBrowserNotification(
+              notification.title,
+              notification.message,
+              {
+                tag: `notification-${notification.id}`,
+                data: notification,
+                icon: '/favicon.ico',
+                requireInteraction: notification.type === 'task_overdue', // Keep overdue notifications open
+                actions: [
+                  {
+                    action: 'mark-read',
+                    title: 'Mark as Read'
+                  },
+                  {
+                    action: 'view',
+                    title: 'View Task'
+                  }
+                ]
+              }
+            );
+          });
+        }
+      } catch (error) {
+        console.error('Error polling notifications:', error);
+        setConnectionStatus('disconnected');
       }
     };
 
     // Initial fetch
     pollNotifications();
 
-    // Poll every 30 seconds
-    const interval = setInterval(pollNotifications, 30000);
+    // Smart polling: more frequent when there are active tasks, less frequent otherwise
+    const getPollingInterval = () => {
+      const hasRecentActivity = notifications.some(n => {
+        const notificationTime = new Date(n.created_at);
+        const now = new Date();
+        const diffMinutes = (now - notificationTime) / (1000 * 60);
+        return diffMinutes < 30; // Recent activity in last 30 minutes
+      });
+      
+      return hasRecentActivity ? 15000 : 30000; // 15s if active, 30s otherwise
+    };
 
-    return () => clearInterval(interval);
+    const interval = setInterval(pollNotifications, getPollingInterval());
+    setPollInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      setPollInterval(null);
+      setConnectionStatus('disconnected');
+    };
   }, [user, token, preferences, browserPermission, notifications, fetchNotifications, showBrowserNotification]);
 
   // Initialize preferences and browser permission
