@@ -399,13 +399,17 @@ class JournalService:
                 entry_date.year < current_year):
                 
                 years_ago = current_year - entry_date.year
-                response = JournalEntryResponse(**doc)
+                
+                # Set template_name to None by default
+                doc["template_name"] = None
                 
                 # Add template name if needed
-                if response.template_id:
-                    template_doc = await find_document("journal_templates", {"id": response.template_id})
+                if doc.get("template_id"):
+                    template_doc = await find_document("journal_templates", {"id": doc["template_id"]})
                     if template_doc:
-                        response.template_name = template_doc["name"]
+                        doc["template_name"] = template_doc["name"]
+                
+                response = JournalEntryResponse(**doc)
                 
                 on_this_day_entries.append(OnThisDayEntry(
                     entry=response,
