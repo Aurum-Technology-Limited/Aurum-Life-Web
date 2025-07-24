@@ -666,6 +666,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
           )}
         </div>
       </div>
+      </DndProvider>
     );
   };
 
