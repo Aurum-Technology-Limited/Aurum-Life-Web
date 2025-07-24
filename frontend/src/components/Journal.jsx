@@ -341,6 +341,281 @@ const Journal = () => {
     }
   };
 
+  // Render functions for different views
+  const renderEntriesView = () => (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
+              <BookOpen size={20} style={{ color: '#0B0D14' }} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-white">{entries.length}</h3>
+              <p className="text-sm text-gray-400">Total Entries</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
+              <Calendar size={20} style={{ color: '#0B0D14' }} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-white">{insights?.current_streak || 0}</h3>
+              <p className="text-sm text-gray-400">Day Streak</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
+              <Tag size={20} style={{ color: '#0B0D14' }} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-white">
+                {new Set(entries.flatMap(entry => entry.tags || [])).size}
+              </h3>
+              <p className="text-sm text-gray-400">Unique Tags</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Entries Grid */}
+      {filteredEntries.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredEntries.map((entry) => (
+            <JournalEntry
+              key={entry.id}
+              entry={entry}
+              onClick={handleViewEntry}
+              loading={false}
+            />
+          ))}
+        </div>
+      ) : searchTerm || selectedMoodFilter || selectedTagFilter ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-lg bg-yellow-400/20 flex items-center justify-center mx-auto mb-4">
+            <Search size={32} className="text-yellow-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">No entries found</h3>
+          <p className="text-gray-400 mb-6">Try adjusting your search or filters</p>
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedMoodFilter('');
+              setSelectedTagFilter('');
+            }}
+            className="px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
+            style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+          >
+            Clear Filters
+          </button>
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-lg bg-yellow-400/20 flex items-center justify-center mx-auto mb-4">
+            <BookOpen size={32} className="text-yellow-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">No journal entries yet</h3>
+          <p className="text-gray-400 mb-6">Start documenting your thoughts and reflections</p>
+          <button
+            onClick={handleCreateEntry}
+            className="px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
+            style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+          >
+            Write Your First Entry
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderInsightsView = () => (
+    <div className="space-y-6">
+      {insights ? (
+        <>
+          {/* Main Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
+                  <BookOpen size={20} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">{insights.total_entries}</h3>
+                  <p className="text-sm text-gray-400">Total Entries</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                  <TrendingUp size={20} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">{insights.current_streak}</h3>
+                  <p className="text-sm text-gray-400">Day Streak</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg bg-yellow-500 flex items-center justify-center">
+                  <Smile size={20} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white capitalize">{insights.most_common_mood}</h3>
+                  <p className="text-sm text-gray-400">Most Common Mood</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center">
+                  <BarChart3 size={20} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">{insights.average_energy_level?.toFixed(1)}</h3>
+                  <p className="text-sm text-gray-400">Avg Energy Level</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Most Used Tags */}
+          {insights.most_used_tags && insights.most_used_tags.length > 0 && (
+            <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+              <h3 className="text-lg font-semibold text-white mb-4">Most Used Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {insights.most_used_tags.slice(0, 10).map((tagData, index) => (
+                  <span 
+                    key={index}
+                    className="px-3 py-1 rounded-full bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 text-sm"
+                  >
+                    #{tagData.tag} ({tagData.count})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Writing Stats */}
+          {insights.writing_stats && (
+            <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+              <h3 className="text-lg font-semibold text-white mb-4">Writing Statistics</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <h4 className="text-2xl font-bold text-white">{insights.writing_stats.total_words || 0}</h4>
+                  <p className="text-sm text-gray-400">Total Words</p>
+                </div>
+                <div className="text-center">
+                  <h4 className="text-2xl font-bold text-white">{insights.writing_stats.average_words || 0}</h4>
+                  <p className="text-sm text-gray-400">Avg Words/Entry</p>
+                </div>
+                <div className="text-center">
+                  <h4 className="text-2xl font-bold text-white">{insights.writing_stats.total_reading_time || 0}m</h4>
+                  <p className="text-sm text-gray-400">Total Reading Time</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-lg bg-yellow-400/20 flex items-center justify-center mx-auto mb-4">
+            <BarChart3 size={32} className="text-yellow-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">No insights available yet</h3>
+          <p className="text-gray-400 mb-6">Create some journal entries to see your insights</p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderTemplatesView = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-white">Journal Templates</h2>
+      </div>
+
+      {templates.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {templates.map((template) => (
+            <div
+              key={template.id}
+              className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 cursor-pointer group hover:scale-105"
+              onClick={() => {
+                setSelectedEntry(null);
+                setModalOpen(true);
+                // We'll pass the template to the modal later
+              }}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{template.icon}</span>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white group-hover:text-yellow-400 transition-colors">
+                      {template.name}
+                    </h3>
+                    <p className="text-sm text-gray-400">{template.description}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-4">
+                <p className="text-sm text-gray-400 font-medium">Prompts:</p>
+                <ul className="space-y-1">
+                  {template.prompts.slice(0, 3).map((prompt, index) => (
+                    <li key={index} className="text-xs text-gray-500">
+                      • {prompt}
+                    </li>
+                  ))}
+                  {template.prompts.length > 3 && (
+                    <li className="text-xs text-gray-500">
+                      + {template.prompts.length - 3} more prompts
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  {template.default_tags.slice(0, 2).map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 rounded-full bg-gray-800 text-xs text-yellow-400 border border-gray-700"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+                <span className="text-xs text-gray-400">
+                  Used {template.usage_count || 0} times
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-lg bg-yellow-400/20 flex items-center justify-center mx-auto mb-4">
+            <FileText size={32} className="text-yellow-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">No templates available</h3>
+          <p className="text-gray-400 mb-6">Templates will appear here once they're loaded</p>
+        </div>
+      )}
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="space-y-8">
