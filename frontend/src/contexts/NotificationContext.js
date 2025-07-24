@@ -430,12 +430,16 @@ export const NotificationProvider = ({ children }) => {
     preferences,
     browserPermission,
     loading,
+    connectionStatus,
 
     // Actions
     fetchNotifications,
     fetchPreferences,
     updatePreferences,
     markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    clearAllNotifications,
     sendTestNotification,
     requestBrowserPermission,
     showBrowserNotification
