@@ -97,31 +97,133 @@ class GoogleAuthResponse(BaseModel):
     token_type: str = "bearer"
     user: 'User'
 
-# Journal models
+# Enhanced Journal models with templates and advanced features
 class MoodEnum(str, Enum):
     optimistic = "optimistic"
     inspired = "inspired"
     reflective = "reflective"
     challenging = "challenging"
+    anxious = "anxious"
+    grateful = "grateful"
+    excited = "excited"
+    frustrated = "frustrated"
+    peaceful = "peaceful"
+    motivated = "motivated"
+
+class EnergyLevelEnum(str, Enum):
+    very_low = "very_low"     # 1
+    low = "low"               # 2
+    moderate = "moderate"     # 3
+    high = "high"             # 4
+    very_high = "very_high"   # 5
+
+class JournalTemplateTypeEnum(str, Enum):
+    daily_reflection = "daily_reflection"
+    gratitude = "gratitude"
+    goal_setting = "goal_setting"
+    weekly_review = "weekly_review"
+    mood_tracker = "mood_tracker"
+    learning_log = "learning_log"
+    creative_writing = "creative_writing"
+    problem_solving = "problem_solving"
+    habit_tracker = "habit_tracker"
+    custom = "custom"
+
+class JournalTemplate(BaseDocument):
+    user_id: str
+    name: str
+    description: str = ""
+    template_type: JournalTemplateTypeEnum
+    prompts: List[str] = []  # Guided prompts for the template
+    default_tags: List[str] = []
+    is_default: bool = False  # System templates vs user-created
+    usage_count: int = 0
+    icon: str = "📝"
+    color: str = "#F4B400"
+
+class JournalTemplateCreate(BaseModel):
+    name: str
+    description: str = ""
+    template_type: JournalTemplateTypeEnum
+    prompts: List[str] = []
+    default_tags: List[str] = []
+    icon: str = "📝"
+    color: str = "#F4B400"
+
+class JournalTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    prompts: Optional[List[str]] = None
+    default_tags: Optional[List[str]] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
 
 class JournalEntry(BaseDocument):
     user_id: str
     title: str
     content: str
     mood: MoodEnum = MoodEnum.reflective
+    energy_level: EnergyLevelEnum = EnergyLevelEnum.moderate
     tags: List[str] = []
+    template_id: Optional[str] = None  # Reference to template used
+    template_responses: Dict[str, str] = {}  # Responses to template prompts
+    weather: Optional[str] = None  # Optional weather note
+    location: Optional[str] = None  # Optional location
+    word_count: int = 0
+    reading_time_minutes: int = 0
 
 class JournalEntryCreate(BaseModel):
     title: str
     content: str
     mood: MoodEnum = MoodEnum.reflective
+    energy_level: EnergyLevelEnum = EnergyLevelEnum.moderate
     tags: List[str] = []
+    template_id: Optional[str] = None
+    template_responses: Dict[str, str] = {}
+    weather: Optional[str] = None
+    location: Optional[str] = None
 
 class JournalEntryUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     mood: Optional[MoodEnum] = None
+    energy_level: Optional[EnergyLevelEnum] = None
     tags: Optional[List[str]] = None
+    template_responses: Optional[Dict[str, str]] = None
+    weather: Optional[str] = None
+    location: Optional[str] = None
+
+class JournalEntryResponse(BaseModel):
+    id: str
+    user_id: str
+    title: str
+    content: str
+    mood: MoodEnum
+    energy_level: EnergyLevelEnum
+    tags: List[str]
+    template_id: Optional[str]
+    template_name: Optional[str]
+    template_responses: Dict[str, str]
+    weather: Optional[str]
+    location: Optional[str]
+    word_count: int
+    reading_time_minutes: int
+    created_at: datetime
+    updated_at: datetime
+
+class JournalInsights(BaseModel):
+    total_entries: int
+    current_streak: int
+    most_common_mood: str
+    average_energy_level: float
+    most_used_tags: List[Dict[str, Any]]
+    mood_trend: List[Dict[str, Any]]  # Last 30 days
+    energy_trend: List[Dict[str, Any]]  # Last 30 days
+    writing_stats: Dict[str, Any]
+    
+class OnThisDayEntry(BaseModel):
+    entry: JournalEntryResponse
+    years_ago: int
 
 # Task models
 class PriorityEnum(str, Enum):
