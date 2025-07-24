@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 """
-AUTHENTICATION AND PROJECTS API TESTING
-Quick authentication and projects API testing to diagnose the "Failed to load projects" issue.
+TASK REMINDERS & NOTIFICATIONS SYSTEM COMPREHENSIVE TESTING
+Complete end-to-end testing of the Task Reminders & Notifications System integration.
 
 FOCUS AREAS:
-1. User Registration - Test /api/auth/register with new user data
-2. User Login - Test /api/auth/login with registered credentials  
-3. Authentication Token - Verify JWT token is generated correctly
-4. Projects API with Authentication - Test /api/projects endpoint with valid auth token
-5. Project Data Retrieval - Ensure project data is returned correctly
-6. Error Investigation - Check for any 401 authentication errors
+1. Backend-Frontend Integration - Test all notification API endpoints work with frontend context
+2. Notification Creation Flow - Test complete flow from task creation → automatic reminder scheduling → notification processing
+3. User Preferences Integration - Test notification preferences API with frontend settings page
+4. Browser Notifications API - Test notifications retrieval and read status management
+5. Test Notification System - Verify test notification endpoint works end-to-end
+6. Task Integration - Verify creating tasks with due dates automatically schedules appropriate reminders
+7. Real-time Notification Processing - Test background scheduler processes notifications correctly
+8. Email & Browser Notification Channels - Verify both notification channels work properly
 
-Context: The user is experiencing "Failed to load projects" error in the frontend. 
-The troubleshoot agent identified this as an authentication issue. The frontend shows 
-"Incorrect email or password" errors and there are 401 errors in the console.
+Context: Testing the complete Task Reminders & Notifications System implementation with:
+- NotificationContext for state management and API integration  
+- NotificationManager component for real-time toast notifications and notification bell
+- NotificationSettings page for comprehensive preference configuration
+- Complete integration into the main app with routing and navigation
+- Full API integration with notificationsAPI client
 """
 
 import requests
