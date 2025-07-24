@@ -1023,6 +1023,92 @@ async def get_project_drill_down(
         logger.error(f"Error getting project drill down: {e}")
         raise HTTPException(status_code=500, detail="Failed to get project breakdown")
 
+# Task Reminders & Notifications endpoints
+@api_router.get("/notifications/preferences", response_model=NotificationPreference)
+async def get_notification_preferences(current_user: User = Depends(get_current_active_user)):
+    """Get user's notification preferences"""
+    try:
+        prefs = await notification_service.get_user_notification_preferences(current_user.id)
+        if not prefs:
+            # Create default preferences if none exist
+            prefs = await notification_service.create_default_notification_preferences(current_user.id)
+        return prefs
+    except Exception as e:
+        logger.error(f"Error getting notification preferences: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/notifications/preferences", response_model=NotificationPreference)
+async def update_notification_preferences(
+    preferences: NotificationPreferenceUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Update user's notification preferences"""
+    try:
+        updated_prefs = await notification_service.update_notification_preferences(current_user.id, preferences)
+        if not updated_prefs:
+            raise HTTPException(status_code=404, detail="Failed to update preferences")
+        return updated_prefs
+    except Exception as e:
+        logger.error(f"Error updating notification preferences: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/notifications", response_model=List[dict])
+async def get_browser_notifications(
+    unread_only: bool = Query(False, description="Get only unread notifications"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get browser notifications for the user"""
+    try:
+        notifications = await notification_service.get_user_browser_notifications(current_user.id, unread_only)
+        return notifications
+    except Exception as e:
+        logger.error(f"Error getting browser notifications: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/notifications/{notification_id}/read", response_model=dict)
+async def mark_notification_read(
+    notification_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Mark a notification as read"""
+    try:
+        success = await notification_service.mark_notification_read(current_user.id, notification_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        return {"success": True, "message": "Notification marked as read"}
+    except Exception as e:
+        logger.error(f"Error marking notification as read: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/notifications/test", response_model=dict)
+async def test_notification_system(current_user: User = Depends(get_current_active_user)):
+    """Test notification system by sending a test notification"""
+    try:
+        from datetime import datetime
+        
+        # Schedule a test notification for immediate delivery
+        reminder_id = await notification_service.schedule_task_reminder(
+            user_id=current_user.id,
+            task_id="test-task-id",
+            notification_type=NotificationTypeEnum.task_reminder,
+            scheduled_time=datetime.utcnow(),
+            title="Test Notification",
+            message="This is a test notification to verify the system is working correctly.",
+            channels=[NotificationChannelEnum.browser, NotificationChannelEnum.email]
+        )
+        
+        # Immediately process the notification
+        sent_count = await notification_service.process_due_reminders()
+        
+        return {
+            "success": True,
+            "message": f"Test notification sent (reminder_id: {reminder_id})",
+            "notifications_processed": sent_count
+        }
+    except Exception as e:
+        logger.error(f"Error sending test notification: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Include the router in the main app
 app.include_router(api_router)
 
