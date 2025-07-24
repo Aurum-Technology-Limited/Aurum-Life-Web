@@ -330,15 +330,18 @@ const Login = ({ switchToRegister }) => {
 
             {/* Google Login Button */}
             <div className="w-full">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                theme="outline"
-                size="large"
-                text="signin_with"
-                shape="rectangular"
-                logo_alignment="left"
-              />
+              <div className="w-full">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="outline"
+                  size="large"
+                  text="signin_with"
+                  shape="rectangular"
+                  logo_alignment="left"
+                  width="400"
+                />
+              </div>
             </div>
           </form>
         ) : (
