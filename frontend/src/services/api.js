@@ -97,6 +97,7 @@ export const projectsAPI = {
   unarchiveProject: (projectId) => apiClient.put(`/projects/${projectId}/unarchive`),
   getProjectTasks: (projectId) => apiClient.get(`/projects/${projectId}/tasks`),
   getKanbanBoard: (projectId) => apiClient.get(`/projects/${projectId}/kanban`),
+  reorderProjectTasks: (projectId, taskIds) => apiClient.put(`/projects/${projectId}/tasks/reorder`, { task_ids: taskIds }),
 };
 
 // Enhanced Tasks API with Sub-task support
