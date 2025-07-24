@@ -148,7 +148,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         // Refresh user data
-        await fetchCurrentUser();
+        await fetchCurrentUser(token);
         return { success: true };
       } else {
         const errorData = await response.json();
