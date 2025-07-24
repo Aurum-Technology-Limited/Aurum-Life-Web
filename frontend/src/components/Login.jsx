@@ -476,7 +476,6 @@ const Login = ({ switchToRegister }) => {
                 text="signup_with"
                 shape="rectangular"
                 logo_alignment="left"
-                width="100%"
               />
             </div>
           </form>
