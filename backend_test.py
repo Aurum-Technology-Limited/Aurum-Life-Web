@@ -7452,22 +7452,32 @@ class BackendTester:
 if __name__ == "__main__":
     tester = BackendTester()
     
-    # Run the Google OAuth Authentication System testing
-    print("🔐 STARTING GOOGLE OAUTH AUTHENTICATION SYSTEM TESTING")
+    # Run the Enhanced Drag & Drop for Project Lists testing
+    print("🎯 STARTING ENHANCED DRAG & DROP FOR PROJECT LISTS TESTING")
     print("=" * 80)
-    print("FOCUS: Testing the newly implemented Google OAuth authentication system")
-    print("FEATURES: Google OAuth endpoint, user model compatibility, existing auth compatibility")
-    print("SCOPE: Endpoint structure, validation, security, error handling, JWT integration")
+    print("FOCUS: Testing the new Enhanced Drag & Drop for Project Lists backend functionality")
+    print("FEATURES: Task reordering endpoint, order persistence, validation, authentication")
+    print("SCOPE: /projects/{id}/tasks/reorder endpoint, error handling, integration testing")
     print("=" * 80)
     
     try:
-        success = tester.run_google_oauth_tests()
+        # First authenticate
+        auth_success = tester.test_critical_authentication_workflow()
+        if not auth_success:
+            print("❌ CRITICAL FAILURE: Authentication workflow failed - cannot proceed with drag & drop testing")
+            sys.exit(1)
+        
+        # Run the Enhanced Drag & Drop test
+        success = tester.test_enhanced_drag_drop_project_lists()
+        
+        # Print summary
+        tester.print_test_summary()
         
         # Exit with appropriate code
         sys.exit(0 if success else 1)
         
     except Exception as e:
-        print(f"\n💥 CRITICAL ERROR during Google OAuth testing: {e}")
+        print(f"\n💥 CRITICAL ERROR during Enhanced Drag & Drop testing: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
