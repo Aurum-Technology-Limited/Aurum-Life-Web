@@ -228,7 +228,32 @@ const Journal = () => {
 
   useEffect(() => {
     fetchEntries();
+    fetchTemplates();
+    fetchInsights();
   }, []);
+
+  useEffect(() => {
+    // Filter entries based on search and filters
+    let filtered = entries;
+
+    if (searchTerm) {
+      filtered = filtered.filter(entry =>
+        entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        entry.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        entry.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    if (selectedMoodFilter) {
+      filtered = filtered.filter(entry => entry.mood === selectedMoodFilter);
+    }
+
+    if (selectedTagFilter) {
+      filtered = filtered.filter(entry => entry.tags.includes(selectedTagFilter));
+    }
+
+    setFilteredEntries(filtered);
+  }, [entries, searchTerm, selectedMoodFilter, selectedTagFilter]);
 
   const fetchEntries = async () => {
     try {
