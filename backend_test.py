@@ -269,6 +269,80 @@ class BackendTester:
         print(f"   Note: Full Google OAuth flow testing requires real Google tokens (not feasible in test environment)")
         
         return True
+
+    def test_critical_authentication_workflow(self):
+        """CRITICAL: Test complete authentication workflow - registration, login, JWT validation"""
+        print("\n=== CRITICAL AUTHENTICATION WORKFLOW TESTING ===")
+        print("Testing the authentication fix that resolves dashboard loading issues")
+        
+        # Test 1: User Registration
+        result = self.make_request('POST', '/auth/register', data=self.test_user_data)
+        self.log_test(
+            "CRITICAL - User Registration",
+            result['success'],
+            f"User registered successfully: {result['data'].get('username', 'Unknown')}" if result['success'] else f"Registration failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            print("❌ CRITICAL FAILURE: Cannot proceed with authentication testing - registration failed")
+            return False
+        
+        user_data = result['data']
+        self.created_resources['users'].append(user_data['id'])
+        
+        # Verify user account creation
+        required_fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active']
+        missing_fields = [field for field in required_fields if field not in user_data]
+        self.log_test(
+            "User Account Creation Validation",
+            len(missing_fields) == 0,
+            f"Valid user account created with all required fields" if len(missing_fields) == 0 else f"Missing fields: {missing_fields}"
+        )
+        
+        # Test 2: User Login and JWT Token Generation
+        login_data = {
+            "email": self.test_user_email,
+            "password": self.test_user_password
+        }
+        
+        result = self.make_request('POST', '/auth/login', data=login_data)
+        self.log_test(
+            "CRITICAL - User Login and JWT Generation",
+            result['success'],
+            f"Login successful, JWT token generated" if result['success'] else f"Login failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            print("❌ CRITICAL FAILURE: Cannot proceed - login failed")
+            return False
+        
+        token_data = result['data']
+        self.auth_token = token_data.get('access_token')
+        
+        # Verify JWT token structure and validity
+        self.log_test(
+            "JWT Token Validation",
+            self.auth_token and len(self.auth_token) > 50 and token_data.get('token_type') == 'bearer',
+            f"Valid JWT token generated (length: {len(self.auth_token) if self.auth_token else 0})"
+        )
+        
+        # Test 3: JWT Token Authentication Validation
+        result = self.make_request('GET', '/auth/me', use_auth=True)
+        self.log_test(
+            "CRITICAL - JWT Token Authentication",
+            result['success'],
+            f"JWT token authentication working correctly" if result['success'] else f"JWT authentication failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            authenticated_user = result['data']
+            self.log_test(
+                "Authenticated User Data Integrity",
+                authenticated_user.get('email') == self.test_user_email,
+                f"Authenticated user data matches registered user: {authenticated_user.get('email')}"
+            )
+        
+        return result['success']
         """CRITICAL: Test complete authentication workflow - registration, login, JWT validation"""
         print("\n=== CRITICAL AUTHENTICATION WORKFLOW TESTING ===")
         print("Testing the authentication fix that resolves dashboard loading issues")
