@@ -105,15 +105,17 @@ function App() {
   // If on password reset page, show the PasswordReset component
   if (isPasswordResetPage) {
     return (
-      <AuthProvider>
-        <DataProvider>
-          <DndProvider backend={HTML5Backend}>
-            <div className="App">
-              <PasswordReset />
-            </div>
-          </DndProvider>
-        </DataProvider>
-      </AuthProvider>
+      <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
+        <AuthProvider>
+          <DataProvider>
+            <DndProvider backend={HTML5Backend}>
+              <div className="App">
+                <PasswordReset />
+              </div>
+            </DndProvider>
+          </DataProvider>
+        </AuthProvider>
+      </GoogleOAuthProvider>
     );
   }
 
