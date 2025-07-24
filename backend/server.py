@@ -1175,6 +1175,45 @@ async def mark_notification_read(
         logger.error(f"Error marking notification as read: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.put("/notifications/mark-all-read", response_model=dict)
+async def mark_all_notifications_read(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Mark all notifications as read for the user"""
+    try:
+        count = await notification_service.mark_all_notifications_read(current_user.id)
+        return {"success": True, "message": f"Marked {count} notifications as read"}
+    except Exception as e:
+        logger.error(f"Error marking all notifications as read: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/notifications/{notification_id}", response_model=dict)
+async def delete_notification(
+    notification_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Delete a specific notification"""
+    try:
+        success = await notification_service.delete_notification(current_user.id, notification_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        return {"success": True, "message": "Notification deleted"}
+    except Exception as e:
+        logger.error(f"Error deleting notification: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/notifications/clear-all", response_model=dict)
+async def clear_all_notifications(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Clear all notifications for the user"""
+    try:
+        count = await notification_service.clear_all_notifications(current_user.id)
+        return {"success": True, "message": f"Cleared {count} notifications"}
+    except Exception as e:
+        logger.error(f"Error clearing all notifications: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/notifications/test", response_model=dict)
 async def test_notification_system(current_user: User = Depends(get_current_active_user)):
     """Test notification system by sending a test notification"""
