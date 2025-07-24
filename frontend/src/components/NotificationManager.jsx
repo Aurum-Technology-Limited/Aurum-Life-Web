@@ -144,6 +144,26 @@ const NotificationManager = () => {
     await markAsRead(notificationId);
   };
 
+  const handleMarkAllRead = async () => {
+    setActionLoading('mark-all');
+    await markAllAsRead();
+    setActionLoading(null);
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    setActionLoading(notificationId);
+    await deleteNotification(notificationId);
+    setActionLoading(null);
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+      setActionLoading('clear-all');
+      await clearAllNotifications();
+      setActionLoading(null);
+    }
+  };
+
   return (
     <>
       {/* Toast notifications container */}
