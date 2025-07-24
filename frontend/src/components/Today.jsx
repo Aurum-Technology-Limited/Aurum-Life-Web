@@ -434,7 +434,7 @@ const Today = () => {
                   </div>
                 ) : (
                   <div ref={drop} className="space-y-4">
-                    {todayData.tasks.map((task, index) => (
+                    {todayData?.tasks?.map((task, index) => (
                       <DragTaskItem
                         key={task.id}
                         task={task}
