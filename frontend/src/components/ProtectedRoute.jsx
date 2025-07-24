@@ -3,17 +3,9 @@ import { useAuth } from '../contexts/AuthContext';
 import Login from './Login';
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading, isAuthenticated } = useAuth();
-
-  console.log('🛡️ ProtectedRoute - Auth state:', { 
-    user: user ? user.email : 'null', 
-    loading, 
-    isAuthenticated,
-    hasToken: !!localStorage.getItem('auth_token')
-  });
+  const { user, loading } = useAuth();
 
   if (loading) {
-    console.log('🛡️ ProtectedRoute - Showing loading screen');
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0D14' }}>
         <div className="text-center">
@@ -25,11 +17,9 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!user) {
-    console.log('🛡️ ProtectedRoute - No user, showing login');
     return <Login />;
   }
 
-  console.log('🛡️ ProtectedRoute - User authenticated, showing app');
   return children;
 };
 
