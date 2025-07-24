@@ -110,12 +110,18 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
   };
 
   useEffect(() => {
-    loadAreas();
-  }, []);
+    // Only load areas if authentication is complete and user is authenticated
+    if (!authLoading && user && token) {
+      loadAreas();
+    }
+  }, [authLoading, user, token]);
 
   useEffect(() => {
-    loadProjects();
-  }, [selectedArea, showArchived]); // Reload when selectedArea or showArchived changes
+    // Only load projects if authentication is complete and user is authenticated
+    if (!authLoading && user && token) {
+      loadProjects();
+    }
+  }, [selectedArea, showArchived, authLoading, user, token]); // Reload when selectedArea, showArchived, or auth state changes
 
   // Debug: Watch for formData changes
   useEffect(() => {
