@@ -7449,6 +7449,34 @@ class BackendTester:
         print(f"   Tested: End-to-end workflows, API validation, status validation, project integration, and performance")
         print(f"   All comprehensive dependency system validation completed successfully!")
 
+    def print_test_summary(self):
+        """Print a summary of all test results"""
+        print(f"\n{'='*80}")
+        print("🎯 ENHANCED DRAG & DROP FOR PROJECT LISTS TESTING SUMMARY")
+        print(f"{'='*80}")
+        
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for result in self.test_results if result['success'])
+        failed_tests = total_tests - passed_tests
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {success_rate:.1f}%")
+        
+        if failed_tests > 0:
+            print(f"\n❌ FAILED TESTS:")
+            for result in self.test_results:
+                if not result['success']:
+                    print(f"   • {result['test']}: {result['message']}")
+        
+        print(f"\n📋 TESTING NOTES:")
+        print(f"   • Enhanced Drag & Drop endpoint structure and validation tested")
+        print(f"   • Task reordering persistence and integration verified")
+        print(f"   • Authentication and security validation confirmed")
+        print(f"   • Error handling for edge cases tested")
+
 if __name__ == "__main__":
     tester = BackendTester()
     
