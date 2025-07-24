@@ -1196,11 +1196,13 @@ async def delete_notification(
     try:
         success = await notification_service.delete_notification(current_user.id, notification_id)
         if not success:
-            raise HTTPException(status_code=404, detail="Notification not found")
-        return {"success": True, "message": "Notification deleted"}
+            raise HTTPException(status_code=404, detail="Notification not found or already deleted")
+        return {"success": True, "message": "Notification deleted successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error deleting notification: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error deleting notification {notification_id} for user {current_user.id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete notification")
 
 @api_router.delete("/notifications/clear-all", response_model=dict)
 async def clear_all_notifications(
