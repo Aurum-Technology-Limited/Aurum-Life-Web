@@ -222,6 +222,11 @@ export const getApiErrorStatus = (error) => {
 // Default export with all APIs
 export const api = apiClient;
 
+// Google OAuth API
+export const googleAuthAPI = {
+  authenticate: (token) => apiClient.post('/auth/google', { token })
+};
+
 export default {
   client: apiClient,
   areas: areasAPI,
