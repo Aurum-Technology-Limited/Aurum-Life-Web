@@ -638,3 +638,116 @@ TaskResponse.model_rebuild()
 ProjectResponse.model_rebuild()
 AreaResponse.model_rebuild()
 PillarResponse.model_rebuild()
+
+# Task Reminders & Notifications Models
+class NotificationTypeEnum(str, Enum):
+    task_due = "task_due"
+    task_overdue = "task_overdue"
+    task_reminder = "task_reminder"
+    project_deadline = "project_deadline"
+    recurring_task = "recurring_task"
+
+class NotificationChannelEnum(str, Enum):
+    browser = "browser"
+    email = "email"
+    both = "both"
+
+class NotificationPreference(BaseDocument):
+    user_id: str
+    
+    # Channel preferences
+    email_notifications: bool = True
+    browser_notifications: bool = True
+    
+    # Notification type preferences
+    task_due_notifications: bool = True
+    task_overdue_notifications: bool = True
+    task_reminder_notifications: bool = True
+    project_deadline_notifications: bool = True
+    recurring_task_notifications: bool = True
+    
+    # Timing preferences
+    reminder_advance_time: int = 30  # minutes before due time
+    overdue_check_interval: int = 60  # minutes between overdue checks
+    quiet_hours_start: Optional[str] = "22:00"  # No notifications after this time
+    quiet_hours_end: Optional[str] = "08:00"    # Resume notifications after this time
+    
+    # Email preferences
+    daily_digest: bool = False  # Send daily summary email
+    weekly_digest: bool = True  # Send weekly summary email
+
+class NotificationPreferenceCreate(BaseModel):
+    email_notifications: bool = True
+    browser_notifications: bool = True
+    task_due_notifications: bool = True
+    task_overdue_notifications: bool = True
+    task_reminder_notifications: bool = True
+    project_deadline_notifications: bool = True
+    recurring_task_notifications: bool = True
+    reminder_advance_time: int = 30
+    overdue_check_interval: int = 60
+    quiet_hours_start: Optional[str] = "22:00"
+    quiet_hours_end: Optional[str] = "08:00"
+    daily_digest: bool = False
+    weekly_digest: bool = True
+
+class NotificationPreferenceUpdate(BaseModel):
+    email_notifications: Optional[bool] = None
+    browser_notifications: Optional[bool] = None
+    task_due_notifications: Optional[bool] = None
+    task_overdue_notifications: Optional[bool] = None
+    task_reminder_notifications: Optional[bool] = None
+    project_deadline_notifications: Optional[bool] = None
+    recurring_task_notifications: Optional[bool] = None
+    reminder_advance_time: Optional[int] = None
+    overdue_check_interval: Optional[int] = None
+    quiet_hours_start: Optional[str] = None
+    quiet_hours_end: Optional[str] = None
+    daily_digest: Optional[bool] = None
+    weekly_digest: Optional[bool] = None
+
+class TaskReminder(BaseDocument):
+    user_id: str
+    task_id: str
+    notification_type: NotificationTypeEnum
+    
+    # Scheduling
+    scheduled_time: datetime
+    sent_at: Optional[datetime] = None
+    is_sent: bool = False
+    
+    # Notification details
+    title: str
+    message: str
+    channels: List[NotificationChannelEnum] = [NotificationChannelEnum.browser]
+    
+    # Metadata
+    task_name: Optional[str] = None
+    project_name: Optional[str] = None
+    priority: Optional[PriorityEnum] = None
+    
+    # Retry logic
+    retry_count: int = 0
+    max_retries: int = 3
+    next_retry: Optional[datetime] = None
+
+class TaskReminderCreate(BaseModel):
+    task_id: str
+    notification_type: NotificationTypeEnum
+    scheduled_time: datetime
+    title: str
+    message: str
+    channels: List[NotificationChannelEnum] = [NotificationChannelEnum.browser]
+
+class NotificationResponse(BaseModel):
+    id: str
+    type: NotificationTypeEnum
+    title: str
+    message: str
+    scheduled_time: datetime
+    sent_at: Optional[datetime]
+    is_sent: bool
+    task_name: Optional[str]
+    project_name: Optional[str]
+    priority: Optional[PriorityEnum]
+    created_at: datetime
