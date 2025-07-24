@@ -112,12 +112,17 @@ const NotificationManager = () => {
   const { 
     notifications, 
     unreadCount, 
-    markAsRead, 
-    fetchNotifications 
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    clearAllNotifications,
+    fetchNotifications,
+    connectionStatus
   } = useNotifications();
   
   const [visibleNotifications, setVisibleNotifications] = useState([]);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
+  const [actionLoading, setActionLoading] = useState(null);
 
   // Show only recent unread notifications as toasts
   useEffect(() => {
