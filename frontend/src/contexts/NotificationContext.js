@@ -198,6 +198,102 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user, token]);
 
+  // Mark all notifications as read
+  const markAllAsRead = useCallback(async () => {
+    if (!user || !token) return;
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/notifications/mark-all-read`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Update local state
+        setNotifications(prev => 
+          prev.map(n => ({ ...n, read: true }))
+        );
+        
+        // Update unread count
+        setUnreadCount(0);
+        
+        return true;
+      } else {
+        console.error('Failed to mark all notifications as read:', response.status);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      return false;
+    }
+  }, [user, token]);
+
+  // Delete notification
+  const deleteNotification = useCallback(async (notificationId) => {
+    if (!user || !token) return;
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Update local state
+        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        
+        // Update unread count if it was unread
+        const deletedNotification = notifications.find(n => n.id === notificationId);
+        if (deletedNotification && !deletedNotification.read) {
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+        
+        return true;
+      } else {
+        console.error('Failed to delete notification:', response.status);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      return false;
+    }
+  }, [user, token, notifications]);
+
+  // Clear all notifications
+  const clearAllNotifications = useCallback(async () => {
+    if (!user || !token) return;
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/notifications/clear-all`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Update local state
+        setNotifications([]);
+        setUnreadCount(0);
+        
+        return true;
+      } else {
+        console.error('Failed to clear all notifications:', response.status);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error clearing all notifications:', error);
+      return false;
+    }
+  }, [user, token]);
+
   // Send test notification
   const sendTestNotification = useCallback(async () => {
     if (!user || !token) return;
