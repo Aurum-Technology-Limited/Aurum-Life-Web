@@ -166,6 +166,90 @@ class UserService:
         
         return True
 
+class GoogleAuthService:
+    @staticmethod
+    async def verify_google_token(token: str) -> Optional[dict]:
+        """Verify Google ID token and return user info"""
+        try:
+            # Verify the token with Google
+            idinfo = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                os.environ.get('GOOGLE_CLIENT_ID')
+            )
+            
+            # Validate the issuer
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer.')
+            
+            return {
+                'google_id': idinfo['sub'],
+                'email': idinfo['email'],
+                'name': idinfo['name'],
+                'picture': idinfo.get('picture', ''),
+                'email_verified': idinfo.get('email_verified', False)
+            }
+        except ValueError as e:
+            print(f"Google token verification failed: {e}")
+            return None
+    
+    @staticmethod
+    async def authenticate_or_create_user(google_user_info: dict) -> Optional[User]:
+        """Find existing user or create new one from Google auth"""
+        try:
+            # Try to find existing user by email
+            existing_user = await find_document("users", {"email": google_user_info['email']})
+            
+            if existing_user:
+                # Update user's Google info if it's new
+                update_data = {}
+                if not existing_user.get('google_id'):
+                    update_data['google_id'] = google_user_info['google_id']
+                if not existing_user.get('profile_picture') and google_user_info.get('picture'):
+                    update_data['profile_picture'] = google_user_info['picture']
+                
+                if update_data:
+                    update_data['updated_at'] = datetime.utcnow()
+                    await update_document("users", {"id": existing_user['id']}, update_data)
+                    existing_user.update(update_data)
+                
+                return User(**existing_user)
+            else:
+                # Create new user from Google info
+                name_parts = google_user_info['name'].split(' ', 1)
+                first_name = name_parts[0]
+                last_name = name_parts[1] if len(name_parts) > 1 else ''
+                
+                # Generate username from email
+                username = google_user_info['email'].split('@')[0]
+                # Make sure username is unique
+                counter = 1
+                original_username = username
+                while await find_document("users", {"username": username}):
+                    username = f"{original_username}{counter}"
+                    counter += 1
+                
+                new_user = User(
+                    email=google_user_info['email'],
+                    username=username,
+                    first_name=first_name,
+                    last_name=last_name,
+                    google_id=google_user_info['google_id'],
+                    profile_picture=google_user_info.get('picture', ''),
+                    is_active=True,
+                    level=1,
+                    total_points=0,
+                    current_streak=0
+                )
+                
+                user_dict = new_user.dict()
+                await create_document("users", user_dict)
+                return new_user
+                
+        except Exception as e:
+            print(f"Error in Google auth user creation/retrieval: {e}")
+            return None
+
 class JournalService:
     @staticmethod
     async def create_entry(user_id: str, entry_data: JournalEntryCreate) -> JournalEntry:
