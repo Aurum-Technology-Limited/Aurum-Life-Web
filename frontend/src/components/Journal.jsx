@@ -368,6 +368,43 @@ const Journal = () => {
         </button>
       </div>
 
+      {/* Navigation Tabs */}
+      <div className="flex items-center space-x-1 bg-gray-800/50 p-1 rounded-lg">
+        <button
+          onClick={() => setCurrentView('entries')}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+            currentView === 'entries' 
+              ? 'bg-yellow-400 text-gray-900' 
+              : 'text-gray-400 hover:text-white hover:bg-gray-700'
+          }`}
+        >
+          <BookOpen size={16} />
+          <span>Entries</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('insights')}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+            currentView === 'insights' 
+              ? 'bg-yellow-400 text-gray-900' 
+              : 'text-gray-400 hover:text-white hover:bg-gray-700'
+          }`}
+        >
+          <BarChart3 size={16} />
+          <span>Insights</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('templates')}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+            currentView === 'templates' 
+              ? 'bg-yellow-400 text-gray-900' 
+              : 'text-gray-400 hover:text-white hover:bg-gray-700'
+          }`}
+        >
+          <FileText size={16} />
+          <span>Templates</span>
+        </button>
+      </div>
+
       {error && (
         <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
           <AlertCircle size={20} className="text-red-400" />
@@ -381,75 +418,79 @@ const Journal = () => {
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
-              <BookOpen size={20} style={{ color: '#0B0D14' }} />
+      {/* Search and Filter Bar (only for Entries view) */}
+      {currentView === 'entries' && (
+        <div className="space-y-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex-1 relative">
+              <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search entries..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+              />
             </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">{entries.length}</h3>
-              <p className="text-sm text-gray-400">Total Entries</p>
-            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors ${
+                showFilters 
+                  ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400' 
+                  : 'border-gray-700 text-gray-400 hover:text-white hover:border-gray-600'
+              }`}
+            >
+              <Filter size={16} />
+              <span>Filters</span>
+            </button>
           </div>
-        </div>
-        
-        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
-              <Calendar size={20} style={{ color: '#0B0D14' }} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">7</h3>
-              <p className="text-sm text-gray-400">Day Streak</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
-              <Tag size={20} style={{ color: '#0B0D14' }} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">
-                {new Set(entries.flatMap(entry => entry.tags || [])).size}
-              </h3>
-              <p className="text-sm text-gray-400">Unique Tags</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Entries Grid */}
-      {entries.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {entries.map((entry) => (
-            <JournalEntry
-              key={entry.id}
-              entry={entry}
-              onClick={handleViewEntry}
-              loading={false}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-lg bg-yellow-400/20 flex items-center justify-center mx-auto mb-4">
-            <BookOpen size={32} className="text-yellow-400" />
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">No journal entries yet</h3>
-          <p className="text-gray-400 mb-6">Start documenting your thoughts and reflections</p>
-          <button
-            onClick={handleCreateEntry}
-            className="px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
-            style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-          >
-            Write Your First Entry
-          </button>
+          {/* Filter Options */}
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg bg-gray-800/30 border border-gray-700">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Mood Filter</label>
+                <select
+                  value={selectedMoodFilter}
+                  onChange={(e) => setSelectedMoodFilter(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                >
+                  <option value="">All Moods</option>
+                  <option value="optimistic">Optimistic</option>
+                  <option value="inspired">Inspired</option>
+                  <option value="reflective">Reflective</option>
+                  <option value="challenging">Challenging</option>
+                  <option value="anxious">Anxious</option>
+                  <option value="grateful">Grateful</option>
+                  <option value="excited">Excited</option>
+                  <option value="frustrated">Frustrated</option>
+                  <option value="peaceful">Peaceful</option>
+                  <option value="motivated">Motivated</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Tag Filter</label>
+                <select
+                  value={selectedTagFilter}
+                  onChange={(e) => setSelectedTagFilter(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                >
+                  <option value="">All Tags</option>
+                  {[...new Set(entries.flatMap(entry => entry.tags || []))].map(tag => (
+                    <option key={tag} value={tag}>{tag}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       )}
+
+      {/* Render different views based on currentView */}
+      {currentView === 'entries' && renderEntriesView()}
+      {currentView === 'insights' && renderInsightsView()}
+      {currentView === 'templates' && renderTemplatesView()}
 
       {/* Create/Edit Modal */}
       <JournalModal
@@ -461,6 +502,7 @@ const Journal = () => {
         }}
         onSave={handleSaveEntry}
         loading={modalLoading}
+        templates={templates}
       />
 
       {/* View Modal */}
