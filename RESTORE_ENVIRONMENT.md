@@ -20,7 +20,7 @@ Edit `/app/frontend/.env` and replace:
 
 ```bash
 # Replace with your actual backend URL:
-REACT_APP_BACKEND_URL=https://aurum-productivity.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://74d67cb4-ff0d-4013-80ba-50f2263912cf.preview.emergentagent.com
 ```
 
 ## 🚀 Restart Services
