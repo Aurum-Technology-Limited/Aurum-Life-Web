@@ -77,6 +77,12 @@ async def update_document(collection_name: str, query: dict, update: dict):
     result = await collection.update_one(query, update_doc)
     return result.modified_count > 0
 
+async def atomic_update_document(collection_name: str, query: dict, update_operations: dict):
+    """Update a document with atomic operations like $inc, $push, etc."""
+    collection = await get_collection(collection_name)
+    result = await collection.update_one(query, update_operations)
+    return result.modified_count > 0
+
 async def delete_document(collection_name: str, query: dict):
     """Delete a document"""
     collection = await get_collection(collection_name)
