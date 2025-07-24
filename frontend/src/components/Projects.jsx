@@ -26,6 +26,7 @@ import { useDrag, useDrop, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { projectsAPI, areasAPI, tasksAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import KanbanBoard from './KanbanBoard';
 import DonutChart from './ui/DonutChart';
 
