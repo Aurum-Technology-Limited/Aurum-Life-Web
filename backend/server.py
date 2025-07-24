@@ -1182,10 +1182,10 @@ async def mark_all_notifications_read(
     """Mark all notifications as read for the user"""
     try:
         count = await notification_service.mark_all_notifications_read(current_user.id)
-        return {"success": True, "message": f"Marked {count} notifications as read"}
+        return {"success": True, "message": f"Marked {count} notifications as read", "count": count}
     except Exception as e:
-        logger.error(f"Error marking all notifications as read: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error marking all notifications as read for user {current_user.id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to mark notifications as read")
 
 @api_router.delete("/notifications/{notification_id}", response_model=dict)
 async def delete_notification(
