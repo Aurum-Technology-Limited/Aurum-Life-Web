@@ -16,7 +16,7 @@ import {
   Test as TestIcon,
   Settings
 } from 'lucide-react';
-import { useNotifications } from '../contexts/NotificationContext';
+// import { useNotifications } from '../contexts/NotificationContext';
 
 const NotificationSettings = () => {
   const { 
