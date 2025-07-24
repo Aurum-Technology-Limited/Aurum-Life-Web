@@ -136,6 +136,15 @@ const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false, templat
       ...formData,
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
     };
+    
+    // Remove empty optional fields
+    if (!processedData.weather) delete processedData.weather;
+    if (!processedData.location) delete processedData.location;
+    if (!processedData.template_id) {
+      delete processedData.template_id;
+      delete processedData.template_responses;
+    }
+    
     onSave(processedData);
   };
 
