@@ -268,9 +268,9 @@ class JournalService:
         
         # Update template usage count if template was used
         if entry_data.template_id:
-            await update_document("journal_templates", 
-                                {"id": entry_data.template_id},
-                                {"$inc": {"usage_count": 1}})
+            await atomic_update_document("journal_templates", 
+                                        {"id": entry_data.template_id},
+                                        {"$inc": {"usage_count": 1}})
         
         return entry
 
