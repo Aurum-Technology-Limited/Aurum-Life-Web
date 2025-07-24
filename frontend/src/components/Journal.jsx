@@ -62,13 +62,19 @@ const JournalEntry = ({ entry, onClick, loading = false }) => {
   );
 };
 
-const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false }) => {
+const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false, templates = [] }) => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     mood: 'reflective',
-    tags: ''
+    energy_level: 'moderate',
+    tags: '',
+    template_id: '',
+    template_responses: {},
+    weather: '',
+    location: ''
   });
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   useEffect(() => {
     if (entry) {
@@ -76,17 +82,53 @@ const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false }) => {
         title: entry.title,
         content: entry.content,
         mood: entry.mood,
-        tags: entry.tags.join(', ')
+        energy_level: entry.energy_level || 'moderate',
+        tags: entry.tags.join(', '),
+        template_id: entry.template_id || '',
+        template_responses: entry.template_responses || {},
+        weather: entry.weather || '',
+        location: entry.location || ''
       });
+      
+      if (entry.template_id) {
+        const template = templates.find(t => t.id === entry.template_id);
+        setSelectedTemplate(template);
+      }
     } else {
       setFormData({
         title: '',
         content: '',
         mood: 'reflective',
-        tags: ''
+        energy_level: 'moderate',
+        tags: '',
+        template_id: '',
+        template_responses: {},
+        weather: '',
+        location: ''
       });
+      setSelectedTemplate(null);
     }
-  }, [entry, isOpen]);
+  }, [entry, isOpen, templates]);
+
+  const handleTemplateSelect = (template) => {
+    setSelectedTemplate(template);
+    setFormData(prev => ({
+      ...prev,
+      template_id: template.id,
+      tags: template.default_tags.join(', '),
+      template_responses: {}
+    }));
+  };
+
+  const handleTemplateResponseChange = (promptIndex, response) => {
+    setFormData(prev => ({
+      ...prev,
+      template_responses: {
+        ...prev.template_responses,
+        [promptIndex]: response
+      }
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
