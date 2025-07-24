@@ -1220,6 +1220,14 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_db_client():
     await connect_to_mongo()
+    
+    # Initialize default journal templates
+    try:
+        await JournalService.initialize_default_templates()
+        logger.info("✅ Default journal templates initialized")
+    except Exception as e:
+        logger.error(f"❌ Error initializing journal templates: {e}")
+    
     logger.info("🚀 Aurum Life API started successfully")
 
 @app.on_event("shutdown")
