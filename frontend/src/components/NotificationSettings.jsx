@@ -19,14 +19,13 @@ import {
 import { useNotifications } from '../contexts/NotificationContext';
 
 const NotificationSettings = () => {
-  // Temporarily disable context usage for testing
-  // const { 
-  //   preferences, 
-  //   updatePreferences, 
-  //   browserPermission, 
-  //   requestBrowserPermission,
-  //   sendTestNotification 
-  // } = useNotifications();
+  const { 
+    preferences, 
+    updatePreferences, 
+    browserPermission, 
+    requestBrowserPermission,
+    sendTestNotification 
+  } = useNotifications();
 
   const [formData, setFormData] = useState({
     email_notifications: true,
