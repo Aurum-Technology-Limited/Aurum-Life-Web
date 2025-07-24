@@ -23,6 +23,7 @@ import Achievements from './components/Achievements';
 import Profile from './components/Profile';
 import Insights from './components/Insights';
 import PasswordReset from './components/PasswordReset';
+import NotificationSettings from './components/NotificationSettings';
 
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
