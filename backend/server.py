@@ -275,7 +275,7 @@ async def get_dashboard(current_user: User = Depends(get_current_active_user)):
         logger.error(f"Error getting dashboard data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Journal endpoints
+# Enhanced Journal endpoints
 @api_router.post("/journal", response_model=JournalEntry)
 async def create_journal_entry(entry_data: JournalEntryCreate, current_user: User = Depends(get_current_active_user)):
     """Create a new journal entry"""
@@ -285,17 +285,57 @@ async def create_journal_entry(entry_data: JournalEntryCreate, current_user: Use
         logger.error(f"Error creating journal entry: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.get("/journal", response_model=List[JournalEntry])
+@api_router.get("/journal", response_model=List[JournalEntryResponse])
 async def get_journal_entries(
     current_user: User = Depends(get_current_active_user),
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(20, ge=1, le=100),
+    mood_filter: Optional[str] = Query(None, description="Filter by mood"),
+    tag_filter: Optional[str] = Query(None, description="Filter by tag"),
+    date_from: Optional[datetime] = Query(None, description="Filter from date"),
+    date_to: Optional[datetime] = Query(None, description="Filter to date")
 ):
-    """Get journal entries for user"""
+    """Get journal entries for user with advanced filtering"""
     try:
-        return await JournalService.get_user_entries(current_user.id, skip, limit)
+        return await JournalService.get_user_entries(
+            current_user.id, skip, limit, mood_filter, tag_filter, date_from, date_to
+        )
     except Exception as e:
         logger.error(f"Error getting journal entries: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/journal/search", response_model=List[JournalEntryResponse])
+async def search_journal_entries(
+    q: str = Query(..., description="Search term"),
+    limit: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Search journal entries by content"""
+    try:
+        return await JournalService.search_entries(current_user.id, q, limit)
+    except Exception as e:
+        logger.error(f"Error searching journal entries: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/journal/on-this-day", response_model=List[OnThisDayEntry])
+async def get_on_this_day_entries(
+    date: Optional[datetime] = Query(None, description="Target date (default: today)"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get journal entries from the same date in previous years"""
+    try:
+        return await JournalService.get_on_this_day(current_user.id, date)
+    except Exception as e:
+        logger.error(f"Error getting on this day entries: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/journal/insights", response_model=JournalInsights)
+async def get_journal_insights(current_user: User = Depends(get_current_active_user)):
+    """Get comprehensive journal analytics and insights"""
+    try:
+        return await JournalService.get_journal_insights(current_user.id)
+    except Exception as e:
+        logger.error(f"Error getting journal insights: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/journal/{entry_id}", response_model=dict)
@@ -313,6 +353,61 @@ async def delete_journal_entry(entry_id: str, current_user: User = Depends(get_c
     if not success:
         raise HTTPException(status_code=404, detail="Journal entry not found")
     return {"success": True, "message": "Journal entry deleted successfully"}
+
+# Journal Templates endpoints
+@api_router.get("/journal/templates", response_model=List[JournalTemplate])
+async def get_journal_templates(current_user: User = Depends(get_current_active_user)):
+    """Get all journal templates for the user (including default templates)"""
+    try:
+        return await JournalService.get_user_templates(current_user.id)
+    except Exception as e:
+        logger.error(f"Error getting journal templates: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/journal/templates/{template_id}", response_model=JournalTemplate)
+async def get_journal_template(template_id: str, current_user: User = Depends(get_current_active_user)):
+    """Get a specific journal template"""
+    try:
+        template = await JournalService.get_template(template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return template
+    except Exception as e:
+        logger.error(f"Error getting journal template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/journal/templates", response_model=JournalTemplate)
+async def create_journal_template(template_data: JournalTemplateCreate, current_user: User = Depends(get_current_active_user)):
+    """Create a new custom journal template"""
+    try:
+        return await JournalService.create_template(current_user.id, template_data)
+    except Exception as e:
+        logger.error(f"Error creating journal template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/journal/templates/{template_id}", response_model=dict)
+async def update_journal_template(template_id: str, template_data: JournalTemplateUpdate, current_user: User = Depends(get_current_active_user)):
+    """Update a custom journal template"""
+    try:
+        success = await JournalService.update_template(current_user.id, template_id, template_data)
+        if not success:
+            raise HTTPException(status_code=404, detail="Template not found or not owned by user")
+        return {"success": True, "message": "Template updated successfully"}
+    except Exception as e:
+        logger.error(f"Error updating journal template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/journal/templates/{template_id}", response_model=dict)
+async def delete_journal_template(template_id: str, current_user: User = Depends(get_current_active_user)):
+    """Delete a custom journal template"""
+    try:
+        success = await JournalService.delete_template(current_user.id, template_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Template not found or not owned by user")
+        return {"success": True, "message": "Template deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting journal template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Project Templates endpoints
 @api_router.get("/project-templates", response_model=List[ProjectTemplateResponse])
