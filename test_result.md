@@ -887,6 +887,18 @@ frontend:
           agent: "main"
           comment: "Fixed Google OAuth button width alignment issue in Login component. Changed hardcoded width='400' to width='100%' for login form Google button, added width='100%' to register form Google button, removed redundant wrapper div. Both Google buttons now match the full width of other form elements."
 
+  - task: "Enhanced Drag & Drop for Project Lists Implementation"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py, /app/backend/services.py, /app/frontend/src/services/api.js, /app/frontend/src/components/Projects.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented Enhanced Drag & Drop functionality for Project List Views. Added backend endpoint `/projects/{project_id}/tasks/reorder` with reorder_project_tasks service method, enhanced ProjectListView component with react-dnd drag-and-drop functionality, optimistic updates, and proper error handling. Users can now drag tasks to reorder them within project lists with visual feedback and drag handles."
+
   - task: "Enhanced Drag & Drop Frontend Implementation - Phase 2"
     implemented: true
     working: true
