@@ -28,30 +28,23 @@ export const AuthProvider = ({ children }) => {
 
   const fetchCurrentUser = async (authToken) => {
     try {
-      console.log('🔄 AuthContext - Fetching current user with token:', authToken ? 'present' : 'null');
-      
       const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
         },
       });
 
-      console.log('🔄 AuthContext - fetchCurrentUser response status:', response.status);
-
       if (response.ok) {
         const userData = await response.json();
-        console.log('🔄 AuthContext - User data received:', userData);
         setUser(userData);
       } else {
         // Token is invalid, clear it
-        console.log('🔄 AuthContext - Invalid token, logging out');
         logout();
       }
     } catch (error) {
-      console.error('🔄 AuthContext - Error fetching current user:', error);
+      console.error('Error fetching current user:', error);
       logout();
     } finally {
-      console.log('🔄 AuthContext - Setting loading to false');
       setLoading(false);
     }
   };
