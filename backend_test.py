@@ -1726,7 +1726,7 @@ class BackendTester:
                 "name": f"Drag Drop Test Project {uuid.uuid4().hex[:8]}",
                 "description": "Testing task reordering within project",
                 "area_id": area_id,
-                "status": "active",
+                "status": "In Progress",
                 "priority": "medium"
             }
             
