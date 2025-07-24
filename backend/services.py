@@ -252,6 +252,20 @@ class GoogleAuthService:
 
 class JournalService:
     @staticmethod
+    async def _build_journal_entry_response(doc: dict) -> JournalEntryResponse:
+        """Helper function to consistently build JournalEntryResponse objects"""
+        # Set template_name to None by default
+        doc["template_name"] = None
+        
+        # Get template name if template was used
+        if doc.get("template_id"):
+            template_doc = await find_document("journal_templates", {"id": doc["template_id"]})
+            if template_doc:
+                doc["template_name"] = template_doc["name"]
+        
+        return JournalEntryResponse(**doc)
+
+    @staticmethod
     async def create_entry(user_id: str, entry_data: JournalEntryCreate) -> JournalEntry:
         # Calculate word count and reading time
         word_count = len(entry_data.content.split())
