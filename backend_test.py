@@ -7039,22 +7039,22 @@ class BackendTester:
 if __name__ == "__main__":
     tester = BackendTester()
     
-    # Run the critical authentication fix testing
-    print("🔐 STARTING CRITICAL AUTHENTICATION FIX TESTING")
+    # Run the Google OAuth Authentication System testing
+    print("🔐 STARTING GOOGLE OAUTH AUTHENTICATION SYSTEM TESTING")
     print("=" * 80)
-    print("FOCUS: Testing the authentication fix that resolves dashboard loading issues")
-    print("ISSUE: Dashboard was using hardcoded DEFAULT_USER_ID causing 'User not found' errors")
-    print("FIX: Updated dashboard and all endpoints to use proper JWT authentication")
+    print("FOCUS: Testing the newly implemented Google OAuth authentication system")
+    print("FEATURES: Google OAuth endpoint, user model compatibility, existing auth compatibility")
+    print("SCOPE: Endpoint structure, validation, security, error handling, JWT integration")
     print("=" * 80)
     
     try:
-        success = tester.run_critical_authentication_tests()
+        success = tester.run_google_oauth_tests()
         
         # Exit with appropriate code
         sys.exit(0 if success else 1)
         
     except Exception as e:
-        print(f"\n💥 CRITICAL ERROR during authentication testing: {e}")
+        print(f"\n💥 CRITICAL ERROR during Google OAuth testing: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
