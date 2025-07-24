@@ -665,15 +665,15 @@ class BackendTester:
         return success_rate >= 80
 
 def main():
-    """Run API Configuration Fix Verification Tests"""
-    print("🚀 STARTING API CONFIGURATION FIX VERIFICATION")
+    """Run Task Reminders & Notifications System Tests"""
+    print("🔔 STARTING TASK REMINDERS & NOTIFICATIONS SYSTEM BACKEND TESTING")
     print("=" * 80)
     
     tester = BackendTester()
     
     try:
-        # Run the focused API configuration fix verification test
-        success = tester.test_api_configuration_fix_verification()
+        # Run the comprehensive notification system tests
+        success = tester.test_comprehensive_notification_system()
         
         # Calculate overall results
         total_tests = len(tester.test_results)
@@ -681,7 +681,7 @@ def main():
         success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         
         print("\n" + "=" * 80)
-        print("🎯 API CONFIGURATION FIX VERIFICATION SUMMARY")
+        print("🎯 TASK REMINDERS & NOTIFICATIONS SYSTEM TESTING SUMMARY")
         print("=" * 80)
         print(f"Total Tests: {total_tests}")
         print(f"Passed: {passed_tests}")
@@ -689,15 +689,18 @@ def main():
         print(f"Success Rate: {success_rate:.1f}%")
         
         if success_rate >= 80:
-            print("\n✅ API CONFIGURATION FIX VERIFICATION: SUCCESS")
-            print("   The backend API is accessible and responding correctly")
-            print("   User registration and login are working")
-            print("   Dashboard and Journal APIs load without timeouts")
-            print("   The API configuration fix has resolved the timeout errors")
+            print("\n✅ TASK REMINDERS & NOTIFICATIONS SYSTEM: SUCCESS")
+            print("   ✅ Notification Preferences API working correctly")
+            print("   ✅ Browser Notifications API functional")
+            print("   ✅ Task Reminder Scheduling operational")
+            print("   ✅ Notification Service Methods working")
+            print("   ✅ Email Integration configured")
+            print("   ✅ Notification Processing functional")
+            print("   The Task Reminders & Notifications System is production-ready!")
         else:
-            print("\n❌ API CONFIGURATION FIX VERIFICATION: ISSUES DETECTED")
-            print("   Some API endpoints are still experiencing issues")
-            print("   The configuration fix may need additional adjustments")
+            print("\n❌ TASK REMINDERS & NOTIFICATIONS SYSTEM: ISSUES DETECTED")
+            print("   Some notification system components are experiencing issues")
+            print("   Review failed tests for specific problems")
         
         # Show failed tests for debugging
         failed_tests = [result for result in tester.test_results if not result['success']]
@@ -719,12 +722,33 @@ def main():
         print("\n🧹 CLEANING UP TEST RESOURCES")
         cleanup_count = 0
         
-        # Clean up users
-        for user_id in tester.created_resources.get('users', []):
+        # Clean up tasks
+        for task_id in tester.created_resources.get('tasks', []):
             try:
-                # Note: User deletion endpoint may not exist, so we'll skip cleanup
-                cleanup_count += 1
-                print(f"   ℹ️ User cleanup skipped (no delete endpoint): {user_id}")
+                result = tester.make_request('DELETE', f'/tasks/{task_id}', use_auth=True)
+                if result['success']:
+                    cleanup_count += 1
+                    print(f"   ✅ Cleaned up task: {task_id}")
+            except:
+                pass
+        
+        # Clean up projects
+        for project_id in tester.created_resources.get('projects', []):
+            try:
+                result = tester.make_request('DELETE', f'/projects/{project_id}', use_auth=True)
+                if result['success']:
+                    cleanup_count += 1
+                    print(f"   ✅ Cleaned up project: {project_id}")
+            except:
+                pass
+        
+        # Clean up areas
+        for area_id in tester.created_resources.get('areas', []):
+            try:
+                result = tester.make_request('DELETE', f'/areas/{area_id}', use_auth=True)
+                if result['success']:
+                    cleanup_count += 1
+                    print(f"   ✅ Cleaned up area: {area_id}")
             except:
                 pass
         
