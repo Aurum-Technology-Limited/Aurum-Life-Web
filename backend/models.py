@@ -87,6 +87,15 @@ class PasswordResetResponse(BaseModel):
     message: str
     success: bool
 
+# Google OAuth models
+class GoogleAuthRequest(BaseModel):
+    token: str  # Google ID token
+
+class GoogleAuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: 'User'
+
 # Journal models
 class MoodEnum(str, Enum):
     optimistic = "optimistic"
