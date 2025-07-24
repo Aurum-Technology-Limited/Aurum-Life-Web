@@ -61,6 +61,8 @@
 ##     -message: "Communication message between agents"
 ##     -agent: "main"
 ##     -message: "Starting Pillar Hierarchy implementation - Phase 1: Backend Foundation. Will implement Pillar model, API endpoints, and Area-Pillar linking as per user confirmation."
+##     -agent: "main"
+##     -message: "Fixed Google OAuth button width alignment issue. Updated Login.jsx to use width='100%' for both login and register Google buttons instead of hardcoded width='400'. Google buttons now match the full width of other form elements like email and password inputs. Ready for testing."
 
 # Protocol Guidelines for Main agent
 #
