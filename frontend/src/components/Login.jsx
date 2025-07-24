@@ -75,6 +75,33 @@ const Login = ({ switchToRegister }) => {
     setLoading(false);
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await googleAuthAPI.authenticate(credentialResponse.credential);
+      
+      if (response.data) {
+        // Store auth data (similar to regular login)
+        localStorage.setItem('authToken', response.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Trigger auth context update
+        window.location.reload(); // Simple approach to refresh auth state
+      }
+    } catch (error) {
+      console.error('Google auth error:', error);
+      setError(error.response?.data?.detail || 'Google authentication failed');
+    }
+    
+    setLoading(false);
+  };
+
+  const handleGoogleError = () => {
+    setError('Google authentication was cancelled or failed');
+  };
+
   const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
     setForgotPasswordLoading(true);
