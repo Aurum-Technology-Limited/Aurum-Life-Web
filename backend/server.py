@@ -783,6 +783,20 @@ async def reorder_daily_tasks(task_data: DailyTasksUpdate, current_user: User = 
         logger.error(f"Error reordering daily tasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.put("/projects/{project_id}/tasks/reorder")
+async def reorder_project_tasks(project_id: str, task_data: DailyTasksUpdate, current_user: User = Depends(get_current_active_user)):
+    """Reorder tasks within a project"""
+    try:
+        success = await TaskService.reorder_project_tasks(current_user.id, project_id, task_data.task_ids)
+        if not success:
+            raise HTTPException(status_code=400, detail="Failed to reorder project tasks")
+        return {"message": "Project tasks reordered successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error reordering project tasks: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Recurring Tasks endpoints
 @api_router.get("/recurring-tasks", response_model=List[RecurringTaskResponse])
 async def get_recurring_tasks(current_user: User = Depends(get_current_active_user)):
