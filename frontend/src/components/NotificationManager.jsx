@@ -195,17 +195,50 @@ const NotificationManager = () => {
 
         {/* Notification dropdown */}
         {showAllNotifications && (
-          <div className="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
+          <div className="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-96 overflow-hidden z-50">
             <div className="p-4 border-b border-gray-700">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-medium text-white">Notifications</h3>
-                <button
-                  onClick={() => setShowAllNotifications(false)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  {/* Connection status indicator */}
+                  <div className="flex items-center space-x-1">
+                    <div className={`w-2 h-2 rounded-full ${
+                      connectionStatus === 'connected' ? 'bg-green-400' : 
+                      connectionStatus === 'connecting' ? 'bg-yellow-400' : 
+                      'bg-red-400'
+                    }`}></div>
+                    <span className="text-xs text-gray-400 capitalize">{connectionStatus}</span>
+                  </div>
+                  <button
+                    onClick={() => setShowAllNotifications(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
+              
+              {/* Bulk actions */}
+              {notifications.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllRead}
+                      disabled={actionLoading === 'mark-all'}
+                      className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors disabled:opacity-50"
+                    >
+                      {actionLoading === 'mark-all' ? 'Marking...' : `Mark All Read (${unreadCount})`}
+                    </button>
+                  )}
+                  <button
+                    onClick={handleClearAll}
+                    disabled={actionLoading === 'clear-all'}
+                    className="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors disabled:opacity-50"
+                  >
+                    {actionLoading === 'clear-all' ? 'Clearing...' : 'Clear All'}
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="max-h-80 overflow-y-auto">
@@ -242,11 +275,19 @@ const NotificationManager = () => {
                                 {new Date(notification.created_at).toLocaleString()}
                               </div>
                             </div>
-                            {!notification.read && (
-                              <div className="ml-2">
+                            <div className="flex items-center space-x-2 ml-2">
+                              {!notification.read && (
                                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              </div>
-                            )}
+                              )}
+                              <button
+                                onClick={() => handleDeleteNotification(notification.id)}
+                                disabled={actionLoading === notification.id}
+                                className="text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
+                                title="Delete notification"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
                           </div>
                           
                           {!notification.read && (
@@ -269,7 +310,6 @@ const NotificationManager = () => {
               <button
                 onClick={() => {
                   fetchNotifications();
-                  setShowAllNotifications(false);
                 }}
                 className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
               >
