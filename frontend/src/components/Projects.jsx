@@ -678,6 +678,34 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     );
   };
 
+  // Show loading if authentication is still loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-800 rounded mb-6"></div>
+            <div className="text-center text-gray-400">Authenticating...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if not authenticated
+  if (!user || !token) {
+    return (
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center py-12">
+            <div className="text-red-400 mb-4">Authentication required</div>
+            <p className="text-gray-400">Please log in to access projects.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (showKanban && selectedProject) {
     return (
       <KanbanBoard 
