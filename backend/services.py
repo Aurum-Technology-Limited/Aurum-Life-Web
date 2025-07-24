@@ -253,32 +253,434 @@ class GoogleAuthService:
 class JournalService:
     @staticmethod
     async def create_entry(user_id: str, entry_data: JournalEntryCreate) -> JournalEntry:
-        entry = JournalEntry(user_id=user_id, **entry_data.dict())
+        # Calculate word count and reading time
+        word_count = len(entry_data.content.split())
+        reading_time_minutes = max(1, word_count // 200)  # Assume 200 words per minute
+        
+        entry = JournalEntry(
+            user_id=user_id, 
+            word_count=word_count,
+            reading_time_minutes=reading_time_minutes,
+            **entry_data.dict()
+        )
         entry_dict = entry.dict()
         await create_document("journal_entries", entry_dict)
+        
+        # Update template usage count if template was used
+        if entry_data.template_id:
+            await update_document("journal_templates", 
+                                {"id": entry_data.template_id},
+                                {"$inc": {"usage_count": 1}})
+        
         return entry
 
     @staticmethod
-    async def get_user_entries(user_id: str, skip: int = 0, limit: int = 20) -> List[JournalEntry]:
+    async def get_user_entries(user_id: str, skip: int = 0, limit: int = 20, 
+                              mood_filter: Optional[str] = None,
+                              tag_filter: Optional[str] = None,
+                              date_from: Optional[datetime] = None,
+                              date_to: Optional[datetime] = None) -> List[JournalEntryResponse]:
+        # Build query with filters
+        query = {"user_id": user_id}
+        
+        if mood_filter:
+            query["mood"] = mood_filter
+            
+        if tag_filter:
+            query["tags"] = {"$in": [tag_filter]}
+            
+        if date_from or date_to:
+            date_query = {}
+            if date_from:
+                date_query["$gte"] = date_from
+            if date_to:
+                date_query["$lte"] = date_to
+            query["created_at"] = date_query
+        
         entries_docs = await find_documents(
             "journal_entries", 
-            {"user_id": user_id}, 
+            query,
             skip=skip, 
             limit=limit
         )
+        
         # Sort by created_at descending
         entries_docs.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-        return [JournalEntry(**doc) for doc in entries_docs]
+        
+        # Build response objects with template names
+        responses = []
+        for doc in entries_docs:
+            response = JournalEntryResponse(**doc)
+            
+            # Get template name if template was used
+            if response.template_id:
+                template_doc = await find_document("journal_templates", {"id": response.template_id})
+                if template_doc:
+                    response.template_name = template_doc["name"]
+            
+            responses.append(response)
+        
+        return responses
 
     @staticmethod
     async def update_entry(user_id: str, entry_id: str, entry_data: JournalEntryUpdate) -> bool:
         update_data = {k: v for k, v in entry_data.dict().items() if v is not None}
+        
+        # Recalculate word count and reading time if content changed
+        if "content" in update_data:
+            word_count = len(update_data["content"].split())
+            reading_time_minutes = max(1, word_count // 200)
+            update_data["word_count"] = word_count
+            update_data["reading_time_minutes"] = reading_time_minutes
+        
         update_data["updated_at"] = datetime.utcnow()
         return await update_document("journal_entries", {"id": entry_id, "user_id": user_id}, update_data)
 
     @staticmethod
     async def delete_entry(user_id: str, entry_id: str) -> bool:
         return await delete_document("journal_entries", {"id": entry_id, "user_id": user_id})
+
+    @staticmethod
+    async def search_entries(user_id: str, search_term: str, limit: int = 20) -> List[JournalEntryResponse]:
+        """Search entries by title and content"""
+        # Simple text search - in production, consider using full-text search
+        entries_docs = await find_documents("journal_entries", {"user_id": user_id})
+        
+        matching_entries = []
+        search_lower = search_term.lower()
+        
+        for doc in entries_docs:
+            title_match = search_lower in doc.get("title", "").lower()
+            content_match = search_lower in doc.get("content", "").lower()
+            tag_match = any(search_lower in tag.lower() for tag in doc.get("tags", []))
+            
+            if title_match or content_match or tag_match:
+                response = JournalEntryResponse(**doc)
+                
+                # Add template name if needed
+                if response.template_id:
+                    template_doc = await find_document("journal_templates", {"id": response.template_id})
+                    if template_doc:
+                        response.template_name = template_doc["name"]
+                
+                matching_entries.append(response)
+        
+        # Sort by relevance (title matches first, then by date)
+        matching_entries.sort(key=lambda x: (
+            0 if search_lower in x.title.lower() else 1,
+            -x.created_at.timestamp()
+        ))
+        
+        return matching_entries[:limit]
+
+    @staticmethod
+    async def get_on_this_day(user_id: str, target_date: Optional[datetime] = None) -> List[OnThisDayEntry]:
+        """Get journal entries from the same date in previous years"""
+        if not target_date:
+            target_date = datetime.now()
+        
+        # Get entries from same month/day in previous years
+        month = target_date.month
+        day = target_date.day
+        current_year = target_date.year
+        
+        entries_docs = await find_documents("journal_entries", {"user_id": user_id})
+        
+        on_this_day_entries = []
+        for doc in entries_docs:
+            entry_date = doc.get("created_at")
+            if (entry_date and 
+                entry_date.month == month and 
+                entry_date.day == day and 
+                entry_date.year < current_year):
+                
+                years_ago = current_year - entry_date.year
+                response = JournalEntryResponse(**doc)
+                
+                # Add template name if needed
+                if response.template_id:
+                    template_doc = await find_document("journal_templates", {"id": response.template_id})
+                    if template_doc:
+                        response.template_name = template_doc["name"]
+                
+                on_this_day_entries.append(OnThisDayEntry(
+                    entry=response,
+                    years_ago=years_ago
+                ))
+        
+        # Sort by years ago (most recent years first)
+        on_this_day_entries.sort(key=lambda x: x.years_ago)
+        
+        return on_this_day_entries
+
+    @staticmethod
+    async def get_journal_insights(user_id: str) -> JournalInsights:
+        """Get comprehensive journal analytics and insights"""
+        entries_docs = await find_documents("journal_entries", {"user_id": user_id})
+        
+        if not entries_docs:
+            return JournalInsights(
+                total_entries=0,
+                current_streak=0,
+                most_common_mood="reflective",
+                average_energy_level=3.0,
+                most_used_tags=[],
+                mood_trend=[],
+                energy_trend=[],
+                writing_stats={}
+            )
+        
+        # Sort entries by date
+        entries_docs.sort(key=lambda x: x.get("created_at", datetime.min))
+        
+        # Calculate current streak
+        current_streak = await JournalService._calculate_journal_streak(user_id)
+        
+        # Mood analysis
+        mood_counts = {}
+        energy_levels = []
+        all_tags = []
+        total_words = 0
+        
+        # Prepare last 30 days data
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        mood_trend = []
+        energy_trend = []
+        
+        for doc in entries_docs:
+            # Mood counting
+            mood = doc.get("mood", "reflective")
+            mood_counts[mood] = mood_counts.get(mood, 0) + 1
+            
+            # Energy levels
+            energy_map = {
+                "very_low": 1, "low": 2, "moderate": 3, "high": 4, "very_high": 5
+            }
+            energy = doc.get("energy_level", "moderate")
+            energy_levels.append(energy_map.get(energy, 3))
+            
+            # Tags
+            all_tags.extend(doc.get("tags", []))
+            
+            # Word count
+            total_words += doc.get("word_count", 0)
+            
+            # Trend data (last 30 days)
+            created_at = doc.get("created_at")
+            if created_at and created_at >= thirty_days_ago:
+                mood_trend.append({
+                    "date": created_at.date().isoformat(),
+                    "mood": mood,
+                    "mood_score": {"optimistic": 5, "inspired": 5, "excited": 5, "grateful": 4, 
+                                  "motivated": 4, "peaceful": 4, "reflective": 3, "challenging": 2, 
+                                  "frustrated": 2, "anxious": 1}.get(mood, 3)
+                })
+                energy_trend.append({
+                    "date": created_at.date().isoformat(),
+                    "energy_level": energy,
+                    "energy_score": energy_map.get(energy, 3)
+                })
+        
+        # Most common mood
+        most_common_mood = max(mood_counts.items(), key=lambda x: x[1])[0] if mood_counts else "reflective"
+        
+        # Average energy level
+        average_energy = sum(energy_levels) / len(energy_levels) if energy_levels else 3.0
+        
+        # Most used tags
+        tag_counts = {}
+        for tag in all_tags:
+            tag_counts[tag] = tag_counts.get(tag, 0) + 1
+        
+        most_used_tags = [
+            {"tag": tag, "count": count} 
+            for tag, count in sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        ]
+        
+        # Writing statistics
+        writing_stats = {
+            "total_words": total_words,
+            "average_words_per_entry": total_words / len(entries_docs) if entries_docs else 0,
+            "total_reading_time_minutes": sum(doc.get("reading_time_minutes", 0) for doc in entries_docs),
+            "entries_this_month": len([doc for doc in entries_docs 
+                                     if doc.get("created_at", datetime.min).month == datetime.now().month]),
+            "longest_entry_words": max((doc.get("word_count", 0) for doc in entries_docs), default=0)
+        }
+        
+        return JournalInsights(
+            total_entries=len(entries_docs),
+            current_streak=current_streak,
+            most_common_mood=most_common_mood,
+            average_energy_level=round(average_energy, 1),
+            most_used_tags=most_used_tags,
+            mood_trend=mood_trend,
+            energy_trend=energy_trend,
+            writing_stats=writing_stats
+        )
+
+    @staticmethod
+    async def _calculate_journal_streak(user_id: str) -> int:
+        """Calculate current consecutive days of journaling"""
+        entries_docs = await find_documents("journal_entries", {"user_id": user_id})
+        
+        if not entries_docs:
+            return 0
+        
+        # Get unique dates of entries
+        entry_dates = set()
+        for doc in entries_docs:
+            created_at = doc.get("created_at")
+            if created_at:
+                entry_dates.add(created_at.date())
+        
+        # Check consecutive days starting from today
+        current_date = datetime.now().date()
+        streak = 0
+        
+        while current_date in entry_dates:
+            streak += 1
+            current_date -= timedelta(days=1)
+        
+        return streak
+
+    # Journal Template Methods
+    @staticmethod
+    async def create_template(user_id: str, template_data: JournalTemplateCreate) -> JournalTemplate:
+        template = JournalTemplate(user_id=user_id, **template_data.dict())
+        template_dict = template.dict()
+        await create_document("journal_templates", template_dict)
+        return template
+
+    @staticmethod
+    async def get_user_templates(user_id: str) -> List[JournalTemplate]:
+        # Get user's custom templates and default system templates
+        user_templates_docs = await find_documents("journal_templates", {"user_id": user_id})
+        default_templates_docs = await find_documents("journal_templates", {"is_default": True})
+        
+        all_templates = user_templates_docs + default_templates_docs
+        all_templates.sort(key=lambda x: (not x.get("is_default", False), x.get("name", "")))
+        
+        return [JournalTemplate(**doc) for doc in all_templates]
+
+    @staticmethod
+    async def get_template(template_id: str) -> Optional[JournalTemplate]:
+        template_doc = await find_document("journal_templates", {"id": template_id})
+        return JournalTemplate(**template_doc) if template_doc else None
+
+    @staticmethod
+    async def update_template(user_id: str, template_id: str, template_data: JournalTemplateUpdate) -> bool:
+        update_data = {k: v for k, v in template_data.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow()
+        
+        # Only allow users to update their own templates (not default ones)
+        return await update_document("journal_templates", {
+            "id": template_id, 
+            "user_id": user_id,
+            "is_default": False
+        }, update_data)
+
+    @staticmethod
+    async def delete_template(user_id: str, template_id: str) -> bool:
+        # Only allow users to delete their own templates (not default ones)
+        return await delete_document("journal_templates", {
+            "id": template_id, 
+            "user_id": user_id,
+            "is_default": False
+        })
+
+    @staticmethod
+    async def initialize_default_templates():
+        """Initialize default journal templates for the system"""
+        default_templates = [
+            {
+                "name": "Daily Reflection",
+                "description": "Reflect on your day with guided prompts",
+                "template_type": "daily_reflection",
+                "prompts": [
+                    "What went well today?",
+                    "What challenges did you face?",
+                    "What did you learn?",
+                    "What are you grateful for?",
+                    "How do you want to improve tomorrow?"
+                ],
+                "default_tags": ["daily", "reflection"],
+                "icon": "🌅",
+                "color": "#F4B400"
+            },
+            {
+                "name": "Gratitude Journal",
+                "description": "Practice gratitude with daily appreciation",
+                "template_type": "gratitude",
+                "prompts": [
+                    "What are three things you're grateful for today?",
+                    "Who made a positive impact on your day?",
+                    "What small moment brought you joy?",
+                    "What about yourself are you grateful for?"
+                ],
+                "default_tags": ["gratitude", "positivity"],
+                "icon": "🙏",
+                "color": "#10b981"
+            },
+            {
+                "name": "Goal Setting",
+                "description": "Plan and track your goals and aspirations",
+                "template_type": "goal_setting",
+                "prompts": [
+                    "What goal do you want to focus on?",
+                    "Why is this goal important to you?",
+                    "What steps will you take this week?",
+                    "What obstacles might you face?",
+                    "How will you measure progress?"
+                ],
+                "default_tags": ["goals", "planning"],
+                "icon": "🎯",
+                "color": "#8b5cf6"
+            },
+            {
+                "name": "Weekly Review",
+                "description": "Comprehensive weekly reflection and planning",
+                "template_type": "weekly_review",
+                "prompts": [
+                    "What were your biggest wins this week?",
+                    "What didn't go as planned?",
+                    "What patterns do you notice?",
+                    "What are your priorities for next week?",
+                    "How are you feeling about your progress?"
+                ],
+                "default_tags": ["weekly", "review", "planning"],
+                "icon": "📊",
+                "color": "#f59e0b"
+            },
+            {
+                "name": "Learning Log",
+                "description": "Document your learning journey and insights",
+                "template_type": "learning_log",
+                "prompts": [
+                    "What new thing did you learn today?",
+                    "How will you apply this knowledge?",
+                    "What questions do you still have?",
+                    "What resources were most helpful?"
+                ],
+                "default_tags": ["learning", "growth"],
+                "icon": "📚",
+                "color": "#3b82f6"
+            }
+        ]
+        
+        for template_data in default_templates:
+            existing = await find_document("journal_templates", {
+                "name": template_data["name"],
+                "is_default": True
+            })
+            
+            if not existing:
+                template = JournalTemplate(
+                    user_id="system",
+                    is_default=True,
+                    usage_count=0,
+                    **template_data
+                )
+                await create_document("journal_templates", template.dict())
 
 class ProjectTemplateService:
     @staticmethod
