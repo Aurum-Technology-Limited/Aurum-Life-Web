@@ -85,12 +85,12 @@ const Login = ({ switchToRegister }) => {
       const response = await googleAuthAPI.authenticate(credentialResponse.credential);
       
       if (response.data) {
-        // Store auth data (similar to regular login)
-        localStorage.setItem('authToken', response.data.access_token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Store auth data using the same keys as regular login
+        localStorage.setItem('auth_token', response.data.access_token);
+        setUser(response.data.user);
         
-        // Trigger auth context update
-        window.location.reload(); // Simple approach to refresh auth state
+        // The AuthContext will automatically detect the token and authenticate
+        window.location.reload();
       }
     } catch (error) {
       console.error('Google auth error:', error);
