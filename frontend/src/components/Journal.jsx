@@ -158,6 +158,57 @@ const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false, templat
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Template Selection */}
+          {!entry && templates.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Choose a Template (Optional)
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => handleTemplateSelect(template)}
+                    className={`p-3 rounded-lg border text-left transition-colors ${
+                      selectedTemplate?.id === template.id
+                        ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400'
+                        : 'border-gray-700 text-gray-300 hover:border-gray-600'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>{template.icon}</span>
+                      <span className="text-sm font-medium">{template.name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Template Prompts */}
+          {selectedTemplate && selectedTemplate.prompts && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Template Prompts
+              </label>
+              <div className="space-y-3">
+                {selectedTemplate.prompts.map((prompt, index) => (
+                  <div key={index}>
+                    <p className="text-sm text-gray-400 mb-1">{prompt}</p>
+                    <textarea
+                      value={formData.template_responses[index] || ''}
+                      onChange={(e) => handleTemplateResponseChange(index, e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                      rows="2"
+                      placeholder="Your response..."
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Title
@@ -203,9 +254,35 @@ const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false, templat
                 <option value="inspired">Inspired</option>
                 <option value="reflective">Reflective</option>
                 <option value="challenging">Challenging</option>
+                <option value="anxious">Anxious</option>
+                <option value="grateful">Grateful</option>
+                <option value="excited">Excited</option>
+                <option value="frustrated">Frustrated</option>
+                <option value="peaceful">Peaceful</option>
+                <option value="motivated">Motivated</option>
               </select>
             </div>
             
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Energy Level
+              </label>
+              <select
+                value={formData.energy_level}
+                onChange={(e) => setFormData({ ...formData, energy_level: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                disabled={loading}
+              >
+                <option value="very_low">Very Low</option>
+                <option value="low">Low</option>
+                <option value="moderate">Moderate</option>
+                <option value="high">High</option>
+                <option value="very_high">Very High</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Tags (comma separated)
@@ -219,6 +296,34 @@ const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false, templat
                 disabled={loading}
               />
             </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Location (optional)
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                placeholder="Where are you writing from?"
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Weather/Mood Context (optional)
+            </label>
+            <input
+              type="text"
+              value={formData.weather}
+              onChange={(e) => setFormData({ ...formData, weather: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+              placeholder="Sunny, rainy, cozy evening..."
+              disabled={loading}
+            />
           </div>
           
           <div className="flex space-x-3 pt-4">
