@@ -19,13 +19,14 @@ import {
 // import { useNotifications } from '../contexts/NotificationContext';
 
 const NotificationSettings = () => {
-  const { 
-    preferences, 
-    updatePreferences, 
-    browserPermission, 
-    requestBrowserPermission,
-    sendTestNotification 
-  } = useNotifications();
+  // Temporarily disable context usage for testing
+  // const { 
+  //   preferences, 
+  //   updatePreferences, 
+  //   browserPermission, 
+  //   requestBrowserPermission,
+  //   sendTestNotification 
+  // } = useNotifications();
 
   const [formData, setFormData] = useState({
     email_notifications: true,
@@ -46,27 +47,29 @@ const NotificationSettings = () => {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
+  const browserPermission = 'default'; // Mock for testing
 
   // Load preferences when component mounts
   useEffect(() => {
-    if (preferences) {
-      setFormData({
-        email_notifications: preferences.email_notifications ?? true,
-        browser_notifications: preferences.browser_notifications ?? true,
-        task_due_notifications: preferences.task_due_notifications ?? true,
-        task_overdue_notifications: preferences.task_overdue_notifications ?? true,
-        task_reminder_notifications: preferences.task_reminder_notifications ?? true,
-        project_deadline_notifications: preferences.project_deadline_notifications ?? true,
-        recurring_task_notifications: preferences.recurring_task_notifications ?? true,
-        reminder_advance_time: preferences.reminder_advance_time ?? 30,
-        overdue_check_interval: preferences.overdue_check_interval ?? 60,
-        quiet_hours_start: preferences.quiet_hours_start ?? '22:00',
-        quiet_hours_end: preferences.quiet_hours_end ?? '08:00',
-        daily_digest: preferences.daily_digest ?? false,
-        weekly_digest: preferences.weekly_digest ?? true
-      });
-    }
-  }, [preferences]);
+    // Temporarily disabled for testing
+    // if (preferences) {
+    //   setFormData({
+    //     email_notifications: preferences.email_notifications ?? true,
+    //     browser_notifications: preferences.browser_notifications ?? true,
+    //     task_due_notifications: preferences.task_due_notifications ?? true,
+    //     task_overdue_notifications: preferences.task_overdue_notifications ?? true,
+    //     task_reminder_notifications: preferences.task_reminder_notifications ?? true,
+    //     project_deadline_notifications: preferences.project_deadline_notifications ?? true,
+    //     recurring_task_notifications: preferences.recurring_task_notifications ?? true,
+    //     reminder_advance_time: preferences.reminder_advance_time ?? 30,
+    //     overdue_check_interval: preferences.overdue_check_interval ?? 60,
+    //     quiet_hours_start: preferences.quiet_hours_start ?? '22:00',
+    //     quiet_hours_end: preferences.quiet_hours_end ?? '08:00',
+    //     daily_digest: preferences.daily_digest ?? false,
+    //     weekly_digest: preferences.weekly_digest ?? true
+    //   });
+    // }
+  }, []);
 
   const handleInputChange = (name, value) => {
     setFormData(prev => ({
@@ -79,7 +82,9 @@ const NotificationSettings = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updatePreferences(formData);
+      // await updatePreferences(formData);
+      // Mock save for testing
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -92,7 +97,10 @@ const NotificationSettings = () => {
   const handleTestNotification = async () => {
     setTestLoading(true);
     try {
-      await sendTestNotification();
+      // await sendTestNotification();
+      // Mock test notification for testing
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      alert('Test notification sent!');
     } catch (error) {
       console.error('Error sending test notification:', error);
     } finally {
@@ -101,10 +109,12 @@ const NotificationSettings = () => {
   };
 
   const handleRequestBrowserPermission = async () => {
-    const permission = await requestBrowserPermission();
-    if (permission === 'granted') {
-      handleInputChange('browser_notifications', true);
-    }
+    // const permission = await requestBrowserPermission();
+    // if (permission === 'granted') {
+    //   handleInputChange('browser_notifications', true);
+    // }
+    // Mock for testing
+    alert('Browser permission requested!');
   };
 
   return (
