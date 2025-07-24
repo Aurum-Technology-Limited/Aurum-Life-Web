@@ -310,14 +310,16 @@ class JournalService:
         # Build response objects with template names
         responses = []
         for doc in entries_docs:
-            response = JournalEntryResponse(**doc)
+            # Set template_name to None by default
+            doc["template_name"] = None
             
             # Get template name if template was used
-            if response.template_id:
-                template_doc = await find_document("journal_templates", {"id": response.template_id})
+            if doc.get("template_id"):
+                template_doc = await find_document("journal_templates", {"id": doc["template_id"]})
                 if template_doc:
-                    response.template_name = template_doc["name"]
+                    doc["template_name"] = template_doc["name"]
             
+            response = JournalEntryResponse(**doc)
             responses.append(response)
         
         return responses
