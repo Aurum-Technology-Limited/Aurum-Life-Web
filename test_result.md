@@ -870,6 +870,18 @@ backend:
           comment: "🎉 ENHANCED DRAG & DROP BACKEND INTEGRATION - PHASE 2 TESTING COMPLETED - 100% SUCCESS RATE! Comprehensive testing executed covering complete enhanced drag & drop backend integration as requested: ✅ TASK STATUS UPDATES VIA DRAG & DROP - All status transitions working perfectly: todo → in_progress → review → completed, reverse transitions working correctly: completed → review → in_progress → todo, PUT /api/tasks/{id} with status changes functioning flawlessly for all drag operations ✅ KANBAN COLUMN SYNCHRONIZATION - All 4 kanban columns present and working: to_do, in_progress, review, done, status-to-column mapping verified: todo→to_do, in_progress→in_progress, review→review, completed→done, tasks correctly appear in appropriate columns after status changes, kanban board data remains consistent after drag operations ✅ DRAG & DROP ERROR SCENARIOS WITH DEPENDENCIES - Blocked tasks with dependencies correctly prevented from moving to restricted statuses (in_progress, review, completed), dependency validation working during drag operations (FR-1.1.2), error messages properly inform users which prerequisite tasks must be completed first (FR-1.1.3), tasks correctly allowed to move after prerequisites are completed ✅ PERFORMANCE AND RELIABILITY - Multiple rapid drag operations completed in 0.07 seconds with 100% success rate, database consistency maintained after rapid status changes, kanban board data remains accurate and synchronized ✅ ERROR RECOVERY TESTING - Invalid status values correctly rejected (invalid_status, not_started, pending, empty string), tasks remain functional after error attempts, robust error handling prevents system corruption. ENHANCED DRAG & DROP BACKEND INTEGRATION IS PRODUCTION-READY AND FULLY FUNCTIONAL WITH EXCELLENT PERFORMANCE AND RELIABILITY!"
 
 frontend:
+  - task: "Google OAuth Button Width Alignment Fix"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Login.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Fixed Google OAuth button width alignment issue in Login component. Changed hardcoded width='400' to width='100%' for login form Google button, added width='100%' to register form Google button, removed redundant wrapper div. Both Google buttons now match the full width of other form elements."
+
   - task: "Enhanced Drag & Drop Frontend Implementation - Phase 2"
     implemented: true
     working: true
