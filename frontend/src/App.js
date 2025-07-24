@@ -105,7 +105,7 @@ function App() {
   // If on password reset page, show the PasswordReset component
   if (isPasswordResetPage) {
     return (
-      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
         <AuthProvider>
           <DataProvider>
             <DndProvider backend={HTML5Backend}>
@@ -120,7 +120,7 @@ function App() {
   }
 
   return (
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
       <AuthProvider>
         <DataProvider>
           <DndProvider backend={HTML5Backend}>
