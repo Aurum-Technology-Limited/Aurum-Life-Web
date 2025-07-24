@@ -1165,6 +1165,40 @@ class TaskService:
         return True
 
     @staticmethod
+    async def reorder_project_tasks(user_id: str, project_id: str, task_ids: List[str]) -> bool:
+        """Reorder tasks within a project"""
+        # Verify project exists and belongs to user
+        project_doc = await find_document("projects", {"id": project_id, "user_id": user_id})
+        if not project_doc:
+            raise ValueError("Project not found")
+        
+        # Verify all tasks exist and belong to the project
+        tasks_docs = await find_documents("tasks", {
+            "id": {"$in": task_ids},
+            "user_id": user_id,
+            "project_id": project_id
+        })
+        
+        found_task_ids = [task["id"] for task in tasks_docs]
+        missing_task_ids = [task_id for task_id in task_ids if task_id not in found_task_ids]
+        
+        if missing_task_ids:
+            raise ValueError(f"Tasks not found in project: {', '.join(missing_task_ids)}")
+        
+        # Update sort order for each task
+        for i, task_id in enumerate(task_ids):
+            await update_document("tasks", {
+                "id": task_id,
+                "user_id": user_id,
+                "project_id": project_id
+            }, {
+                "sort_order": i + 1,
+                "updated_at": datetime.utcnow()
+            })
+        
+        return True
+
+    @staticmethod
     async def _build_task_response(task_doc: dict, include_subtasks: bool = True) -> TaskResponse:
         task_response = TaskResponse(**task_doc)
         
