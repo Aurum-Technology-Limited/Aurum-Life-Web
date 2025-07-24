@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { googleAuthAPI } from '../services/api';
 
 const Login = ({ switchToRegister }) => {
   const { login, register } = useAuth();
