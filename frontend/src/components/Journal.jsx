@@ -209,12 +209,22 @@ const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false }) => {
 
 const Journal = () => {
   const [entries, setEntries] = useState([]);
+  const [filteredEntries, setFilteredEntries] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [insights, setInsights] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [viewingEntry, setViewingEntry] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // New state for advanced features
+  const [currentView, setCurrentView] = useState('entries'); // 'entries', 'insights', 'templates'
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMoodFilter, setSelectedMoodFilter] = useState('');
+  const [selectedTagFilter, setSelectedTagFilter] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchEntries();
