@@ -55,11 +55,16 @@ async def find_document(collection_name: str, query: dict):
         document['_id'] = str(document['_id'])
     return document
 
-async def find_documents(collection_name: str, query: dict = None, skip: int = 0, limit: int = 100):
+async def find_documents(collection_name: str, query: dict = None, skip: int = 0, limit: int = 100, sort: list = None):
     """Find multiple documents"""
     collection = await get_collection(collection_name)
     query = query or {}
     cursor = collection.find(query).skip(skip).limit(limit)
+    
+    # Apply sorting if provided
+    if sort:
+        cursor = cursor.sort(sort)
+    
     documents = await cursor.to_list(length=limit)
     for doc in documents:
         doc['_id'] = str(doc['_id'])
