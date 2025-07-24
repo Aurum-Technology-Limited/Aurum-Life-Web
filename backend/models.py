@@ -12,16 +12,17 @@ class BaseDocument(BaseModel):
 
 # User models
 class User(BaseDocument):
-    username: str
     email: str
-    first_name: str = ""
-    last_name: str = ""
-    password_hash: Optional[str] = None  # Make optional for backward compatibility
+    username: str
+    password_hash: Optional[str] = None  # Optional for Google OAuth users
+    first_name: str
+    last_name: str
+    google_id: Optional[str] = None  # Google OAuth ID
+    profile_picture: Optional[str] = None  # URL to profile picture
     is_active: bool = True
     level: int = 1
     total_points: int = 0
     current_streak: int = 0
-    profile_data: Dict[str, Any] = {}
 
 class UserCreate(BaseModel):
     username: str
