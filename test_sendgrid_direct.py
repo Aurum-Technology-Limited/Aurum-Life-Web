@@ -36,7 +36,7 @@ def test_sendgrid_direct():
         # Create test email
         message = Mail(
             from_email=sender_email,
-            to_emails='test@example.com',  # Change this to your email for real testing
+            to_emails='marc.alleyne@aurumtechnologyltd.com',  # Sending test to your email
             subject='Aurum Life - SendGrid API Test',
             html_content='''
             <h2>🎉 SendGrid API Test Successful!</h2>
