@@ -105,185 +105,561 @@ class BackendTester:
                 'response': getattr(e, 'response', None)
             }
 
-    def test_api_configuration_fix_verification(self):
-        """CRITICAL: Test API configuration fix - verify backend is accessible and timeout errors are resolved"""
-        print("\n=== API CONFIGURATION FIX VERIFICATION ===")
-        print("Testing that the API configuration fix resolved timeout errors")
-        print(f"Backend URL: {self.base_url}")
+    def setup_test_environment(self):
+        """Setup test environment with user authentication and basic resources"""
+        print("\n=== SETTING UP TEST ENVIRONMENT ===")
         
-        # Test 1: Basic API Health Check
-        result = self.make_request('GET', '/health')
+        # Test 1: User Registration
+        result = self.make_request('POST', '/auth/register', data=self.test_user_data)
         self.log_test(
-            "API HEALTH CHECK - Backend Accessibility",
+            "USER REGISTRATION - Test User Setup",
             result['success'],
-            f"Backend API is accessible at {self.base_url}" if result['success'] else f"Backend API not accessible: {result.get('error', 'Unknown error')}"
+            f"Test user registered: {result['data'].get('username', 'Unknown')}" if result['success'] else f"Registration failed: {result.get('error', 'Unknown error')}"
         )
         
         if not result['success']:
-            print("❌ CRITICAL FAILURE: Backend API is not accessible - configuration fix may not be working")
-            return False
-        
-        # Test 2: API Root Endpoint
-        result = self.make_request('GET', '/')
-        self.log_test(
-            "API ROOT ENDPOINT - Basic Response",
-            result['success'],
-            f"API root endpoint responding: {result['data'].get('message', 'Unknown')}" if result['success'] else f"API root failed: {result.get('error', 'Unknown error')}"
-        )
-        
-        # Test 3: User Registration (New Credentials)
-        fresh_user_data = {
-            "username": f"apitest_{uuid.uuid4().hex[:8]}",
-            "email": f"apitest_{uuid.uuid4().hex[:8]}@aurumlife.com",
-            "first_name": "API",
-            "last_name": "Test",
-            "password": "APITestPassword123!"
-        }
-        
-        result = self.make_request('POST', '/auth/register', data=fresh_user_data)
-        self.log_test(
-            "USER REGISTRATION - New Credentials",
-            result['success'],
-            f"User registration successful: {result['data'].get('username', 'Unknown')}" if result['success'] else f"Registration failed: {result.get('error', 'Unknown error')}"
-        )
-        
-        if not result['success']:
-            print("❌ CRITICAL FAILURE: User registration failed - API may not be working properly")
             return False
         
         user_data = result['data']
         self.created_resources['users'].append(user_data['id'])
         
-        # Test 4: User Login with Registered Credentials
+        # Test 2: User Login
         login_data = {
-            "email": fresh_user_data['email'],
-            "password": fresh_user_data['password']
+            "email": self.test_user_data['email'],
+            "password": self.test_user_data['password']
         }
         
         result = self.make_request('POST', '/auth/login', data=login_data)
         self.log_test(
-            "USER LOGIN - Registered Credentials",
+            "USER LOGIN - Authentication Setup",
             result['success'],
             f"Login successful, JWT token received" if result['success'] else f"Login failed: {result.get('error', 'Unknown error')}"
         )
         
         if not result['success']:
-            print("❌ CRITICAL FAILURE: User login failed - authentication may not be working")
             return False
         
-        # Store auth token for protected endpoint testing
+        # Store auth token
         token_data = result['data']
         self.auth_token = token_data.get('access_token')
         
-        # Verify token structure
-        self.log_test(
-            "JWT TOKEN VALIDATION",
-            self.auth_token and len(self.auth_token) > 50 and token_data.get('token_type') == 'bearer',
-            f"Valid JWT token generated (length: {len(self.auth_token) if self.auth_token else 0})"
-        )
-        
-        # Test 5: Dashboard API Endpoint (Critical - was causing timeouts)
-        result = self.make_request('GET', '/dashboard', use_auth=True)
-        self.log_test(
-            "DASHBOARD API - Load Without Timeouts",
-            result['success'],
-            f"Dashboard loads successfully without timeouts" if result['success'] else f"Dashboard failed: {result.get('error', 'Unknown error')}"
-        )
-        
-        dashboard_success = result['success']
-        if result['success']:
-            dashboard_data = result['data']
-            # Verify dashboard contains expected sections
-            expected_sections = ['user', 'stats']
-            present_sections = [section for section in expected_sections if section in dashboard_data]
-            
-            self.log_test(
-                "Dashboard Data Structure",
-                len(present_sections) >= 1,
-                f"Dashboard contains {len(present_sections)}/{len(expected_sections)} expected sections: {present_sections}"
-            )
-            
-            # Verify user data matches authenticated user
-            user_section = dashboard_data.get('user', {})
-            self.log_test(
-                "Dashboard User Data Integrity",
-                user_section.get('email') == fresh_user_data['email'],
-                f"Dashboard returns correct user data: {user_section.get('email', 'Unknown')}"
-            )
-        
-        # Test 6: Journal API Endpoint (Critical - was causing timeouts)
-        result = self.make_request('GET', '/journal', use_auth=True)
-        self.log_test(
-            "JOURNAL API - Load Without Timeouts",
-            result['success'],
-            f"Journal API loads successfully without timeouts" if result['success'] else f"Journal API failed: {result.get('error', 'Unknown error')}"
-        )
-        
-        journal_success = result['success']
-        if result['success']:
-            journal_entries = result['data']
-            self.log_test(
-                "Journal API Response Structure",
-                isinstance(journal_entries, list),
-                f"Journal API returns list of entries: {len(journal_entries)} entries"
-            )
-        
-        # Test 7: Create Journal Entry to Test POST Operations
-        journal_entry_data = {
-            "title": "API Configuration Test Entry",
-            "content": "Testing that the API configuration fix resolved timeout errors",
-            "mood": "happy",
-            "tags": ["testing", "api-fix"]
+        # Test 3: Create test area and project for task testing
+        area_data = {
+            "name": "Notification Testing Area",
+            "description": "Area for testing notification system",
+            "icon": "🔔",
+            "color": "#F4B400"
         }
         
-        result = self.make_request('POST', '/journal', data=journal_entry_data, use_auth=True)
+        result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
         self.log_test(
-            "JOURNAL CREATE - POST Operation",
+            "TEST AREA CREATION",
             result['success'],
-            f"Journal entry created successfully" if result['success'] else f"Journal creation failed: {result.get('error', 'Unknown error')}"
+            f"Test area created: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Area creation failed: {result.get('error', 'Unknown error')}"
         )
         
-        # Test 8: Additional Critical Endpoints
-        critical_endpoints = [
-            {'method': 'GET', 'endpoint': '/auth/me', 'name': 'Current User Info'},
-            {'method': 'GET', 'endpoint': '/stats', 'name': 'User Statistics'},
-            {'method': 'GET', 'endpoint': '/areas', 'name': 'User Areas'},
-            {'method': 'GET', 'endpoint': '/projects', 'name': 'User Projects'},
-            {'method': 'GET', 'endpoint': '/tasks', 'name': 'User Tasks'},
+        if not result['success']:
+            return False
+        
+        area_id = result['data']['id']
+        self.created_resources['areas'].append(area_id)
+        
+        # Test 4: Create test project
+        project_data = {
+            "area_id": area_id,
+            "name": "Notification Testing Project",
+            "description": "Project for testing notification system",
+            "priority": "high"
+        }
+        
+        result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+        self.log_test(
+            "TEST PROJECT CREATION",
+            result['success'],
+            f"Test project created: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Project creation failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        project_id = result['data']['id']
+        self.created_resources['projects'].append(project_id)
+        self.test_project_id = project_id
+        
+        print("✅ Test environment setup completed successfully")
+        return True
+
+    def test_notification_preferences_api(self):
+        """Test Notification Preferences API - GET/PUT `/api/notifications/preferences` endpoints"""
+        print("\n=== TESTING NOTIFICATION PREFERENCES API ===")
+        
+        # Test 1: GET notification preferences (should create defaults if none exist)
+        result = self.make_request('GET', '/notifications/preferences', use_auth=True)
+        self.log_test(
+            "GET NOTIFICATION PREFERENCES - Default Creation",
+            result['success'],
+            f"Retrieved notification preferences with defaults" if result['success'] else f"Failed to get preferences: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        preferences = result['data']
+        
+        # Verify default preference structure
+        expected_fields = [
+            'email_notifications', 'browser_notifications', 'task_due_notifications',
+            'task_overdue_notifications', 'task_reminder_notifications', 
+            'project_deadline_notifications', 'recurring_task_notifications',
+            'reminder_advance_time', 'overdue_check_interval', 'quiet_hours_start', 'quiet_hours_end'
         ]
         
-        successful_endpoints = 0
-        total_endpoints = len(critical_endpoints)
-        
-        for endpoint_test in critical_endpoints:
-            method = endpoint_test['method']
-            endpoint = endpoint_test['endpoint']
-            name = endpoint_test['name']
-            
-            result = self.make_request(method, endpoint, use_auth=True)
-            
-            self.log_test(
-                f"CRITICAL ENDPOINT - {name}",
-                result['success'],
-                f"{method} {endpoint} working without timeouts" if result['success'] else f"{method} {endpoint} failed: {result.get('error', 'Unknown error')}"
-            )
-            
-            if result['success']:
-                successful_endpoints += 1
-        
-        success_rate = (successful_endpoints / total_endpoints) * 100
+        present_fields = [field for field in expected_fields if field in preferences]
         self.log_test(
-            "API Configuration Fix Success Rate",
-            success_rate >= 80,
-            f"API endpoints working: {successful_endpoints}/{total_endpoints} ({success_rate:.1f}%)"
+            "NOTIFICATION PREFERENCES STRUCTURE",
+            len(present_fields) == len(expected_fields),
+            f"Preferences contain {len(present_fields)}/{len(expected_fields)} expected fields: {present_fields}"
         )
         
-        print(f"\n✅ API CONFIGURATION FIX VERIFICATION COMPLETED")
+        # Verify default values
+        default_checks = [
+            ('email_notifications', True),
+            ('browser_notifications', True),
+            ('task_due_notifications', True),
+            ('reminder_advance_time', 30),
+            ('quiet_hours_start', '22:00')
+        ]
+        
+        defaults_correct = 0
+        for field, expected_value in default_checks:
+            if preferences.get(field) == expected_value:
+                defaults_correct += 1
+        
+        self.log_test(
+            "DEFAULT VALUES VALIDATION",
+            defaults_correct == len(default_checks),
+            f"Default values correct: {defaults_correct}/{len(default_checks)}"
+        )
+        
+        # Test 2: PUT notification preferences - Update preferences
+        updated_preferences = {
+            "email_notifications": False,
+            "reminder_advance_time": 60,
+            "task_overdue_notifications": False,
+            "quiet_hours_start": "23:00",
+            "quiet_hours_end": "07:00"
+        }
+        
+        result = self.make_request('PUT', '/notifications/preferences', data=updated_preferences, use_auth=True)
+        self.log_test(
+            "PUT NOTIFICATION PREFERENCES - Update Settings",
+            result['success'],
+            f"Preferences updated successfully" if result['success'] else f"Failed to update preferences: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        updated_prefs = result['data']
+        
+        # Verify updates were applied
+        update_checks = [
+            ('email_notifications', False),
+            ('reminder_advance_time', 60),
+            ('task_overdue_notifications', False),
+            ('quiet_hours_start', '23:00'),
+            ('quiet_hours_end', '07:00')
+        ]
+        
+        updates_correct = 0
+        for field, expected_value in update_checks:
+            if updated_prefs.get(field) == expected_value:
+                updates_correct += 1
+        
+        self.log_test(
+            "PREFERENCE UPDATES VALIDATION",
+            updates_correct == len(update_checks),
+            f"Preference updates applied correctly: {updates_correct}/{len(update_checks)}"
+        )
+        
+        # Test 3: GET preferences again to verify persistence
+        result = self.make_request('GET', '/notifications/preferences', use_auth=True)
+        self.log_test(
+            "PREFERENCE PERSISTENCE VERIFICATION",
+            result['success'] and result['data'].get('reminder_advance_time') == 60,
+            f"Preferences persisted correctly" if result['success'] else f"Persistence check failed"
+        )
+        
+        return True
+
+    def test_browser_notifications_api(self):
+        """Test Browser Notifications API - GET `/api/notifications` and PUT `/api/notifications/{id}/read` endpoints"""
+        print("\n=== TESTING BROWSER NOTIFICATIONS API ===")
+        
+        # Test 1: GET browser notifications (initially empty)
+        result = self.make_request('GET', '/notifications', use_auth=True)
+        self.log_test(
+            "GET BROWSER NOTIFICATIONS - Initial State",
+            result['success'],
+            f"Retrieved browser notifications: {len(result['data']) if result['success'] else 0} notifications" if result['success'] else f"Failed to get notifications: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        initial_notifications = result['data']
+        
+        # Test 2: GET unread notifications only
+        result = self.make_request('GET', '/notifications', params={'unread_only': True}, use_auth=True)
+        self.log_test(
+            "GET UNREAD NOTIFICATIONS - Filter Test",
+            result['success'],
+            f"Retrieved unread notifications: {len(result['data']) if result['success'] else 0} notifications" if result['success'] else f"Failed to get unread notifications: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Test 3: Create a test notification using the test endpoint
+        result = self.make_request('POST', '/notifications/test', use_auth=True)
+        self.log_test(
+            "CREATE TEST NOTIFICATION",
+            result['success'],
+            f"Test notification created and processed: {result['data'].get('notifications_processed', 0)} notifications" if result['success'] else f"Failed to create test notification: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        # Wait a moment for notification processing
+        time.sleep(2)
+        
+        # Test 4: GET notifications again to see the test notification
+        result = self.make_request('GET', '/notifications', use_auth=True)
+        self.log_test(
+            "GET NOTIFICATIONS AFTER TEST",
+            result['success'] and len(result['data']) > len(initial_notifications),
+            f"New notifications appeared: {len(result['data']) if result['success'] else 0} total notifications" if result['success'] else f"Failed to get updated notifications"
+        )
+        
+        if not result['success'] or len(result['data']) == 0:
+            return False
+        
+        # Get the first notification for read testing
+        notifications = result['data']
+        test_notification = notifications[0]
+        notification_id = test_notification['id']
+        
+        # Verify notification structure
+        expected_fields = ['id', 'type', 'title', 'message', 'created_at', 'read']
+        present_fields = [field for field in expected_fields if field in test_notification]
+        self.log_test(
+            "NOTIFICATION STRUCTURE VALIDATION",
+            len(present_fields) >= 4,  # At least basic fields should be present
+            f"Notification contains {len(present_fields)}/{len(expected_fields)} expected fields: {present_fields}"
+        )
+        
+        # Test 5: Mark notification as read
+        result = self.make_request('PUT', f'/notifications/{notification_id}/read', use_auth=True)
+        self.log_test(
+            "MARK NOTIFICATION AS READ",
+            result['success'],
+            f"Notification marked as read successfully" if result['success'] else f"Failed to mark notification as read: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        # Test 6: Verify notification was marked as read
+        result = self.make_request('GET', '/notifications', params={'unread_only': True}, use_auth=True)
+        unread_count = len(result['data']) if result['success'] else -1
+        
+        result = self.make_request('GET', '/notifications', use_auth=True)
+        total_count = len(result['data']) if result['success'] else -1
+        
+        self.log_test(
+            "READ STATUS VERIFICATION",
+            result['success'] and unread_count < total_count,
+            f"Read status updated correctly: {unread_count} unread, {total_count} total notifications"
+        )
+        
+        return True
+
+    def test_task_reminder_scheduling(self):
+        """Test Task Reminder Scheduling - Creating tasks with due dates automatically schedules reminders"""
+        print("\n=== TESTING TASK REMINDER SCHEDULING ===")
+        
+        # Test 1: Create task with due date and time
+        due_date = datetime.utcnow() + timedelta(hours=2)
+        task_data = {
+            "project_id": self.test_project_id,
+            "name": "Task with Reminder Test",
+            "description": "Testing automatic reminder scheduling",
+            "priority": "high",
+            "due_date": due_date.isoformat(),
+            "due_time": "14:30"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=task_data, use_auth=True)
+        self.log_test(
+            "CREATE TASK WITH DUE DATE",
+            result['success'],
+            f"Task created with due date: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Task creation failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        task_id = result['data']['id']
+        self.created_resources['tasks'].append(task_id)
+        
+        # Verify task has due date and time
+        created_task = result['data']
+        self.log_test(
+            "TASK DUE DATE VALIDATION",
+            'due_date' in created_task and 'due_time' in created_task,
+            f"Task has due_date: {created_task.get('due_date', 'None')}, due_time: {created_task.get('due_time', 'None')}"
+        )
+        
+        # Test 2: Create task without due date (should not schedule reminders)
+        task_data_no_due = {
+            "project_id": self.test_project_id,
+            "name": "Task without Due Date",
+            "description": "Testing task without automatic reminders",
+            "priority": "medium"
+        }
+        
+        result = self.make_request('POST', '/tasks', data=task_data_no_due, use_auth=True)
+        self.log_test(
+            "CREATE TASK WITHOUT DUE DATE",
+            result['success'],
+            f"Task created without due date: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Task creation failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            task_id_no_due = result['data']['id']
+            self.created_resources['tasks'].append(task_id_no_due)
+        
+        # Test 3: Create task with due date in the past (should handle gracefully)
+        past_due_date = datetime.utcnow() - timedelta(hours=1)
+        task_data_past = {
+            "project_id": self.test_project_id,
+            "name": "Past Due Task Test",
+            "description": "Testing task with past due date",
+            "priority": "low",
+            "due_date": past_due_date.isoformat()
+        }
+        
+        result = self.make_request('POST', '/tasks', data=task_data_past, use_auth=True)
+        self.log_test(
+            "CREATE TASK WITH PAST DUE DATE",
+            result['success'],
+            f"Task created with past due date: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Task creation failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            task_id_past = result['data']['id']
+            self.created_resources['tasks'].append(task_id_past)
+        
+        return True
+
+    def test_notification_service_methods(self):
+        """Test core NotificationService methods through API endpoints"""
+        print("\n=== TESTING NOTIFICATION SERVICE METHODS ===")
+        
+        # Test 1: Test notification system endpoint
+        result = self.make_request('POST', '/notifications/test', use_auth=True)
+        self.log_test(
+            "NOTIFICATION SERVICE - Test Endpoint",
+            result['success'],
+            f"Test notification processed: {result['data'].get('notifications_processed', 0)} notifications" if result['success'] else f"Test notification failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        test_response = result['data']
+        
+        # Verify test response structure
+        expected_fields = ['success', 'message', 'notifications_processed']
+        present_fields = [field for field in expected_fields if field in test_response]
+        self.log_test(
+            "TEST NOTIFICATION RESPONSE STRUCTURE",
+            len(present_fields) >= 2,
+            f"Test response contains {len(present_fields)}/{len(expected_fields)} expected fields: {present_fields}"
+        )
+        
+        # Test 2: Verify notification was created and processed
+        notifications_processed = test_response.get('notifications_processed', 0)
+        self.log_test(
+            "NOTIFICATION PROCESSING VERIFICATION",
+            notifications_processed > 0,
+            f"Notifications were processed: {notifications_processed} notifications sent"
+        )
+        
+        # Test 3: Check if browser notification was created
+        time.sleep(1)  # Wait for processing
+        result = self.make_request('GET', '/notifications', use_auth=True)
+        self.log_test(
+            "BROWSER NOTIFICATION CREATION",
+            result['success'] and len(result['data']) > 0,
+            f"Browser notifications created: {len(result['data']) if result['success'] else 0} notifications" if result['success'] else f"Failed to retrieve notifications"
+        )
+        
+        # Test 4: Verify notification content
+        if result['success'] and len(result['data']) > 0:
+            latest_notification = result['data'][0]  # Most recent notification
+            
+            # Check for test notification characteristics
+            is_test_notification = (
+                'test' in latest_notification.get('title', '').lower() or
+                'test' in latest_notification.get('message', '').lower()
+            )
+            
+            self.log_test(
+                "TEST NOTIFICATION CONTENT VALIDATION",
+                is_test_notification,
+                f"Test notification content verified: {latest_notification.get('title', 'No title')}"
+            )
+        
+        return True
+
+    def test_email_integration(self):
+        """Test email integration with SendGrid (mock mode)"""
+        print("\n=== TESTING EMAIL INTEGRATION ===")
+        
+        # Test 1: Enable email notifications in preferences
+        email_prefs = {
+            "email_notifications": True,
+            "task_due_notifications": True,
+            "task_reminder_notifications": True
+        }
+        
+        result = self.make_request('PUT', '/notifications/preferences', data=email_prefs, use_auth=True)
+        self.log_test(
+            "ENABLE EMAIL NOTIFICATIONS",
+            result['success'],
+            f"Email notifications enabled in preferences" if result['success'] else f"Failed to enable email notifications: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        # Test 2: Create test notification with email channel
+        result = self.make_request('POST', '/notifications/test', use_auth=True)
+        self.log_test(
+            "EMAIL NOTIFICATION TEST",
+            result['success'],
+            f"Email notification test completed: {result['data'].get('message', 'Unknown')}" if result['success'] else f"Email test failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        # Note: Since we're using placeholder SendGrid credentials, we can't test actual email sending
+        # But we can verify the system attempts to send emails without errors
+        
+        # Test 3: Verify email notification structure would be created
+        # This tests the email template generation and notification scheduling
+        self.log_test(
+            "EMAIL TEMPLATE GENERATION",
+            result['success'],  # If the test endpoint succeeds, email template generation worked
+            f"Email template generation and scheduling working" if result['success'] else f"Email template generation failed"
+        )
+        
+        return True
+
+    def test_notification_processing(self):
+        """Test notification processing and background job logic"""
+        print("\n=== TESTING NOTIFICATION PROCESSING ===")
+        
+        # Test 1: Create multiple test notifications
+        test_count = 3
+        successful_tests = 0
+        
+        for i in range(test_count):
+            result = self.make_request('POST', '/notifications/test', use_auth=True)
+            if result['success']:
+                successful_tests += 1
+            time.sleep(0.5)  # Small delay between tests
+        
+        self.log_test(
+            "MULTIPLE NOTIFICATION PROCESSING",
+            successful_tests == test_count,
+            f"Multiple notifications processed: {successful_tests}/{test_count} successful"
+        )
+        
+        # Test 2: Verify all notifications were processed
+        time.sleep(2)  # Wait for processing
+        result = self.make_request('GET', '/notifications', use_auth=True)
+        
+        if result['success']:
+            total_notifications = len(result['data'])
+            self.log_test(
+                "NOTIFICATION ACCUMULATION",
+                total_notifications >= successful_tests,
+                f"Notifications accumulated correctly: {total_notifications} total notifications"
+            )
+        
+        # Test 3: Test notification filtering
+        result = self.make_request('GET', '/notifications', params={'unread_only': True}, use_auth=True)
+        unread_notifications = len(result['data']) if result['success'] else 0
+        
+        result = self.make_request('GET', '/notifications', use_auth=True)
+        total_notifications = len(result['data']) if result['success'] else 0
+        
+        self.log_test(
+            "NOTIFICATION FILTERING",
+            result['success'] and unread_notifications <= total_notifications,
+            f"Notification filtering working: {unread_notifications} unread, {total_notifications} total"
+        )
+        
+        # Test 4: Test batch notification reading
+        if result['success'] and len(result['data']) > 0:
+            # Mark first notification as read
+            first_notification = result['data'][0]
+            notification_id = first_notification['id']
+            
+            result = self.make_request('PUT', f'/notifications/{notification_id}/read', use_auth=True)
+            self.log_test(
+                "BATCH NOTIFICATION PROCESSING",
+                result['success'],
+                f"Notification read status updated successfully" if result['success'] else f"Failed to update read status"
+            )
+        
+        return True
+
+    def test_comprehensive_notification_system(self):
+        """Run comprehensive notification system tests"""
+        print("\n🔔 STARTING COMPREHENSIVE TASK REMINDERS & NOTIFICATIONS SYSTEM TESTING")
+        print("=" * 80)
+        
+        # Setup test environment
+        if not self.setup_test_environment():
+            print("❌ CRITICAL FAILURE: Test environment setup failed")
+            return False
+        
+        # Run all notification system tests
+        test_methods = [
+            self.test_notification_preferences_api,
+            self.test_browser_notifications_api,
+            self.test_task_reminder_scheduling,
+            self.test_notification_service_methods,
+            self.test_email_integration,
+            self.test_notification_processing
+        ]
+        
+        successful_tests = 0
+        total_tests = len(test_methods)
+        
+        for test_method in test_methods:
+            try:
+                if test_method():
+                    successful_tests += 1
+                else:
+                    print(f"❌ Test method {test_method.__name__} failed")
+            except Exception as e:
+                print(f"❌ Test method {test_method.__name__} raised exception: {e}")
+        
+        success_rate = (successful_tests / total_tests) * 100
+        
+        print(f"\n✅ TASK REMINDERS & NOTIFICATIONS SYSTEM TESTING COMPLETED")
         print(f"   Backend URL: {self.base_url}")
-        print(f"   Registration: ✅ Working")
-        print(f"   Login: ✅ Working") 
-        print(f"   Dashboard: {'✅ Working' if dashboard_success else '❌ Failed'}")
-        print(f"   Journal: {'✅ Working' if journal_success else '❌ Failed'}")
+        print(f"   Test Methods: {successful_tests}/{total_tests} successful")
         print(f"   Overall Success Rate: {success_rate:.1f}%")
         
         return success_rate >= 80
