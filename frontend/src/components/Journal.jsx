@@ -269,6 +269,24 @@ const Journal = () => {
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const response = await journalAPI.getTemplates();
+      setTemplates(response.data);
+    } catch (err) {
+      console.error('Failed to load templates:', err);
+    }
+  };
+
+  const fetchInsights = async () => {
+    try {
+      const response = await journalAPI.getInsights();
+      setInsights(response.data);
+    } catch (err) {
+      console.error('Failed to load insights:', err);
+    }
+  };
+
   const handleCreateEntry = () => {
     setSelectedEntry(null);
     setModalOpen(true);
