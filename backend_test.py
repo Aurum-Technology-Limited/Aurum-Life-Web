@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """
-API CONFIGURATION FIX VERIFICATION - Quick Backend Testing
-Tests the API configuration fix that resolved timeout errors by updating REACT_APP_BACKEND_URL.
+TASK REMINDERS & NOTIFICATIONS SYSTEM BACKEND TESTING
+Comprehensive testing of the Task Reminders & Notifications System implementation.
 
 FOCUS AREAS:
-1. Verify backend API is accessible and responding correctly  
-2. Test user registration with new credentials
-3. Test user login with the registered credentials
-4. Test dashboard API endpoint to ensure it loads without timeouts
-5. Test journal API endpoint to ensure it loads without timeouts
+1. Notification Preferences API - GET/PUT `/api/notifications/preferences` endpoints
+2. Notification Models - NotificationPreference and TaskReminder models validation
+3. Browser Notifications API - GET `/api/notifications` and PUT `/api/notifications/{id}/read` endpoints
+4. Task Reminder Scheduling - Creating tasks with due dates automatically schedules reminders
+5. Notification Service Methods - Core NotificationService methods testing
+6. Test Notification System - POST `/api/notifications/test` endpoint verification
+7. Email Integration - SendGrid integration testing
+8. Notification Processing - Background job logic for processing due reminders
 """
 
 import requests
@@ -19,8 +22,8 @@ from typing import Dict, List, Any
 import uuid
 import time
 
-# Configuration - Using the fixed backend URL
-BACKEND_URL = "http://localhost:8001/api"
+# Configuration - Using the production backend URL from frontend/.env
+BACKEND_URL = "https://task-pillar.preview.emergentagent.com/api"
 DEFAULT_USER_ID = "demo-user-123"
 
 class BackendTester:
