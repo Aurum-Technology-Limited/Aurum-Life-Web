@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """
-GOOGLE OAUTH AUTHENTICATION TESTING - Comprehensive Integration Testing
-Tests the newly implemented Google OAuth Authentication system with focus on:
+API CONFIGURATION FIX VERIFICATION - Quick Backend Testing
+Tests the API configuration fix that resolved timeout errors by updating REACT_APP_BACKEND_URL.
 
 FOCUS AREAS:
-1. Google OAuth endpoint testing (/api/auth/google)
-2. User model compatibility with new Google fields (google_id, profile_picture)
-3. GoogleAuthService methods testing (mock scenario)
-4. Database operations for Google-authenticated users
-5. JWT integration for Google OAuth users
-6. Existing authentication compatibility verification
-7. Security and error handling validation
+1. Verify backend API is accessible and responding correctly  
+2. Test user registration with new credentials
+3. Test user login with the registered credentials
+4. Test dashboard API endpoint to ensure it loads without timeouts
+5. Test journal API endpoint to ensure it loads without timeouts
 """
 
 import requests
@@ -21,8 +19,8 @@ from typing import Dict, List, Any
 import uuid
 import time
 
-# Configuration
-BACKEND_URL = "https://74d67cb4-ff0d-4013-80ba-50f2263912cf.preview.emergentagent.com/api"
+# Configuration - Using the fixed backend URL
+BACKEND_URL = "http://localhost:8001/api"
 DEFAULT_USER_ID = "demo-user-123"
 
 class BackendTester:
