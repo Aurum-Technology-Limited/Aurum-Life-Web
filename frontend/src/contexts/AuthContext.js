@@ -18,10 +18,12 @@ export const AuthProvider = ({ children }) => {
   const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || '';
 
   useEffect(() => {
+    console.log('🔄 AuthContext - useEffect triggered, token:', token ? 'present' : 'null');
     if (token) {
       // Verify token and get user info
-      fetchCurrentUser();
+      fetchCurrentUser(token);
     } else {
+      console.log('🔄 AuthContext - No token, setting loading to false');
       setLoading(false);
     }
   }, [token]);
