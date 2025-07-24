@@ -178,14 +178,20 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
               </button>
             </div>
             
-            {/* Level display in top right */}
-            {user && (
-              <div className="ml-auto inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20">
-                <span className="text-yellow-400 font-medium">Level {user.level}</span>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-300">{user.total_points} points</span>
-              </div>
-            )}
+            {/* Header actions */}
+            <div className="ml-auto flex items-center space-x-4">
+              {/* Notification Manager */}
+              <NotificationManager />
+              
+              {/* Level display */}
+              {user && (
+                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20">
+                  <span className="text-yellow-400 font-medium">Level {user.level}</span>
+                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-300">{user.total_points} points</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         
