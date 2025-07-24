@@ -1228,6 +1228,13 @@ async def startup_db_client():
     except Exception as e:
         logger.error(f"❌ Error initializing journal templates: {e}")
     
+    # Fix existing journal entries (migration)
+    try:
+        await JournalService.fix_existing_journal_entries()
+        logger.info("✅ Journal entries migration check completed")
+    except Exception as e:
+        logger.error(f"❌ Error in journal entries migration: {e}")
+    
     logger.info("🚀 Aurum Life API started successfully")
 
 @app.on_event("shutdown")
