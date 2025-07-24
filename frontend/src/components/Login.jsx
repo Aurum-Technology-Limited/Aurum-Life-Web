@@ -34,10 +34,20 @@ const Login = ({ switchToRegister }) => {
     setLoading(true);
     setError('');
 
+    console.log('🔐 Login form submitted with:', { email: loginData.email, password: loginData.password ? '[HIDDEN]' : 'EMPTY' });
+
     const result = await login(loginData.email, loginData.password);
     
-    if (!result.success) {
+    console.log('🔐 Login result:', result);
+    
+    if (!result) {
+      console.error('🔐 Login returned undefined result');
+      setError('Login failed - no response received');
+    } else if (!result.success) {
+      console.error('🔐 Login failed:', result.error);
       setError(result.error);
+    } else {
+      console.log('🔐 Login successful!');
     }
     
     setLoading(false);
