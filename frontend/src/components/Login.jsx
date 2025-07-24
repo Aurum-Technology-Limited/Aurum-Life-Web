@@ -87,7 +87,6 @@ const Login = ({ switchToRegister }) => {
       if (response.data) {
         // Store auth data using the same keys as regular login
         localStorage.setItem('auth_token', response.data.access_token);
-        setUser(response.data.user);
         
         // The AuthContext will automatically detect the token and authenticate
         window.location.reload();
