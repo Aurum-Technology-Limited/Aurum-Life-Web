@@ -949,6 +949,25 @@ class TaskService:
         
         task_dict = task.dict()
         await create_document("tasks", task_dict)
+        
+        # Schedule reminders if task has due date
+        if task.due_date and not task.completed:
+            try:
+                # Import here to avoid circular imports
+                from notification_service import notification_service
+                
+                await notification_service.schedule_task_reminders_for_task(
+                    user_id=user_id,
+                    task_id=task.id,
+                    task_name=task.name,
+                    due_date=task.due_date,
+                    due_time=task.due_time,
+                    project_name=project.get("name")
+                )
+            except Exception as e:
+                # Don't fail task creation if notification scheduling fails
+                print(f"Warning: Failed to schedule reminders for task {task.id}: {e}")
+        
         return task
 
     @staticmethod
