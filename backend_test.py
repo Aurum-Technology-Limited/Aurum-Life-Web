@@ -1861,7 +1861,7 @@ class BackendTester:
                 "name": f"Other Test Project {uuid.uuid4().hex[:8]}",
                 "description": "Another project for testing validation",
                 "area_id": area_id,
-                "status": "active"
+                "status": "In Progress"
             }
             
             result = self.make_request('POST', '/projects', data=other_project_data, use_auth=True)
