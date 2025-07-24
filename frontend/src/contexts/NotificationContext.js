@@ -23,6 +23,8 @@ export const NotificationProvider = ({ children }) => {
   const [preferences, setPreferences] = useState(null);
   const [browserPermission, setBrowserPermission] = useState('default');
   const [loading, setLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('disconnected'); // 'connected', 'connecting', 'disconnected'
+  const [pollInterval, setPollInterval] = useState(null);
 
   // Browser notification permission management
   const requestBrowserPermission = useCallback(async () => {
