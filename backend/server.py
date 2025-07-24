@@ -89,6 +89,35 @@ async def login_user(user_credentials: UserLogin):
         logger.error(f"Error during login: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.post("/auth/google", response_model=GoogleAuthResponse)
+async def google_auth(auth_request: GoogleAuthRequest):
+    """Authenticate user with Google OAuth"""
+    try:
+        # Verify the Google token
+        google_user_info = await GoogleAuthService.verify_google_token(auth_request.token)
+        if not google_user_info:
+            raise HTTPException(status_code=401, detail="Invalid Google token")
+        
+        # Find or create user
+        user = await GoogleAuthService.authenticate_or_create_user(google_user_info)
+        if not user:
+            raise HTTPException(status_code=500, detail="Failed to authenticate user")
+        
+        # Create JWT token
+        token_data = {"sub": user.email}
+        access_token = create_access_token(token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        
+        return GoogleAuthResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user=user
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Google auth error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_active_user)):
     """Get current user information"""
