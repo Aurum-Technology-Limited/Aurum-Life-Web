@@ -94,6 +94,9 @@ function App() {
       case 'achievements':
         console.log('🏆 Rendering Achievements component');
         return <Achievements {...props} />;
+      case 'notification-settings':
+        console.log('🔔 Rendering NotificationSettings component');
+        return <NotificationSettings {...props} />;
       case 'profile':
         console.log('👤 Rendering Profile component');
         return <Profile {...props} />;
