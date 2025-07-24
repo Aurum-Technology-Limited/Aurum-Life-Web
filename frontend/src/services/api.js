@@ -28,6 +28,20 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle 401 Unauthorized errors
+    if (error.response?.status === 401) {
+      console.warn('Authentication failed - clearing token and redirecting to login');
+      
+      // Clear invalid token
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      
+      // Redirect to login page
+      window.location.href = '/login';
+      
+      return Promise.reject(new Error('Authentication failed. Please log in again.'));
+    }
+    
     console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }
