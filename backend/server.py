@@ -12,6 +12,7 @@ from datetime import timedelta
 from database import connect_to_mongo, close_mongo_connection
 from models import *
 from services import *
+from notification_service import notification_service
 from auth import create_access_token, get_current_active_user, ACCESS_TOKEN_EXPIRE_MINUTES, verify_password
 
 ROOT_DIR = Path(__file__).parent
