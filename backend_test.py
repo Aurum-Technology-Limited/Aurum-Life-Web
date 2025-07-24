@@ -71,7 +71,7 @@ class BackendTester:
     def make_request(self, method: str, endpoint: str, data: Dict = None, params: Dict = None, use_auth: bool = False) -> Dict:
         """Make HTTP request with error handling and optional authentication"""
         url = f"{self.base_url}{endpoint}"
-        headers = {}
+        headers = {"Content-Type": "application/json"}
         
         # Add authentication header if token is available and requested
         if use_auth and self.auth_token:
@@ -79,28 +79,43 @@ class BackendTester:
         
         try:
             if method.upper() == 'GET':
-                response = self.session.get(url, params=params, headers=headers)
+                response = self.session.get(url, params=params, headers=headers, timeout=30)
             elif method.upper() == 'POST':
-                response = self.session.post(url, json=data, params=params, headers=headers)
+                response = self.session.post(url, json=data, params=params, headers=headers, timeout=30)
             elif method.upper() == 'PUT':
-                response = self.session.put(url, json=data, params=params, headers=headers)
+                response = self.session.put(url, json=data, params=params, headers=headers, timeout=30)
             elif method.upper() == 'DELETE':
-                response = self.session.delete(url, params=params, headers=headers)
+                response = self.session.delete(url, params=params, headers=headers, timeout=30)
             else:
                 raise ValueError(f"Unsupported method: {method}")
+            
+            # Try to parse JSON response
+            try:
+                response_data = response.json() if response.content else {}
+            except:
+                response_data = {"raw_content": response.text[:500] if response.text else "No content"}
                 
             return {
                 'success': response.status_code < 400,
                 'status_code': response.status_code,
-                'data': response.json() if response.content else {},
-                'response': response
+                'data': response_data,
+                'response': response,
+                'error': f"HTTP {response.status_code}: {response_data}" if response.status_code >= 400 else None
             }
             
         except requests.exceptions.RequestException as e:
+            error_msg = f"Request failed: {str(e)}"
+            if hasattr(e, 'response') and e.response is not None:
+                try:
+                    error_data = e.response.json()
+                    error_msg += f" - Response: {error_data}"
+                except:
+                    error_msg += f" - Response: {e.response.text[:200]}"
+            
             return {
                 'success': False,
-                'error': str(e),
-                'status_code': getattr(e.response, 'status_code', None),
+                'error': error_msg,
+                'status_code': getattr(e.response, 'status_code', None) if hasattr(e, 'response') else None,
                 'data': {},
                 'response': getattr(e, 'response', None)
             }
