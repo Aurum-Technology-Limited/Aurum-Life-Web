@@ -887,6 +887,18 @@ frontend:
           agent: "main"
           comment: "Fixed Google OAuth button width alignment issue in Login component. Changed hardcoded width='400' to width='100%' for login form Google button, added width='100%' to register form Google button, removed redundant wrapper div. Both Google buttons now match the full width of other form elements."
 
+  - task: "Task Reminders & Notifications System - Backend Foundation"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/notification_service.py, /app/backend/models.py, /app/backend/server.py, /app/backend/scheduler.py, /app/backend/services.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented comprehensive Task Reminders & Notifications System backend foundation. Created NotificationService with email/browser notification support, notification models (NotificationPreference, TaskReminder), API endpoints for preferences and notifications, scheduler integration for processing reminders every 5 minutes, and automatic reminder scheduling in task creation. Features include user preferences, advance reminders, overdue detection, quiet hours, and retry logic."
+
   - task: "Critical Application Errors Fix"
     implemented: true
     working: true
