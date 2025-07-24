@@ -109,11 +109,13 @@ function App() {
       <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
         <AuthProvider>
           <DataProvider>
-            <DndProvider backend={HTML5Backend}>
-              <div className="App">
-                <PasswordReset />
-              </div>
-            </DndProvider>
+            <NotificationProvider>
+              <DndProvider backend={HTML5Backend}>
+                <div className="App">
+                  <PasswordReset />
+                </div>
+              </DndProvider>
+            </NotificationProvider>
           </DataProvider>
         </AuthProvider>
       </GoogleOAuthProvider>
@@ -124,18 +126,20 @@ function App() {
     <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
       <AuthProvider>
         <DataProvider>
-          <DndProvider backend={HTML5Backend}>
-            <div className="App">
-              <ProtectedRoute>
-                <Layout 
-                  activeSection={activeSection} 
-                  onSectionChange={handleSectionChange}
-                >
-                  {renderActiveSection()}
-                </Layout>
-              </ProtectedRoute>
-            </div>
-          </DndProvider>
+          <NotificationProvider>
+            <DndProvider backend={HTML5Backend}>
+              <div className="App">
+                <ProtectedRoute>
+                  <Layout 
+                    activeSection={activeSection} 
+                    onSectionChange={handleSectionChange}
+                  >
+                    {renderActiveSection()}
+                  </Layout>
+                </ProtectedRoute>
+              </div>
+            </DndProvider>
+          </NotificationProvider>
         </DataProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
