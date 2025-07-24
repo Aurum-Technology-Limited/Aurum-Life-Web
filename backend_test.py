@@ -36,16 +36,18 @@ class BackendTester:
             'areas': [],
             'projects': [],
             'tasks': [],
-            'users': []
+            'users': [],
+            'notifications': [],
+            'reminders': []
         }
         self.auth_token = None
-        self.test_user_email = f"testuser_{uuid.uuid4().hex[:8]}@aurumlife.com"
-        self.test_user_password = "SecurePassword123!"
+        self.test_user_email = f"notiftest_{uuid.uuid4().hex[:8]}@aurumlife.com"
+        self.test_user_password = "NotificationTest123!"
         self.test_user_data = {
-            "username": f"testuser_{uuid.uuid4().hex[:8]}",
+            "username": f"notiftest_{uuid.uuid4().hex[:8]}",
             "email": self.test_user_email,
-            "first_name": "John",
-            "last_name": "Doe",
+            "first_name": "Notification",
+            "last_name": "Tester",
             "password": self.test_user_password
         }
         
