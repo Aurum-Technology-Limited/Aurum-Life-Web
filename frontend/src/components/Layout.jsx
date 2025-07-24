@@ -38,6 +38,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
     { id: 'learning', name: 'Learning', icon: BookOpen, description: 'Courses & growth' },
     { id: 'ai-coach', name: 'AI Coach', icon: MessageCircle, description: 'Personal guidance' },
     { id: 'achievements', name: 'Achievements', icon: Trophy, description: 'Badges & rewards' },
+    { id: 'notification-settings', name: 'Notifications', icon: Settings, description: 'Notification preferences' },
     { id: 'profile', name: 'Profile', icon: User, description: 'Account settings' }
   ];
 
