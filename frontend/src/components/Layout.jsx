@@ -18,6 +18,7 @@ import {
   Mountain
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import NotificationManager from './NotificationManager';
 
 const Layout = ({ children, activeSection, onSectionChange }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
