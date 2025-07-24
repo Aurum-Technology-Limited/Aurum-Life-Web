@@ -79,9 +79,7 @@ const NotificationSettings = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // await updatePreferences(formData);
-      // Mock save for testing
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updatePreferences(formData);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -94,10 +92,7 @@ const NotificationSettings = () => {
   const handleTestNotification = async () => {
     setTestLoading(true);
     try {
-      // await sendTestNotification();
-      // Mock test notification for testing
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('Test notification sent!');
+      await sendTestNotification();
     } catch (error) {
       console.error('Error sending test notification:', error);
     } finally {
@@ -106,12 +101,10 @@ const NotificationSettings = () => {
   };
 
   const handleRequestBrowserPermission = async () => {
-    // const permission = await requestBrowserPermission();
-    // if (permission === 'granted') {
-    //   handleInputChange('browser_notifications', true);
-    // }
-    // Mock for testing
-    alert('Browser permission requested!');
+    const permission = await requestBrowserPermission();
+    if (permission === 'granted') {
+      handleInputChange('browser_notifications', true);
+    }
   };
 
   return (
