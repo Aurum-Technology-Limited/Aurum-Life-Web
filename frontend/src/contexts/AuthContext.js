@@ -51,8 +51,6 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log('🔐 Starting login process for:', email);
-      
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -61,44 +59,35 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log('🔐 Login API response status:', response.status);
-
       if (response.ok) {
         const data = await response.json();
         const authToken = data.access_token;
         
-        console.log('🔐 Token received, saving to localStorage');
         localStorage.setItem('auth_token', authToken);
         setToken(authToken);
         
         // Fetch user data
-        console.log('🔐 Fetching user data...');
         const userResponse = await fetch(`${API_BASE_URL}/api/auth/me`, {
           headers: {
             'Authorization': `Bearer ${authToken}`,
           },
         });
 
-        console.log('🔐 User data API response status:', userResponse.status);
-
         if (userResponse.ok) {
           const userData = await userResponse.json();
-          console.log('🔐 User data received:', userData);
           setUser(userData);
           return { success: true };
         } else {
           // Handle user data fetch failure
-          console.error('🔐 Failed to fetch user data after login');
           const userErrorData = await userResponse.json();
           return { success: false, error: userErrorData.detail || 'Failed to fetch user data' };
         }
       } else {
         const errorData = await response.json();
-        console.error('🔐 Login failed:', errorData);
         return { success: false, error: errorData.detail || 'Login failed' };
       }
     } catch (error) {
-      console.error('🔐 Login error:', error);
+      console.error('Login error:', error);
       return { success: false, error: 'Network error' };
     }
   };
