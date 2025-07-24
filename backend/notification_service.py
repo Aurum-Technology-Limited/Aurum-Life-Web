@@ -409,6 +409,33 @@ class NotificationService:
                                    {"read": True})
     
     @staticmethod
+    async def mark_all_notifications_read(user_id: str) -> int:
+        """Mark all browser notifications as read for a user"""
+        from database import get_collection
+        
+        collection = await get_collection("browser_notifications")
+        result = await collection.update_many(
+            {"user_id": user_id, "read": False},
+            {"$set": {"read": True}}
+        )
+        return result.modified_count
+    
+    @staticmethod
+    async def delete_notification(user_id: str, notification_id: str) -> bool:
+        """Delete a specific browser notification"""
+        return await delete_document("browser_notifications",
+                                   {"id": notification_id, "user_id": user_id})
+    
+    @staticmethod
+    async def clear_all_notifications(user_id: str) -> int:
+        """Clear all browser notifications for a user"""
+        from database import get_collection
+        
+        collection = await get_collection("browser_notifications")
+        result = await collection.delete_many({"user_id": user_id})
+        return result.deleted_count
+    
+    @staticmethod
     async def schedule_task_reminders_for_task(user_id: str, task_id: str, task_name: str, 
                                              due_date: datetime, due_time: Optional[str] = None,
                                              project_name: Optional[str] = None) -> List[str]:
