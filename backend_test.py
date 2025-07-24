@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-TASK REMINDERS & NOTIFICATIONS SYSTEM BACKEND TESTING
-Comprehensive testing of the Task Reminders & Notifications System implementation.
+AUTHENTICATION AND PROJECTS API TESTING
+Quick authentication and projects API testing to diagnose the "Failed to load projects" issue.
 
 FOCUS AREAS:
-1. Notification Preferences API - GET/PUT `/api/notifications/preferences` endpoints
-2. Notification Models - NotificationPreference and TaskReminder models validation
-3. Browser Notifications API - GET `/api/notifications` and PUT `/api/notifications/{id}/read` endpoints
-4. Task Reminder Scheduling - Creating tasks with due dates automatically schedules reminders
-5. Notification Service Methods - Core NotificationService methods testing
-6. Test Notification System - POST `/api/notifications/test` endpoint verification
-7. Email Integration - SendGrid integration testing
-8. Notification Processing - Background job logic for processing due reminders
+1. User Registration - Test /api/auth/register with new user data
+2. User Login - Test /api/auth/login with registered credentials  
+3. Authentication Token - Verify JWT token is generated correctly
+4. Projects API with Authentication - Test /api/projects endpoint with valid auth token
+5. Project Data Retrieval - Ensure project data is returned correctly
+6. Error Investigation - Check for any 401 authentication errors
+
+Context: The user is experiencing "Failed to load projects" error in the frontend. 
+The troubleshoot agent identified this as an authentication issue. The frontend shows 
+"Incorrect email or password" errors and there are 401 errors in the console.
 """
 
 import requests
