@@ -124,6 +124,18 @@ class BackendTester:
         """Setup test environment with user authentication and basic resources"""
         print("\n=== SETTING UP TEST ENVIRONMENT ===")
         
+        # Test 0: Basic connectivity test
+        result = self.make_request('GET', '/health')
+        self.log_test(
+            "BASIC CONNECTIVITY TEST",
+            result['success'],
+            f"Backend API accessible at {self.base_url}" if result['success'] else f"Backend API not accessible: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            print("❌ CRITICAL FAILURE: Cannot connect to backend API")
+            return False
+        
         # Test 1: User Registration
         result = self.make_request('POST', '/auth/register', data=self.test_user_data)
         self.log_test(
@@ -133,6 +145,7 @@ class BackendTester:
         )
         
         if not result['success']:
+            print(f"❌ Registration failed with status {result.get('status_code')}: {result.get('error')}")
             return False
         
         user_data = result['data']
@@ -152,6 +165,7 @@ class BackendTester:
         )
         
         if not result['success']:
+            print(f"❌ Login failed with status {result.get('status_code')}: {result.get('error')}")
             return False
         
         # Store auth token
@@ -174,6 +188,7 @@ class BackendTester:
         )
         
         if not result['success']:
+            print(f"❌ Area creation failed with status {result.get('status_code')}: {result.get('error')}")
             return False
         
         area_id = result['data']['id']
@@ -195,6 +210,7 @@ class BackendTester:
         )
         
         if not result['success']:
+            print(f"❌ Project creation failed with status {result.get('status_code')}: {result.get('error')}")
             return False
         
         project_id = result['data']['id']
