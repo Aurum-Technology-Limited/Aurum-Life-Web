@@ -274,10 +274,12 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     return new Date(dueDate) < new Date();
   };
 
-  // Project List View Component
+  // Project List View Component with Enhanced Drag & Drop
   const ProjectListView = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
     const [showTaskModal, setShowTaskModal] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
+    const [optimisticTasks, setOptimisticTasks] = useState([]);
+    const [dragError, setDragError] = useState(null);
     const [taskFormData, setTaskFormData] = useState({
       name: '',
       description: '',
@@ -285,6 +287,143 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
       due_date: '',
       status: 'todo'
     });
+
+    // Use optimistic tasks if available, otherwise use props tasks
+    const currentTasks = optimisticTasks.length > 0 ? optimisticTasks : (tasks || []);
+
+    // Draggable Task Item Component for List View
+    const DraggableTaskItem = ({ task, index, moveTask }) => {
+      const [{ isDragging }, drag] = useDrag({
+        type: 'project-list-task',
+        item: { id: task.id, index },
+        collect: (monitor) => ({
+          isDragging: monitor.isDragging(),
+        }),
+      });
+
+      const [, drop] = useDrop({
+        accept: 'project-list-task',
+        hover: (draggedItem) => {
+          if (draggedItem.index !== index) {
+            moveTask(draggedItem.index, index);
+            draggedItem.index = index;
+          }
+        },
+      });
+
+      const getPriorityColor = (priority) => {
+        switch (priority) {
+          case 'high': return 'text-red-400 bg-red-400/10';
+          case 'medium': return 'text-yellow-400 bg-yellow-400/10';
+          case 'low': return 'text-green-400 bg-green-400/10';
+          default: return 'text-gray-400 bg-gray-400/10';
+        }
+      };
+
+      return (
+        <div
+          ref={(node) => drag(drop(node))}
+          className={`bg-gray-900/50 border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition-all duration-200 cursor-move ${
+            isDragging ? 'opacity-50 scale-105' : ''
+          }`}
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex items-start space-x-3 flex-1">
+              <button
+                onClick={() => handleTaskToggle(task.id, !task.completed)}
+                className="mt-1 text-yellow-400 hover:text-yellow-300 transition-colors"
+              >
+                {task.completed ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  <Circle className="h-5 w-5" />
+                )}
+              </button>
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <h4 className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>
+                    {task.name}
+                  </h4>
+                  <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(task.priority)}`}>
+                    {task.priority}
+                  </span>
+                </div>
+                {task.description && (
+                  <p className={`text-sm mb-2 ${task.completed ? 'text-gray-600' : 'text-gray-400'}`}>
+                    {task.description}
+                  </p>
+                )}
+                <div className="flex items-center space-x-4 text-xs text-gray-500">
+                  {task.due_date && (
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{new Date(task.due_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  <span className="capitalize">{task.status?.replace('_', ' ') || 'todo'}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <GripVertical className="h-4 w-4 text-gray-500" />
+              <button
+                onClick={() => {
+                  setEditingTask(task);
+                  setTaskFormData({
+                    name: task.name,
+                    description: task.description || '',
+                    priority: task.priority,
+                    due_date: task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '',
+                    status: task.status
+                  });
+                  setShowTaskModal(true);
+                }}
+                className="p-1 text-gray-400 hover:text-blue-400 hover:bg-gray-800 rounded transition-colors"
+                title="Edit Task"
+              >
+                <Edit2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => handleTaskDelete(task.id)}
+                className="p-1 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded transition-colors"
+                title="Delete Task"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Handle task reordering with optimistic updates
+    const moveTask = (fromIndex, toIndex) => {
+      if (!currentTasks || fromIndex === toIndex) return;
+
+      const newTasks = [...currentTasks];
+      const [movedTask] = newTasks.splice(fromIndex, 1);
+      newTasks.splice(toIndex, 0, movedTask);
+
+      // Optimistic update
+      setOptimisticTasks(newTasks);
+
+      // Update backend
+      const taskIds = newTasks.map(task => task.id);
+      projectsAPI.reorderProjectTasks(project.id, taskIds)
+        .then(() => {
+          onTaskUpdate(); // Refresh data
+          setOptimisticTasks([]);
+          setDragError(null);
+        })
+        .catch(err => {
+          console.error('Error reordering tasks:', err);
+          setOptimisticTasks([]); // Revert optimistic update
+          setDragError('Failed to reorder tasks. Please try again.');
+          
+          // Clear error after 5 seconds
+          setTimeout(() => setDragError(null), 5000);
+        });
+    };
 
     const handleTaskSubmit = async (e) => {
       e.preventDefault();
@@ -332,128 +471,69 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
       }
     };
 
-    const getPriorityColor = (priority) => {
-      switch (priority) {
-        case 'high': return 'text-red-400 bg-red-400/10';
-        case 'medium': return 'text-yellow-400 bg-yellow-400/10';
-        case 'low': return 'text-green-400 bg-green-400/10';
-        default: return 'text-gray-400 bg-gray-400/10';
-      }
-    };
-
     return (
-      <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={onBack}
-                className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div>
-                <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-                  {project?.name}
-                </h1>
-                <p className="text-gray-400 mt-1">List View</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowTaskModal(true)}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors"
-              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Task</span>
-            </button>
-          </div>
-
-          {/* Tasks List */}
-          <div className="space-y-4">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-pulse text-gray-400">Loading tasks...</div>
-              </div>
-            ) : tasks.length === 0 ? (
-              <div className="text-center py-12">
-                <CheckCircle2 className="mx-auto h-16 w-16 text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-400 mb-2">No tasks yet</h3>
-                <p className="text-gray-500 mb-4">Create your first task to get started</p>
-              </div>
-            ) : (
-              tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition-colors"
+      <DndProvider backend={HTML5Backend}>
+        <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+          <div className="max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={onBack}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3 flex-1">
-                      <button
-                        onClick={() => handleTaskToggle(task.id, !task.completed)}
-                        className="mt-1 text-yellow-400 hover:text-yellow-300 transition-colors"
-                      >
-                        {task.completed ? (
-                          <CheckCircle2 className="h-5 w-5" />
-                        ) : (
-                          <Circle className="h-5 w-5" />
-                        )}
-                      </button>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h4 className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>
-                            {task.name}
-                          </h4>
-                          <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(task.priority)}`}>
-                            {task.priority}
-                          </span>
-                        </div>
-                        {task.description && (
-                          <p className={`text-sm mb-2 ${task.completed ? 'text-gray-600' : 'text-gray-400'}`}>
-                            {task.description}
-                          </p>
-                        )}
-                        <div className="flex items-center space-x-4 text-xs text-gray-500">
-                          {task.due_date && (
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>{new Date(task.due_date).toLocaleDateString()}</span>
-                            </div>
-                          )}
-                          <span className="capitalize">{task.status?.replace('_', ' ') || 'todo'}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => {
-                          setEditingTask(task);
-                          setTaskFormData({
-                            name: task.name,
-                            description: task.description || '',
-                            priority: task.priority || 'medium',
-                            due_date: task.due_date || '',
-                            status: task.status || 'todo'
-                          });
-                          setShowTaskModal(true);
-                        }}
-                        className="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-800 rounded-lg transition-colors"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleTaskDelete(task.id)}
-                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div>
+                  <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+                    {project?.name}
+                  </h1>
+                  <p className="text-gray-400 mt-1">List View - Drag to reorder tasks</p>
                 </div>
-              ))
+              </div>
+              <button
+                onClick={() => setShowTaskModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors"
+                style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Task</span>
+              </button>
+            </div>
+
+            {/* Drag Error Display */}
+            {dragError && (
+              <div className="bg-orange-900/20 border border-orange-600 rounded-lg p-4 mb-6">
+                <div className="flex items-center">
+                  <AlertCircle className="h-5 w-5 text-orange-400 mr-2" />
+                  <span className="text-orange-400">{dragError}</span>
+                </div>
+              </div>
             )}
-          </div>
+
+            {/* Enhanced Tasks List with Drag & Drop */}
+            <div className="space-y-4">
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="animate-pulse text-gray-400">Loading tasks...</div>
+                </div>
+              ) : currentTasks.length === 0 ? (
+                <div className="text-center py-12">
+                  <CheckCircle2 className="mx-auto h-16 w-16 text-gray-600 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-400 mb-2">No tasks yet</h3>
+                  <p className="text-gray-500 mb-4">Create your first task to get started</p>
+                </div>
+              ) : (
+                currentTasks.map((task, index) => (
+                  <DraggableTaskItem
+                    key={task.id}
+                    task={task}
+                    index={index}
+                    moveTask={moveTask}
+                  />
+                ))
+              )}
+            </div>
 
           {/* Task Modal */}
           {showTaskModal && (
