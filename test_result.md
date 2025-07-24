@@ -887,6 +887,21 @@ frontend:
           agent: "main"
           comment: "Fixed Google OAuth button width alignment issue in Login component. Changed hardcoded width='400' to width='100%' for login form Google button, added width='100%' to register form Google button, removed redundant wrapper div. Both Google buttons now match the full width of other form elements."
 
+  - task: "Critical Application Errors Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/.env"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "🛠️ CRITICAL ERRORS FIXED - Application Errors Resolved Successfully! Fixed multiple critical issues: 1) API Configuration Fix - Updated REACT_APP_BACKEND_URL from hardcoded preview URL to http://localhost:8001, eliminating 'timeout of 10000ms exceeded' errors in Dashboard and Journal. 2) WebSocket Configuration - Removed WDS_SOCKET_PORT=443 causing connection failures. 3) Environment Cleanup - Fixed frontend .env. Backend testing confirms 94.1% success rate with all core endpoints working without timeouts."
+        - working: true
+          agent: "testing"  
+          comment: "✅ API Configuration Fix Verification - Backend API accessible and responding correctly with 94.1% success rate. User authentication flow working properly (registration, login, JWT tokens). Dashboard and Journal APIs load without timeout errors. The fix successfully resolved the critical 'timeout of 10000ms exceeded' errors."
+
   - task: "Enhanced Drag & Drop for Project Lists Implementation"
     implemented: true
     working: true
