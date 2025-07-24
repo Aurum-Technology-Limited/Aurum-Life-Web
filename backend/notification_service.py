@@ -411,14 +411,18 @@ class NotificationService:
     @staticmethod
     async def mark_all_notifications_read(user_id: str) -> int:
         """Mark all browser notifications as read for a user"""
-        from database import get_collection
-        
-        collection = await get_collection("browser_notifications")
-        result = await collection.update_many(
-            {"user_id": user_id, "read": False},
-            {"$set": {"read": True}}
-        )
-        return result.modified_count
+        try:
+            from database import get_collection
+            
+            collection = await get_collection("browser_notifications")
+            result = await collection.update_many(
+                {"user_id": user_id, "read": False},
+                {"$set": {"read": True}}
+            )
+            return result.modified_count
+        except Exception as e:
+            logger.error(f"Error marking notifications as read for user {user_id}: {e}")
+            return 0
     
     @staticmethod
     async def delete_notification(user_id: str, notification_id: str) -> bool:
