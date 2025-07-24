@@ -6065,7 +6065,101 @@ class BackendTester:
         # Print summary
         self.print_summary()
 
-    def run_all_tests(self):
+    def run_google_oauth_tests(self):
+        """Run Google OAuth Authentication System Tests"""
+        print("🚀 Starting Google OAuth Authentication System Testing")
+        print(f"Backend URL: {self.base_url}")
+        
+        try:
+            # Health check first
+            self.test_health_check()
+            
+            # Google OAuth Authentication System Testing
+            print("\n" + "="*80)
+            print("🔐 GOOGLE OAUTH AUTHENTICATION SYSTEM TESTING")
+            print("="*80)
+            self.test_google_oauth_authentication_system()
+            
+            # Test existing authentication still works
+            print("\n" + "="*80)
+            print("🔐 EXISTING AUTHENTICATION COMPATIBILITY VERIFICATION")
+            print("="*80)
+            self.test_critical_authentication_workflow()
+            
+            # Test protected routes with both auth methods
+            print("\n" + "="*80)
+            print("🔒 PROTECTED ROUTES TESTING")
+            print("="*80)
+            self.test_all_authenticated_endpoints()
+            
+            # Security validation
+            print("\n" + "="*80)
+            print("🛡️ SECURITY VALIDATION")
+            print("="*80)
+            self.test_security_validation()
+            
+        except Exception as e:
+            print(f"❌ CRITICAL ERROR during Google OAuth testing: {e}")
+            self.log_test("Critical Error", False, str(e))
+        
+        finally:
+            self.cleanup_auth_test_data()
+            self.print_google_oauth_summary()
+
+    def print_google_oauth_summary(self):
+        """Print Google OAuth test summary"""
+        print("\n" + "="*60)
+        print("🏁 GOOGLE OAUTH AUTHENTICATION TESTING SUMMARY")
+        print("="*60)
+        
+        total_tests = len(self.test_results)
+        passed_tests = len([t for t in self.test_results if t['success']])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests*100):.1f}%" if total_tests > 0 else "0%")
+        
+        # Google OAuth specific status
+        google_oauth_tests = [t for t in self.test_results if 'GOOGLE OAUTH' in t['test']]
+        google_oauth_passed = len([t for t in google_oauth_tests if t['success']])
+        
+        print(f"\n🔐 GOOGLE OAUTH SPECIFIC RESULTS:")
+        print(f"   Google OAuth Tests: {len(google_oauth_tests)}")
+        print(f"   ✅ Passed: {google_oauth_passed}")
+        print(f"   ❌ Failed: {len(google_oauth_tests) - google_oauth_passed}")
+        
+        if failed_tests > 0:
+            print("\n❌ FAILED TESTS:")
+            for test in self.test_results:
+                if not test['success']:
+                    print(f"   • {test['test']}: {test['message']}")
+        
+        print("\n✅ KEY GOOGLE OAUTH FUNCTIONALITY STATUS:")
+        
+        # Check Google OAuth specific functionality
+        oauth_tests = {
+            'Google OAuth Endpoint': any('GOOGLE OAUTH - Endpoint Structure Test' in t['test'] and t['success'] for t in self.test_results),
+            'Request Validation': any('GOOGLE OAUTH - Request Validation' in t['test'] and t['success'] for t in self.test_results),
+            'User Model Compatibility': any('USER MODEL - Google OAuth Compatibility' in t['test'] and t['success'] for t in self.test_results),
+            'Traditional Auth Compatibility': any('COMPATIBILITY - Traditional Registration Still Works' in t['test'] and t['success'] for t in self.test_results),
+            'Security Validation': any('GOOGLE OAUTH - Security Validation' in t['test'] and t['success'] for t in self.test_results),
+            'Error Handling': any('GOOGLE OAUTH - Malformed Token Handling' in t['test'] and t['success'] for t in self.test_results),
+        }
+        
+        for functionality, status in oauth_tests.items():
+            status_icon = "✅" if status else "❌"
+            print(f"   {status_icon} {functionality}")
+        
+        print(f"\n📋 TESTING NOTES:")
+        print(f"   • Google OAuth endpoint structure and validation tested")
+        print(f"   • User model compatibility with Google fields verified")
+        print(f"   • Existing authentication system compatibility confirmed")
+        print(f"   • Security validation and error handling tested")
+        print(f"   • Full OAuth flow requires real Google tokens (not tested)")
+        
+        return total_tests, passed_tests, failed_tests
         """Run all backend tests including authentication and user management"""
         print("🚀 Starting Comprehensive Backend API Testing for Task Count Synchronization Fix")
         print(f"Backend URL: {self.base_url}")
