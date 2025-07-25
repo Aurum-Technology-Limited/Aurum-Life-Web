@@ -17,7 +17,7 @@ import ProjectTemplates from './components/ProjectTemplates';
 import RecurringTasks from './components/RecurringTasks';
 import Journal from './components/Journal';
 import Tasks from './components/Tasks';
-import Learning from './components/Learning';
+import Feedback from './components/Feedback';
 import AICoach from './components/AICoach';
 import Achievements from './components/Achievements';
 import Profile from './components/Profile';
