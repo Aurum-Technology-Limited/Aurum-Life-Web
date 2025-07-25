@@ -368,6 +368,7 @@ class Area(BaseDocument):
     description: str = ""
     icon: str = "🎯"
     color: str = "#F4B400"
+    importance: ImportanceEnum = ImportanceEnum.medium  # New importance field
     archived: bool = False
     sort_order: int = 0
     date_created: datetime = Field(default_factory=datetime.utcnow)
