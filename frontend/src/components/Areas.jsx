@@ -255,55 +255,53 @@ const Areas = ({ onSectionChange }) => {
                 >
                   {/* Area Header */}
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
                       <div
-                        className="p-3 rounded-lg flex items-center justify-center"
+                        className="p-3 rounded-lg flex-shrink-0"
                         style={{ backgroundColor: area.color + '20' }}
                       >
                         <span className="text-2xl">{area.icon || '🎯'}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-white text-lg flex-truncate-text">{area.name}</h3>
+                          <h3 className={`font-semibold text-white dynamic-text ${getDynamicFontSize(area.name, 'title')}`}>
+                            {area.name}
+                          </h3>
                           {area.archived && (
-                            <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300 flex-truncate-icon">
+                            <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300 flex-shrink-0">
                               Archived
                             </span>
                           )}
                         </div>
-                        <div className="flex-truncate-container space-x-3 text-sm text-gray-400 mb-1">
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 mb-1">
                           {area.pillar_name && (
-                            <div className="flex items-center space-x-1 flex-truncate-icon">
+                            <div className="flex items-center space-x-1 flex-shrink-0">
                               <Mountain className="h-3 w-3 flex-shrink-0" />
-                              <span className="overflow-safe max-w-24">{area.pillar_name}</span>
+                              <span className="dynamic-text">{area.pillar_name}</span>
                             </div>
                           )}
-                          <span className="flex-truncate-icon">
+                          <span className="flex-shrink-0">
                             {area.projects?.length || 0} projects
                           </span>
                           {area.date_created && (
-                            <span className="text-xs text-gray-500 overflow-safe max-w-20">
+                            <span className="text-xs text-gray-500 dynamic-text">
                               Created {new Date(area.date_created).toLocaleDateString()}
                             </span>
                           )}
                         </div>
                         {/* Importance Indicator */}
                         {area.importance && (
-                          <div className="flex-truncate-badges">
-                            <span className={`flex-truncate-badge inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          <div className="mt-2">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                               area.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
                               area.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
                               area.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
                               'bg-gray-800/30 text-gray-400 border border-gray-600'
                             }`}>
-                              {area.importance >= 5 ? '🔥' :
-                               area.importance >= 4 ? '⚡' :
-                               area.importance >= 3 ? '📊' :
-                               '📝'} <span className="ml-1 overflow-safe">
-                              {area.importance >= 5 ? 'Critical' :
-                               area.importance >= 4 ? 'High' :
-                               area.importance >= 3 ? 'Medium' :
-                               'Low'}</span>
+                              {area.importance >= 5 ? '🔥 Critical' :
+                               area.importance >= 4 ? '⚡ High' :
+                               area.importance >= 3 ? '📊 Medium' :
+                               '📝 Low'}
                             </span>
                           </div>
                         )}
