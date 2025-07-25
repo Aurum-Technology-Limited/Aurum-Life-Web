@@ -724,6 +724,7 @@ class PillarResponse(BaseModel):
     time_allocation_percentage: Optional[float] = None
     created_at: datetime
     updated_at: datetime
+    date_created: datetime
     
     # Hierarchy tracking
     sub_pillars: Optional[List['PillarResponse']] = []
