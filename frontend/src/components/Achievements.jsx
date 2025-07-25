@@ -57,7 +57,7 @@ const BadgeCard = ({ badge }) => {
         
         {badge.earned ? (
           <div className="text-xs text-gray-400">
-            Earned on {new Date(badge.earnedDate).toLocaleDateString()}
+            Earned on {badge.earned_date ? new Date(badge.earned_date).toLocaleDateString() : 'Unknown date'}
           </div>
         ) : (
           <div className="space-y-2">
