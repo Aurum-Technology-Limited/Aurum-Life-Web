@@ -521,7 +521,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
             )}
 
             {/* Enhanced Tasks List with Drag & Drop */}
-            <div className="space-y-4">
+            <div className="space-y-4 mb-8">
               {loading ? (
                 <div className="text-center py-12">
                   <div className="animate-pulse text-gray-400">Loading tasks...</div>
@@ -543,6 +543,14 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 ))
               )}
             </div>
+
+            {/* File Manager */}
+            <FileManager 
+              entityType="project"
+              entityId={project?.id}
+              entityName={project?.name}
+              className="mb-8"
+            />
 
           {/* Task Modal */}
           {showTaskModal && (
