@@ -2318,21 +2318,7 @@ class PillarService:
     
     @staticmethod
     async def update_pillar(user_id: str, pillar_id: str, pillar_data: PillarUpdate) -> bool:
-        """Update a pillar"""
-        # Validate parent pillar if being changed
-        if pillar_data.parent_pillar_id:
-            # Check if parent exists
-            parent_pillar = await find_document("pillars", {
-                "id": pillar_data.parent_pillar_id, 
-                "user_id": user_id
-            })
-            if not parent_pillar:
-                raise ValueError("Parent pillar not found")
-            
-            # Prevent circular reference
-            if pillar_data.parent_pillar_id == pillar_id:
-                raise ValueError("Pillar cannot be its own parent")
-        
+        """Update a pillar"""        
         update_data = {k: v for k, v in pillar_data.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
         return await update_document("pillars", {"id": pillar_id, "user_id": user_id}, update_data)
