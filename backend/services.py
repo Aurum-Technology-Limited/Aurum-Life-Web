@@ -1854,6 +1854,10 @@ class TaskService:
                     # Trigger achievement check for task completion (performance-optimized)
                     try:
                         await AchievementService.trigger_task_completed(user_id)
+                        # Also trigger custom achievements check
+                        await CustomAchievementService.trigger_custom_achievements_check(
+                            user_id, "task_completed", updated_task.get("project_id")
+                        )
                     except Exception as e:
                         print(f"Warning: Achievement trigger failed for task completion: {e}")
                 
