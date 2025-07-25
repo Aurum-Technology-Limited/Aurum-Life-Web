@@ -2493,6 +2493,9 @@ agent_communication:
         - working: true
           agent: "deep_testing_backend_v2"
           comment: "CRITICAL TODAY API BUG FIXED! ✅ Root cause identified: get_today_view method was defined outside StatsService class, making it inaccessible to API endpoints. Fixed by moving method inside StatsService class and removing duplicate definition. Today API endpoints now fully functional - GET /api/today and GET /api/today/available-tasks working correctly with proper authentication and response structure. 'Failed to load today's data' error resolved!"
+        - working: true
+          agent: "main"
+          comment: "UI COLOR ENHANCEMENT: Changed 'To Do' task color from grey (#6B7280) to blue (#3B82F6) across all components for better visual distinction. Updated Insights.jsx task status chart, Projects.jsx donut chart, and Areas.jsx progress visualization to use consistent blue color for pending/not started tasks instead of grey."
 
   - task: "Today API Endpoints Functionality Fix"
     implemented: true
