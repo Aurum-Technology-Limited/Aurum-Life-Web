@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, Bot, User, Lightbulb, Target, TrendingUp, Loader2, AlertCircle } from 'lucide-react';
-import { chatAPI, statsAPI, handleApiError } from '../services/api';
+import { aiCoachAPI, statsAPI, handleApiError } from '../services/api';
 
 const Message = ({ message, isUser }) => (
   <div className={`flex items-start space-x-3 mb-6 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
