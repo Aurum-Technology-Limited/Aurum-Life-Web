@@ -2331,7 +2331,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Dynamic Predefined Achievements System - Phase 1 Implementation"
+    []
   stuck_tasks:
     - "Enhanced Drag & Drop Frontend Implementation - Phase 2"
   test_all: false
