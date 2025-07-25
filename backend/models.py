@@ -379,6 +379,7 @@ class AreaCreate(BaseModel):
     description: str = ""
     icon: str = "🎯"
     color: str = "#F4B400"
+    importance: ImportanceEnum = ImportanceEnum.medium
 
 class AreaUpdate(BaseModel):
     pillar_id: Optional[str] = None
