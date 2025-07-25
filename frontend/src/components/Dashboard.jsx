@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Target, BookOpen, Trophy, Flame, Loader2 } from 'lucide-react';
 import { dashboardAPI, handleApiError } from '../services/api';
+import AiCoachCard from './AiCoachCard';
 
 const StatCard = ({ title, value, subtitle, icon: Icon, trend, loading = false }) => (
   <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group hover:scale-105">
