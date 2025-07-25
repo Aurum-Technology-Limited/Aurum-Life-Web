@@ -35,7 +35,7 @@ const Areas = ({ onSectionChange }) => {
     name: '',
     description: '',
     color: '#F4B400',
-    icon: 'target',
+    icon: '🎯', // Use emoji instead of component reference
     pillar_id: '',
     importance: 3  // Default to medium importance
   });
