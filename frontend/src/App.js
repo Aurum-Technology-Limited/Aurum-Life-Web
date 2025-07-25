@@ -109,9 +109,9 @@ function App() {
       case 'tasks':
         console.log('✅ Rendering Tasks component');
         return <Tasks {...props} />;
-      case 'learning':
-        console.log('📚 Rendering Learning component');
-        return <Learning {...props} />;
+      case 'feedback':
+        console.log('💬 Rendering Feedback component');
+        return <Feedback {...props} />;
       case 'ai-coach':
         console.log('🤖 Rendering AICoach component');
         return <AICoach {...props} />;
