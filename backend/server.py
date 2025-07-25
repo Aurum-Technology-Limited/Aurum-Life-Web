@@ -1473,6 +1473,120 @@ async def check_achievements(
         logger.error(f"Error checking achievements: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to check achievements")
 
+# Custom Achievement endpoints
+@api_router.get("/achievements/custom")
+async def get_custom_achievements(
+    include_completed: bool = True,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get all custom achievements for the current user"""
+    try:
+        custom_achievements = await CustomAchievementService.get_user_custom_achievements(
+            current_user.id, include_completed
+        )
+        
+        return {
+            "success": True,
+            "custom_achievements": [achievement.dict() for achievement in custom_achievements],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting custom achievements: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get custom achievements")
+
+@api_router.post("/achievements/custom")
+async def create_custom_achievement(
+    achievement_data: CustomAchievementCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Create a new custom achievement"""
+    try:
+        custom_achievement = await CustomAchievementService.create_custom_achievement(
+            current_user.id, achievement_data
+        )
+        
+        return {
+            "success": True,
+            "achievement": custom_achievement.dict(),
+            "message": f"Custom achievement '{custom_achievement.name}' created successfully",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error creating custom achievement: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.put("/achievements/custom/{achievement_id}")
+async def update_custom_achievement(
+    achievement_id: str,
+    achievement_data: CustomAchievementUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Update a custom achievement"""
+    try:
+        success = await CustomAchievementService.update_custom_achievement(
+            current_user.id, achievement_id, achievement_data
+        )
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Custom achievement not found")
+        
+        return {
+            "success": True,
+            "message": "Custom achievement updated successfully",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating custom achievement: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update custom achievement")
+
+@api_router.delete("/achievements/custom/{achievement_id}")
+async def delete_custom_achievement(
+    achievement_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Delete a custom achievement"""
+    try:
+        success = await CustomAchievementService.delete_custom_achievement(
+            current_user.id, achievement_id
+        )
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Custom achievement not found")
+        
+        return {
+            "success": True,
+            "message": "Custom achievement deleted successfully",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting custom achievement: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete custom achievement")
+
+@api_router.post("/achievements/custom/check")
+async def check_custom_achievements(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Check and update progress for all custom achievements"""
+    try:
+        newly_completed = await CustomAchievementService.check_custom_achievements_progress(current_user.id)
+        
+        return {
+            "success": True,
+            "newly_completed": len(newly_completed),
+            "achievements": [
+                {"id": achievement.id, "name": achievement.name, "icon": achievement.icon} 
+                for achievement in newly_completed
+            ],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error checking custom achievements: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to check custom achievements")
+
 # Include the router in the main app
 app.include_router(api_router)
 
