@@ -51,41 +51,36 @@ def migrate_add_date_created():
             
             print(f"📊 Found {documents_without_field} documents without date_created field")
             
+            # Use simple update_many approach instead of bulk_write
             # For existing documents, we'll use created_at if available, otherwise current time
-            # This ensures data consistency
-            update_operations = []
+            updated_with_created_at = collection.update_many(
+                {
+                    "date_created": {"$exists": False},
+                    "created_at": {"$exists": True}
+                },
+                [{"$set": {"date_created": "$created_at"}}]
+            )
             
-            # Get documents without date_created
-            cursor = collection.find({"date_created": {"$exists": False}})
+            # For documents without created_at, use current time
+            updated_with_current_time = collection.update_many(
+                {
+                    "date_created": {"$exists": False},
+                    "created_at": {"$exists": False}
+                },
+                {"$set": {"date_created": datetime.utcnow()}}
+            )
             
-            for doc in cursor:
-                # Use created_at if it exists, otherwise use current time
-                date_to_use = doc.get('created_at', datetime.utcnow())
-                
-                update_operations.append({
-                    "updateOne": {
-                        "filter": {"_id": doc["_id"]},
-                        "update": {"$set": {"date_created": date_to_use}}
-                    }
-                })
+            total_updated = updated_with_created_at.modified_count + updated_with_current_time.modified_count
             
-            if update_operations:
-                # Execute bulk update
-                result = collection.bulk_write(update_operations)
-                
-                print(f"✅ Updated {result.modified_count} documents in {collection_name}")
-                migration_results[collection_name] = {
-                    'migrated': result.modified_count,
-                    'total': collection.count_documents({}),
-                    'status': 'migrated'
-                }
-            else:
-                print(f"ℹ️ No updates needed for {collection_name}")
-                migration_results[collection_name] = {
-                    'migrated': 0,
-                    'total': collection.count_documents({}),
-                    'status': 'no_updates_needed'
-                }
+            print(f"✅ Updated {total_updated} documents in {collection_name}")
+            print(f"   - {updated_with_created_at.modified_count} used existing created_at")
+            print(f"   - {updated_with_current_time.modified_count} used current time")
+            
+            migration_results[collection_name] = {
+                'migrated': total_updated,
+                'total': collection.count_documents({}),
+                'status': 'migrated'
+            }
         
         except Exception as e:
             print(f"❌ Error migrating {collection_name}: {e}")
