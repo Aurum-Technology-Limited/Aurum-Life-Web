@@ -15,6 +15,7 @@ import {
   GripVertical
 } from 'lucide-react';
 import { projectsAPI, tasksAPI } from '../services/api';
+import FileManager from './FileManager';
 
 const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
   const [error, setError] = useState(null);
