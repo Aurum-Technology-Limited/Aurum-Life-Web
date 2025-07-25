@@ -172,14 +172,28 @@ const Achievements = () => {
 
   const handleCheckAchievements = async () => {
     try {
-      const response = await achievementsAPI.checkAchievements();
+      const [predefinedResponse, customResponse] = await Promise.all([
+        achievementsAPI.checkAchievements(),
+        customAchievementsAPI.checkCustomAchievements()
+      ]);
       
-      // Show toast notifications for newly unlocked achievements
-      if (response.data.newly_unlocked > 0) {
-        response.data.achievements.forEach(achievement => {
+      // Show toast notifications for newly unlocked predefined achievements
+      if (predefinedResponse.data.newly_unlocked > 0) {
+        predefinedResponse.data.achievements.forEach(achievement => {
           toast({
             title: "🎉 Achievement Unlocked!",
             description: `Congratulations! You've earned the '${achievement.name}' badge!`,
+            duration: 5000,
+          });
+        });
+      }
+      
+      // Show toast notifications for newly completed custom achievements
+      if (customResponse.data.newly_completed > 0) {
+        customResponse.data.achievements.forEach(achievement => {
+          toast({
+            title: "🎯 Custom Goal Achieved!",
+            description: `Congratulations! You've completed your goal: '${achievement.name}'!`,
             duration: 5000,
           });
         });
@@ -189,6 +203,68 @@ const Achievements = () => {
       await loadAchievements();
     } catch (err) {
       setError(handleApiError(err, 'Failed to check achievements'));
+    }
+  };
+
+  const handleCreateCustomAchievement = async () => {
+    try {
+      if (!createForm.name.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Please enter a name for your achievement",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      await customAchievementsAPI.createCustomAchievement(createForm);
+      
+      toast({
+        title: "✨ Custom Achievement Created!",
+        description: `Your custom achievement "${createForm.name}" has been created successfully!`,
+        duration: 4000,
+      });
+      
+      // Reset form and close modal
+      setCreateForm({
+        name: '',
+        description: '',
+        icon: '🎯',
+        target_type: 'complete_tasks',
+        target_id: '',
+        target_count: 1
+      });
+      setShowCreateModal(false);
+      
+      // Reload achievements
+      await loadAchievements();
+      
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: handleApiError(err, 'Failed to create custom achievement'),
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteCustomAchievement = async (achievementId) => {
+    try {
+      await customAchievementsAPI.deleteCustomAchievement(achievementId);
+      
+      toast({
+        title: "Achievement Deleted",
+        description: "Custom achievement has been deleted successfully",
+        duration: 3000,
+      });
+      
+      await loadAchievements();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: handleApiError(err, 'Failed to delete custom achievement'),
+        variant: "destructive"
+      });
     }
   };
 
