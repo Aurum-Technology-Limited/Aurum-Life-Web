@@ -142,7 +142,19 @@ const Achievements = () => {
 
   const handleCheckAchievements = async () => {
     try {
-      await achievementsAPI.checkAchievements();
+      const response = await achievementsAPI.checkAchievements();
+      
+      // Show toast notifications for newly unlocked achievements
+      if (response.data.newly_unlocked > 0) {
+        response.data.achievements.forEach(achievement => {
+          toast({
+            title: "🎉 Achievement Unlocked!",
+            description: `Congratulations! You've earned the '${achievement.name}' badge!`,
+            duration: 5000,
+          });
+        });
+      }
+      
       // Reload achievements to see any newly unlocked ones
       await loadAchievements();
     } catch (err) {
