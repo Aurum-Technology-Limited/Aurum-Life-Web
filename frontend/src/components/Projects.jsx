@@ -1056,17 +1056,17 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                   <button 
                     onClick={() => handleKanban(project.id)}
-                    className="flex-1 flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-xs sm:text-sm"
+                    className="flex-1 flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-xs sm:text-sm min-w-0"
                   >
-                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                    <span className="truncate">Kanban</span>
+                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-truncate-icon" />
+                    <span className="overflow-safe">Kanban</span>
                   </button>
                   <button 
                     onClick={() => handleListView(project.id)}
-                    className="flex-1 flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-xs sm:text-sm"
+                    className="flex-1 flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-xs sm:text-sm min-w-0"
                   >
-                    <List className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                    <span className="truncate">List</span>
+                    <List className="h-3 w-3 sm:h-4 sm:w-4 flex-truncate-icon" />
+                    <span className="overflow-safe">List</span>
                   </button>
                 </div>
               </div>
