@@ -363,6 +363,7 @@ class Area(BaseDocument):
     color: str = "#F4B400"
     archived: bool = False
     sort_order: int = 0
+    date_created: datetime = Field(default_factory=datetime.utcnow)
 
 class AreaCreate(BaseModel):
     pillar_id: Optional[str] = None
