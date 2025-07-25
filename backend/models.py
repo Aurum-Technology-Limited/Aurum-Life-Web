@@ -851,3 +851,137 @@ class NotificationResponse(BaseModel):
     project_name: Optional[str]
     priority: Optional[PriorityEnum]
     created_at: datetime
+
+# File Management Models
+class FileTypeEnum(str, Enum):
+    document = "document"  # PDF, DOC, DOCX, TXT, RTF
+    image = "image"        # PNG, JPG, JPEG, GIF, SVG
+    spreadsheet = "spreadsheet"  # XLS, XLSX, CSV
+    presentation = "presentation"  # PPT, PPTX
+    archive = "archive"    # ZIP, RAR, TAR
+    other = "other"
+
+class ResourceCategoryEnum(str, Enum):
+    reference = "reference"
+    template = "template"
+    attachment = "attachment"
+    archive = "archive"
+    media = "media"
+    document = "document"
+
+class Resource(BaseDocument):
+    """File/Resource model for document management"""
+    user_id: str
+    filename: str
+    original_filename: str  # Original name when uploaded
+    file_type: FileTypeEnum
+    category: ResourceCategoryEnum = ResourceCategoryEnum.document  
+    mime_type: str
+    file_size: int  # Size in bytes
+    file_content: str  # Base64 encoded file content for reliable storage/display
+    description: str = ""
+    tags: List[str] = []
+    
+    # File metadata
+    upload_date: datetime = Field(default_factory=datetime.utcnow)
+    last_accessed: Optional[datetime] = None
+    access_count: int = 0
+    
+    # Attachment relationships
+    attached_to_tasks: List[str] = []      # Task IDs this file is attached to
+    attached_to_projects: List[str] = []   # Project IDs this file is attached to  
+    attached_to_areas: List[str] = []      # Area IDs this file is attached to
+    attached_to_pillars: List[str] = []    # Pillar IDs this file is attached to
+    attached_to_journal_entries: List[str] = []  # Journal entry IDs this file is attached to
+    
+    # File versioning
+    version: int = 1
+    parent_resource_id: Optional[str] = None  # For file versions
+    is_current_version: bool = True
+    
+    # Organization
+    folder_path: str = "/"  # Virtual folder structure
+    is_archived: bool = False
+    is_favorite: bool = False
+
+class ResourceCreate(BaseModel):
+    filename: str
+    original_filename: str
+    file_type: FileTypeEnum
+    category: ResourceCategoryEnum = ResourceCategoryEnum.document
+    mime_type: str
+    file_size: int
+    file_content: str  # Base64 encoded
+    description: str = ""
+    tags: List[str] = []
+    folder_path: str = "/"
+
+class ResourceUpdate(BaseModel):
+    filename: Optional[str] = None
+    description: Optional[str] = None
+    tags: Optional[List[str]] = None
+    category: Optional[ResourceCategoryEnum] = None
+    folder_path: Optional[str] = None
+    is_archived: Optional[bool] = None
+    is_favorite: Optional[bool] = None
+
+class ResourceResponse(BaseModel):
+    id: str
+    user_id: str
+    filename: str
+    original_filename: str
+    file_type: FileTypeEnum
+    category: ResourceCategoryEnum
+    mime_type: str
+    file_size: int
+    description: str
+    tags: List[str]
+    upload_date: datetime
+    last_accessed: Optional[datetime]
+    access_count: int
+    attached_to_tasks: List[str]
+    attached_to_projects: List[str]
+    attached_to_areas: List[str]
+    attached_to_pillars: List[str]
+    attached_to_journal_entries: List[str]
+    version: int
+    parent_resource_id: Optional[str]
+    is_current_version: bool
+    folder_path: str
+    is_archived: bool
+    is_favorite: bool
+    created_at: datetime
+    updated_at: datetime
+    
+    # Computed fields
+    file_size_mb: float = 0.0
+    attachments_count: int = 0
+
+class FileAttachmentRequest(BaseModel):
+    """Request model for attaching files to entities"""
+    resource_id: str
+    entity_type: str  # "task", "project", "area", "pillar", "journal_entry"
+    entity_id: str
+
+# Chunked Upload Models for large files
+class ChunkedUploadSession(BaseDocument):
+    """Track chunked file upload sessions"""
+    user_id: str
+    session_id: str
+    filename: str
+    original_filename: str
+    total_size: int
+    chunk_size: int
+    total_chunks: int
+    uploaded_chunks: List[int] = []  # List of uploaded chunk numbers
+    file_type: FileTypeEnum
+    mime_type: str
+    is_complete: bool = False
+    expires_at: datetime
+    
+class ChunkedUploadChunk(BaseModel):
+    """Individual chunk data"""
+    session_id: str
+    chunk_number: int
+    chunk_data: str  # Base64 encoded chunk
+    chunk_size: int
