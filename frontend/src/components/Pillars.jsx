@@ -3,15 +3,10 @@ import { useDataContext } from '../contexts/DataContext';
 import { api } from '../services/api';
 import { 
   Plus, 
-  Layers, 
   Target, 
   TrendingUp, 
-  Archive,
-  ArchiveRestore,
   Trash2, 
   Edit2,
-  ChevronDown,
-  ChevronRight,
   BarChart3
 } from 'lucide-react';
 
