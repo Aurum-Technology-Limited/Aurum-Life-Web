@@ -33,7 +33,6 @@ import FileManager from './FileManager';
 import IconPicker from './ui/IconPicker';
 import { 
   getDynamicFontSize, 
-  getDynamicLineClamp, 
   validateTextLength, 
   CHARACTER_LIMITS,
   getCharacterCounterData
