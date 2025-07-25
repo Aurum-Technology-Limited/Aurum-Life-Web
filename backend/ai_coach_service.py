@@ -251,6 +251,101 @@ Remember: You're helping someone build their best life. Be their guide, motivato
             }]
     
     @staticmethod
+    async def chat_with_coach(user_id: str, user_message: str) -> str:
+        """
+        Interactive chat with AI coach about user's data and insights
+        """
+        try:
+            # Get comprehensive user data for context
+            tasks = await find_documents("tasks", {"user_id": user_id})
+            projects = await find_documents("projects", {"user_id": user_id})
+            areas = await find_documents("areas", {"user_id": user_id})
+            pillars = await find_documents("pillars", {"user_id": user_id})
+            
+            # Calculate key metrics
+            active_tasks = [t for t in tasks if not t.get('completed') and not t.get('archived')]
+            completed_tasks = [t for t in tasks if t.get('completed')]
+            overdue_tasks = []
+            
+            today = datetime.utcnow().date()
+            for task in active_tasks:
+                if task.get('due_date'):
+                    try:
+                        due_date = datetime.fromisoformat(task['due_date'].replace('Z', '+00:00')).date()
+                        if due_date < today:
+                            overdue_tasks.append(task)
+                    except:
+                        pass
+            
+            # Organize projects by status and importance
+            active_projects = [p for p in projects if not p.get('archived')]
+            high_importance_projects = [p for p in active_projects if p.get('importance', 3) >= 4]
+            
+            # Create comprehensive context for AI
+            context_summary = f"""
+USER DATA SUMMARY:
+=================
+
+PILLARS ({len(pillars)}):
+{', '.join([f"{p.get('name', 'Unnamed')} ({p.get('area_count', 0)} areas)" for p in pillars[:5]])}
+
+AREAS ({len(areas)}):
+- Critical areas: {len([a for a in areas if a.get('importance', 3) >= 5])}
+- High importance: {len([a for a in areas if a.get('importance', 3) == 4])}
+- Medium importance: {len([a for a in areas if a.get('importance', 3) == 3])}
+
+PROJECTS ({len(active_projects)} active):
+- Critical projects: {len([p for p in active_projects if p.get('importance', 3) >= 5])}
+- High importance: {len([p for p in active_projects if p.get('importance', 3) == 4])}
+- In progress: {len([p for p in active_projects if p.get('status') == 'in_progress'])}
+- Not started: {len([p for p in active_projects if p.get('status') == 'not_started'])}
+
+TASKS:
+- Active tasks: {len(active_tasks)}
+- Completed tasks: {len(completed_tasks)}
+- Overdue tasks: {len(overdue_tasks)}
+- Completion rate: {round((len(completed_tasks) / len(tasks) * 100) if tasks else 0, 1)}%
+
+HIGH-PRIORITY ITEMS:
+- Projects: {', '.join([p.get('name', 'Unnamed') for p in high_importance_projects[:3]])}
+- Overdue tasks: {', '.join([t.get('name', 'Unnamed') for t in overdue_tasks[:3]])}
+
+RECENT ACTIVITY:
+- Tasks created this week: {len([t for t in tasks if t.get('date_created') and (datetime.utcnow() - datetime.fromisoformat(t['date_created'].replace('Z', '+00:00'))).days <= 7])}
+- Tasks completed this week: {len([t for t in completed_tasks if t.get('date_modified') and (datetime.utcnow() - datetime.fromisoformat(t['date_modified'].replace('Z', '+00:00'))).days <= 7])}
+"""
+
+            # Initialize AI coach
+            gemini_coach = AiCoachService._initialize_gemini_coach(user_id)
+            
+            # Create coaching prompt
+            coaching_prompt = f"""
+The user asked: "{user_message}"
+
+Based on their Aurum Life data below, provide a helpful, insightful response. You can:
+- Analyze their progress and patterns
+- Provide actionable recommendations  
+- Identify areas that need attention
+- Celebrate achievements and progress
+- Suggest prioritization strategies
+- Give motivational guidance
+
+Be conversational, specific, and helpful. Use data points to support your insights.
+
+{context_summary}
+
+Respond as their personal growth coach with specific insights and recommendations.
+"""
+
+            # Get AI response
+            ai_response = await gemini_coach.call_async(coaching_prompt)
+            return ai_response.strip()
+            
+        except Exception as e:
+            logger.error(f"Error in AI coach chat for user {user_id}: {str(e)}")
+            return "I'm having trouble analyzing your data right now. Could you try asking again in a moment? I'm here to help you understand your progress and priorities!"
+    
+    @staticmethod
     def _build_fallback_message(scored_item: Dict) -> str:
         """Fallback coaching message when AI is unavailable"""
         task = scored_item['task']
