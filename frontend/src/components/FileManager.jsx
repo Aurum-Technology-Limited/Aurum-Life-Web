@@ -328,6 +328,13 @@ const FileManager = ({
           </div>
         )}
       </div>
+
+      {/* File Viewer Modal */}
+      <FileViewer 
+        resource={viewingResource}
+        isOpen={!!viewingResource}
+        onClose={() => setViewingResource(null)}
+      />
     </div>
   );
 };
