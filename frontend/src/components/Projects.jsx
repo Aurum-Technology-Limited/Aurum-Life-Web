@@ -1020,10 +1020,10 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   </button>
                   <button 
                     onClick={() => handleListView(project.id)}
-                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                    className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
                   >
-                    <List className="h-4 w-4" />
-                    <span>List View</span>
+                    <List className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">List View</span>
                   </button>
                 </div>
               </div>
