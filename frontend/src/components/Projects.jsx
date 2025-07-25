@@ -54,6 +54,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     area_id: '',
     status: 'Not Started',
     priority: 'medium',
+    importance: 3,  // Add importance field
     due_date: '',
     target_completion: ''
   });
