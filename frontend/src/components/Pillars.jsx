@@ -89,8 +89,8 @@ const Pillars = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (pillarId) => {
-    if (window.confirm('Are you sure you want to delete this pillar? This will unlink all associated areas.')) {
+  const handleDelete = async (pillarId, pillarName) => {
+    if (window.confirm(`Are you sure you want to delete "${pillarName}"? This will unlink all associated areas.`)) {
       try {
         await api.delete(`/pillars/${pillarId}`);
         await fetchPillars();
