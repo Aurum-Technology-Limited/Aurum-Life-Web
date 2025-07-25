@@ -107,6 +107,93 @@ const MilestoneCard = ({ milestone }) => (
   </div>
 );
 
+const CustomAchievementCard = ({ achievement, onDelete }) => {
+  const progressPercentage = achievement.progress_percentage || 0;
+  const isCompleted = achievement.is_completed;
+
+  const getTargetTypeDisplay = (targetType) => {
+    const displays = {
+      complete_tasks: 'Complete Tasks',
+      complete_project: 'Complete Project',
+      write_journal_entries: 'Write Journal Entries',
+      complete_courses: 'Complete Courses',
+      maintain_streak: 'Maintain Streak'
+    };
+    return displays[targetType] || targetType;
+  };
+
+  return (
+    <div className={`p-6 rounded-xl border transition-all duration-300 ${
+      isCompleted 
+        ? 'border-yellow-400 bg-gradient-to-br from-yellow-400/10 to-yellow-600/5' 
+        : 'border-gray-700 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-gray-600'
+    }`}>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="text-2xl">{achievement.icon}</div>
+          <div>
+            <h3 className="font-semibold text-white">{achievement.name}</h3>
+            <p className="text-sm text-gray-400">{getTargetTypeDisplay(achievement.target_type)}</p>
+          </div>
+        </div>
+        
+        {/* Completion Status */}
+        <div className="flex items-center space-x-2">
+          {isCompleted ? (
+            <CheckCircle size={20} className="text-yellow-400" />
+          ) : (
+            <button
+              onClick={() => onDelete(achievement.id)}
+              className="text-gray-500 hover:text-red-400 transition-colors"
+              title="Delete custom achievement"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Description */}
+      {achievement.description && (
+        <p className="text-sm text-gray-300 mb-3">{achievement.description}</p>
+      )}
+
+      {/* Progress */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-400">Progress</span>
+          <span className="text-sm font-medium text-white">
+            {achievement.current_progress} / {achievement.target_count}
+          </span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <div 
+            className={`h-2 rounded-full transition-all duration-500 ${
+              isCompleted 
+                ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' 
+                : 'bg-gradient-to-r from-blue-400 to-blue-600'
+            }`}
+            style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+          />
+        </div>
+        <p className="text-xs text-gray-400 mt-1">{Math.round(progressPercentage)}% complete</p>
+      </div>
+
+      {/* Target Details */}
+      <div className="text-xs text-gray-500">
+        {achievement.target_name && (
+          <p>Target: {achievement.target_name}</p>
+        )}
+        {isCompleted && achievement.completed_date && (
+          <p>Completed: {new Date(achievement.completed_date).toLocaleDateString()}</p>
+        )}
+        <p>Created: {new Date(achievement.created_date).toLocaleDateString()}</p>
+      </div>
+    </div>
+  );
+};
+
 const Achievements = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [achievements, setAchievements] = useState([]);
