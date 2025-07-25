@@ -419,6 +419,7 @@ class ProjectCreate(BaseModel):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    icon: Optional[str] = None  # Add icon field
     deadline: Optional[datetime] = None
     status: Optional[ProjectStatusEnum] = None
     priority: Optional[PriorityEnum] = None
