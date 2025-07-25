@@ -549,7 +549,7 @@ class AiCoachTester:
         # Test a specific question that should trigger AI processing
         ai_test_message = "Based on my current tasks and goals, what should I focus on today to make the most progress?"
         
-        result = self.make_request('POST', '/ai_coach/chat', data={"message": ai_test_message}, use_auth=True)
+        result = self.make_request('POST', '/ai_coach/chat', params={"message": ai_test_message}, use_auth=True)
         
         self.log_test(
             "GEMINI AI INTEGRATION - BASIC FUNCTIONALITY",
