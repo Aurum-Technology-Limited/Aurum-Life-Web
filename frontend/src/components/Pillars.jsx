@@ -159,7 +159,7 @@ const Pillars = () => {
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => handleEdit(pillar)}
+                onClick={() => handleEditPillar(pillar)}
                 className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Edit pillar"
               >
@@ -167,7 +167,7 @@ const Pillars = () => {
               </button>
               
               <button
-                onClick={() => handleDelete(pillar.id)}
+                onClick={() => handleDeletePillar(pillar.id, pillar.name)}
                 className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Delete pillar"
               >
