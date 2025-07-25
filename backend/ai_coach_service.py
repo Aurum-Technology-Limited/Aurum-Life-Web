@@ -217,7 +217,8 @@ Remember: You're helping someone build their best life. Be their guide, motivato
                 
                 try:
                     # Get AI coaching response
-                    ai_response = await gemini_coach.send_message(coaching_prompt)
+                    message = UserMessage(text=coaching_prompt)
+                    ai_response = await gemini_coach.send_message(message)
                     coaching_message = ai_response.strip()
                 except Exception as e:
                     logger.error(f"Error getting AI coaching for task {task['id']}: {str(e)}")
