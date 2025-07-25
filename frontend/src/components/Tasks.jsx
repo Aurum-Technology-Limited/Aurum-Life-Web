@@ -101,6 +101,13 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
               <div className="flex items-center space-x-1">
                 <span className="text-xs text-gray-500 capitalize">{task.category}</span>
               </div>
+              {task.date_created && (
+                <div className="flex items-center space-x-1">
+                  <span className="text-xs text-gray-500">
+                    Created: {new Date(task.date_created).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
