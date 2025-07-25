@@ -1102,9 +1102,11 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
 
                 {/* Project Description */}
                 {project.description && (
-                  <p className="text-gray-400 text-xs mb-4 line-clamp-2 overflow-safe leading-relaxed">
-                    {project.description}
-                  </p>
+                  <div className="mb-4">
+                    <p className={`text-gray-400 leading-relaxed dynamic-text ${getDynamicFontSize(project.description, 'subtitle')} ${getDynamicLineClamp(project.description)}`}>
+                      {project.description}
+                    </p>
+                  </div>
                 )}
 
                 {/* Enhanced Progress Visualization */}
