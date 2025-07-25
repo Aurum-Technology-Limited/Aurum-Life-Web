@@ -412,6 +412,7 @@ class ProjectCreate(BaseModel):
     deadline: Optional[datetime] = None
     status: ProjectStatusEnum = ProjectStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
+    importance: ImportanceEnum = ImportanceEnum.medium
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
