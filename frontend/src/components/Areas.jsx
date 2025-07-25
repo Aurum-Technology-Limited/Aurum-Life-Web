@@ -398,7 +398,7 @@ const Areas = ({ onSectionChange }) => {
                             colors: [
                               '#10B981', // Green for completed
                               area.color, // Area color for active
-                              '#6B7280', // Gray for not started
+                              '#3B82F6', // Blue for not started
                             ]
                           }}
                           size="sm"
