@@ -465,30 +465,16 @@ const Areas = ({ onSectionChange }) => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Icon
-                  </label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {iconOptions.map((icon) => {
-                      const IconComp = icon.component;
-                      return (
-                        <button
-                          key={icon.value}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, icon: icon.value })}
-                          className={`p-3 rounded-lg border transition-colors ${
-                            formData.icon === icon.value
-                              ? 'border-yellow-500 bg-yellow-500/10'
-                              : 'border-gray-700 hover:border-gray-600'
-                          }`}
-                        >
-                          <IconComp className="h-5 w-5 text-gray-400" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* Icon Picker */}
+                <IconPicker
+                  value={formData.icon}
+                  onChange={(icon) => setFormData({ ...formData, icon })}
+                  label="Icon"
+                  placeholder="🎯"
+                  required={false}
+                  iconSet="areas"
+                  allowCustom={true}
+                />
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
