@@ -112,6 +112,7 @@ const Achievements = () => {
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { toast } = useToast();
   
   const categories = [
     { key: 'all', label: 'All Badges' },
