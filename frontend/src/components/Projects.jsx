@@ -846,44 +846,49 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
               >
                 {/* Project Header */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0 pr-3"> {/* Added min-w-0 and pr-3 for proper flex behavior */}
                     <div className="flex items-center space-x-3 mb-2">
                       {/* Project Icon */}
-                      <span className="text-2xl">{project.icon || '🚀'}</span>
-                      <h3 className="font-semibold text-white text-lg">{project.name}</h3>
-                      <div className="flex space-x-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>
-                          {project.status}
-                        </span>
-                        <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(project.priority)}`}>
-                          {project.priority}
-                        </span>
-                        {/* Importance Indicator */}
-                        {project.importance && (
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            project.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
-                            project.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
-                            project.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
-                            'bg-gray-800/30 text-gray-400 border border-gray-600'
-                          }`}>
-                            {project.importance >= 5 ? '🔥 Critical' :
-                             project.importance >= 4 ? '⚡ High' :
-                             project.importance >= 3 ? '📊 Medium' :
-                             '📝 Low'} Impact
-                          </span>
-                        )}
-                        {project.archived && (
-                          <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300">
-                            Archived
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-2xl flex-shrink-0">{project.icon || '🚀'}</span>
+                      <h3 className="font-semibold text-white text-lg truncate flex-1">{project.name}</h3>
                     </div>
+                    
+                    {/* Status, Priority, and Importance Badges */}
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${getStatusColor(project.status)}`}>
+                        {project.status}
+                      </span>
+                      <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${getPriorityColor(project.priority)}`}>
+                        {project.priority}
+                      </span>
+                      {/* Importance Indicator */}
+                      {project.importance && (
+                        <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${
+                          project.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
+                          project.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
+                          project.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
+                          'bg-gray-800/30 text-gray-400 border border-gray-600'
+                        }`}>
+                          {project.importance >= 5 ? '🔥 Critical' :
+                           project.importance >= 4 ? '⚡ High' :
+                           project.importance >= 3 ? '📊 Medium' :
+                           '📝 Low'} Impact
+                        </span>
+                      )}
+                      {project.archived && (
+                        <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300 flex-shrink-0">
+                          Archived
+                        </span>
+                      )}
+                    </div>
+                    
                     {project.area_name && (
-                      <p className="text-sm text-gray-400">{project.area_name}</p>
+                      <p className="text-sm text-gray-400 truncate">{project.area_name}</p>
                     )}
                   </div>
-                  <div className="flex space-x-1">
+                  
+                  {/* Action Buttons - Fixed positioning */}
+                  <div className="flex space-x-1 flex-shrink-0 ml-2">{/* Added flex-shrink-0 and ml-2 */}
                     <button
                       onClick={() => handleArchive(project.id, project.archived)}
                       className={`p-2 rounded-lg transition-colors ${
