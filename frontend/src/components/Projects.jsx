@@ -1102,6 +1102,27 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   </div>
                 </div>
 
+                {/* Importance Field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Importance Level
+                  </label>
+                  <select
+                    value={formData.importance}
+                    onChange={(e) => setFormData({ ...formData, importance: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  >
+                    <option value={1}>1 - Low Impact</option>
+                    <option value={2}>2 - Minor Impact</option>
+                    <option value={3}>3 - Medium Impact</option>
+                    <option value={4}>4 - High Impact</option>
+                    <option value={5}>5 - Critical Impact</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    How important is this project to your goals?
+                  </p>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Due Date
