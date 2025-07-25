@@ -1329,7 +1329,7 @@ async def delete_resource(
 @api_router.post("/resources/{resource_id}/attach")
 async def attach_resource_to_entity(
     resource_id: str,
-    attachment_data: FileAttachmentRequest,
+    attachment_data: EntityAttachmentRequest,
     current_user: User = Depends(get_current_active_user)
 ):
     """Attach a resource to an entity"""
