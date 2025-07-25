@@ -399,6 +399,7 @@ class Project(BaseDocument):
     deadline: Optional[datetime] = None
     status: ProjectStatusEnum = ProjectStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
+    importance: ImportanceEnum = ImportanceEnum.medium  # New importance field
     completion_percentage: float = 0.0
     archived: bool = False
     sort_order: int = 0
