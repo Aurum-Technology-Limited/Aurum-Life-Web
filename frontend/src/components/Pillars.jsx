@@ -9,6 +9,7 @@ import {
   Edit2,
   BarChart3
 } from 'lucide-react';
+import IconPicker from './ui/IconPicker';
 
 const Pillars = () => {
   const { onDataMutation } = useDataContext();
