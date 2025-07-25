@@ -136,25 +136,9 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
           })}
         </nav>
 
-        {/* Footer */}
+        {/* Footer - User Menu */}
         <div className="absolute bottom-4 left-4 right-4">
-          <div className="p-4 rounded-lg bg-gray-800/30 border border-gray-700">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">
-                  {user?.first_name?.charAt(0) || user?.username?.charAt(0) || 'U'}
-                </span>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">
-                  {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || 'User'}
-                </p>
-                <p className="text-xs text-gray-400">
-                  Level {user?.level || 1} • {user?.total_points || 0} points
-                </p>
-              </div>
-            </div>
-          </div>
+          <UserMenu onNavigate={setActiveSection} />
         </div>
       </div>
 
