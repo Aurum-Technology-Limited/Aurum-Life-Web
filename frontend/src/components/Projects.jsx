@@ -960,7 +960,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
 
                 {/* Project Description */}
                 {project.description && (
-                  <p className="text-gray-400 text-xs mb-4 line-clamp-2 text-force-wrap leading-relaxed container-strict">
+                  <p className="text-gray-400 text-xs mb-4 line-clamp-2 overflow-safe leading-relaxed">
                     {project.description}
                   </p>
                 )}
