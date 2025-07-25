@@ -21,6 +21,12 @@ import { areasAPI, api } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import DonutChart from './ui/DonutChart';
 import IconPicker from './ui/IconPicker';
+import { 
+  getDynamicFontSize, 
+  validateTextLength, 
+  CHARACTER_LIMITS,
+  getCharacterCounterData
+} from '../utils/textUtils';
 
 const Areas = ({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
