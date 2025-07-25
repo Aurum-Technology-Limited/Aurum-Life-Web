@@ -780,13 +780,33 @@ const Achievements = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Target {createForm.target_type === 'complete_project' ? 'Count' : 'Number'}
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={createForm.target_count}
-                  onChange={(e) => setCreateForm(prev => ({ ...prev, target_count: parseInt(e.target.value) || 1 }))}
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
-                />
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={createForm.target_count}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
+                      const clampedValue = Math.max(1, Math.min(1000, value));
+                      setCreateForm(prev => ({ ...prev, target_count: clampedValue }));
+                    }}
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
+                  />
+                  <span className="text-gray-400 text-sm">
+                    {createForm.target_type === 'complete_tasks' && 'tasks'}
+                    {createForm.target_type === 'complete_project' && 'project(s)'}
+                    {createForm.target_type === 'write_journal_entries' && 'entries'}
+                    {createForm.target_type === 'complete_courses' && 'course(s)'}
+                    {createForm.target_type === 'maintain_streak' && 'days'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {createForm.target_type === 'complete_project' && createForm.target_id 
+                    ? 'Complete the selected project 1 time' 
+                    : `Reach ${createForm.target_count} ${createForm.target_type.replace('_', ' ')}`
+                  }
+                </p>
               </div>
             </div>
 
