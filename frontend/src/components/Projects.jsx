@@ -952,7 +952,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
 
                 {/* Project Description */}
                 {project.description && (
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2 break-words">
+                  <p className={`text-gray-400 ${getDynamicDescriptionSize(project.description)} mb-4 ${getDynamicLineClamp(project.description)} break-words leading-relaxed`}>
                     {project.description}
                   </p>
                 )}
