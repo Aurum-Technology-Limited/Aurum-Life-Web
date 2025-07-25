@@ -878,41 +878,47 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   <div className="flex-1 min-w-0 pr-3"> {/* Added min-w-0 and pr-3 for proper flex behavior */}
                     <div className="flex items-center space-x-3 mb-2">
                       {/* Project Icon */}
-                      <span className="text-2xl flex-shrink-0">{project.icon || '🚀'}</span>
-                      <h3 className="font-semibold text-white text-lg truncate flex-1">{project.name}</h3>
+                      <span className="text-xl sm:text-2xl flex-shrink-0">{project.icon || '🚀'}</span>
+                      <h3 className={`font-semibold text-white ${getDynamicTextSize(project.name)} truncate flex-1 leading-tight`}>
+                        {project.name}
+                      </h3>
                     </div>
                     
                     {/* Status, Priority, and Importance Badges */}
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${getStatusColor(project.status)}`}>
-                        {project.status}
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-2">
+                      <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full flex-shrink-0 ${getStatusColor(project.status)}`}>
+                        <span className="truncate max-w-20">{project.status}</span>
                       </span>
-                      <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${getPriorityColor(project.priority)}`}>
-                        {project.priority}
+                      <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full flex-shrink-0 ${getPriorityColor(project.priority)}`}>
+                        <span className="truncate max-w-16">{project.priority}</span>
                       </span>
                       {/* Importance Indicator */}
                       {project.importance && (
-                        <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${
+                        <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full flex-shrink-0 ${
                           project.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
                           project.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
                           project.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
                           'bg-gray-800/30 text-gray-400 border border-gray-600'
                         }`}>
-                          {project.importance >= 5 ? '🔥 Critical' :
-                           project.importance >= 4 ? '⚡ High' :
-                           project.importance >= 3 ? '📊 Medium' :
-                           '📝 Low'} Impact
+                          <span className="truncate max-w-20">
+                            {project.importance >= 5 ? '🔥 Critical' :
+                             project.importance >= 4 ? '⚡ High' :
+                             project.importance >= 3 ? '📊 Medium' :
+                             '📝 Low'} Impact
+                          </span>
                         </span>
                       )}
                       {project.archived && (
-                        <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300 flex-shrink-0">
-                          Archived
+                        <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full bg-gray-600 text-gray-300 flex-shrink-0">
+                          <span className="truncate max-w-16">Archived</span>
                         </span>
                       )}
                     </div>
                     
                     {project.area_name && (
-                      <p className="text-sm text-gray-400 truncate">{project.area_name}</p>
+                      <p className={`${getDynamicTextSize(project.area_name, 'text-sm')} text-gray-400 truncate`}>
+                        {project.area_name}
+                      </p>
                     )}
                   </div>
                   
