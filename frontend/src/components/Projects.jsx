@@ -1006,7 +1006,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                           colors: [
                             '#10B981', // Green for completed
                             '#F4B400', // Aurum gold for in progress  
-                            '#6B7280', // Gray for to do
+                            '#3B82F6', // Blue for to do
                           ]
                         }}
                         size="sm"
