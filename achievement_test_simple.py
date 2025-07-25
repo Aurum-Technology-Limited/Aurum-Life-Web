@@ -292,7 +292,7 @@ class SimpleAchievementTester:
         journal_data = {
             "title": "Achievement Test Journal Entry",
             "content": "Testing journal entry creation for achievement triggers.",
-            "mood": "happy",
+            "mood": "grateful",
             "energy_level": "high",
             "tags": ["achievement", "testing"]
         }
