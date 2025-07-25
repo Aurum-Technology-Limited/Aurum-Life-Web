@@ -1004,3 +1004,69 @@ class ChunkedUploadChunk(BaseModel):
     chunk_number: int
     chunk_data: str  # Base64 encoded chunk
     chunk_size: int
+
+# Custom Achievement Models for Phase 2
+class CustomAchievementTargetTypeEnum(str, Enum):
+    complete_project = "complete_project"
+    complete_tasks = "complete_tasks" 
+    write_journal_entries = "write_journal_entries"
+    complete_courses = "complete_courses"
+    maintain_streak = "maintain_streak"
+    reach_level = "reach_level"
+    earn_points = "earn_points"
+
+class CustomAchievement(BaseDocument):
+    """User-defined custom achievement"""
+    user_id: str
+    name: str
+    description: str = ""
+    icon: str = "🎯"
+    
+    # Goal configuration
+    target_type: CustomAchievementTargetTypeEnum
+    target_id: Optional[str] = None  # Specific project_id, course_id, etc.
+    target_count: int = 1  # Number to achieve (e.g., 5 tasks, 10 entries)
+    
+    # Achievement state
+    is_active: bool = True
+    is_completed: bool = False
+    completed_date: Optional[datetime] = None
+    current_progress: int = 0  # Current count toward target
+    
+    # Metadata
+    created_date: datetime = Field(default_factory=datetime.utcnow)
+
+class CustomAchievementCreate(BaseModel):
+    name: str
+    description: str = ""
+    icon: str = "🎯"
+    target_type: CustomAchievementTargetTypeEnum
+    target_id: Optional[str] = None
+    target_count: int = 1
+
+class CustomAchievementUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    target_count: Optional[int] = None
+    is_active: Optional[bool] = None
+
+class CustomAchievementResponse(BaseModel):
+    id: str
+    user_id: str
+    name: str
+    description: str
+    icon: str
+    target_type: CustomAchievementTargetTypeEnum
+    target_id: Optional[str] = None
+    target_count: int
+    is_active: bool
+    is_completed: bool
+    completed_date: Optional[datetime] = None
+    current_progress: int
+    progress_percentage: float
+    created_date: datetime
+    
+    # Contextual information
+    target_name: Optional[str] = None  # Name of target project/course etc.
+    estimated_completion: Optional[datetime] = None  # Based on current progress
