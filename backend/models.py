@@ -689,7 +689,6 @@ class Pillar(BaseDocument):
     description: str = ""
     icon: str = "🎯"
     color: str = "#F4B400"
-    parent_pillar_id: Optional[str] = None  # For nested pillars
     sort_order: int = 0
     archived: bool = False
     time_allocation_percentage: Optional[float] = None  # % of time/focus allocated to this pillar
