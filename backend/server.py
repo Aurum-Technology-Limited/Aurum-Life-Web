@@ -1297,6 +1297,17 @@ async def get_resource(
         raise HTTPException(status_code=404, detail="Resource not found")
     return resource
 
+@api_router.get("/resources/{resource_id}/content")
+async def get_resource_content(
+    resource_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get resource file content for viewing/downloading"""
+    content = await ResourceService.get_resource_content(current_user.id, resource_id)
+    if not content:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return content
+
 @api_router.put("/resources/{resource_id}", response_model=ResourceResponse)
 async def update_resource(
     resource_id: str,
