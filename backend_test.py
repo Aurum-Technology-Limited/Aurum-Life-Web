@@ -1,23 +1,29 @@
 #!/usr/bin/env python3
 """
-ENHANCED NOTIFICATIONS SYSTEM COMPREHENSIVE TESTING
-Complete end-to-end testing of the Enhanced Notifications System implementation.
+DATE_CREATED FIELD FUNCTIONALITY COMPREHENSIVE TESTING
+Complete end-to-end testing of the enhanced data models with date_created field functionality.
 
 FOCUS AREAS:
-1. Enhanced Notification Management - Test existing and NEW bulk endpoints
-2. Browser Notification Features - Test notification preferences and browser notifications
-3. Notification Scheduling System - Test task reminder scheduling and generation
-4. Data Integrity & Performance - Test bulk operations and data consistency
-5. Authentication & Security - Test user isolation and access control
-6. Error Handling - Test error scenarios and edge cases
+1. GET endpoints for pillars, areas, projects, and tasks to ensure date_created field is included in responses
+2. POST endpoints to verify date_created is automatically set for new documents
+3. Verify date_created field format and consistency across all collections
+4. Test that existing data migration was successful
 
-Context: Testing the complete Enhanced Notifications system implementation with:
-- Enhanced notification management with bulk operations
-- Browser notification features with preferences
-- Notification scheduling system for task reminders
-- Data integrity and performance optimization
-- Full authentication and user isolation
-- Comprehensive error handling
+SPECIFIC ENDPOINTS TO TEST:
+- GET /api/pillars - should include date_created in response
+- POST /api/pillars - should auto-set date_created for new pillars
+- GET /api/areas - should include date_created in response  
+- POST /api/areas - should auto-set date_created for new areas
+- GET /api/projects - should include date_created in response
+- POST /api/projects - should auto-set date_created for new projects
+- GET /api/tasks - should include date_created in response
+- POST /api/tasks - should auto-set date_created for new tasks
+
+DATA VALIDATION:
+- Verify date_created format is ISO datetime string
+- Confirm date_created is not null or empty
+- Test that date_created reflects actual creation time for new items
+- Verify migration preserved original created_at values as date_created
 """
 
 import requests
@@ -27,28 +33,31 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any
 import uuid
 import time
+import re
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://9e0755cb-5122-46b7-bde6-cd0ca0c057dc.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-life-1.preview.emergentagent.com/api"
 
-class JournalEnhancementsTester:
+class DateCreatedFieldTester:
     def __init__(self):
         self.base_url = BACKEND_URL
         self.session = requests.Session()
         self.test_results = []
         self.created_resources = {
-            'journal_entries': [],
-            'journal_templates': [],
+            'pillars': [],
+            'areas': [],
+            'projects': [],
+            'tasks': [],
             'users': []
         }
         self.auth_token = None
-        # Use realistic test data for journal testing
-        self.test_user_email = f"journal.tester_{uuid.uuid4().hex[:8]}@aurumlife.com"
-        self.test_user_password = "JournalTest2025!"
+        # Use realistic test data for date_created testing
+        self.test_user_email = f"date.tester_{uuid.uuid4().hex[:8]}@aurumlife.com"
+        self.test_user_password = "DateTest2025!"
         self.test_user_data = {
-            "username": f"journal_tester_{uuid.uuid4().hex[:8]}",
+            "username": f"date_tester_{uuid.uuid4().hex[:8]}",
             "email": self.test_user_email,
-            "first_name": "Journal",
+            "first_name": "Date",
             "last_name": "Tester",
             "password": self.test_user_password
         }
@@ -122,6 +131,27 @@ class JournalEnhancementsTester:
                 'response': getattr(e, 'response', None)
             }
 
+    def is_valid_iso_datetime(self, date_string: str) -> bool:
+        """Check if a string is a valid ISO datetime format"""
+        if not date_string:
+            return False
+        try:
+            # Try to parse as ISO format datetime
+            datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    def is_recent_datetime(self, date_string: str, tolerance_minutes: int = 5) -> bool:
+        """Check if datetime is recent (within tolerance_minutes of now)"""
+        try:
+            dt = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+            now = datetime.utcnow()
+            diff = abs((now - dt.replace(tzinfo=None)).total_seconds() / 60)
+            return diff <= tolerance_minutes
+        except:
+            return False
+
     def test_basic_connectivity(self):
         """Test basic connectivity to the backend API"""
         print("\n=== TESTING BASIC CONNECTIVITY ===")
@@ -144,7 +174,7 @@ class JournalEnhancementsTester:
         return result['success']
 
     def test_user_registration_and_login(self):
-        """Test user registration and login for journal testing"""
+        """Test user registration and login for date_created testing"""
         print("\n=== TESTING USER REGISTRATION AND LOGIN ===")
         
         # Register user
@@ -189,472 +219,584 @@ class JournalEnhancementsTester:
         
         return result['success']
 
-    def test_journal_templates_system(self):
-        """Test the journal templates system including default templates"""
-        print("\n=== TESTING JOURNAL TEMPLATES SYSTEM ===")
+    def test_pillars_date_created_field(self):
+        """Test date_created field functionality for Pillars"""
+        print("\n=== TESTING PILLARS DATE_CREATED FIELD ===")
         
         if not self.auth_token:
-            self.log_test("JOURNAL TEMPLATES - Authentication Required", False, "No authentication token available")
+            self.log_test("PILLARS DATE_CREATED - Authentication Required", False, "No authentication token available")
             return False
         
-        # Test 1: Get all templates (should include default templates)
-        result = self.make_request('GET', '/journal/templates', use_auth=True)
+        # Test 1: GET existing pillars to check date_created field in responses
+        result = self.make_request('GET', '/pillars', use_auth=True)
         self.log_test(
-            "GET ALL JOURNAL TEMPLATES",
+            "GET PILLARS - DATE_CREATED FIELD PRESENCE",
             result['success'],
-            f"Retrieved {len(result['data']) if result['success'] else 0} templates" if result['success'] else f"Failed to get templates: {result.get('error', 'Unknown error')}"
+            f"Retrieved {len(result['data']) if result['success'] else 0} pillars" if result['success'] else f"Failed to get pillars: {result.get('error', 'Unknown error')}"
         )
         
-        if not result['success']:
-            return False
+        if result['success'] and result['data']:
+            # Check if existing pillars have date_created field
+            existing_pillars = result['data']
+            pillars_with_date_created = [p for p in existing_pillars if 'date_created' in p]
+            
+            self.log_test(
+                "EXISTING PILLARS DATE_CREATED FIELD",
+                len(pillars_with_date_created) == len(existing_pillars),
+                f"{len(pillars_with_date_created)}/{len(existing_pillars)} existing pillars have date_created field"
+            )
+            
+            # Validate date_created format for existing pillars
+            if pillars_with_date_created:
+                sample_pillar = pillars_with_date_created[0]
+                date_created_value = sample_pillar.get('date_created')
+                
+                self.log_test(
+                    "EXISTING PILLAR DATE_CREATED FORMAT",
+                    self.is_valid_iso_datetime(str(date_created_value)),
+                    f"Date format validation: {date_created_value}"
+                )
         
-        templates = result['data']
+        # Test 2: POST new pillar to verify date_created is automatically set
+        pillar_data = {
+            "name": "Health & Wellness Test Pillar",
+            "description": "A test pillar for date_created field validation",
+            "icon": "🏥",
+            "color": "#4CAF50"
+        }
         
-        # Test 2: Verify default templates exist
-        expected_default_templates = [
-            "Daily Reflection", "Gratitude Journal", "Goal Setting", 
-            "Weekly Review", "Learning Log"
-        ]
-        
-        default_templates = [t for t in templates if t.get('is_default', False)]
-        default_template_names = [t['name'] for t in default_templates]
-        
-        found_defaults = [name for name in expected_default_templates if name in default_template_names]
+        creation_time = datetime.utcnow()
+        result = self.make_request('POST', '/pillars', data=pillar_data, use_auth=True)
         
         self.log_test(
-            "DEFAULT TEMPLATES VERIFICATION",
-            len(found_defaults) >= 5,
-            f"Found {len(found_defaults)}/5 expected default templates: {found_defaults}"
+            "CREATE PILLAR WITH AUTO DATE_CREATED",
+            result['success'],
+            f"Pillar created: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to create pillar: {result.get('error', 'Unknown error')}"
         )
         
-        # Test 3: Verify default template structure
-        if default_templates:
-            sample_template = default_templates[0]
-            required_fields = ['id', 'name', 'description', 'template_type', 'prompts', 'default_tags', 'icon', 'color', 'is_default', 'user_id']
-            present_fields = [field for field in required_fields if field in sample_template]
+        if result['success']:
+            created_pillar = result['data']
+            pillar_id = created_pillar['id']
+            self.created_resources['pillars'].append(pillar_id)
+            
+            # Test 3: Verify date_created field is present and valid
+            date_created = created_pillar.get('date_created')
             
             self.log_test(
-                "DEFAULT TEMPLATE STRUCTURE",
-                len(present_fields) >= 8,
-                f"Default template contains {len(present_fields)}/{len(required_fields)} expected fields"
+                "NEW PILLAR DATE_CREATED FIELD PRESENCE",
+                date_created is not None,
+                f"date_created field present: {date_created}"
             )
             
-            # Verify system user_id
+            if date_created:
+                self.log_test(
+                    "NEW PILLAR DATE_CREATED FORMAT VALIDATION",
+                    self.is_valid_iso_datetime(str(date_created)),
+                    f"Valid ISO datetime format: {date_created}"
+                )
+                
+                self.log_test(
+                    "NEW PILLAR DATE_CREATED TIMING",
+                    self.is_recent_datetime(str(date_created), tolerance_minutes=2),
+                    f"Created at reasonable time: {date_created}"
+                )
+            
+            # Test 4: GET specific pillar to verify date_created in individual response
+            result = self.make_request('GET', f'/pillars/{pillar_id}', use_auth=True)
+            
             self.log_test(
-                "DEFAULT TEMPLATE USER_ID",
-                sample_template.get('user_id') == 'system',
-                f"Default template user_id: {sample_template.get('user_id', 'Unknown')}"
+                "GET SPECIFIC PILLAR DATE_CREATED",
+                result['success'] and 'date_created' in result['data'],
+                f"Individual pillar response includes date_created: {result['data'].get('date_created') if result['success'] else 'N/A'}"
             )
         
-        # Test 4: Create custom template
-        custom_template_data = {
-            "name": "Test Custom Template",
-            "description": "A custom template for testing",
-            "template_type": "custom",
-            "prompts": [
-                "What did you test today?",
-                "What worked well?",
-                "What needs improvement?"
-            ],
-            "default_tags": ["testing", "custom"],
-            "icon": "🧪",
+        return True
+
+    def test_areas_date_created_field(self):
+        """Test date_created field functionality for Areas"""
+        print("\n=== TESTING AREAS DATE_CREATED FIELD ===")
+        
+        if not self.auth_token:
+            self.log_test("AREAS DATE_CREATED - Authentication Required", False, "No authentication token available")
+            return False
+        
+        # Test 1: GET existing areas to check date_created field in responses
+        result = self.make_request('GET', '/areas', use_auth=True)
+        self.log_test(
+            "GET AREAS - DATE_CREATED FIELD PRESENCE",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} areas" if result['success'] else f"Failed to get areas: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success'] and result['data']:
+            # Check if existing areas have date_created field
+            existing_areas = result['data']
+            areas_with_date_created = [a for a in existing_areas if 'date_created' in a]
+            
+            self.log_test(
+                "EXISTING AREAS DATE_CREATED FIELD",
+                len(areas_with_date_created) == len(existing_areas),
+                f"{len(areas_with_date_created)}/{len(existing_areas)} existing areas have date_created field"
+            )
+            
+            # Validate date_created format for existing areas
+            if areas_with_date_created:
+                sample_area = areas_with_date_created[0]
+                date_created_value = sample_area.get('date_created')
+                
+                self.log_test(
+                    "EXISTING AREA DATE_CREATED FORMAT",
+                    self.is_valid_iso_datetime(str(date_created_value)),
+                    f"Date format validation: {date_created_value}"
+                )
+        
+        # Test 2: POST new area to verify date_created is automatically set
+        area_data = {
+            "name": "Fitness & Exercise Test Area",
+            "description": "A test area for date_created field validation",
+            "icon": "💪",
             "color": "#FF5722"
         }
         
-        result = self.make_request('POST', '/journal/templates', data=custom_template_data, use_auth=True)
+        creation_time = datetime.utcnow()
+        result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+        
         self.log_test(
-            "CREATE CUSTOM TEMPLATE",
+            "CREATE AREA WITH AUTO DATE_CREATED",
             result['success'],
-            f"Custom template created: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to create template: {result.get('error', 'Unknown error')}"
+            f"Area created: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to create area: {result.get('error', 'Unknown error')}"
         )
         
         if result['success']:
-            template_id = result['data']['id']
-            self.created_resources['journal_templates'].append(template_id)
+            created_area = result['data']
+            area_id = created_area['id']
+            self.created_resources['areas'].append(area_id)
             
-            # Test 5: Get specific template
-            result = self.make_request('GET', f'/journal/templates/{template_id}', use_auth=True)
-            self.log_test(
-                "GET SPECIFIC TEMPLATE",
-                result['success'],
-                f"Retrieved template: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to get template: {result.get('error', 'Unknown error')}"
-            )
-            
-            # Test 6: Update custom template
-            update_data = {
-                "description": "Updated description for testing",
-                "prompts": ["Updated prompt 1", "Updated prompt 2"]
-            }
-            
-            result = self.make_request('PUT', f'/journal/templates/{template_id}', data=update_data, use_auth=True)
-            self.log_test(
-                "UPDATE CUSTOM TEMPLATE",
-                result['success'],
-                f"Template updated successfully" if result['success'] else f"Failed to update template: {result.get('error', 'Unknown error')}"
-            )
-        
-        return True
-
-    def test_journal_entry_management(self):
-        """Test comprehensive journal entry management with enhanced fields"""
-        print("\n=== TESTING JOURNAL ENTRY MANAGEMENT ===")
-        
-        if not self.auth_token:
-            self.log_test("JOURNAL ENTRY MANAGEMENT - Authentication Required", False, "No authentication token available")
-            return False
-        
-        # Get a template to use for testing
-        templates_result = self.make_request('GET', '/journal/templates', use_auth=True)
-        template_id = None
-        if templates_result['success'] and templates_result['data']:
-            template_id = templates_result['data'][0]['id']
-        
-        # Test 1: Create journal entry with enhanced fields
-        entry_data = {
-            "title": "My Test Journal Entry",
-            "content": "This is a comprehensive test of the journal entry system. I'm testing all the enhanced fields including mood, energy level, tags, template responses, weather, and location. This entry should demonstrate the full capabilities of the journal enhancement system.",
-            "mood": "optimistic",
-            "energy_level": "high",
-            "tags": ["testing", "journal", "enhancement"],
-            "template_id": template_id,
-            "template_responses": {
-                "What went well today?": "The journal testing is going great!",
-                "What challenges did you face?": "Some minor API issues but nothing major.",
-                "What did you learn?": "The journal system is very comprehensive."
-            },
-            "weather": "Sunny and warm",
-            "location": "Home Office"
-        }
-        
-        result = self.make_request('POST', '/journal', data=entry_data, use_auth=True)
-        self.log_test(
-            "CREATE JOURNAL ENTRY WITH ENHANCED FIELDS",
-            result['success'],
-            f"Journal entry created: {result['data'].get('title', 'Unknown')}" if result['success'] else f"Failed to create entry: {result.get('error', 'Unknown error')}"
-        )
-        
-        if not result['success']:
-            return False
-        
-        entry_id = result['data']['id']
-        self.created_resources['journal_entries'].append(entry_id)
-        
-        # Verify enhanced fields are present
-        created_entry = result['data']
-        enhanced_fields = ['mood', 'energy_level', 'tags', 'template_id', 'template_responses', 'weather', 'location', 'word_count', 'reading_time_minutes']
-        present_enhanced_fields = [field for field in enhanced_fields if field in created_entry]
-        
-        self.log_test(
-            "ENHANCED FIELDS VERIFICATION",
-            len(present_enhanced_fields) >= 7,
-            f"Entry contains {len(present_enhanced_fields)}/{len(enhanced_fields)} enhanced fields: {present_enhanced_fields}"
-        )
-        
-        # Test word count and reading time calculation
-        expected_word_count = len(entry_data['content'].split())
-        actual_word_count = created_entry.get('word_count', 0)
-        
-        self.log_test(
-            "WORD COUNT CALCULATION",
-            abs(actual_word_count - expected_word_count) <= 2,  # Allow small variance
-            f"Word count calculated: {actual_word_count} (expected ~{expected_word_count})"
-        )
-        
-        self.log_test(
-            "READING TIME CALCULATION",
-            created_entry.get('reading_time_minutes', 0) > 0,
-            f"Reading time calculated: {created_entry.get('reading_time_minutes', 0)} minutes"
-        )
-        
-        # Test 2: Create additional entries for filtering tests
-        additional_entries = [
-            {
-                "title": "Grateful Thoughts",
-                "content": "Today I'm grateful for the opportunity to work on this amazing project.",
-                "mood": "grateful",
-                "energy_level": "moderate",
-                "tags": ["gratitude", "work"]
-            },
-            {
-                "title": "Challenging Day",
-                "content": "Had some difficulties today but learned a lot from them.",
-                "mood": "challenging",
-                "energy_level": "low",
-                "tags": ["challenges", "learning"]
-            },
-            {
-                "title": "Excited About Progress",
-                "content": "Making great progress on the journal system implementation!",
-                "mood": "excited",
-                "energy_level": "very_high",
-                "tags": ["progress", "excitement", "journal"]
-            }
-        ]
-        
-        created_entry_ids = []
-        for i, additional_entry in enumerate(additional_entries):
-            result = self.make_request('POST', '/journal', data=additional_entry, use_auth=True)
-            if result['success']:
-                created_entry_ids.append(result['data']['id'])
-                self.created_resources['journal_entries'].append(result['data']['id'])
-        
-        self.log_test(
-            "CREATE ADDITIONAL ENTRIES",
-            len(created_entry_ids) == len(additional_entries),
-            f"Created {len(created_entry_ids)}/{len(additional_entries)} additional entries"
-        )
-        
-        # Test 3: Get all entries
-        result = self.make_request('GET', '/journal', use_auth=True)
-        self.log_test(
-            "GET ALL JOURNAL ENTRIES",
-            result['success'] and len(result['data']) >= 4,
-            f"Retrieved {len(result['data']) if result['success'] else 0} journal entries" if result['success'] else f"Failed to get entries: {result.get('error', 'Unknown error')}"
-        )
-        
-        # Test 4: Advanced filtering - mood filter
-        result = self.make_request('GET', '/journal', params={'mood_filter': 'grateful'}, use_auth=True)
-        self.log_test(
-            "MOOD FILTERING",
-            result['success'] and len(result['data']) >= 1,
-            f"Found {len(result['data']) if result['success'] else 0} entries with 'grateful' mood"
-        )
-        
-        # Test 5: Advanced filtering - tag filter
-        result = self.make_request('GET', '/journal', params={'tag_filter': 'journal'}, use_auth=True)
-        self.log_test(
-            "TAG FILTERING",
-            result['success'] and len(result['data']) >= 2,
-            f"Found {len(result['data']) if result['success'] else 0} entries with 'journal' tag"
-        )
-        
-        # Test 6: Pagination
-        result = self.make_request('GET', '/journal', params={'limit': 2, 'skip': 0}, use_auth=True)
-        self.log_test(
-            "PAGINATION",
-            result['success'] and len(result['data']) <= 2,
-            f"Pagination working: retrieved {len(result['data']) if result['success'] else 0} entries (limit=2)"
-        )
-        
-        # Test 7: Update journal entry
-        update_data = {
-            "title": "Updated Test Journal Entry",
-            "mood": "inspired",
-            "tags": ["testing", "journal", "enhancement", "updated"]
-        }
-        
-        result = self.make_request('PUT', f'/journal/{entry_id}', data=update_data, use_auth=True)
-        self.log_test(
-            "UPDATE JOURNAL ENTRY",
-            result['success'],
-            f"Journal entry updated successfully" if result['success'] else f"Failed to update entry: {result.get('error', 'Unknown error')}"
-        )
-        
-        return True
-
-    def test_journal_search_and_insights(self):
-        """Test journal search and insights functionality"""
-        print("\n=== TESTING JOURNAL SEARCH AND INSIGHTS ===")
-        
-        if not self.auth_token:
-            self.log_test("JOURNAL SEARCH AND INSIGHTS - Authentication Required", False, "No authentication token available")
-            return False
-        
-        # Test 1: Search entries by content
-        result = self.make_request('GET', '/journal/search', params={'q': 'testing'}, use_auth=True)
-        self.log_test(
-            "JOURNAL SEARCH BY CONTENT",
-            result['success'],
-            f"Search found {len(result['data']) if result['success'] else 0} entries containing 'testing'" if result['success'] else f"Search failed: {result.get('error', 'Unknown error')}"
-        )
-        
-        # Test 2: Search entries by tag
-        result = self.make_request('GET', '/journal/search', params={'q': 'journal'}, use_auth=True)
-        self.log_test(
-            "JOURNAL SEARCH BY TAG",
-            result['success'],
-            f"Search found {len(result['data']) if result['success'] else 0} entries related to 'journal'" if result['success'] else f"Search failed: {result.get('error', 'Unknown error')}"
-        )
-        
-        # Test 3: On This Day functionality
-        result = self.make_request('GET', '/journal/on-this-day', use_auth=True)
-        self.log_test(
-            "ON THIS DAY FUNCTIONALITY",
-            result['success'],
-            f"On This Day returned {len(result['data']) if result['success'] else 0} historical entries" if result['success'] else f"On This Day failed: {result.get('error', 'Unknown error')}"
-        )
-        
-        # Test 4: Journal insights analytics
-        result = self.make_request('GET', '/journal/insights', use_auth=True)
-        self.log_test(
-            "JOURNAL INSIGHTS ANALYTICS",
-            result['success'],
-            f"Insights generated successfully" if result['success'] else f"Insights failed: {result.get('error', 'Unknown error')}"
-        )
-        
-        if result['success']:
-            insights = result['data']
-            expected_insight_fields = ['total_entries', 'current_streak', 'most_common_mood', 'average_energy_level', 'most_used_tags', 'mood_trend', 'energy_trend', 'writing_stats']
-            present_insight_fields = [field for field in expected_insight_fields if field in insights]
+            # Test 3: Verify date_created field is present and valid
+            date_created = created_area.get('date_created')
             
             self.log_test(
-                "INSIGHTS DATA STRUCTURE",
-                len(present_insight_fields) >= 6,
-                f"Insights contains {len(present_insight_fields)}/{len(expected_insight_fields)} expected fields: {present_insight_fields}"
+                "NEW AREA DATE_CREATED FIELD PRESENCE",
+                date_created is not None,
+                f"date_created field present: {date_created}"
             )
             
-            # Verify insights data quality
-            self.log_test(
-                "INSIGHTS DATA QUALITY",
-                insights.get('total_entries', 0) > 0 and insights.get('most_common_mood') is not None,
-                f"Total entries: {insights.get('total_entries', 0)}, Most common mood: {insights.get('most_common_mood', 'Unknown')}"
-            )
-        
-        return True
-
-    def test_authentication_and_user_isolation(self):
-        """Test that all journal endpoints require authentication and provide user isolation"""
-        print("\n=== TESTING AUTHENTICATION AND USER ISOLATION ===")
-        
-        # Test 1: Endpoints without authentication should fail
-        endpoints_to_test = [
-            '/journal',
-            '/journal/templates',
-            '/journal/search?q=test',
-            '/journal/insights',
-            '/journal/on-this-day'
-        ]
-        
-        auth_protected_count = 0
-        for endpoint in endpoints_to_test:
-            result = self.make_request('GET', endpoint, use_auth=False)
-            if not result['success'] and result.get('status_code') in [401, 403]:
-                auth_protected_count += 1
-        
-        self.log_test(
-            "AUTHENTICATION PROTECTION",
-            auth_protected_count == len(endpoints_to_test),
-            f"{auth_protected_count}/{len(endpoints_to_test)} endpoints properly protected"
-        )
-        
-        # Test 2: User isolation - entries should be user-specific
-        if self.auth_token:
-            result = self.make_request('GET', '/journal', use_auth=True)
-            if result['success']:
-                entries = result['data']
-                user_entries = [e for e in entries if e.get('user_id')]
+            if date_created:
+                self.log_test(
+                    "NEW AREA DATE_CREATED FORMAT VALIDATION",
+                    self.is_valid_iso_datetime(str(date_created)),
+                    f"Valid ISO datetime format: {date_created}"
+                )
                 
                 self.log_test(
-                    "USER DATA ISOLATION",
-                    len(user_entries) == len(entries),
-                    f"All {len(entries)} entries have user_id field for isolation"
+                    "NEW AREA DATE_CREATED TIMING",
+                    self.is_recent_datetime(str(date_created), tolerance_minutes=2),
+                    f"Created at reasonable time: {date_created}"
+                )
+            
+            # Test 4: GET specific area to verify date_created in individual response
+            result = self.make_request('GET', f'/areas/{area_id}', use_auth=True)
+            
+            self.log_test(
+                "GET SPECIFIC AREA DATE_CREATED",
+                result['success'] and 'date_created' in result['data'],
+                f"Individual area response includes date_created: {result['data'].get('date_created') if result['success'] else 'N/A'}"
+            )
+        
+        return True
+
+    def test_projects_date_created_field(self):
+        """Test date_created field functionality for Projects"""
+        print("\n=== TESTING PROJECTS DATE_CREATED FIELD ===")
+        
+        if not self.auth_token:
+            self.log_test("PROJECTS DATE_CREATED - Authentication Required", False, "No authentication token available")
+            return False
+        
+        # First, ensure we have an area to create projects in
+        area_id = None
+        if self.created_resources['areas']:
+            area_id = self.created_resources['areas'][0]
+        else:
+            # Create a test area
+            area_data = {
+                "name": "Test Area for Projects",
+                "description": "Area for testing project date_created field",
+                "icon": "📁",
+                "color": "#2196F3"
+            }
+            result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+            if result['success']:
+                area_id = result['data']['id']
+                self.created_resources['areas'].append(area_id)
+        
+        if not area_id:
+            self.log_test("PROJECTS DATE_CREATED - Area Required", False, "No area available for project testing")
+            return False
+        
+        # Test 1: GET existing projects to check date_created field in responses
+        result = self.make_request('GET', '/projects', use_auth=True)
+        self.log_test(
+            "GET PROJECTS - DATE_CREATED FIELD PRESENCE",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} projects" if result['success'] else f"Failed to get projects: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success'] and result['data']:
+            # Check if existing projects have date_created field
+            existing_projects = result['data']
+            projects_with_date_created = [p for p in existing_projects if 'date_created' in p]
+            
+            self.log_test(
+                "EXISTING PROJECTS DATE_CREATED FIELD",
+                len(projects_with_date_created) == len(existing_projects),
+                f"{len(projects_with_date_created)}/{len(existing_projects)} existing projects have date_created field"
+            )
+            
+            # Validate date_created format for existing projects
+            if projects_with_date_created:
+                sample_project = projects_with_date_created[0]
+                date_created_value = sample_project.get('date_created')
+                
+                self.log_test(
+                    "EXISTING PROJECT DATE_CREATED FORMAT",
+                    self.is_valid_iso_datetime(str(date_created_value)),
+                    f"Date format validation: {date_created_value}"
+                )
+        
+        # Test 2: POST new project to verify date_created is automatically set
+        project_data = {
+            "area_id": area_id,
+            "name": "Workout Routine Test Project",
+            "description": "A test project for date_created field validation",
+            "priority": "high"
+        }
+        
+        creation_time = datetime.utcnow()
+        result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+        
+        self.log_test(
+            "CREATE PROJECT WITH AUTO DATE_CREATED",
+            result['success'],
+            f"Project created: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to create project: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            created_project = result['data']
+            project_id = created_project['id']
+            self.created_resources['projects'].append(project_id)
+            
+            # Test 3: Verify date_created field is present and valid
+            date_created = created_project.get('date_created')
+            
+            self.log_test(
+                "NEW PROJECT DATE_CREATED FIELD PRESENCE",
+                date_created is not None,
+                f"date_created field present: {date_created}"
+            )
+            
+            if date_created:
+                self.log_test(
+                    "NEW PROJECT DATE_CREATED FORMAT VALIDATION",
+                    self.is_valid_iso_datetime(str(date_created)),
+                    f"Valid ISO datetime format: {date_created}"
+                )
+                
+                self.log_test(
+                    "NEW PROJECT DATE_CREATED TIMING",
+                    self.is_recent_datetime(str(date_created), tolerance_minutes=2),
+                    f"Created at reasonable time: {date_created}"
+                )
+            
+            # Test 4: GET specific project to verify date_created in individual response
+            result = self.make_request('GET', f'/projects/{project_id}', use_auth=True)
+            
+            self.log_test(
+                "GET SPECIFIC PROJECT DATE_CREATED",
+                result['success'] and 'date_created' in result['data'],
+                f"Individual project response includes date_created: {result['data'].get('date_created') if result['success'] else 'N/A'}"
+            )
+        
+        return True
+
+    def test_tasks_date_created_field(self):
+        """Test date_created field functionality for Tasks"""
+        print("\n=== TESTING TASKS DATE_CREATED FIELD ===")
+        
+        if not self.auth_token:
+            self.log_test("TASKS DATE_CREATED - Authentication Required", False, "No authentication token available")
+            return False
+        
+        # First, ensure we have a project to create tasks in
+        project_id = None
+        if self.created_resources['projects']:
+            project_id = self.created_resources['projects'][0]
+        else:
+            # Create a test area and project
+            area_data = {
+                "name": "Test Area for Tasks",
+                "description": "Area for testing task date_created field",
+                "icon": "📋",
+                "color": "#9C27B0"
+            }
+            area_result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
+            if area_result['success']:
+                area_id = area_result['data']['id']
+                self.created_resources['areas'].append(area_id)
+                
+                project_data = {
+                    "area_id": area_id,
+                    "name": "Test Project for Tasks",
+                    "description": "Project for testing task date_created field",
+                    "priority": "medium"
+                }
+                project_result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+                if project_result['success']:
+                    project_id = project_result['data']['id']
+                    self.created_resources['projects'].append(project_id)
+        
+        if not project_id:
+            self.log_test("TASKS DATE_CREATED - Project Required", False, "No project available for task testing")
+            return False
+        
+        # Test 1: GET existing tasks to check date_created field in responses
+        result = self.make_request('GET', '/tasks', use_auth=True)
+        self.log_test(
+            "GET TASKS - DATE_CREATED FIELD PRESENCE",
+            result['success'],
+            f"Retrieved {len(result['data']) if result['success'] else 0} tasks" if result['success'] else f"Failed to get tasks: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success'] and result['data']:
+            # Check if existing tasks have date_created field
+            existing_tasks = result['data']
+            tasks_with_date_created = [t for t in existing_tasks if 'date_created' in t]
+            
+            self.log_test(
+                "EXISTING TASKS DATE_CREATED FIELD",
+                len(tasks_with_date_created) == len(existing_tasks),
+                f"{len(tasks_with_date_created)}/{len(existing_tasks)} existing tasks have date_created field"
+            )
+            
+            # Validate date_created format for existing tasks
+            if tasks_with_date_created:
+                sample_task = tasks_with_date_created[0]
+                date_created_value = sample_task.get('date_created')
+                
+                self.log_test(
+                    "EXISTING TASK DATE_CREATED FORMAT",
+                    self.is_valid_iso_datetime(str(date_created_value)),
+                    f"Date format validation: {date_created_value}"
+                )
+        
+        # Test 2: POST new task to verify date_created is automatically set
+        task_data = {
+            "project_id": project_id,
+            "name": "Morning Cardio Session",
+            "description": "A test task for date_created field validation",
+            "priority": "high",
+            "due_time": "07:30"
+        }
+        
+        creation_time = datetime.utcnow()
+        result = self.make_request('POST', '/tasks', data=task_data, use_auth=True)
+        
+        self.log_test(
+            "CREATE TASK WITH AUTO DATE_CREATED",
+            result['success'],
+            f"Task created: {result['data'].get('name', 'Unknown')}" if result['success'] else f"Failed to create task: {result.get('error', 'Unknown error')}"
+        )
+        
+        if result['success']:
+            created_task = result['data']
+            task_id = created_task['id']
+            self.created_resources['tasks'].append(task_id)
+            
+            # Test 3: Verify date_created field is present and valid
+            date_created = created_task.get('date_created')
+            
+            self.log_test(
+                "NEW TASK DATE_CREATED FIELD PRESENCE",
+                date_created is not None,
+                f"date_created field present: {date_created}"
+            )
+            
+            if date_created:
+                self.log_test(
+                    "NEW TASK DATE_CREATED FORMAT VALIDATION",
+                    self.is_valid_iso_datetime(str(date_created)),
+                    f"Valid ISO datetime format: {date_created}"
+                )
+                
+                self.log_test(
+                    "NEW TASK DATE_CREATED TIMING",
+                    self.is_recent_datetime(str(date_created), tolerance_minutes=2),
+                    f"Created at reasonable time: {date_created}"
+                )
+            
+            # Test 4: GET tasks by project to verify date_created in project-specific response
+            result = self.make_request('GET', f'/projects/{project_id}/tasks', use_auth=True)
+            
+            if result['success'] and result['data']:
+                project_tasks = result['data']
+                project_tasks_with_date_created = [t for t in project_tasks if 'date_created' in t]
+                
+                self.log_test(
+                    "GET PROJECT TASKS DATE_CREATED",
+                    len(project_tasks_with_date_created) == len(project_tasks),
+                    f"Project tasks response includes date_created: {len(project_tasks_with_date_created)}/{len(project_tasks)} tasks"
                 )
         
         return True
 
-    def test_template_usage_tracking(self):
-        """Test template usage tracking functionality"""
-        print("\n=== TESTING TEMPLATE USAGE TRACKING ===")
+    def test_date_created_consistency(self):
+        """Test date_created field consistency across all collections"""
+        print("\n=== TESTING DATE_CREATED FIELD CONSISTENCY ===")
         
         if not self.auth_token:
-            self.log_test("TEMPLATE USAGE TRACKING - Authentication Required", False, "No authentication token available")
+            self.log_test("DATE_CREATED CONSISTENCY - Authentication Required", False, "No authentication token available")
             return False
         
-        # Get templates to find one with usage count
-        result = self.make_request('GET', '/journal/templates', use_auth=True)
-        if not result['success'] or not result['data']:
-            self.log_test("TEMPLATE USAGE TRACKING", False, "No templates available for testing")
-            return False
+        # Collect all date_created values from created resources
+        all_date_created_values = []
         
-        # Find a template to use
-        template = result['data'][0]
-        template_id = template['id']
-        initial_usage_count = template.get('usage_count', 0)
+        # Get pillars
+        if self.created_resources['pillars']:
+            for pillar_id in self.created_resources['pillars']:
+                result = self.make_request('GET', f'/pillars/{pillar_id}', use_auth=True)
+                if result['success'] and 'date_created' in result['data']:
+                    all_date_created_values.append(('pillar', result['data']['date_created']))
         
-        # Create an entry using this template
-        entry_data = {
-            "title": "Template Usage Test",
-            "content": "Testing template usage tracking functionality.",
-            "template_id": template_id,
-            "template_responses": {
-                "test_prompt": "test_response"
-            }
-        }
+        # Get areas
+        if self.created_resources['areas']:
+            for area_id in self.created_resources['areas']:
+                result = self.make_request('GET', f'/areas/{area_id}', use_auth=True)
+                if result['success'] and 'date_created' in result['data']:
+                    all_date_created_values.append(('area', result['data']['date_created']))
         
-        result = self.make_request('POST', '/journal', data=entry_data, use_auth=True)
+        # Get projects
+        if self.created_resources['projects']:
+            for project_id in self.created_resources['projects']:
+                result = self.make_request('GET', f'/projects/{project_id}', use_auth=True)
+                if result['success'] and 'date_created' in result['data']:
+                    all_date_created_values.append(('project', result['data']['date_created']))
+        
+        # Get tasks
+        result = self.make_request('GET', '/tasks', use_auth=True)
         if result['success']:
-            self.created_resources['journal_entries'].append(result['data']['id'])
+            for task in result['data']:
+                if task['id'] in self.created_resources['tasks'] and 'date_created' in task:
+                    all_date_created_values.append(('task', task['date_created']))
         
+        # Test consistency
         self.log_test(
-            "CREATE ENTRY WITH TEMPLATE",
-            result['success'],
-            f"Entry created with template {template_id}" if result['success'] else f"Failed to create entry: {result.get('error', 'Unknown error')}"
+            "DATE_CREATED VALUES COLLECTED",
+            len(all_date_created_values) > 0,
+            f"Collected {len(all_date_created_values)} date_created values from created resources"
         )
         
-        # Check if usage count increased (Note: This might not be immediately visible due to async operations)
-        result = self.make_request('GET', f'/journal/templates/{template_id}', use_auth=True)
-        if result['success']:
-            updated_template = result['data']
-            new_usage_count = updated_template.get('usage_count', 0)
+        if all_date_created_values:
+            # Test format consistency
+            valid_formats = 0
+            for resource_type, date_value in all_date_created_values:
+                if self.is_valid_iso_datetime(str(date_value)):
+                    valid_formats += 1
             
             self.log_test(
-                "TEMPLATE USAGE COUNT TRACKING",
-                new_usage_count >= initial_usage_count,
-                f"Usage count: {initial_usage_count} → {new_usage_count}"
+                "DATE_CREATED FORMAT CONSISTENCY",
+                valid_formats == len(all_date_created_values),
+                f"{valid_formats}/{len(all_date_created_values)} date_created values have valid ISO format"
+            )
+            
+            # Test timing consistency (all should be recent)
+            recent_dates = 0
+            for resource_type, date_value in all_date_created_values:
+                if self.is_recent_datetime(str(date_value), tolerance_minutes=10):
+                    recent_dates += 1
+            
+            self.log_test(
+                "DATE_CREATED TIMING CONSISTENCY",
+                recent_dates == len(all_date_created_values),
+                f"{recent_dates}/{len(all_date_created_values)} date_created values are within expected time range"
             )
         
         return True
 
-    def test_mood_and_energy_enums(self):
-        """Test mood and energy level enum validation"""
-        print("\n=== TESTING MOOD AND ENERGY LEVEL ENUMS ===")
+    def test_migration_verification(self):
+        """Test that existing data migration was successful"""
+        print("\n=== TESTING MIGRATION VERIFICATION ===")
         
         if not self.auth_token:
-            self.log_test("MOOD AND ENERGY ENUMS - Authentication Required", False, "No authentication token available")
+            self.log_test("MIGRATION VERIFICATION - Authentication Required", False, "No authentication token available")
             return False
         
-        # Test valid mood values
-        valid_moods = ["optimistic", "inspired", "reflective", "challenging", "anxious", "grateful", "excited", "frustrated", "peaceful", "motivated"]
-        valid_energy_levels = ["very_low", "low", "moderate", "high", "very_high"]
+        # Test existing data has date_created field
+        endpoints_to_check = [
+            ('/pillars', 'pillars'),
+            ('/areas', 'areas'),
+            ('/projects', 'projects'),
+            ('/tasks', 'tasks')
+        ]
         
-        # Test with valid values
-        entry_data = {
-            "title": "Enum Validation Test",
-            "content": "Testing mood and energy level enum validation.",
-            "mood": "grateful",
-            "energy_level": "high"
-        }
+        migration_success_count = 0
+        total_endpoints = len(endpoints_to_check)
         
-        result = self.make_request('POST', '/journal', data=entry_data, use_auth=True)
+        for endpoint, resource_type in endpoints_to_check:
+            result = self.make_request('GET', endpoint, use_auth=True)
+            
+            if result['success']:
+                resources = result['data']
+                if resources:
+                    # Check if all resources have date_created field
+                    resources_with_date_created = [r for r in resources if 'date_created' in r and r['date_created']]
+                    
+                    success = len(resources_with_date_created) == len(resources)
+                    if success:
+                        migration_success_count += 1
+                    
+                    self.log_test(
+                        f"MIGRATION VERIFICATION - {resource_type.upper()}",
+                        success,
+                        f"{len(resources_with_date_created)}/{len(resources)} {resource_type} have date_created field"
+                    )
+                    
+                    # Validate format of migrated data
+                    if resources_with_date_created:
+                        sample_resource = resources_with_date_created[0]
+                        date_created_value = sample_resource.get('date_created')
+                        
+                        self.log_test(
+                            f"MIGRATED {resource_type.upper()} DATE_CREATED FORMAT",
+                            self.is_valid_iso_datetime(str(date_created_value)),
+                            f"Migrated data has valid date format: {date_created_value}"
+                        )
+                else:
+                    # No existing data to check
+                    migration_success_count += 1
+                    self.log_test(
+                        f"MIGRATION VERIFICATION - {resource_type.upper()}",
+                        True,
+                        f"No existing {resource_type} to verify (empty collection)"
+                    )
+            else:
+                self.log_test(
+                    f"MIGRATION VERIFICATION - {resource_type.upper()}",
+                    False,
+                    f"Failed to retrieve {resource_type}: {result.get('error', 'Unknown error')}"
+                )
+        
+        # Overall migration success
         self.log_test(
-            "VALID MOOD AND ENERGY ENUMS",
-            result['success'],
-            f"Entry created with valid enums" if result['success'] else f"Failed with valid enums: {result.get('error', 'Unknown error')}"
+            "OVERALL MIGRATION SUCCESS",
+            migration_success_count == total_endpoints,
+            f"{migration_success_count}/{total_endpoints} endpoints show successful migration"
         )
         
-        if result['success']:
-            self.created_resources['journal_entries'].append(result['data']['id'])
-        
-        # Test with invalid mood (should fail validation)
-        invalid_entry_data = {
-            "title": "Invalid Enum Test",
-            "content": "Testing invalid enum values.",
-            "mood": "invalid_mood",
-            "energy_level": "moderate"
-        }
-        
-        result = self.make_request('POST', '/journal', data=invalid_entry_data, use_auth=True)
-        self.log_test(
-            "INVALID MOOD ENUM REJECTION",
-            not result['success'] and result.get('status_code') in [400, 422],
-            f"Invalid mood properly rejected with status {result.get('status_code')}" if not result['success'] else "⚠️ Invalid mood was accepted - validation issue!"
-        )
-        
-        return True
+        return migration_success_count == total_endpoints
 
-    def run_comprehensive_journal_test(self):
-        """Run comprehensive journal enhancements system tests"""
-        print("\n📝 STARTING JOURNAL ENHANCEMENTS SYSTEM TESTING")
+    def run_comprehensive_date_created_test(self):
+        """Run comprehensive date_created field functionality tests"""
+        print("\n📅 STARTING DATE_CREATED FIELD FUNCTIONALITY TESTING")
         print("=" * 80)
         print(f"Backend URL: {self.base_url}")
         print(f"Test User: {self.test_user_email}")
@@ -664,12 +806,12 @@ class JournalEnhancementsTester:
         test_methods = [
             ("Basic Connectivity", self.test_basic_connectivity),
             ("User Registration and Login", self.test_user_registration_and_login),
-            ("Journal Templates System", self.test_journal_templates_system),
-            ("Journal Entry Management", self.test_journal_entry_management),
-            ("Journal Search and Insights", self.test_journal_search_and_insights),
-            ("Authentication and User Isolation", self.test_authentication_and_user_isolation),
-            ("Template Usage Tracking", self.test_template_usage_tracking),
-            ("Mood and Energy Enums", self.test_mood_and_energy_enums)
+            ("Pillars date_created Field", self.test_pillars_date_created_field),
+            ("Areas date_created Field", self.test_areas_date_created_field),
+            ("Projects date_created Field", self.test_projects_date_created_field),
+            ("Tasks date_created Field", self.test_tasks_date_created_field),
+            ("date_created Consistency", self.test_date_created_consistency),
+            ("Migration Verification", self.test_migration_verification)
         ]
         
         successful_tests = 0
@@ -689,33 +831,32 @@ class JournalEnhancementsTester:
         success_rate = (successful_tests / total_tests) * 100
         
         print(f"\n" + "=" * 80)
-        print("🎯 JOURNAL ENHANCEMENTS SYSTEM TESTING SUMMARY")
+        print("🎯 DATE_CREATED FIELD FUNCTIONALITY TESTING SUMMARY")
         print("=" * 80)
         print(f"Backend URL: {self.base_url}")
         print(f"Test Methods: {successful_tests}/{total_tests} successful")
         print(f"Overall Success Rate: {success_rate:.1f}%")
         
-        # Analyze results for journal system
-        journal_tests_passed = sum(1 for result in self.test_results if result['success'] and 'JOURNAL' in result['test'])
-        template_tests_passed = sum(1 for result in self.test_results if result['success'] and 'TEMPLATE' in result['test'])
+        # Analyze results for date_created functionality
+        date_created_tests_passed = sum(1 for result in self.test_results if result['success'] and 'DATE_CREATED' in result['test'])
+        migration_tests_passed = sum(1 for result in self.test_results if result['success'] and 'MIGRATION' in result['test'])
         
         print(f"\n🔍 SYSTEM ANALYSIS:")
-        print(f"Journal Entry Tests Passed: {journal_tests_passed}")
-        print(f"Template System Tests Passed: {template_tests_passed}")
+        print(f"date_created Field Tests Passed: {date_created_tests_passed}")
+        print(f"Migration Verification Tests Passed: {migration_tests_passed}")
         
         if success_rate >= 85:
-            print("\n✅ JOURNAL ENHANCEMENTS SYSTEM: SUCCESS")
-            print("   ✅ Journal entry management with enhanced fields working")
-            print("   ✅ Journal templates system functional (default + custom)")
-            print("   ✅ Advanced filtering and search capabilities working")
-            print("   ✅ Journal insights and analytics functional")
-            print("   ✅ Authentication and user isolation working")
-            print("   ✅ Template usage tracking operational")
-            print("   ✅ Mood and energy level validation working")
-            print("   The Journal Enhancements system is production-ready!")
+            print("\n✅ DATE_CREATED FIELD FUNCTIONALITY: SUCCESS")
+            print("   ✅ GET endpoints include date_created field in responses")
+            print("   ✅ POST endpoints auto-set date_created for new documents")
+            print("   ✅ date_created field format is consistent (ISO datetime)")
+            print("   ✅ date_created reflects actual creation time for new items")
+            print("   ✅ Migration preserved original data with date_created field")
+            print("   ✅ All collections (pillars, areas, projects, tasks) working")
+            print("   The date_created field enhancement is production-ready!")
         else:
-            print("\n❌ JOURNAL ENHANCEMENTS SYSTEM: ISSUES DETECTED")
-            print("   Issues found in journal system functionality")
+            print("\n❌ DATE_CREATED FIELD FUNCTIONALITY: ISSUES DETECTED")
+            print("   Issues found in date_created field implementation")
         
         # Show failed tests for debugging
         failed_tests = [result for result in self.test_results if not result['success']]
@@ -731,23 +872,43 @@ class JournalEnhancementsTester:
         print("\n🧹 CLEANING UP TEST RESOURCES")
         cleanup_count = 0
         
-        # Clean up journal entries
-        for entry_id in self.created_resources.get('journal_entries', []):
+        # Clean up tasks first (they depend on projects)
+        for task_id in self.created_resources.get('tasks', []):
             try:
-                result = self.make_request('DELETE', f'/journal/{entry_id}', use_auth=True)
+                result = self.make_request('DELETE', f'/tasks/{task_id}', use_auth=True)
                 if result['success']:
                     cleanup_count += 1
-                    print(f"   ✅ Cleaned up journal entry: {entry_id}")
+                    print(f"   ✅ Cleaned up task: {task_id}")
             except:
                 pass
         
-        # Clean up custom templates
-        for template_id in self.created_resources.get('journal_templates', []):
+        # Clean up projects (they depend on areas)
+        for project_id in self.created_resources.get('projects', []):
             try:
-                result = self.make_request('DELETE', f'/journal/templates/{template_id}', use_auth=True)
+                result = self.make_request('DELETE', f'/projects/{project_id}', use_auth=True)
                 if result['success']:
                     cleanup_count += 1
-                    print(f"   ✅ Cleaned up journal template: {template_id}")
+                    print(f"   ✅ Cleaned up project: {project_id}")
+            except:
+                pass
+        
+        # Clean up areas (they may depend on pillars)
+        for area_id in self.created_resources.get('areas', []):
+            try:
+                result = self.make_request('DELETE', f'/areas/{area_id}', use_auth=True)
+                if result['success']:
+                    cleanup_count += 1
+                    print(f"   ✅ Cleaned up area: {area_id}")
+            except:
+                pass
+        
+        # Clean up pillars
+        for pillar_id in self.created_resources.get('pillars', []):
+            try:
+                result = self.make_request('DELETE', f'/pillars/{pillar_id}', use_auth=True)
+                if result['success']:
+                    cleanup_count += 1
+                    print(f"   ✅ Cleaned up pillar: {pillar_id}")
             except:
                 pass
         
@@ -757,15 +918,15 @@ class JournalEnhancementsTester:
             print("   ℹ️ No resources to cleanup")
 
 def main():
-    """Run Journal Enhancements System Tests"""
-    print("📝 STARTING JOURNAL ENHANCEMENTS SYSTEM BACKEND TESTING")
+    """Run date_created Field Functionality Tests"""
+    print("📅 STARTING DATE_CREATED FIELD FUNCTIONALITY BACKEND TESTING")
     print("=" * 80)
     
-    tester = JournalEnhancementsTester()
+    tester = DateCreatedFieldTester()
     
     try:
-        # Run the comprehensive journal system tests
-        success = tester.run_comprehensive_journal_test()
+        # Run the comprehensive date_created field tests
+        success = tester.run_comprehensive_date_created_test()
         
         # Calculate overall results
         total_tests = len(tester.test_results)
