@@ -287,6 +287,11 @@ const Areas = ({ onSectionChange }) => {
                           <span>
                             {area.projects?.length || 0} projects
                           </span>
+                          {area.date_created && (
+                            <span className="text-xs text-gray-500">
+                              Created {new Date(area.date_created).toLocaleDateString()}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
