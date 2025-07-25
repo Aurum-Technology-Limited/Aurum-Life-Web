@@ -1020,6 +1020,10 @@ class ProjectService:
             if status_value == "Completed":
                 try:
                     await AchievementService.trigger_project_completed(user_id)
+                    # Also trigger custom achievements check
+                    await CustomAchievementService.trigger_custom_achievements_check(
+                        user_id, "project_completed", project_id
+                    )
                 except Exception as e:
                     print(f"Warning: Achievement trigger failed for project completion: {e}")
         
