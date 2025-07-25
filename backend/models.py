@@ -410,6 +410,7 @@ class ProjectCreate(BaseModel):
     area_id: str
     name: str
     description: str = ""
+    icon: str = "🚀"  # Add icon field
     deadline: Optional[datetime] = None
     status: ProjectStatusEnum = ProjectStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
