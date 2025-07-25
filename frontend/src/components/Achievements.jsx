@@ -295,10 +295,39 @@ const Achievements = () => {
 
   const handleCreateCustomAchievement = async () => {
     try {
+      // Validation
       if (!createForm.name.trim()) {
         toast({
           title: "Validation Error",
           description: "Please enter a name for your achievement",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (createForm.target_count < 1 || createForm.target_count > 1000) {
+        toast({
+          title: "Validation Error", 
+          description: "Target count must be between 1 and 1000",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!createForm.icon.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Please select an icon for your achievement",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // For project-specific goals, ensure a project is selected
+      if (createForm.target_type === 'complete_project' && !createForm.target_id) {
+        toast({
+          title: "Validation Error",
+          description: "Please select a target project for this goal",
           variant: "destructive"
         });
         return;
