@@ -888,7 +888,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                       {/* Project Icon */}
                       <span className="text-lg flex-shrink-0">{project.icon || '🚀'}</span>
                       <div className="flex-1 min-w-0 container-strict"> 
-                        <h3 className={`font-semibold text-white ${getDynamicTextSize(project.name, 'text-base')} text-force-wrap leading-tight`}>
+                        <h3 className="font-semibold text-white text-xs leading-tight text-force-wrap">
                           {project.name}
                         </h3>
                       </div>
