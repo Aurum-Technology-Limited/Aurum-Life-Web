@@ -231,6 +231,13 @@ class PriorityEnum(str, Enum):
     medium = "medium"
     high = "high"
 
+class ImportanceEnum(int, Enum):
+    low = 1
+    medium_low = 2
+    medium = 3
+    medium_high = 4
+    critical = 5
+
 class TaskStatusEnum(str, Enum):
     todo = "todo"
     in_progress = "in_progress"
