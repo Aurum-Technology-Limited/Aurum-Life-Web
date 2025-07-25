@@ -843,7 +843,6 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 className={`bg-gray-900/50 border rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg overflow-hidden ${
                   project.archived ? 'border-gray-700 opacity-75' : 'border-gray-800'
                 }`}
-                style={{ minHeight: 'fit-content' }} {/* Ensure proper sizing */}
               >
                 {/* Project Header */}
                 <div className="flex items-start justify-between mb-4">
