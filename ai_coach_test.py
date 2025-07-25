@@ -493,7 +493,7 @@ class AiCoachTester:
                 )
         
         # Test error handling with invalid input
-        result = self.make_request('POST', '/ai_coach/chat', data={}, use_auth=True)
+        result = self.make_request('POST', '/ai_coach/chat', params={}, use_auth=True)
         self.log_test(
             "AI COACH CHAT - INVALID INPUT",
             not result['success'],
