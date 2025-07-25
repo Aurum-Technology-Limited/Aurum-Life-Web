@@ -35,7 +35,7 @@ import time
 import re
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://aurum-life-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://1623e070-6eb9-4dd0-9d4f-8785b8702927.preview.emergentagent.com/api"
 
 class PillarChildRemovalTester:
     def __init__(self):
