@@ -46,7 +46,7 @@ function App() {
       'recurring-tasks': 'Recurring Tasks',
       'tasks': 'Tasks',
       'journal': 'Journal',
-      'learning': 'Learning',
+      'feedback': 'Feedback & Support',
       'ai-coach': 'AI Coach',
       'achievements': 'Achievements',
       'profile': 'Profile',
