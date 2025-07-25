@@ -88,7 +88,7 @@ const FileManager = ({
       const uploadedResources = await Promise.all(uploadPromises);
       setSuccess(`Successfully uploaded ${uploadedResources.length} file(s)`);
       await loadResources(); // Refresh the list
-      refreshData(); // Refresh parent data
+      onDataMutation('resource', 'upload', { entityType, entityId, count: uploadedResources.length }); // Refresh parent data
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
