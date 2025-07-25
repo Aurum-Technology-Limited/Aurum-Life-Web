@@ -239,7 +239,6 @@ const Areas = ({ onSectionChange }) => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {areas.map((area) => {
-              const IconComponent = getIconComponent(area.icon);
               return (
                 <div
                   key={area.id}
@@ -252,13 +251,10 @@ const Areas = ({ onSectionChange }) => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <div
-                        className="p-3 rounded-lg"
+                        className="p-3 rounded-lg flex items-center justify-center"
                         style={{ backgroundColor: area.color + '20' }}
                       >
-                        <IconComponent
-                          className="h-6 w-6"
-                          style={{ color: area.color }}
-                        />
+                        <span className="text-2xl">{area.icon || '🎯'}</span>
                       </div>
                       <div>
                         <div className="flex items-center space-x-2">
