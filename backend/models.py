@@ -716,17 +716,12 @@ class PillarResponse(BaseModel):
     icon: str
     color: str
     user_id: str
-    parent_pillar_id: Optional[str] = None
     sort_order: int = 0
     archived: bool = False
     time_allocation_percentage: Optional[float] = None
     created_at: datetime
     updated_at: datetime
     date_created: datetime
-    
-    # Hierarchy tracking
-    sub_pillars: Optional[List['PillarResponse']] = []
-    parent_pillar_name: Optional[str] = None
     
     # Progress tracking
     area_count: int = 0
