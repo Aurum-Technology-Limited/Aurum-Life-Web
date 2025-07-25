@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 """
-AI COACH BACKEND FUNCTIONALITY TESTING
-Complete end-to-end testing of the AI Coach backend implementation.
+DYNAMIC PREDEFINED ACHIEVEMENTS SYSTEM - PHASE 1 TESTING
+Complete end-to-end testing of the Dynamic Achievements System implementation.
 
 FOCUS AREAS:
-1. AI COACH DAILY PRIORITIES - Test GET /api/ai_coach/today endpoint
-2. AI COACH CONVERSATIONAL CHAT - Test POST /api/ai_coach/chat endpoint
-3. AUTHENTICATION REQUIREMENTS - Test JWT token requirements
-4. GEMINI AI INTEGRATION - Test AI integration with Gemini 2.0-Flash
-5. RESPONSE FORMAT VALIDATION - Test response structure matches frontend expectations
-6. ERROR HANDLING - Test invalid requests and error responses
+1. ACHIEVEMENT SERVICE CORE FUNCTIONS - Test GET /api/achievements and POST /api/achievements/check
+2. AUTO-TRACKING TRIGGER FUNCTIONS - Test task completion, project completion, journal entry triggers
+3. PROGRESS CALCULATION - Test achievement progress calculation accuracy
+4. ACHIEVEMENT UNLOCKING - Test that achievements unlock when requirements are met
+5. NOTIFICATION SYSTEM - Test achievement notifications are created properly
+6. PERFORMANCE VERIFICATION - Verify trigger functions are efficient and don't add latency
 
 SPECIFIC ENDPOINTS TO TEST:
-- GET /api/ai_coach/today (daily task priorities for dashboard)
-- POST /api/ai_coach/chat (conversational AI coaching)
+- GET /api/achievements (get all achievements with progress calculation)
+- POST /api/achievements/check (manual achievement checking for testing)
 
-TEST SCENARIOS:
-- General coaching questions ("How can I stay motivated?")
-- Goal-related questions ("Help me set better goals")
-- Progress questions ("I'm feeling stuck lately")
-- Focus questions ("Tips for better focus")
+TRIGGER SCENARIOS TO TEST:
+- Task completion triggers (when tasks are marked complete)
+- Project completion triggers (when projects are marked "Completed")
+- Journal entry creation triggers (when new entries are created)
+- Course completion triggers (if applicable)
 
 AUTHENTICATION:
-- Use test credentials with realistic data for AI Coach testing
+- Use test credentials with realistic data for achievements testing
 """
 
 import requests
