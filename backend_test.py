@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 """
-PILLAR SYSTEM CHILD PILLAR REMOVAL COMPREHENSIVE TESTING
-Complete end-to-end testing of the updated Pillar system with removed child pillar functionality.
+FILE MANAGEMENT SYSTEM BACKEND COMPREHENSIVE TESTING
+Complete end-to-end testing of the File Management System backend implementation.
 
 FOCUS AREAS:
-1. PILLAR MODEL CHANGES - Test that parent_pillar_id and sub_pillars fields are removed
-2. SIMPLIFIED PILLAR STRUCTURE - Test flat structure without hierarchy
-3. DATABASE MIGRATION VERIFICATION - Verify no pillar hierarchy remains
-4. API ENDPOINT UPDATES - Test endpoints without include_sub_pillars parameter
-5. FUNCTIONALITY VERIFICATION - Test CRUD operations work with simplified model
+1. RESOURCE DATA MODELS - Test Resource, ResourceCreate, ResourceUpdate, ResourceResponse models
+2. FILE TYPE SUPPORT - Test PNG, JPEG, GIF, PDF, DOC, DOCX, TXT with 10MB limit
+3. RESOURCE CRUD OPERATIONS - Test create, read, update, delete operations
+4. ENTITY ATTACHMENT SYSTEM - Test attachment to tasks, projects, areas, pillars, journal_entries
+5. AUTHENTICATION & USER ISOLATION - Test user-specific resource filtering
+6. FILE UPLOAD WITH BASE64 - Test base64 content handling and validation
 
 SPECIFIC ENDPOINTS TO TEST:
-- GET /api/pillars - should NOT include parent_pillar_id or sub_pillars fields
-- POST /api/pillars - should NOT accept parent_pillar_id in request body
-- PUT /api/pillars/{id} - should NOT allow updating parent_pillar_id field
-- Verify PillarResponse model no longer includes parent_pillar_id, sub_pillars, or parent_pillar_name fields
-- Test pillar-area linking still works correctly
-- Test pillar progress tracking (area_count, project_count, task_count)
-- Confirm pillar sorting and filtering still function
+- POST /api/resources (create resource with base64 content)
+- GET /api/resources (list resources with filtering: category, file_type, folder_path, search)
+- GET /api/resources/{resource_id} (get specific resource)
+- PUT /api/resources/{resource_id} (update resource)
+- DELETE /api/resources/{resource_id} (delete resource)
+- POST /api/resources/{resource_id}/attach (attach to entity)
+- DELETE /api/resources/{resource_id}/detach (detach from entity)
+- GET /api/resources/entity/{entity_type}/{entity_id} (get entity resources)
 
-MIGRATION VERIFICATION:
-- Verify existing pillars no longer have parent_pillar_id field in database
-- Test that migrated data is properly structured
-- Confirm no pillar hierarchy remains in the database
+AUTHENTICATION:
+- Use test credentials: notification.tester@aurumlife.com / TestNotify2025!
 """
 
 import requests
