@@ -866,13 +866,20 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {projects.map((project) => (
               <div
                 key={project.id}
-                className={`bg-gray-900/50 border rounded-xl p-4 sm:p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg overflow-hidden flex flex-col h-fit max-w-full ${
+                className={`bg-gray-900/50 border rounded-xl p-4 hover:border-gray-700 transition-all duration-200 hover:shadow-lg overflow-hidden w-full max-w-full ${
                   project.archived ? 'border-gray-700 opacity-75' : 'border-gray-800'
                 }`}
+                style={{ 
+                  wordWrap: 'break-word',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  minWidth: 0,
+                  maxWidth: '100%'
+                }}
               >
                 {/* Project Header */}
                 <div className="flex items-start justify-between mb-4">
