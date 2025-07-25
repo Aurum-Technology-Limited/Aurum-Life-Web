@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 from database import find_documents
 import logging
 import os
-from emergentintegrations import LlmChat
+from emergentintegrations.llm.chat import LlmChat
 
 logger = logging.getLogger(__name__)
 
