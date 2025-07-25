@@ -1606,38 +1606,34 @@ async def submit_feedback(
         
         # Create email content
         category_labels = {
-            'suggestion': '💡 Feature Suggestion',
-            'bug_report': '🐛 Bug Report', 
-            'general_feedback': '💬 General Feedback',
-            'support_request': '🆘 Support Request',
-            'compliment': '💖 Compliment'
+            'suggestion': 'Feature Suggestion',
+            'bug_report': 'Bug Report', 
+            'general_feedback': 'General Feedback',
+            'support_request': 'Support Request',
+            'compliment': 'Compliment'
         }
         
         category_label = category_labels.get(category, 'Feedback')
-        email_subject = f"[Aurum Life Feedback] {category_label}: {subject}"
+        email_subject = f"Aurum Life - {category_label}: {subject}"
         
-        email_body = f"""
-New feedback received from Aurum Life user:
+        email_body = f"""Hello Marc,
 
-📋 FEEDBACK DETAILS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Category: {category_label}
-Subject: {subject}
+You've received new feedback from an Aurum Life user:
 
-👤 USER INFORMATION:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Name: {user_name}
-Email: {user_email}
-User ID: {current_user.id}
-Submitted: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
+FEEDBACK TYPE: {category_label}
+SUBJECT: {subject}
 
-💬 MESSAGE:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FROM: {user_name}
+EMAIL: {user_email}
+USER ID: {current_user.id}
+SUBMITTED: {datetime.utcnow().strftime('%B %d, %Y at %I:%M %p UTC')}
+
+MESSAGE:
 {message}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
+You can reply directly to this email to respond to the user.
 This feedback was submitted through the Aurum Life application.
-Please respond to: {user_email}
         """.strip()
         
         # Send email to support
