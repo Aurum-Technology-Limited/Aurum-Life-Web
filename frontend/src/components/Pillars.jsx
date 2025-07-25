@@ -167,7 +167,7 @@ const Pillars = () => {
               </button>
               
               <button
-                onClick={() => handleDeletePillar(pillar.id, pillar.name)}
+                onClick={() => handleDelete(pillar.id, pillar.name)}
                 className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Delete pillar"
               >
