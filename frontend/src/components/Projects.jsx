@@ -218,6 +218,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
       area_id: project.area_id || '',
       status: project.status || 'Not Started',
       priority: project.priority || 'medium',
+      importance: project.importance || 3,  // Add importance field
       due_date: project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : '',
       target_completion: project.target_completion ? new Date(project.target_completion).toISOString().split('T')[0] : ''
     });
