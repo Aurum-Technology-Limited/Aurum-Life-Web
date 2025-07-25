@@ -374,7 +374,10 @@ export const resourcesAPI = {
 
 // AI Coach API
 export const aiCoachAPI = {
-  getTodaysPriorities: () => apiClient.get('/ai_coach/today')
+  getTodaysPriorities: () => apiClient.get('/ai_coach/today'),
+  chatWithCoach: (message) => apiClient.post('/ai_coach/chat', null, {
+    params: { message }
+  })
 };
 
 export default {
