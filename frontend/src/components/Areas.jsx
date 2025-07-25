@@ -430,18 +430,27 @@ const Areas = ({ onSectionChange }) => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
+                <div className="input-with-counter">
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Name
                   </label>
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      if (newValue.length <= CHARACTER_LIMITS.AREA_NAME) {
+                        setFormData({ ...formData, name: newValue });
+                      }
+                    }}
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     placeholder="e.g., Health & Fitness"
+                    maxLength={CHARACTER_LIMITS.AREA_NAME}
                     required
                   />
+                  <div className={getCharacterCounterData(formData.name, CHARACTER_LIMITS.AREA_NAME).className}>
+                    {getCharacterCounterData(formData.name, CHARACTER_LIMITS.AREA_NAME).count}/{CHARACTER_LIMITS.AREA_NAME}
+                  </div>
                 </div>
 
                 <div>
