@@ -37,8 +37,9 @@ const getDynamicTextSize = (text, baseSize = 'text-lg') => {
   if (!text) return baseSize;
   
   const length = text.length;
-  if (length > 50) return 'text-sm';
-  if (length > 35) return 'text-base';
+  if (length > 40) return 'text-xs'; // More aggressive for very long text
+  if (length > 25) return 'text-sm'; // More aggressive for medium text
+  if (length > 15) return 'text-base';
   return baseSize;
 };
 
@@ -47,7 +48,7 @@ const getDynamicDescriptionSize = (text) => {
   if (!text) return 'text-sm';
   
   const length = text.length;
-  if (length > 100) return 'text-xs';
+  if (length > 80) return 'text-xs'; // More aggressive
   return 'text-sm';
 };
 
@@ -56,8 +57,8 @@ const getDynamicLineClamp = (text) => {
   if (!text) return 'line-clamp-2';
   
   const length = text.length;
-  if (length > 120) return 'line-clamp-3';
-  if (length > 80) return 'line-clamp-2';
+  if (length > 100) return 'line-clamp-3';
+  if (length > 60) return 'line-clamp-2';
   return 'line-clamp-1';
 };
 
