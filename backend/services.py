@@ -2355,11 +2355,6 @@ class PillarService:
         # First, unlink all areas from this pillar
         await update_document("areas", {"pillar_id": pillar_id, "user_id": user_id}, {"pillar_id": None})
         
-        # Delete sub-pillars first
-        sub_pillars = await find_documents("pillars", {"parent_pillar_id": pillar_id, "user_id": user_id})
-        for sub_pillar in sub_pillars:
-            await PillarService.delete_pillar(user_id, sub_pillar["id"])
-        
         # Delete the pillar itself
         return await delete_document("pillars", {"id": pillar_id, "user_id": user_id})
     
