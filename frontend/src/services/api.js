@@ -400,6 +400,11 @@ export const customAchievementsAPI = {
     apiClient.post('/achievements/custom/check')
 };
 
+// Feedback API
+export const feedbackAPI = {
+  submitFeedback: (feedbackData) => apiClient.post('/feedback', feedbackData)
+};
+
 export default {
   client: apiClient,
   areas: areasAPI,
