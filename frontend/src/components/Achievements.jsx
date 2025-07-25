@@ -108,53 +108,102 @@ const MilestoneCard = ({ milestone }) => (
 
 const Achievements = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [achievements, setAchievements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   const categories = [
     { key: 'all', label: 'All Badges' },
     { key: 'habits', label: 'Habits' },
     { key: 'learning', label: 'Learning' },
-    { key: 'mindfulness', label: 'Mindfulness' },
-    { key: 'productivity', label: 'Productivity' }
+    { key: 'reflection', label: 'Reflection' },
+    { key: 'productivity', label: 'Productivity' },
+    { key: 'general', label: 'General' }
   ];
+
+  useEffect(() => {
+    loadAchievements();
+  }, []);
+
+  const loadAchievements = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await achievementsAPI.getAchievements();
+      setAchievements(response.data.achievements);
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to load achievements'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckAchievements = async () => {
+    try {
+      await achievementsAPI.checkAchievements();
+      // Reload achievements to see any newly unlocked ones
+      await loadAchievements();
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to check achievements'));
+    }
+  };
+
+  const filteredBadges = selectedCategory === 'all' 
+    ? achievements 
+    : achievements.filter(badge => badge.category === selectedCategory);
+
+  const earnedBadges = achievements.filter(badge => badge.earned);
+  const totalBadges = achievements.length;
+  const completionRate = totalBadges > 0 ? Math.round((earnedBadges.length / totalBadges) * 100) : 0;
+
+  // Calculate stats from achievements
+  const stats = {
+    level: Math.floor(earnedBadges.length / 3) + 1, // Simple level calculation
+    totalPoints: earnedBadges.length * 100, // Simple points calculation
+    totalTasks: 0, // Would need to get from user stats API
+    totalJournalEntries: 0 // Would need to get from user stats API
+  };
 
   const milestones = [
     {
       icon: Target,
-      title: 'Habits Completed',
-      description: 'Total habits completed this month',
-      value: 156,
-      unit: 'habits'
+      title: 'Tasks Completed',
+      description: 'Total tasks completed',
+      value: stats.totalTasks,
+      unit: 'tasks'
     },
     {
       icon: Flame,
-      title: 'Longest Streak',
-      description: 'Your personal best streak',
-      value: 23,
-      unit: 'days'
+      title: 'Current Level',
+      description: 'Your achievement level',
+      value: stats.level,
+      unit: 'level'
     },
     {
       icon: Award,
-      title: 'Learning Hours',
-      description: 'Time spent on courses',
-      value: 47,
-      unit: 'hours'
+      title: 'Achievement Points',
+      description: 'Points from achievements',
+      value: stats.totalPoints,
+      unit: 'points'
     },
     {
       icon: Star,
-      title: 'Growth Points',
-      description: 'Total points earned',
-      value: mockStats.totalPoints,
-      unit: 'points'
+      title: 'Badges Earned',
+      description: 'Total badges unlocked',
+      value: earnedBadges.length,
+      unit: 'badges'
     }
   ];
 
-  const filteredBadges = selectedCategory === 'all' 
-    ? mockBadges 
-    : mockBadges.filter(badge => badge.category === selectedCategory);
-
-  const earnedBadges = mockBadges.filter(badge => badge.earned);
-  const totalBadges = mockBadges.length;
-  const completionRate = Math.round((earnedBadges.length / totalBadges) * 100);
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={48} className="animate-spin text-yellow-400" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -164,6 +213,19 @@ const Achievements = () => {
           Celebrate your growth journey and unlock new achievements as you build lasting habits and reach your goals
         </p>
       </div>
+
+      {error && (
+        <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
+          <AlertCircle size={20} className="text-red-400" />
+          <span className="text-red-400">{error}</span>
+          <button
+            onClick={loadAchievements}
+            className="ml-auto px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -197,7 +259,7 @@ const Achievements = () => {
               <Star size={20} style={{ color: '#0B0D14' }} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-white">{mockStats.level}</h3>
+              <h3 className="text-2xl font-bold text-white">{stats.level}</h3>
               <p className="text-sm text-gray-400">Current Level</p>
             </div>
           </div>
@@ -209,7 +271,7 @@ const Achievements = () => {
               <Award size={20} style={{ color: '#0B0D14' }} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-white">{mockStats.totalPoints}</h3>
+              <h3 className="text-2xl font-bold text-white">{stats.totalPoints}</h3>
               <p className="text-sm text-gray-400">Total Points</p>
             </div>
           </div>
@@ -220,7 +282,15 @@ const Achievements = () => {
       <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white">Overall Progress</h3>
-          <span className="text-yellow-400 font-medium">{completionRate}%</span>
+          <div className="flex items-center space-x-2">
+            <span className="text-yellow-400 font-medium">{completionRate}%</span>
+            <button
+              onClick={handleCheckAchievements}
+              className="px-3 py-1 text-xs bg-yellow-400 text-gray-900 rounded hover:bg-yellow-500 transition-colors"
+            >
+              Check Progress
+            </button>
+          </div>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-4 mb-2">
           <div 
@@ -268,7 +338,7 @@ const Achievements = () => {
 
         {/* Badges Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {mockBadges.map((badge) => (
+          {filteredBadges.map((badge) => (
             <BadgeCard key={badge.id} badge={badge} />
           ))}
         </div>
@@ -278,7 +348,7 @@ const Achievements = () => {
       <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
         <h2 className="text-xl font-bold text-white mb-4">Almost There!</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {mockBadges
+          {achievements
             .filter(badge => !badge.earned && badge.progress > 50)
             .slice(0, 4)
             .map((badge) => (
@@ -299,6 +369,11 @@ const Achievements = () => {
               </div>
             ))}
         </div>
+        {achievements.filter(badge => !badge.earned && badge.progress > 50).length === 0 && (
+          <p className="text-gray-400 text-center py-4">
+            Keep working towards your goals to see upcoming achievements!
+          </p>
+        )}
       </div>
     </div>
   );
