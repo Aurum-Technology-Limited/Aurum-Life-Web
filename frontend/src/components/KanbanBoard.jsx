@@ -272,27 +272,36 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
         )}
 
         {/* Task Metadata */}
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-2">
-            {/* Priority */}
-            <span className={`px-2 py-1 rounded-full border ${priorityColors[task.priority] || priorityColors.medium}`}>
-              {task.priority || 'medium'}
-            </span>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center space-x-2">
+              {/* Priority */}
+              <span className={`px-2 py-1 rounded-full border ${priorityColors[task.priority] || priorityColors.medium}`}>
+                {task.priority || 'medium'}
+              </span>
+              
+              {/* Due Date */}
+              {task.due_date && (
+                <div className={`flex items-center space-x-1 ${
+                  isOverdue(task.due_date) && !task.completed ? 'text-red-400' : 'text-gray-400'
+                }`}>
+                  <Calendar size={12} />
+                  <span>{new Date(task.due_date).toLocaleDateString()}</span>
+                </div>
+              )}
+            </div>
             
-            {/* Due Date */}
-            {task.due_date && (
-              <div className={`flex items-center space-x-1 ${
-                isOverdue(task.due_date) && !task.completed ? 'text-red-400' : 'text-gray-400'
-              }`}>
-                <Calendar size={12} />
-                <span>{new Date(task.due_date).toLocaleDateString()}</span>
-              </div>
-            )}
+            <div className="text-gray-500">
+              #{task.id?.slice(-6) || 'N/A'}
+            </div>
           </div>
           
-          <div className="text-gray-500">
-            #{task.id?.slice(-6) || 'N/A'}
-          </div>
+          {/* Created Date */}
+          {task.date_created && (
+            <div className="text-xs text-gray-500">
+              Created: {new Date(task.date_created).toLocaleDateString()}
+            </div>
+          )}
         </div>
       </div>
     );
