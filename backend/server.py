@@ -1642,11 +1642,11 @@ Please respond to: {user_email}
         
         # Send email to support
         email_service = EmailService()
-        await email_service.send_email(
-            to_email="marc.alleyne@aurumtechnologyltd.com",
+        success = email_service.send_email(
+            to="marc.alleyne@aurumtechnologyltd.com",
             subject=email_subject,
-            body=email_body,
-            from_name=f"{user_name} (via Aurum Life)"
+            html_content=email_body.replace('\n', '<br>'),
+            plain_text_content=email_body
         )
         
         # Log feedback submission
