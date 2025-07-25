@@ -2660,13 +2660,18 @@ class ResourceService:
     @staticmethod
     async def _track_resource_access(resource_id: str):
         """Track when a resource is accessed"""
+        # Update last_accessed timestamp
         await update_document(
             "resources",
             {"id": resource_id},
-            {
-                "last_accessed": datetime.utcnow(),
-                "$inc": {"access_count": 1}
-            }
+            {"last_accessed": datetime.utcnow()}
+        )
+        
+        # Increment access_count using atomic operation
+        await atomic_update_document(
+            "resources",
+            {"id": resource_id},
+            {"$inc": {"access_count": 1}}
         )
     
     @staticmethod
