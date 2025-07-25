@@ -703,59 +703,16 @@ const Achievements = () => {
                 />
               </div>
 
-              {/* Icon */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Icon
-                </label>
-                <div className="space-y-3">
-                  {/* Current Icon Display */}
-                  <div className="flex items-center space-x-2">
-                    <span className="text-3xl">{createForm.icon}</span>
-                    <span className="text-gray-300">Selected Icon</span>
-                  </div>
-                  
-                  {/* Emoji Picker Grid */}
-                  <div className="grid grid-cols-8 gap-2 p-3 bg-gray-800 rounded-lg border border-gray-700">
-                    {['🎯', '🏆', '⭐', '🚀', '💪', '📚', '✍️', '🧘', 
-                      '🏃', '💡', '🎨', '🎵', '🌟', '🔥', '💎', '🎉',
-                      '📈', '🎪', '🎭', '🎲', '🎸', '🎤', '🎬', '📷',
-                      '🍎', '🌱', '🌈', '☀️', '🌙', '⚡', '🔮', '🎊'].map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => setCreateForm(prev => ({ ...prev, icon: emoji }))}
-                        className={`text-2xl p-2 rounded-lg transition-all hover:bg-gray-700 ${
-                          createForm.icon === emoji ? 'bg-yellow-400 bg-opacity-20 border border-yellow-400' : 'hover:bg-gray-700'
-                        }`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                  
-                  {/* Custom Icon Input (fallback) */}
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-1">
-                      Or enter custom emoji:
-                    </label>
-                    <input
-                      type="text"
-                      value={createForm.icon}
-                      onChange={(e) => {
-                        // Only allow single characters (emojis) or short emoji sequences
-                        const value = e.target.value;
-                        if (value.length <= 2) {
-                          setCreateForm(prev => ({ ...prev, icon: value }));
-                        }
-                      }}
-                      placeholder="🎯"
-                      maxLength={2}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-center placeholder-gray-400 focus:border-yellow-400 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
+              {/* Icon Picker */}
+              <IconPicker
+                value={createForm.icon}
+                onChange={(icon) => setCreateForm(prev => ({ ...prev, icon }))}
+                label="Icon"
+                placeholder="🎯"
+                required={true}
+                iconSet="default"
+                allowCustom={true}
+              />
 
               {/* Goal Type */}
               <div>
