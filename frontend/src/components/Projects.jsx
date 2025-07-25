@@ -991,8 +991,8 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   <div className={`flex items-center space-x-2 text-sm mb-4 ${
                     isOverdue(project.due_date) ? 'text-red-400' : 'text-gray-400'
                   }`}>
-                    <Clock className="h-4 w-4" />
-                    <span>
+                    <Clock className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">
                       Due: {new Date(project.due_date).toLocaleDateString()}
                       {isOverdue(project.due_date) && ' (Overdue)'}
                     </span>
@@ -1002,21 +1002,21 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 {/* Created Date */}
                 {project.date_created && (
                   <div className="flex items-center space-x-2 text-xs text-gray-500 mb-4">
-                    <Calendar className="h-3 w-3" />
-                    <span>
+                    <Calendar className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">
                       Created: {new Date(project.date_created).toLocaleDateString()}
                     </span>
                   </div>
                 )}
 
-                {/* Actions */}
-                <div className="flex space-x-2">
+                {/* Actions - Improved Layout */}
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button 
                     onClick={() => handleKanban(project.id)}
-                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                    className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
                   >
-                    <BarChart3 className="h-4 w-4" />
-                    <span>Kanban View</span>
+                    <BarChart3 className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Kanban View</span>
                   </button>
                   <button 
                     onClick={() => handleListView(project.id)}
