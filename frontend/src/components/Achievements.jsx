@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Trophy, Award, Star, Target, Flame, Lock, CheckCircle } from 'lucide-react';
-import { mockBadges, mockStats } from '../data/mock';
+import React, { useState, useEffect } from 'react';
+import { Trophy, Award, Star, Target, Flame, Lock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { achievementsAPI, handleApiError } from '../services/api';
 
 const BadgeCard = ({ badge }) => {
   const getRarityColor = (rarity) => {
