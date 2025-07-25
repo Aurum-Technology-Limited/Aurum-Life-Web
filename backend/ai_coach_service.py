@@ -339,7 +339,8 @@ Respond as their personal growth coach with specific insights and recommendation
 """
 
             # Get AI response
-            ai_response = await gemini_coach.send_message(coaching_prompt)
+            message = UserMessage(text=coaching_prompt)
+            ai_response = await gemini_coach.send_message(message)
             return ai_response.strip()
             
         except Exception as e:
