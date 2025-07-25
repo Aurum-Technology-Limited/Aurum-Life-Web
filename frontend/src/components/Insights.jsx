@@ -134,7 +134,7 @@ const Insights = () => {
         backgroundColor: [
           '#10B981', // Green for completed
           '#F59E0B', // Yellow for in progress
-          '#6B7280', // Gray for todo
+          '#3B82F6', // Blue for todo
           '#EF4444'  // Red for overdue
         ],
         borderWidth: 2,
