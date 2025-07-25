@@ -84,7 +84,6 @@ const Pillars = () => {
       description: pillar.description,
       icon: pillar.icon,
       color: pillar.color,
-      parent_pillar_id: pillar.parent_pillar_id || '',
       time_allocation_percentage: pillar.time_allocation_percentage || ''
     });
     setShowModal(true);
