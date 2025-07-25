@@ -276,38 +276,39 @@ export const googleAuthAPI = {
 // Resources API for File Management
 export const resourcesAPI = {
   // Basic CRUD operations
-  getResources: (parentType = null, parentId = null) => {
-    const params = {};
-    if (parentType && parentId) {
-      params.parent_type = parentType;
-      params.parent_id = parentId;
-    }
+  getResources: (category = null, fileType = null, folderPath = null, includeArchived = false, search = null, skip = 0, limit = 50) => {
+    const params = { skip, limit, include_archived: includeArchived };
+    if (category) params.category = category;
+    if (fileType) params.file_type = fileType;
+    if (folderPath) params.folder_path = folderPath;
+    if (search) params.search = search;
     return apiClient.get('/resources', { params });
   },
   getResource: (resourceId) => apiClient.get(`/resources/${resourceId}`),
   createResource: (resourceData) => apiClient.post('/resources', resourceData),
+  updateResource: (resourceId, resourceData) => apiClient.put(`/resources/${resourceId}`, resourceData),
   deleteResource: (resourceId) => apiClient.delete(`/resources/${resourceId}`),
   
-  // Chunked file upload process
-  startUpload: (uploadData) => apiClient.post('/resources/upload/start', uploadData),
-  uploadChunk: (chunkData) => {
-    // For file uploads, we need to use FormData and multipart/form-data
-    const formData = new FormData();
-    formData.append('resource_id', chunkData.resource_id);
-    formData.append('chunk_index', chunkData.chunk_index);
-    formData.append('chunk_data', chunkData.chunk_data);
-    
-    return apiClient.post('/resources/upload/chunk', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      timeout: 30000, // 30 seconds for chunk uploads
-    });
-  },
-  completeUpload: (resourceId) => apiClient.post('/resources/upload/complete', { resource_id: resourceId }),
+  // Resource attachment operations
+  attachToEntity: (resourceId, entityType, entityId) => 
+    apiClient.post(`/resources/${resourceId}/attach`, {
+      resource_id: resourceId,
+      entity_type: entityType,
+      entity_id: entityId
+    }),
+  detachFromEntity: (resourceId, entityType, entityId) => 
+    apiClient.delete(`/resources/${resourceId}/detach`, {
+      data: {
+        resource_id: resourceId,
+        entity_type: entityType,
+        entity_id: entityId
+      }
+    }),
+  getEntityResources: (entityType, entityId) => 
+    apiClient.get(`/resources/entity/${entityType}/${entityId}`),
   
-  // Utility function for chunked file upload
-  uploadFile: async (file, parentType = null, parentId = null, onProgress = null) => {
+  // Utility function for file upload with validation and base64 conversion
+  uploadFile: async (file, description = '', tags = [], category = 'document', folderPath = '/') => {
     // File validation
     const allowedTypes = [
       'image/png', 'image/jpeg', 'image/gif',
@@ -325,47 +326,43 @@ export const resourcesAPI = {
       throw new Error(`File size ${(file.size / 1024 / 1024).toFixed(2)}MB exceeds the 10MB limit`);
     }
     
-    const chunkSize = 1024 * 1024; // 1MB chunks
-    const totalChunks = Math.ceil(file.size / chunkSize);
-    
     try {
-      // Start upload session
-      const startResponse = await resourcesAPI.startUpload({
-        filename: file.name,
-        content_type: file.type,
-        file_size: file.size,
-        total_chunks: totalChunks,
-        parent_type: parentType,
-        parent_id: parentId
+      // Convert file to base64
+      const base64Content = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          // Remove the data URL prefix (e.g., "data:image/png;base64,")
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
       
-      const resourceId = startResponse.data.resource_id;
-      
-      // Upload chunks
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-        const start = chunkIndex * chunkSize;
-        const end = Math.min(start + chunkSize, file.size);
-        const chunkBlob = file.slice(start, end);
-        
-        await resourcesAPI.uploadChunk({
-          resource_id: resourceId,
-          chunk_index: chunkIndex,
-          chunk_data: chunkBlob
-        });
-        
-        // Report progress
-        if (onProgress) {
-          onProgress({
-            loaded: (chunkIndex + 1) * chunkSize,
-            total: file.size,
-            percentage: Math.round(((chunkIndex + 1) / totalChunks) * 100)
-          });
-        }
+      // Determine file type enum
+      let fileType = 'other';
+      if (file.type.startsWith('image/')) {
+        fileType = 'image';
+      } else if (file.type.includes('pdf') || file.type.includes('msword') || file.type.includes('wordprocessingml') || file.type === 'text/plain') {
+        fileType = 'document';
       }
       
-      // Complete upload
-      const completeResponse = await resourcesAPI.completeUpload(resourceId);
-      return completeResponse.data;
+      // Create resource data
+      const resourceData = {
+        filename: file.name,
+        original_filename: file.name,
+        file_type: fileType,
+        category: category,
+        mime_type: file.type,
+        file_size: file.size,
+        file_content: base64Content,
+        description: description,
+        tags: tags,
+        folder_path: folderPath
+      };
+      
+      const response = await resourcesAPI.createResource(resourceData);
+      return response.data;
       
     } catch (error) {
       console.error('File upload error:', error);
