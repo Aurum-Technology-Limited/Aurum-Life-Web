@@ -1437,6 +1437,42 @@ async def chat_with_ai_coach(
         logger.error(f"Error in AI coach chat: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to chat with AI coach")
 
+# Achievement endpoints
+@api_router.get("/achievements")
+async def get_user_achievements(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get all achievements for the current user with progress"""
+    try:
+        achievements = await AchievementService.get_user_achievements(current_user.id)
+        
+        return {
+            "success": True,
+            "achievements": achievements,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting achievements: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get achievements")
+
+@api_router.post("/achievements/check")
+async def check_achievements(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Manually trigger achievement checking (for testing/admin)"""
+    try:
+        newly_unlocked = await AchievementService.check_and_unlock_achievements(current_user.id)
+        
+        return {
+            "success": True,
+            "newly_unlocked": len(newly_unlocked),
+            "achievements": [{"id": badge.id, "name": badge.name, "icon": badge.icon} for badge in newly_unlocked],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error checking achievements: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to check achievements")
+
 # Include the router in the main app
 app.include_router(api_router)
 
