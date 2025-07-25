@@ -97,16 +97,6 @@ const Pillars = () => {
     }
   };
 
-  const handleArchive = async (pillarId) => {
-    try {
-      await api.put(`/pillars/${pillarId}/archive`);
-      await fetchPillars();
-      onDataMutation?.();
-    } catch (error) {
-      console.error('Error archiving pillar:', error);
-    }
-  };
-
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingPillar(null);
