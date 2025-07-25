@@ -2505,3 +2505,294 @@ class StatsService:
             estimated_duration=estimated_duration,
             pomodoro_sessions=0  # TODO: Implement pomodoro session tracking
         )
+
+class ResourceService:
+    """Service for managing file resources and attachments"""
+    
+    @staticmethod
+    async def create_resource(user_id: str, resource_data: ResourceCreate) -> Resource:
+        """Create a new file resource"""
+        import base64
+        import magic
+        from datetime import datetime, timedelta
+        
+        # Validate file content is proper base64
+        try:
+            file_bytes = base64.b64decode(resource_data.file_content)
+            
+            # Detect MIME type if not provided or verify provided type
+            mime = magic.Magic(mime=True)
+            detected_mime = mime.from_buffer(file_bytes)
+            
+            # Update mime_type if detection is more accurate
+            if detected_mime and detected_mime != "application/octet-stream":
+                resource_data.mime_type = detected_mime
+                
+        except Exception as e:
+            raise ValueError(f"Invalid file content: {e}")
+        
+        # Validate file size (limit to 50MB for now)
+        max_file_size = 50 * 1024 * 1024  # 50MB
+        if resource_data.file_size > max_file_size:
+            raise ValueError(f"File size exceeds maximum limit of {max_file_size // (1024*1024)}MB")
+        
+        # Determine file type based on MIME type
+        file_type = ResourceService._determine_file_type(resource_data.mime_type)
+        
+        resource = Resource(
+            user_id=user_id,
+            file_type=file_type,
+            **resource_data.dict()
+        )
+        
+        resource_dict = resource.dict()
+        await create_document("resources", resource_dict)
+        return resource
+    
+    @staticmethod
+    def _determine_file_type(mime_type: str) -> FileTypeEnum:
+        """Determine file type from MIME type"""
+        mime_lower = mime_type.lower()
+        
+        if any(doc_type in mime_lower for doc_type in ['pdf', 'msword', 'wordprocessingml', 'text/plain', 'rtf']):
+            return FileTypeEnum.document
+        elif any(img_type in mime_lower for img_type in ['image/', 'png', 'jpg', 'jpeg', 'gif', 'svg']):
+            return FileTypeEnum.image
+        elif any(sheet_type in mime_lower for sheet_type in ['spreadsheet', 'excel', 'csv']):
+            return FileTypeEnum.spreadsheet
+        elif any(pres_type in mime_lower for pres_type in ['presentation', 'powerpoint']):
+            return FileTypeEnum.presentation
+        elif any(arch_type in mime_lower for arch_type in ['zip', 'rar', 'tar', 'gzip']):
+            return FileTypeEnum.archive
+        else:
+            return FileTypeEnum.other
+    
+    @staticmethod
+    async def get_user_resources(
+        user_id: str, 
+        category: Optional[str] = None,
+        file_type: Optional[str] = None,
+        folder_path: Optional[str] = None,
+        include_archived: bool = False,
+        search_query: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 50
+    ) -> List[ResourceResponse]:
+        """Get user's resources with filtering and pagination"""
+        
+        # Build query
+        query = {"user_id": user_id}
+        
+        if not include_archived:
+            query["is_archived"] = {"$ne": True}
+        
+        if category:
+            query["category"] = category
+            
+        if file_type:
+            query["file_type"] = file_type
+            
+        if folder_path:
+            query["folder_path"] = folder_path
+        
+        # Search functionality
+        if search_query:
+            search_regex = {"$regex": search_query, "$options": "i"}
+            query["$or"] = [
+                {"filename": search_regex},
+                {"original_filename": search_regex},
+                {"description": search_regex},
+                {"tags": {"$in": [search_query]}}
+            ]
+        
+        # Get resources with pagination
+        resources_docs = await find_documents("resources", query)
+        
+        # Sort by upload_date descending
+        resources_docs.sort(key=lambda x: x.get("upload_date", datetime.min), reverse=True)
+        
+        # Apply pagination
+        paginated_resources = resources_docs[skip:skip + limit]
+        
+        # Build response objects
+        responses = []
+        for doc in paginated_resources:
+            response = await ResourceService._build_resource_response(doc)
+            responses.append(response)
+        
+        return responses
+    
+    @staticmethod
+    async def get_resource(user_id: str, resource_id: str, track_access: bool = True) -> Optional[ResourceResponse]:
+        """Get a specific resource by ID"""
+        resource_doc = await find_document("resources", {"id": resource_id, "user_id": user_id})
+        if not resource_doc:
+            return None
+        
+        # Track access if requested
+        if track_access:
+            await ResourceService._track_resource_access(resource_id)
+        
+        return await ResourceService._build_resource_response(resource_doc)
+    
+    @staticmethod
+    async def _track_resource_access(resource_id: str):
+        """Track when a resource is accessed"""
+        await update_document(
+            "resources",
+            {"id": resource_id},
+            {
+                "last_accessed": datetime.utcnow(),
+                "$inc": {"access_count": 1}
+            }
+        )
+    
+    @staticmethod
+    async def update_resource(user_id: str, resource_id: str, resource_data: ResourceUpdate) -> bool:
+        """Update a resource"""
+        update_data = {k: v for k, v in resource_data.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow()
+        
+        return await update_document("resources", {"id": resource_id, "user_id": user_id}, update_data)
+    
+    @staticmethod
+    async def delete_resource(user_id: str, resource_id: str) -> bool:
+        """Delete a resource and clean up attachments"""
+        # Remove resource from all attachments
+        await ResourceService._cleanup_resource_attachments(resource_id)
+        
+        # Delete the resource document
+        return await delete_document("resources", {"id": resource_id, "user_id": user_id})
+    
+    @staticmethod
+    async def attach_resource_to_entity(
+        user_id: str, 
+        resource_id: str, 
+        entity_type: str, 
+        entity_id: str
+    ) -> bool:
+        """Attach a resource to an entity (task, project, area, pillar, journal_entry)"""
+        
+        # Validate entity exists and belongs to user
+        entity_collections = {
+            "task": "tasks",
+            "project": "projects", 
+            "area": "areas",
+            "pillar": "pillars",
+            "journal_entry": "journal_entries"
+        }
+        
+        if entity_type not in entity_collections:
+            raise ValueError(f"Invalid entity type: {entity_type}")
+        
+        collection_name = entity_collections[entity_type]
+        entity_doc = await find_document(collection_name, {"id": entity_id, "user_id": user_id})
+        if not entity_doc:
+            raise ValueError(f"Entity {entity_type} not found")
+        
+        # Check if resource exists and belongs to user
+        resource_doc = await find_document("resources", {"id": resource_id, "user_id": user_id})
+        if not resource_doc:
+            raise ValueError("Resource not found")
+        
+        # Add attachment relationship  
+        attachment_field = f"attached_to_{entity_type}s"
+        if entity_type == "journal_entry":
+            attachment_field = "attached_to_journal_entries"
+        
+        # Use atomic operation to add to array if not exists
+        await atomic_update_document(
+            "resources",
+            {"id": resource_id, "user_id": user_id},
+            {"$addToSet": {attachment_field: entity_id}}
+        )
+        
+        return True
+    
+    @staticmethod
+    async def detach_resource_from_entity(
+        user_id: str,
+        resource_id: str,
+        entity_type: str, 
+        entity_id: str
+    ) -> bool:
+        """Detach a resource from an entity"""
+        
+        attachment_field = f"attached_to_{entity_type}s"
+        if entity_type == "journal_entry":
+            attachment_field = "attached_to_journal_entries"
+        
+        # Remove from attachment array
+        await atomic_update_document(
+            "resources",
+            {"id": resource_id, "user_id": user_id},
+            {"$pull": {attachment_field: entity_id}}
+        )
+        
+        return True
+    
+    @staticmethod
+    async def get_entity_resources(user_id: str, entity_type: str, entity_id: str) -> List[ResourceResponse]:
+        """Get all resources attached to a specific entity"""
+        
+        attachment_field = f"attached_to_{entity_type}s"
+        if entity_type == "journal_entry":
+            attachment_field = "attached_to_journal_entries"
+        
+        query = {
+            "user_id": user_id,
+            attachment_field: entity_id,
+            "is_archived": {"$ne": True}
+        }
+        
+        resources_docs = await find_documents("resources", query)
+        resources_docs.sort(key=lambda x: x.get("upload_date", datetime.min), reverse=True)
+        
+        responses = []
+        for doc in resources_docs:
+            response = await ResourceService._build_resource_response(doc)
+            responses.append(response)
+        
+        return responses
+    
+    @staticmethod
+    async def _cleanup_resource_attachments(resource_id: str):
+        """Remove resource ID from all entity attachment lists"""
+        # This would be more efficient with a background cleanup task
+        # For now, we'll leave the attachment references (they're just IDs)
+        # A periodic cleanup job could remove dangling references
+        pass
+    
+    @staticmethod
+    async def _build_resource_response(resource_doc: dict) -> ResourceResponse:
+        """Build a comprehensive resource response"""
+        response = ResourceResponse(**resource_doc)
+        
+        # Calculate file size in MB
+        response.file_size_mb = round(response.file_size / (1024 * 1024), 2)
+        
+        # Count total attachments
+        response.attachments_count = (
+            len(response.attached_to_tasks) +
+            len(response.attached_to_projects) +
+            len(response.attached_to_areas) +
+            len(response.attached_to_pillars) +
+            len(response.attached_to_journal_entries)
+        )
+        
+        return response
+
+# Import magic library error handling
+try:
+    import python_magic as magic
+except ImportError:
+    try:
+        import magic
+    except ImportError:
+        # Fallback without MIME type detection
+        class MockMagic:
+            def __init__(self, mime=True):
+                pass
+            def from_buffer(self, buffer):
+                return "application/octet-stream"
+        magic = MockMagic
