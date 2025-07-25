@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Award, Star, Target, Flame, Lock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { achievementsAPI, handleApiError } from '../services/api';
+import { Trophy, Award, Star, Target, Flame, Lock, CheckCircle, AlertCircle, Loader2, Plus, X, Save } from 'lucide-react';
+import { achievementsAPI, customAchievementsAPI, projectsAPI, handleApiError } from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
 const BadgeCard = ({ badge }) => {
