@@ -32,6 +32,35 @@ import DonutChart from './ui/DonutChart';
 import FileManager from './FileManager';
 import IconPicker from './ui/IconPicker';
 
+// Utility function for dynamic text sizing based on content length
+const getDynamicTextSize = (text, baseSize = 'text-lg') => {
+  if (!text) return baseSize;
+  
+  const length = text.length;
+  if (length > 50) return 'text-sm';
+  if (length > 35) return 'text-base';
+  return baseSize;
+};
+
+// Utility function for dynamic description sizing
+const getDynamicDescriptionSize = (text) => {
+  if (!text) return 'text-sm';
+  
+  const length = text.length;
+  if (length > 100) return 'text-xs';
+  return 'text-sm';
+};
+
+// Utility function to get appropriate line clamp based on text length
+const getDynamicLineClamp = (text) => {
+  if (!text) return 'line-clamp-2';
+  
+  const length = text.length;
+  if (length > 120) return 'line-clamp-3';
+  if (length > 80) return 'line-clamp-2';
+  return 'line-clamp-1';
+};
+
 const Projects = ({ onSectionChange, filterAreaId }) => {
   const { onDataMutation } = useDataContext();
   const { user, token, loading: authLoading } = useAuth();
