@@ -963,6 +963,11 @@ class FileAttachmentRequest(BaseModel):
     entity_type: str  # "task", "project", "area", "pillar", "journal_entry"
     entity_id: str
 
+class EntityAttachmentRequest(BaseModel):
+    """Request model for attaching files to entities (without resource_id)"""
+    entity_type: str  # "task", "project", "area", "pillar", "journal_entry"
+    entity_id: str
+
 # Chunked Upload Models for large files
 class ChunkedUploadSession(BaseDocument):
     """Track chunked file upload sessions"""
