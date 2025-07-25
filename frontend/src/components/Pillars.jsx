@@ -304,24 +304,6 @@ const Pillars = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Parent Pillar
-                  </label>
-                  <select
-                    value={formData.parent_pillar_id}
-                    onChange={(e) => setFormData({...formData, parent_pillar_id: e.target.value})}
-                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">None (Root Pillar)</option>
-                    {getAvailableParentPillars().map(pillar => (
-                      <option key={pillar.id} value={pillar.id}>
-                        {pillar.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Time Allocation (%)
                   </label>
                   <input
