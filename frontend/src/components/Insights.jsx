@@ -25,6 +25,7 @@ import {
 import { insightsAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import Breadcrumb from './Breadcrumb';
+import { getDynamicFontSize } from '../utils/textUtils';
 
 // Register ChartJS components
 ChartJS.register(
