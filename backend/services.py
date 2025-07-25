@@ -2537,12 +2537,16 @@ class ResourceService:
             raise ValueError(f"File size exceeds maximum limit of {max_file_size // (1024*1024)}MB")
         
         # Determine file type based on MIME type
-        file_type = ResourceService._determine_file_type(resource_data.mime_type)
+        detected_file_type = ResourceService._determine_file_type(resource_data.mime_type)
+        
+        # Create resource data dict and update file_type if detection is more accurate
+        resource_dict = resource_data.dict()
+        if detected_file_type != FileTypeEnum.other:
+            resource_dict['file_type'] = detected_file_type
         
         resource = Resource(
             user_id=user_id,
-            file_type=file_type,
-            **resource_data.dict()
+            **resource_dict
         )
         
         resource_dict = resource.dict()
