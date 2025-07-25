@@ -386,5 +386,7 @@ export default {
   projectTemplates: projectTemplatesAPI,
   pillars: pillarsAPI,
   recurringTasks: recurringTasksAPI,
-  insights: insightsAPI
+  insights: insightsAPI,
+  resources: resourcesAPI,
+  googleAuth: googleAuthAPI
 };
