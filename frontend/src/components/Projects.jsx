@@ -915,9 +915,9 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   </div>
                 </div>
 
-                {/* Description */}
+                {/* Project Description */}
                 {project.description && (
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2 break-words">
                     {project.description}
                   </p>
                 )}
@@ -937,7 +937,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                       className="h-2 rounded-full transition-all duration-300"
                       style={{
                         backgroundColor: '#F4B400',
-                        width: `${getProgressPercentage(project)}%`
+                        width: `${Math.min(100, Math.max(0, getProgressPercentage(project)))}%`
                       }}
                     />
                   </div>
@@ -970,19 +970,19 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   )}
                 </div>
 
-                {/* Stats */}
+                {/* Stats - Improved Grid */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
+                  <div className="text-center">
                     <p className="text-lg font-bold text-white">
                       {project.task_count || 0}
                     </p>
-                    <p className="text-xs text-gray-500">Total Tasks</p>
+                    <p className="text-xs text-gray-500 truncate">Total Tasks</p>
                   </div>
-                  <div>
+                  <div className="text-center">
                     <p className="text-lg font-bold text-white">
                       {project.active_task_count || 0}
                     </p>
-                    <p className="text-xs text-gray-500">Active Tasks</p>
+                    <p className="text-xs text-gray-500 truncate">Active Tasks</p>
                   </div>
                 </div>
 
