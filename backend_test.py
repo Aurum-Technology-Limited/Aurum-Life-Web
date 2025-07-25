@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 """
-FILE MANAGEMENT SYSTEM BACKEND COMPREHENSIVE TESTING
-Complete end-to-end testing of the File Management System backend implementation.
+AI COACH BACKEND FUNCTIONALITY TESTING
+Complete end-to-end testing of the AI Coach backend implementation.
 
 FOCUS AREAS:
-1. RESOURCE DATA MODELS - Test Resource, ResourceCreate, ResourceUpdate, ResourceResponse models
-2. FILE TYPE SUPPORT - Test PNG, JPEG, GIF, PDF, DOC, DOCX, TXT with 10MB limit
-3. RESOURCE CRUD OPERATIONS - Test create, read, update, delete operations
-4. ENTITY ATTACHMENT SYSTEM - Test attachment to tasks, projects, areas, pillars, journal_entries
-5. AUTHENTICATION & USER ISOLATION - Test user-specific resource filtering
-6. FILE UPLOAD WITH BASE64 - Test base64 content handling and validation
+1. AI COACH DAILY PRIORITIES - Test GET /api/ai_coach/today endpoint
+2. AI COACH CONVERSATIONAL CHAT - Test POST /api/ai_coach/chat endpoint
+3. AUTHENTICATION REQUIREMENTS - Test JWT token requirements
+4. GEMINI AI INTEGRATION - Test AI integration with Gemini 2.0-Flash
+5. RESPONSE FORMAT VALIDATION - Test response structure matches frontend expectations
+6. ERROR HANDLING - Test invalid requests and error responses
 
 SPECIFIC ENDPOINTS TO TEST:
-- POST /api/resources (create resource with base64 content)
-- GET /api/resources (list resources with filtering: category, file_type, folder_path, search)
-- GET /api/resources/{resource_id} (get specific resource)
-- PUT /api/resources/{resource_id} (update resource)
-- DELETE /api/resources/{resource_id} (delete resource)
-- POST /api/resources/{resource_id}/attach (attach to entity)
-- DELETE /api/resources/{resource_id}/detach (detach from entity)
-- GET /api/resources/entity/{entity_type}/{entity_id} (get entity resources)
+- GET /api/ai_coach/today (daily task priorities for dashboard)
+- POST /api/ai_coach/chat (conversational AI coaching)
+
+TEST SCENARIOS:
+- General coaching questions ("How can I stay motivated?")
+- Goal-related questions ("Help me set better goals")
+- Progress questions ("I'm feeling stuck lately")
+- Focus questions ("Tips for better focus")
 
 AUTHENTICATION:
-- Use test credentials: notification.tester@aurumlife.com / TestNotify2025!
+- Use test credentials with realistic data for AI Coach testing
 """
 
 import requests
