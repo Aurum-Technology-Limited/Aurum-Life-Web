@@ -2359,29 +2359,9 @@ class PillarService:
         return await delete_document("pillars", {"id": pillar_id, "user_id": user_id})
     
     @staticmethod
-    async def _build_pillar_response(pillar_doc: dict, include_sub_pillars: bool = True, include_areas: bool = False) -> PillarResponse:
-        """Build a comprehensive pillar response with nested data"""
+    async def _build_pillar_response(pillar_doc: dict, include_areas: bool = False) -> PillarResponse:
+        """Build a comprehensive pillar response with progress data"""
         pillar_response = PillarResponse(**pillar_doc)
-        
-        # Get parent pillar name if applicable
-        if pillar_response.parent_pillar_id:
-            parent_doc = await find_document("pillars", {"id": pillar_response.parent_pillar_id})
-            if parent_doc:
-                pillar_response.parent_pillar_name = parent_doc["name"]
-        
-        # Get sub-pillars if requested
-        if include_sub_pillars:
-            sub_pillars_docs = await find_documents("pillars", {
-                "parent_pillar_id": pillar_response.id,
-                "archived": {"$ne": True}
-            })
-            sub_pillars_docs.sort(key=lambda x: x.get("sort_order", 0))
-            
-            sub_pillars = []
-            for sub_doc in sub_pillars_docs:
-                sub_pillar = await PillarService._build_pillar_response(sub_doc, True, False)
-                sub_pillars.append(sub_pillar)
-            pillar_response.sub_pillars = sub_pillars
         
         # Get linked areas and calculate progress
         areas_docs = await find_documents("areas", {
