@@ -2291,8 +2291,8 @@ class PillarService:
         return pillar
     
     @staticmethod
-    async def get_user_pillars(user_id: str, include_sub_pillars: bool = True, include_areas: bool = False, include_archived: bool = False) -> List[PillarResponse]:
-        """Get all pillars for a user with optional nested structure"""
+    async def get_user_pillars(user_id: str, include_areas: bool = False, include_archived: bool = False) -> List[PillarResponse]:
+        """Get all pillars for a user"""
         query = {"user_id": user_id}
         if not include_archived:
             query["archived"] = {"$ne": True}
@@ -2302,12 +2302,8 @@ class PillarService:
         
         pillars = []
         for doc in pillars_docs:
-            pillar_response = await PillarService._build_pillar_response(doc, include_sub_pillars, include_areas)
+            pillar_response = await PillarService._build_pillar_response(doc, include_areas)
             pillars.append(pillar_response)
-        
-        # If including sub-pillars, organize into hierarchy (only return root pillars)
-        if include_sub_pillars:
-            return [p for p in pillars if not p.parent_pillar_id]
         
         return pillars
     
