@@ -1,97 +1,86 @@
 <analysis>
-The AI engineer's trajectory showcases an iterative and robust development process for the Aurum Life application. The work began with foundational feature enhancements including implementing a comprehensive File Management System (upload, view, delete), which involved intricate backend (data models, services, API endpoints) and frontend (reusable ,  integrated into Project/Task views) development, coupled with extensive debugging of UI positioning, data context, and MongoDB update errors.
-
-Subsequently, the focus shifted to the AI Coach. An MVP was rapidly built for daily task prioritization, followed by the crucial addition of an 'importance' field to Areas and Projects. The most significant advancement was the integration of Gemini 2.0-Flash via , transforming the AI Coach into a conversational, context-aware assistant. This involved several cycles of debugging API calls, data type mismatches, and ensuring proper context injection for personalized responses. The current task involves refining the AI Coach's functionality by splitting its responsibilities between the dashboard (top 3-5 tasks) and a dedicated main AI Coach section (all other queries/insights).
+The AI engineer's trajectory for Aurum Life demonstrates an iterative, problem-solving approach. Initial work involved debugging and refining the AI Coach's functional split between the dashboard and a dedicated section, correctly switching to . This was followed by a major Achievements System Overhaul, implemented in two phases: Dynamic Predefined Achievements (auto-tracking, visual progress, notifications) and User-Defined Custom Achievements (CRUD, triggers, notifications). A critical bug emerged with the custom achievement icon picker, leading to its overhaul into a reusable, application-wide  component, integrated into Pillars, Areas, and Projects. Subsequently, significant effort was invested in resolving persistent UI overflow issues in project cards, involving dynamic text sizing, aggressive CSS constraints, and simplification of UI elements. The current state is addressing the comprehensive UI overflow fix across Projects, Areas, and Insights as per the latest user instructions.
 </analysis>
 
 <product_requirements>
-Aurum Life is a dark-themed personal growth web application with core functionalities in Journaling, Learning, and Task Management. It supports hierarchical organization (Pillar → Area → Project → Task) with CRUD, sub-tasks, dependencies, reminders, and recurring schedules. The UI/UX includes a Today view, Kanban boards, and drag-and-drop. Previous enhancements included an Insights Dashboard and JWT authentication. Recent sprints aimed at improving Areas & Projects (templates, visualization), Tasks (sub-tasks, due_time, recurring, dependencies), Journal (guided templates, mood tagging, On This Day), and Authentication (Google Social Login). Habits and Mindfulness were removed. Implemented features now include Google Auth, enhanced drag-and-drop, a comprehensive notification system, a  field for core entities, and a simplified, flat pillar structure. The application is currently evolving with a File Management System (upload, view, delete files, 10MB limit, specific common document/image types, no sharing/organization for MVP, integrated contextually into Project/Task detail views) and an AI Coach. The AI Coach MVP focuses on a Daily Prioritization Assistant providing 1-3 suggested tasks on the dashboard, emphasizing action-oriented analysis and starting with smart notifications, with Journal analysis requiring explicit opt-in. An importance field (1-5 scale) was added to Areas and Projects for AI-driven prioritization.
+Aurum Life is a dark-themed personal growth web application offering Journaling, Learning, and hierarchical Task Management (Pillar → Area → Project → Task). Core functionalities include CRUD operations, sub-tasks, dependencies, reminders, and recurring schedules, with UI/UX features like a Today view, Kanban boards, and drag-and-drop. Enhancements include an Insights Dashboard and JWT authentication. Recent work added Google Auth, improved drag-and-drop, a comprehensive notification system,  fields, and a simplified pillar structure. Features under active development included a File Management System (upload, view, delete, 10MB limit, no sharing for MVP) and an AI Coach for Daily Prioritization (1-3 tasks on dashboard, context-aware conversational assistant elsewhere) with an importance field for Areas/Projects. The Achievements system is being overhauled: Phase 1 (completed) focuses on dynamic predefined achievements with auto-tracking, visual progress, and real-time notifications. Phase 2 (implemented) adds user-defined custom achievements. Current focus is fixing UI overflow for dynamic content.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack:** React (Frontend), FastAPI (Backend), MongoDB (Database).
 -   **Styling:** Tailwind CSS.
--   **State Management:** React Hooks (, , , ).
--   **API Communication:** , .
--   **Authentication:** JWT, , Google OAuth 2.0 (Google Identity Services).
--   **Email Service:** SendGrid.
--   **Drag & Drop:** .
--   **Task Scheduling:** Python .
--   **Deployment/Management:** backend                          RUNNING   pid 59, uptime 0:00:02
-code-server                      RUNNING   pid 61, uptime 0:00:02
-frontend                         STOPPED   Jul 25 04:54 AM
-mongodb                          RUNNING   pid 70, uptime 0:00:02
-supervisor> , Kubernetes ingress.
--   **File Type Detection:** .
--   **AI Integration:**  (for Gemini 2.0-Flash).
+-   **State Management:** React Context (Auth, Data, Notification).
+-   **API Communication:** Axios, FastAPI .
+-   **Authentication:** JWT, Google OAuth.
+-   **AI Integration:**  (Gemini 2.0-Flash).
+-   **File Handling:** Chunked uploads, .
+-   **UI Libraries:** ,  (sonner).
 </key_technical_concepts>
 
 <code_architecture>
-The application employs a standard full-stack architecture with a React frontend and a FastAPI/MongoDB backend.
-
-**Directory Structure:**
+The application uses a standard full-stack setup: React for the frontend, FastAPI for the backend, and MongoDB for data persistence.
 
 
-**Key Files and Their Importance/Changes:**
--   : Defines Pydantic data models for MongoDB.
-    -   **Summary**: Centralized data schema definition.
-    -   **Changes**: Introduced , ,  models for file management. Added  field to , , , and  models. **Introduced  and added  field to , , , , ,  models.**
--   : Contains business logic for the backend.
-    -   **Summary**: Houses the core logic for all application features.
-    -   **Changes**: New  for file management (CRUD, content retrieval, access tracking). Fixed  to use  for  operations.
--   : Main FastAPI application entry point.
-    -   **Summary**: Defines all backend API endpoints.
-    -   **Changes**: Expanded for Resource management (create, get, delete, get content by ID). Added new endpoints for  (daily priorities, chat). Fixed  module import error to .
--   : **New file.** Contains AI Coach specific business logic.
-    -   **Summary**: Core logic for generating AI recommendations and handling conversational interactions.
-    -   **Changes**: Implemented  (rule-based with importance weighting) and  (conversational with Gemini 2.0-Flash). Manages  and context injection. Fixed  parameter to . Fixed data type issues for  calculations.
--   : Central React router and global context provider.
-    -   **Summary**: The root component for the frontend application.
-    -   **Changes**: Integrated , , , , and .
--   : Axios API client for frontend-backend communication.
-    -   **Summary**: Manages all API calls from the frontend.
-    -   **Changes**: Added endpoints for  (CRUD, content retrieval). Added  with  and  endpoints.
--   : **New file.** Reusable component for file uploads, listing, and deletion.
-    -   **Summary**: Provides the UI for attaching resources contextually to projects and tasks.
-    -   **Changes**: Implemented drag-and-drop, click-to-upload, file listing (name, size, type, date), file deletion. Fixed positioning (CSS, z-index),  call from , and integrated .
--   : **New file.** Component for viewing various file types.
-    -   **Summary**: Displays images, PDFs, text files directly, and provides download for other documents.
-    -   **Changes**: Implemented logic for rendering different mime types. Includes zoom/rotate for images, embedded iframe for PDFs, text display, and download functionality for DOC/DOCX.
--   , , , , : Frontend components for core entities.
+
+-   : Defines data schemas for MongoDB.
+    -   **Summary**: Central to data structure.
+    -   **Changes**: Added ,  to Area/Project models. Introduced , ,  for the new system. Added  field to  models. Added  to .
+-   : Contains business logic.
+    -   **Summary**: Core application logic.
+    -   **Changes**: Implemented  and  with triggers integrated into , , and  for achievement tracking.
+-   : FastAPI entry point, defines API endpoints.
+    -   **Summary**: Routes all backend API calls.
+    -   **Changes**: Expanded for  (today's priorities, chat) and new achievement-related endpoints (, , ).
+-   : Frontend API client.
+    -   **Summary**: Handles all frontend-to-backend communication.
+    -   **Changes**: Added  (, ) and  for both predefined and custom achievements.
+-   : Main AI Coach component.
+    -   **Summary**: Provides conversational AI interaction.
+    -   **Changes**: Corrected API calls from  to  to align with backend functionality and enable full conversational capabilities.
+-   : Achievements UI.
+    -   **Summary**: Displays and manages achievements.
+    -   **Changes**: Refactored to use real backend data, display predefined and custom achievements, show progress bars, integrate toast notifications, and include the custom achievement creation modal with the new .
+-   : Dashboard AI Coach.
+    -   **Summary**: Displays top daily priorities.
+    -   **Changes**: Uses  for specific dashboard functionality.
+-   , , : Core entity management components.
     -   **Summary**: Manage CRUD and display for their respective entities.
-    -   **Changes**: Added display of  field to all components (Pillars, Areas, Projects, Tasks list, Kanban tasks). **Added importance selection dropdown to Area and Project forms, and importance indicator display to Area cards and Project cards.** Integrated  into Project and Task detail views.
--   : Main dashboard component.
-    -   **Summary**: Displays an overview of user data and key metrics.
-    -   **Changes**: Integrated  at the top for daily priorities.
--   : **New file.** Dedicated component for the AI Coach on the dashboard.
-    -   **Summary**: Displays AI-recommended daily tasks and provides an interactive chat interface.
-    -   **Changes**: Implemented UI for daily priorities and the conversational chat interface (input, send button, message history, quick questions). Handles API calls to .
--   : Backend environment variables.
-    -   **Changes**: Added .
--   : Python dependencies.
-    -   **Changes**: Added .
+    -   **Changes**: Integrated the new  for consistent icon selection.  received significant UI layout fixes (dynamic text sizing, strict containment, simplified badges) and backend  field support.  converted from component-based icons to emoji icons.
+-    (NEW): Reusable icon selection.
+    -   **Summary**: Provides a consistent emoji selection interface.
+    -   **Changes**: Implemented as a standalone component with a visual emoji grid, click-to-select, live preview, and fallback custom input.
+-   : Global CSS.
+    -   **Summary**: Contains application-wide styles.
+    -   **Changes**: Added custom CSS utilities (, ) to aggressively handle text overflow and containment.
 </code_architecture>
 
 <pending_tasks>
--   Implement User-Defined Achievements & Learning Paths.
--   Implement remaining features from Intelligent Today View (e.g., smart prioritization beyond current AI Coach).
+-   Implement User-Defined Achievements & Learning Paths (Phase 2 done).
+-   Implement remaining features from Intelligent Today View.
 -   Implement Smart Recurring Tasks (remaining advanced patterns).
--   Implement Advanced Analytics & Insights (beyond basic).
+-   Implement Advanced Analytics & Insights.
 -   Mobile Responsiveness Optimization.
 -   Advanced Task Dependencies.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was focused on resolving a functional split issue with the AI Coach. The user explicitly requested that the AI Coach on the dashboard should *only* display the top 3-5 tasks to do today, while the main AI Coach section (likely a dedicated page or larger component) should handle all other queries and insights.
+Immediately prior to this summary, the AI engineer was focused on resolving critical UI overflow issues across multiple frontend components, specifically , , and . The user reported that text elements were still overflowing their containers, overlapping with other UI elements, and disrupting the layout despite previous attempts to fix it in .
 
-The previous interaction confirmed that the AI Coach was working contextually and conversationally, but the user identified that this behavior was not consistent across both intended locations. The AI engineer identified that the main  component was using an old, incorrect API call () instead of the newly implemented .
+The user provided a detailed, structured plan for the fix, explicitly requesting a **CSS-based solution** focusing on:
+1.  **Component Identification**: Locating problematic text elements in , , and .
+2.  **Scalable Text Solution**: Applying  properties (e.g., , ), ensuring text  and icons , adding  to text containers, and implementing **text truncation with ellipsis** (, , , ). The user specifically prioritized truncation over dynamic font sizing for this fix.
 
-The current work involves:
-1.  **Identifying the specific component**:  in .
-2.  **Identifying the issue**: It is using an outdated API call.
-3.  **The immediate next action**: Fixing the  component to correctly utilize the  for its conversational functionality, thereby enabling it to handle broader queries and insights as requested by the user for the main AI Coach section.
+The AI engineer has already completed **Phase 1: Component Identification**, successfully locating the problematic text elements in  (Progress by Area cards) and  (Area cards, importance badge text).  was already a focus of previous UI fixes. The AI engineer is now poised to begin **Phase 2: Implementing Scalable Text Solution** by applying the specified CSS properties and truncation methods to these identified elements.
+
+The previous attempts to fix the  overflow included:
+- Implementing utility functions for , , .
+- Applying more aggressive font sizing (e.g., ) and  to project titles.
+- Simplifying importance badges to icons-only (e.g., 🔥).
+- Adding custom CSS classes (, ) with  to  for stricter containment.
+- Optimizing grid layouts and action buttons for compactness.
+Despite these efforts, the user's latest prompt indicates the issue persists, necessitating the new, precise approach.
 </current_work>
 
 <optional_next_step>
-Complete the fix for  and ensure the functional split between the dashboard AI Coach and the main AI Coach section is correctly implemented.
+Implement Phase 2 of the UI overflow fix, applying CSS-based truncation and flexbox properties to  and .
 </optional_next_step>
