@@ -264,106 +264,174 @@ Remember: You're helping someone build their best life. Be their guide, motivato
     @staticmethod
     async def chat_with_coach(user_id: str, user_message: str) -> str:
         """
-        Interactive chat with AI coach about user's data and insights
+        Interactive chat with AI coach about user's data and insights with FULL CONTEXT INJECTION
         """
         try:
-            # Get comprehensive user data for context
+            # PHASE 1: FETCH ALL USER DATA FOR CONTEXT
+            logger.info(f"Fetching comprehensive user data for context injection - User: {user_id}")
+            
             tasks = await find_documents("tasks", {"user_id": user_id})
             projects = await find_documents("projects", {"user_id": user_id})
             areas = await find_documents("areas", {"user_id": user_id})
             pillars = await find_documents("pillars", {"user_id": user_id})
             
-            # Calculate key metrics
-            active_tasks = [t for t in tasks if not t.get('completed') and not t.get('archived')]
-            completed_tasks = [t for t in tasks if t.get('completed')]
-            overdue_tasks = []
+            # PHASE 2: CONSTRUCT DETAILED CONTEXT BLOCK
+            context_block = AiCoachService._build_user_context_block(
+                pillars, areas, projects, tasks
+            )
             
+            # PHASE 3: CONSTRUCT COMPLETE PROMPT WITH CONTEXT
+            system_message = """You are the Aurum Life AI Coach. Your role is to act as a personal growth companion. Analyze the provided user context to answer the user's question with actionable, personalized, and motivational advice. 
+
+IMPORTANT: Use ONLY the data provided in the user context. Reference specific names of pillars, areas, projects, and tasks from their actual data. Be encouraging but realistic, and always provide actionable next steps."""
+
+            final_prompt = f"""{system_message}
+
+{context_block}
+
+USER QUESTION: {user_message}
+
+Provide a personalized, actionable response based on their actual data above."""
+
+            # PHASE 4: MAKE API CALL WITH FULL CONTEXT
+            logger.info(f"Sending context-aware prompt to Gemini API - User: {user_id}")
+            gemini_coach = AiCoachService._initialize_gemini_coach(user_id)
+            
+            message = UserMessage(text=final_prompt)
+            ai_response = await gemini_coach.send_message(message)
+            
+            logger.info(f"Received AI response - User: {user_id}, Response length: {len(ai_response)}")
+            return ai_response.strip()
+            
+        except Exception as e:
+            logger.error(f"Error in context-aware AI coach chat for user {user_id}: {str(e)}")
+            return "I'm having trouble accessing your data right now. Please try asking again in a moment, and I'll provide personalized insights based on your goals and progress!"
+    
+    @staticmethod
+    def _build_user_context_block(pillars: list, areas: list, projects: list, tasks: list) -> str:
+        """
+        Build a comprehensive, structured context block with user's actual data
+        """
+        # Helper function to safely get importance as integer
+        def get_importance_int(item, default=3):
+            try:
+                return int(item.get('importance', default))
+            except (ValueError, TypeError):
+                return default
+        
+        def importance_label(level):
+            labels = {5: "Critical", 4: "High", 3: "Medium", 2: "Low", 1: "Very Low"}
+            return labels.get(level, "Medium")
+        
+        # Build context block
+        context = "--- USER CONTEXT START ---\n\n"
+        context += "Here is a snapshot of the user's current Aurum Life data. Use this information exclusively to answer their question.\n\n"
+        
+        # PILLARS SECTION
+        context += "## PILLARS\n"
+        if pillars:
+            for pillar in pillars:
+                importance = get_importance_int(pillar)
+                context += f"- Pillar: \"{pillar.get('name', 'Unnamed')}\" (Importance: {importance} - {importance_label(importance)})\n"
+                if pillar.get('description'):
+                    context += f"  Description: {pillar['description']}\n"
+        else:
+            context += "- No pillars defined yet\n"
+        context += "\n"
+        
+        # AREAS SECTION
+        context += "## AREAS\n"
+        if areas:
+            for area in areas:
+                importance = get_importance_int(area)
+                pillar_name = "Unknown Pillar"
+                
+                # Find the pillar this area belongs to
+                if area.get('pillar_id'):
+                    for pillar in pillars:
+                        if pillar.get('id') == area['pillar_id']:
+                            pillar_name = pillar.get('name', 'Unknown Pillar')
+                            break
+                
+                context += f"- Area: \"{area.get('name', 'Unnamed')}\" (in Pillar: {pillar_name}, Importance: {importance} - {importance_label(importance)})\n"
+                if area.get('description'):
+                    context += f"  Description: {area['description']}\n"
+        else:
+            context += "- No areas defined yet\n"
+        context += "\n"
+        
+        # PROJECTS SECTION
+        context += "## PROJECTS\n"
+        active_projects = [p for p in projects if not p.get('archived')]
+        if active_projects:
+            for project in active_projects:
+                importance = get_importance_int(project)
+                area_name = "Unknown Area"
+                status = project.get('status', 'not_started').replace('_', ' ').title()
+                
+                # Find the area this project belongs to
+                if project.get('area_id'):
+                    for area in areas:
+                        if area.get('id') == project['area_id']:
+                            area_name = area.get('name', 'Unknown Area')
+                            break
+                
+                context += f"- Project: \"{project.get('name', 'Unnamed')}\" (in Area: {area_name}, Status: {status}, Importance: {importance} - {importance_label(importance)})\n"
+                if project.get('description'):
+                    context += f"  Description: {project['description']}\n"
+                if project.get('deadline'):
+                    try:
+                        deadline = datetime.fromisoformat(project['deadline'].replace('Z', '+00:00')).strftime('%Y-%m-%d')
+                        context += f"  Deadline: {deadline}\n"
+                    except:
+                        pass
+        else:
+            context += "- No active projects yet\n"
+        context += "\n"
+        
+        # ACTIVE TASKS SECTION
+        context += "## ACTIVE TASKS\n"
+        active_tasks = [t for t in tasks if not t.get('completed') and not t.get('archived')]
+        if active_tasks:
             today = datetime.utcnow().date()
-            for task in active_tasks:
+            
+            for task in active_tasks[:10]:  # Limit to 10 most relevant tasks
+                project_name = "No Project"
+                due_info = ""
+                
+                # Find the project this task belongs to
+                if task.get('project_id'):
+                    for project in projects:
+                        if project.get('id') == task['project_id']:
+                            project_name = project.get('name', 'Unknown Project')
+                            break
+                
+                # Format due date information
                 if task.get('due_date'):
                     try:
                         due_date = datetime.fromisoformat(task['due_date'].replace('Z', '+00:00')).date()
                         if due_date < today:
-                            overdue_tasks.append(task)
+                            days_overdue = (today - due_date).days
+                            due_info = f" (OVERDUE by {days_overdue} day{'s' if days_overdue > 1 else ''})"
+                        elif due_date == today:
+                            due_info = " (Due: TODAY)"
+                        else:
+                            due_info = f" (Due: {due_date.strftime('%Y-%m-%d')})"
                     except:
                         pass
-            
-            # Organize projects by status and importance
-            active_projects = [p for p in projects if not p.get('archived')]
-            
-            # Helper function to safely get importance as integer
-            def get_importance_int(item, default=3):
-                try:
-                    return int(item.get('importance', default))
-                except (ValueError, TypeError):
-                    return default
-            
-            high_importance_projects = [p for p in active_projects if get_importance_int(p) >= 4]
-            
-            # Create comprehensive context for AI
-            context_summary = f"""
-USER DATA SUMMARY:
-=================
-
-PILLARS ({len(pillars)}):
-{', '.join([f"{p.get('name', 'Unnamed')} ({p.get('area_count', 0)} areas)" for p in pillars[:5]])}
-
-AREAS ({len(areas)}):
-- Critical areas: {len([a for a in areas if get_importance_int(a) >= 5])}
-- High importance: {len([a for a in areas if get_importance_int(a) == 4])}
-- Medium importance: {len([a for a in areas if get_importance_int(a) == 3])}
-
-PROJECTS ({len(active_projects)} active):
-- Critical projects: {len([p for p in active_projects if get_importance_int(p) >= 5])}
-- High importance: {len([p for p in active_projects if get_importance_int(p) == 4])}
-- In progress: {len([p for p in active_projects if p.get('status') == 'in_progress'])}
-- Not started: {len([p for p in active_projects if p.get('status') == 'not_started'])}
-
-TASKS:
-- Active tasks: {len(active_tasks)}
-- Completed tasks: {len(completed_tasks)}
-- Overdue tasks: {len(overdue_tasks)}
-- Completion rate: {round((len(completed_tasks) / len(tasks) * 100) if tasks else 0, 1)}%
-
-HIGH-PRIORITY ITEMS:
-- Projects: {', '.join([p.get('name', 'Unnamed') for p in high_importance_projects[:3]])}
-- Overdue tasks: {', '.join([t.get('name', 'Unnamed') for t in overdue_tasks[:3]])}
-
-RECENT ACTIVITY:
-- Tasks created this week: {len([t for t in tasks if t.get('date_created') and (datetime.utcnow() - datetime.fromisoformat(t['date_created'].replace('Z', '+00:00'))).days <= 7])}
-- Tasks completed this week: {len([t for t in completed_tasks if t.get('date_modified') and (datetime.utcnow() - datetime.fromisoformat(t['date_modified'].replace('Z', '+00:00'))).days <= 7])}
-"""
-
-            # Initialize AI coach
-            gemini_coach = AiCoachService._initialize_gemini_coach(user_id)
-            
-            # Create coaching prompt
-            coaching_prompt = f"""
-The user asked: "{user_message}"
-
-Based on their Aurum Life data below, provide a helpful, insightful response. You can:
-- Analyze their progress and patterns
-- Provide actionable recommendations  
-- Identify areas that need attention
-- Celebrate achievements and progress
-- Suggest prioritization strategies
-- Give motivational guidance
-
-Be conversational, specific, and helpful. Use data points to support your insights.
-
-{context_summary}
-
-Respond as their personal growth coach with specific insights and recommendations.
-"""
-
-            # Get AI response
-            message = UserMessage(text=coaching_prompt)
-            ai_response = await gemini_coach.send_message(message)
-            return ai_response.strip()
-            
-        except Exception as e:
-            logger.error(f"Error in AI coach chat for user {user_id}: {str(e)}")
-            return "I'm having trouble analyzing your data right now. Could you try asking again in a moment? I'm here to help you understand your progress and priorities!"
+                
+                priority = task.get('priority', 'medium').title()
+                status = task.get('status', 'todo').replace('_', ' ').title()
+                
+                context += f"- Task: \"{task.get('name', 'Unnamed')}\" (in Project: {project_name}, Priority: {priority}, Status: {status}{due_info})\n"
+                if task.get('description'):
+                    context += f"  Description: {task['description']}\n"
+        else:
+            context += "- No active tasks yet\n"
+        
+        context += "\n--- USER CONTEXT END ---\n\n"
+        
+        return context
     
     @staticmethod
     def _build_fallback_message(scored_item: Dict) -> str:
