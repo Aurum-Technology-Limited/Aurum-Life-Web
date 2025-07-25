@@ -130,6 +130,16 @@ const Dashboard = ({ onSectionChange }) => {
         />
       </div>
 
+      {/* AI Coach - Daily Priorities */}
+      <AiCoachCard 
+        onStartFocusSession={(taskId, taskName) => {
+          // TODO: Integrate with existing Pomodoro timer or task navigation
+          console.log(`Starting focus session for task ${taskId}: ${taskName}`);
+          // For now, we could navigate to tasks or open a focus modal
+          onSectionChange('tasks');
+        }}
+      />
+
       {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Today's Focus */}
