@@ -434,6 +434,7 @@ class Task(BaseDocument):
     estimated_duration: Optional[int] = None  # in minutes
     # Sub-task completion tracking
     sub_task_completion_required: bool = False  # If true, main task complete only when all sub-tasks complete
+    date_created: datetime = Field(default_factory=datetime.utcnow)
 
 class TaskCreate(BaseModel):
     project_id: str
