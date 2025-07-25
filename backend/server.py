@@ -1352,7 +1352,7 @@ async def attach_resource_to_entity(
 @api_router.delete("/resources/{resource_id}/detach")
 async def detach_resource_from_entity(
     resource_id: str,
-    attachment_data: FileAttachmentRequest,
+    attachment_data: EntityAttachmentRequest,
     current_user: User = Depends(get_current_active_user)
 ):
     """Detach a resource from an entity"""
