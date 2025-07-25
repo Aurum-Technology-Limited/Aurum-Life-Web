@@ -737,12 +737,19 @@ const Achievements = () => {
                   onChange={(e) => setCreateForm(prev => ({ ...prev, target_type: e.target.value, target_id: '' }))}
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
                 >
-                  <option value="complete_tasks">Complete Tasks</option>
-                  <option value="complete_project">Complete Project</option>
-                  <option value="write_journal_entries">Write Journal Entries</option>
-                  <option value="complete_courses">Complete Courses</option>
-                  <option value="maintain_streak">Maintain Streak</option>
+                  <option value="complete_tasks">📋 Complete Tasks</option>
+                  <option value="complete_project">🎯 Complete Project</option>
+                  <option value="write_journal_entries">✍️ Write Journal Entries</option>
+                  <option value="complete_courses">📚 Complete Courses</option>
+                  <option value="maintain_streak">🔥 Maintain Streak</option>
                 </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  {createForm.target_type === 'complete_tasks' && 'Track completion of individual tasks'}
+                  {createForm.target_type === 'complete_project' && 'Track completion of entire projects'}
+                  {createForm.target_type === 'write_journal_entries' && 'Track journal writing activity'}
+                  {createForm.target_type === 'complete_courses' && 'Track course completion progress'}
+                  {createForm.target_type === 'maintain_streak' && 'Track daily activity streaks'}
+                </p>
               </div>
 
               {/* Target Project (if applicable) */}
