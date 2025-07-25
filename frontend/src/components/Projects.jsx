@@ -52,6 +52,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    icon: '🚀', // Add icon field for projects
     area_id: '',
     status: 'Not Started',
     priority: 'medium',
