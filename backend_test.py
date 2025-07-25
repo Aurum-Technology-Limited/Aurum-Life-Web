@@ -1,34 +1,33 @@
 #!/usr/bin/env python3
 """
-USER-DEFINED CUSTOM ACHIEVEMENTS SYSTEM - PHASE 2 TESTING
-Complete end-to-end testing of the Custom Achievements System implementation.
+IMPROVED ICON PICKER SYSTEM - BACKEND TESTING
+Complete end-to-end testing of the Icon Picker System backend implementation.
 
 FOCUS AREAS:
-1. CUSTOM ACHIEVEMENT CRUD OPERATIONS - Test GET/POST/PUT/DELETE /api/achievements/custom endpoints
-2. CUSTOM ACHIEVEMENT MODELS & DATA - Test CustomAchievement model with all target types
-3. AUTO-TRACKING INTEGRATION - Test custom achievement triggers when actions occur
-4. PROGRESS CALCULATION - Test progress calculation for different target types
-5. COMPLETION & NOTIFICATIONS - Test achievement completion and notification creation
-6. TARGET VALIDATION - Test validation for projects/courses targets
+1. PROJECT MODEL UPDATES - Test Project model with new icon field (default: '🚀')
+2. PROJECT CRUD WITH ICONS - Test project creation, update, retrieval with icon field
+3. ICON FIELD VALIDATION - Test icon field validation and storage
+4. ICON PERSISTENCE - Test icon field persistence in database
+5. UNICODE EMOJI SUPPORT - Test various emoji types (basic, complex, multi-character)
+6. API RESPONSE FORMAT - Test icon field appears in all project API responses
 
 SPECIFIC ENDPOINTS TO TEST:
-- GET /api/achievements/custom (get all user's custom achievements)
-- POST /api/achievements/custom (create new custom achievement)
-- PUT /api/achievements/custom/{id} (update custom achievement)
-- DELETE /api/achievements/custom/{id} (delete custom achievement)
-- POST /api/achievements/custom/check (check progress for all custom achievements)
+- POST /api/projects (create project with icon)
+- GET /api/projects (list projects with icons)
+- GET /api/projects/{id} (get specific project with icon)
+- PUT /api/projects/{id} (update project icon)
+- DELETE /api/projects/{id} (delete project)
 
 TEST SCENARIOS:
-1. Basic CRUD Operations - Create, read, update, delete custom achievements
-2. Task-Based Goals - Create custom achievement for "Complete 5 tasks" and test trigger
-3. Project-Specific Goals - Create custom achievement for "Complete Project X" and test trigger
-4. Journal Entry Goals - Create custom achievement for "Write 3 journal entries" and test trigger
-5. Progress Tracking - Verify progress updates accurately as actions occur
-6. Completion & Notifications - Test achievement completion and notification creation
-7. Target Validation - Test validation for non-existent projects/targets
+1. Create Project with Icon - Test project creation with various emoji icons
+2. Update Project Icon - Test updating existing project icons
+3. Default Icon Handling - Verify default '🚀' icon is assigned when not specified
+4. Icon Persistence - Verify icons are stored and retrieved correctly
+5. Unicode Support - Test various emoji types (basic, complex, multi-character)
+6. API Response Format - Verify icon field appears in all project API responses
 
 AUTHENTICATION:
-- Use test credentials with realistic data for custom achievements testing
+- Use test credentials with realistic data for icon picker testing
 """
 
 import requests
