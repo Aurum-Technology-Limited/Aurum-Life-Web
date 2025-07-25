@@ -420,6 +420,7 @@ class ProjectUpdate(BaseModel):
     deadline: Optional[datetime] = None
     status: Optional[ProjectStatusEnum] = None
     priority: Optional[PriorityEnum] = None
+    importance: Optional[ImportanceEnum] = None
     sort_order: Optional[int] = None
 
 # Enhanced Task models
