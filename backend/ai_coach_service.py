@@ -203,27 +203,32 @@ Remember: You're helping someone build their best life. Be their guide, motivato
             for i, item in enumerate(top_tasks):
                 task = item['task']
                 
-                # Create specific coaching prompt for this task
-                coaching_prompt = f"""
-                Based on the user's Aurum Life data, provide a brief, motivational coaching message for this task:
+                # Create specific coaching prompt for this task WITH FULL CONTEXT
+                context_block = AiCoachService._build_user_context_block(
+                    pillars, areas, projects, tasks
+                )
+                
+                coaching_prompt = f"""You are the Aurum Life AI Coach. Provide a brief, motivational coaching message for this specific task.
 
-                TASK: {task['name']}
-                DESCRIPTION: {task.get('description', 'No description')}
-                PRIORITY: {task.get('priority', 'medium')}
-                SCORE: {item['score']} (higher = more urgent/important)
-                REASONS: {', '.join(item['reasons'])}
-                
-                PROJECT: {item.get('project', {}).get('name', 'No project')} (Importance: {item.get('project', {}).get('importance', 'N/A')})
-                AREA: {item.get('area', {}).get('name', 'No area')} (Importance: {item.get('area', {}).get('importance', 'N/A')})
-                
-                Provide a 1-2 sentence coaching message that:
-                1. Acknowledges the urgency/importance
-                2. Motivates action with specific reasoning
-                3. Connects to bigger purpose if relevant
-                4. Uses an encouraging, action-oriented tone
-                
-                Example: "🎯 This health goal is overdue but critical to your wellness pillar. Your past consistency shows you can do this - let's break it into a 15-minute session."
-                """
+{context_block}
+
+FOCUS TASK: {task['name']}
+DESCRIPTION: {task.get('description', 'No description')}
+PRIORITY: {task.get('priority', 'medium')}
+SCORE: {item['score']} (higher = more urgent/important)
+REASONS: {', '.join(item['reasons'])}
+
+PROJECT: {item.get('project', {}).get('name', 'No project')} (Importance: {item.get('project', {}).get('importance', 'N/A')})
+AREA: {item.get('area', {}).get('name', 'No area')} (Importance: {item.get('area', {}).get('importance', 'N/A')})
+
+Provide a 1-2 sentence coaching message that:
+1. Acknowledges the urgency/importance using their actual data
+2. Motivates action with specific reasoning
+3. Connects to their bigger purpose if relevant
+4. Uses an encouraging, action-oriented tone
+
+Example: "🎯 This health goal is overdue but critical to your wellness pillar. Your past consistency shows you can do this - let's break it into a 15-minute session."
+"""
                 
                 try:
                     # Get AI coaching response
