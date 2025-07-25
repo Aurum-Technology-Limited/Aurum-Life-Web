@@ -475,6 +475,22 @@ const Achievements = () => {
         </div>
       </div>
 
+      {/* Custom Achievements Section */}
+      {customAchievements.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-6">Your Custom Goals</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {customAchievements.map((achievement) => (
+              <CustomAchievementCard 
+                key={achievement.id} 
+                achievement={achievement} 
+                onDelete={handleDeleteCustomAchievement}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Upcoming Achievements */}
       <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
         <h2 className="text-xl font-bold text-white mb-4">Almost There!</h2>
