@@ -160,13 +160,26 @@ const AiCoachCard = ({ onStartFocusSession }) => {
           <Brain className="h-6 w-6 text-blue-400" />
           <h2 className="text-xl font-semibold text-white">AI Coach</h2>
         </div>
-        <button 
-          onClick={loadTodaysPriorities}
-          className="p-2 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
-          title="Refresh recommendations"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </button>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setShowChat(!showChat)}
+            className={`p-2 rounded-lg transition-colors ${
+              showChat 
+                ? 'bg-blue-600 text-white' 
+                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`}
+            title="Chat with AI Coach"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </button>
+          <button 
+            onClick={loadTodaysPriorities}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
+            title="Refresh recommendations"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Coach Message */}
