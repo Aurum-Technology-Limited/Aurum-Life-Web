@@ -279,7 +279,7 @@ class SimpleAchievementTester:
             )
         
         # Test project completion trigger
-        update_data = {"status": "completed"}
+        update_data = {"status": "Completed"}
         update_result = self.make_request('PUT', f'/projects/{project_id}', data=update_data, use_auth=True)
         
         self.log_test(
