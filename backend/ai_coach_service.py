@@ -137,12 +137,22 @@ Remember: You're helping someone build their best life. Be their guide, motivato
                 area = area_lookup.get(project.get('area_id')) if project else None
                 
                 if project and project.get('importance'):
-                    importance_score = {5: 50, 4: 35, 3: 20, 2: 10, 1: 5}.get(project['importance'], 20)
-                    score += importance_score
+                    # Convert importance to int to handle string values
+                    try:
+                        project_importance = int(project['importance'])
+                        importance_score = {5: 50, 4: 35, 3: 20, 2: 10, 1: 5}.get(project_importance, 20)
+                        score += importance_score
+                    except (ValueError, TypeError):
+                        pass
                 
                 if area and area.get('importance'):
-                    area_score = {5: 25, 4: 20, 3: 10, 2: 5, 1: 2}.get(area['importance'], 10)
-                    score += area_score
+                    # Convert importance to int to handle string values
+                    try:
+                        area_importance = int(area['importance'])
+                        area_score = {5: 25, 4: 20, 3: 10, 2: 5, 1: 2}.get(area_importance, 10)
+                        score += area_score
+                    except (ValueError, TypeError):
+                        pass
                 
                 if score > 0:
                     scored_tasks.append({
