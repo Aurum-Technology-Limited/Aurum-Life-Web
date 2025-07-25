@@ -851,6 +851,20 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                         <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(project.priority)}`}>
                           {project.priority}
                         </span>
+                        {/* Importance Indicator */}
+                        {project.importance && (
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            project.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
+                            project.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
+                            project.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
+                            'bg-gray-800/30 text-gray-400 border border-gray-600'
+                          }`}>
+                            {project.importance >= 5 ? '🔥 Critical' :
+                             project.importance >= 4 ? '⚡ High' :
+                             project.importance >= 3 ? '📊 Medium' :
+                             '📝 Low'} Impact
+                          </span>
+                        )}
                         {project.archived && (
                           <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300">
                             Archived
