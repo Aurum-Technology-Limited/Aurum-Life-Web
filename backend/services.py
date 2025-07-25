@@ -2281,15 +2281,6 @@ class PillarService:
         pillars = await find_documents("pillars", {"user_id": user_id})
         max_sort_order = max([pillar.get("sort_order", 0) for pillar in pillars] + [0])
         
-        # Validate parent pillar if specified
-        if pillar_data.parent_pillar_id:
-            parent_pillar = await find_document("pillars", {
-                "id": pillar_data.parent_pillar_id, 
-                "user_id": user_id
-            })
-            if not parent_pillar:
-                raise ValueError("Parent pillar not found")
-        
         pillar = Pillar(
             user_id=user_id, 
             sort_order=max_sort_order + 1, 
