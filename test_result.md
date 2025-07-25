@@ -2499,6 +2499,9 @@ agent_communication:
         - working: true
           agent: "main"
           comment: "CUSTOM BRANDING COMPLETE! ✅ Updated browser tab title from 'Emergent | Fullstack App' to 'Aurum Life' with dynamic section titles (e.g., 'Dashboard | Aurum Life'). Created custom golden brain favicon based on user's provided icon design - dark navy background with golden brain symbol. Added multiple favicon sizes (16x16, 32x32, 180x180) for cross-platform compatibility. Updated meta description and theme colors to match Aurum Life branding. Browser tab now displays proper brand identity!"
+        - working: true
+          agent: "main"
+          comment: "GOOGLE OAUTH BUTTON FIX: Resolved width inconsistency between login and signup Google OAuth buttons. Login button had width='400' while signup button had no width specified, causing different appearances. Fixed both to use width='100%' for consistent full-width display across both login and signup forms. Both Google buttons now have identical styling and responsive width behavior."
 
   - task: "Today API Endpoints Functionality Fix"
     implemented: true
