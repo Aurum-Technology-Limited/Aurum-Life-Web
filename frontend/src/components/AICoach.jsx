@@ -53,7 +53,6 @@ const AICoach = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [sessionId] = useState(() => `session-${Date.now()}`);
   const [userStats, setUserStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,17 +76,19 @@ const AICoach = () => {
       setLoading(true);
       setError(null);
       
-      // Load existing messages for this session
-      const messagesResponse = await chatAPI.getMessages(sessionId);
-      setMessages(messagesResponse.data);
-      
       // Load user stats for insights
       const statsResponse = await statsAPI.getUserStats();
       setUserStats(statsResponse.data);
       
-      // If no messages exist, send welcome message
-      if (messagesResponse.data.length === 0) {
-        await sendWelcomeMessage();
+      // Add welcome message if no messages exist
+      if (messages.length === 0) {
+        const welcomeMessage = {
+          id: Date.now(),
+          content: "Hello! I'm your AI Growth Coach. I'm here to help you with insights, motivation, and guidance on your personal development journey. How can I assist you today?",
+          message_type: 'ai',
+          timestamp: new Date().toISOString()
+        };
+        setMessages([welcomeMessage]);
       }
     } catch (err) {
       setError(handleApiError(err, 'Failed to initialize chat'));
@@ -96,53 +97,51 @@ const AICoach = () => {
     }
   };
 
-  const sendWelcomeMessage = async () => {
-    const welcomeMessage = {
-      session_id: sessionId,
-      message_type: 'ai',
-      content: "Hello! I'm your AI Growth Coach. I'm here to help you on your personal development journey. How are you feeling about your progress today?"
-    };
-    
-    try {
-      const response = await chatAPI.sendMessage(welcomeMessage);
-      setMessages([response.data]);
-    } catch (err) {
-      console.error('Failed to send welcome message:', err);
-    }
-  };
-
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
     const userMessage = {
-      session_id: sessionId,
+      id: Date.now(),
+      content: inputValue,
       message_type: 'user',
-      content: inputValue
+      timestamp: new Date().toISOString()
     };
 
+    // Add user message to the chat immediately
+    setMessages(prev => [...prev, userMessage]);
+    
     try {
       setIsTyping(true);
+      setInputValue('');
       
-      // Send user message to backend
-      const response = await chatAPI.sendMessage(userMessage);
+      // Send message to AI Coach API
+      const response = await aiCoachAPI.chatWithCoach(inputValue);
       
-      // Refresh messages to get both user message and AI response
-      setTimeout(async () => {
-        try {
-          const messagesResponse = await chatAPI.getMessages(sessionId);
-          setMessages(messagesResponse.data);
-        } catch (err) {
-          console.error('Failed to refresh messages:', err);
-        }
-        setIsTyping(false);
-      }, 1000);
+      // Create AI response message
+      const aiMessage = {
+        id: Date.now() + 1,
+        content: response.data.response,
+        message_type: 'ai',
+        timestamp: response.data.timestamp
+      };
+      
+      // Add AI response to messages
+      setMessages(prev => [...prev, aiMessage]);
       
     } catch (err) {
       setError(handleApiError(err, 'Failed to send message'));
+      
+      // Add error message to chat
+      const errorMessage = {
+        id: Date.now() + 1,
+        content: "I apologize, but I'm having trouble responding right now. Please try again in a moment.",
+        message_type: 'ai',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
     }
-
-    setInputValue('');
   };
 
   const handleKeyPress = (e) => {
