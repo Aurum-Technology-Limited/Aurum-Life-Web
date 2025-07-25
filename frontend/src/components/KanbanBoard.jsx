@@ -560,6 +560,17 @@ const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {
                   />
                 </div>
 
+                {/* File Manager - Only show for existing tasks */}
+                {editingTask && (
+                  <div>
+                    <FileManager 
+                      entityType="task"
+                      entityId={editingTask.id}
+                      entityName={editingTask.name}
+                    />
+                  </div>
+                )}
+
                 <div className="flex space-x-4 pt-4">
                   <button
                     type="button"
