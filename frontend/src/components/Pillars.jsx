@@ -43,7 +43,6 @@ const Pillars = () => {
       setLoading(true);
       const response = await api.get('/pillars', {
         params: {
-          include_sub_pillars: true,
           include_areas: false,
           include_archived: false
         }
