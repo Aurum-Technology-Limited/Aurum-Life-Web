@@ -396,6 +396,7 @@ class Project(BaseDocument):
     area_id: str
     name: str
     description: str = ""
+    icon: str = "🚀"  # Add icon field for projects
     deadline: Optional[datetime] = None
     status: ProjectStatusEnum = ProjectStatusEnum.not_started
     priority: PriorityEnum = PriorityEnum.medium
