@@ -40,14 +40,7 @@ const Areas = ({ onSectionChange }) => {
     importance: 3  // Default to medium importance
   });
 
-  const iconOptions = [
-    { value: 'target', label: 'Target', component: Target },
-    { value: 'bar-chart', label: 'Bar Chart', component: BarChart3 },
-    { value: 'folder', label: 'Folder', component: FolderOpen },
-    { value: 'calendar', label: 'Calendar', component: Calendar },
-    { value: 'layers', label: 'Layers', component: Layers }
-  ];
-
+  // Remove old iconOptions and getIconComponent - we'll use emoji icons now
   const colorOptions = [
     '#F4B400', '#EF4444', '#10B981', '#3B82F6', '#8B5CF6',
     '#F59E0B', '#06B6D4', '#84CC16', '#F97316', '#EC4899'
