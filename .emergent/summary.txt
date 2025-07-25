@@ -1,9 +1,11 @@
 <analysis>
-The AI engineer successfully transformed the Aurum Life application from an MVP to a feature-rich platform. Initial efforts focused on implementing the Pillar Hierarchy, sub-tasks, recurring tasks, drag-and-drop, and task dependencies. Critical bug fixes included drag-and-drop context, task count synchronization, Kanban issues, and complex authentication problems. Unnecessary Habits and Mindfulness sections were removed. Major recent work included integrating Google OAuth, comprehensive Journal enhancements, a real-time Notification System, and implementing a  field for core entities. Most recently, the nested pillar functionality was removed, simplifying the application's structure. The work involved systematic debugging, extensive backend and frontend code modifications, and database migrations, demonstrating a robust, iterative development approach. The current task is initiating the File Management System.
+The AI engineer's trajectory showcases an iterative and robust development process for the Aurum Life application. The work began with foundational feature enhancements including implementing a comprehensive File Management System (upload, view, delete), which involved intricate backend (data models, services, API endpoints) and frontend (reusable ,  integrated into Project/Task views) development, coupled with extensive debugging of UI positioning, data context, and MongoDB update errors.
+
+Subsequently, the focus shifted to the AI Coach. An MVP was rapidly built for daily task prioritization, followed by the crucial addition of an 'importance' field to Areas and Projects. The most significant advancement was the integration of Gemini 2.0-Flash via , transforming the AI Coach into a conversational, context-aware assistant. This involved several cycles of debugging API calls, data type mismatches, and ensuring proper context injection for personalized responses. The current task involves refining the AI Coach's functionality by splitting its responsibilities between the dashboard (top 3-5 tasks) and a dedicated main AI Coach section (all other queries/insights).
 </analysis>
 
 <product_requirements>
-Aurum Life is a dark-themed personal growth web application with core functionalities in Journaling, Learning, and a robust Task Management system. It is designed to organize content hierarchically as Pillar → Area → Project → Task, supporting CRUD operations, nested sub-tasks, dependencies, reminders, and recurring schedules. The UI/UX features include a unified Today view, Kanban boards, and drag-and-drop functionality. Prior development included bug fixes, an Insights Dashboard, and secure email/password authentication via JWT. Recent sprint goals (SRD v2.0) aimed to enhance Areas & Projects (templates, progress visualization), Tasks (sub-tasks, due_time, Today view, recurring, dependencies, reminders, enhanced D&D), Journal (guided templates, mood tagging, On This Day), and Authentication (Google Social Login). Habits and Mindfulness sections were explicitly removed. Implemented features now include Google Authentication, enhanced drag-and-drop for projects, a comprehensive notification system (browser & email), a  field for all core entities, and a simplified, flat pillar structure (child pillars removed). The application is currently evolving towards a complete file management system.
+Aurum Life is a dark-themed personal growth web application with core functionalities in Journaling, Learning, and Task Management. It supports hierarchical organization (Pillar → Area → Project → Task) with CRUD, sub-tasks, dependencies, reminders, and recurring schedules. The UI/UX includes a Today view, Kanban boards, and drag-and-drop. Previous enhancements included an Insights Dashboard and JWT authentication. Recent sprints aimed at improving Areas & Projects (templates, visualization), Tasks (sub-tasks, due_time, recurring, dependencies), Journal (guided templates, mood tagging, On This Day), and Authentication (Google Social Login). Habits and Mindfulness were removed. Implemented features now include Google Auth, enhanced drag-and-drop, a comprehensive notification system, a  field for core entities, and a simplified, flat pillar structure. The application is currently evolving with a File Management System (upload, view, delete files, 10MB limit, specific common document/image types, no sharing/organization for MVP, integrated contextually into Project/Task detail views) and an AI Coach. The AI Coach MVP focuses on a Daily Prioritization Assistant providing 1-3 suggested tasks on the dashboard, emphasizing action-oriented analysis and starting with smart notifications, with Journal analysis requiring explicit opt-in. An importance field (1-5 scale) was added to Areas and Projects for AI-driven prioritization.
 </product_requirements>
 
 <key_technical_concepts>
@@ -15,12 +17,13 @@ Aurum Life is a dark-themed personal growth web application with core functional
 -   **Email Service:** SendGrid.
 -   **Drag & Drop:** .
 -   **Task Scheduling:** Python .
--   **Deployment/Management:** backend                          RUNNING   pid 46, uptime 0:00:04
-code-server                      RUNNING   pid 48, uptime 0:00:04
-frontend                         STOPPED   Jul 25 01:48 AM
-mongodb                          RUNNING   pid 54, uptime 0:00:04
+-   **Deployment/Management:** backend                          RUNNING   pid 59, uptime 0:00:02
+code-server                      RUNNING   pid 61, uptime 0:00:02
+frontend                         STOPPED   Jul 25 04:54 AM
+mongodb                          RUNNING   pid 70, uptime 0:00:02
 supervisor> , Kubernetes ingress.
 -   **File Type Detection:** .
+-   **AI Integration:**  (for Gemini 2.0-Flash).
 </key_technical_concepts>
 
 <code_architecture>
@@ -32,95 +35,63 @@ The application employs a standard full-stack architecture with a React frontend
 **Key Files and Their Importance/Changes:**
 -   : Defines Pydantic data models for MongoDB.
     -   **Summary**: Centralized data schema definition.
-    -   **Changes**: Introduced , , , , , , , ,  models. Enhanced  model. **Added  field to , , , and  models.** Removed  models. **Removed ,  fields from Pillar models to flatten hierarchy.** New , ,  models for file management.
+    -   **Changes**: Introduced , ,  models for file management. Added  field to , , , and  models. **Introduced  and added  field to , , , , ,  models.**
 -   : Contains business logic for the backend.
     -   **Summary**: Houses the core logic for all application features.
-    -   **Changes**: New  (updated to handle flat hierarchy), ,  (new for file management). , ,  significantly enhanced. **JournalService updated for templates, mood, On This Day and fixed  population and usage count ().**  updated with bulk notification actions. **PillarService heavily modified to remove all child pillar logic and related validations/lookups.**
+    -   **Changes**: New  for file management (CRUD, content retrieval, access tracking). Fixed  to use  for  operations.
 -   : Main FastAPI application entry point.
     -   **Summary**: Defines all backend API endpoints.
-    -   **Changes**: Expanded for Pillar CRUD (simplified), Task reordering, Notification endpoints (including bulk actions), and Google OAuth. Journal endpoints updated. Removed habit-related APIs. **Now includes new endpoints for Resource management (upload start, chunk, complete, CRUD).**
--   : Handles MongoDB interactions.
-    -   **Summary**: Provides utility functions for database operations.
-    -   **Changes**: **Added  function for correct  operations.**
--   : Handles SendGrid email sending.
-    -   **Summary**: Responsible for sending transactional emails.
-    -   **Changes**: Implemented for sending task reminders, overdue alerts, and password reset emails. Utilizes SendGrid API.
--   : New service for notification logic.
-    -   **Summary**: Manages notification creation, preferences, and bulk actions.
-    -   **Changes**: New file containing logic for  and  models, including  and .
+    -   **Changes**: Expanded for Resource management (create, get, delete, get content by ID). Added new endpoints for  (daily priorities, chat). Fixed  module import error to .
+-   : **New file.** Contains AI Coach specific business logic.
+    -   **Summary**: Core logic for generating AI recommendations and handling conversational interactions.
+    -   **Changes**: Implemented  (rule-based with importance weighting) and  (conversational with Gemini 2.0-Flash). Manages  and context injection. Fixed  parameter to . Fixed data type issues for  calculations.
 -   : Central React router and global context provider.
     -   **Summary**: The root component for the frontend application.
-    -   **Changes**: Integrated , , , , and . Routing updated for  and ;  and  removed.
+    -   **Changes**: Integrated , , , , and .
 -   : Axios API client for frontend-backend communication.
     -   **Summary**: Manages all API calls from the frontend.
-    -   **Changes**: Added endpoints for Pillars (simplified), Notifications (CRUD, bulk), Task/Project reordering, Journal (templates, insights, search). Removed habits-related APIs. **Added 401 error handling to automatically clear tokens and redirect to login.** Starting to add  related API endpoints.
--   : Frontend component for journaling.
-    -   **Summary**: Provides the user interface for journal entries.
-    -   **Changes**: **Significantly enhanced to include Template Selection & Usage, Search & Filter functionality, Analytics & Insights view, and integration with . Added navigation tabs for different views.**
--   : Global context for notifications.
-    -   **Summary**: Manages notification state and logic across the frontend.
-    -   **Changes**: **New file. Enhanced with WebSocket support, improved real-time polling, and bulk notification management functions (, ).**
--   : Component for managing notification preferences.
-    -   **Summary**: Allows users to customize how they receive notifications.
-    -   **Changes**: **New file. Context usage uncommented and enhanced.**
--   : Frontend component for managing Pillar hierarchy.
-    -   **Summary**: Manages the CRUD operations and display of Pillars.
-    -   **Changes**: **New file. Heavily modified to remove all child pillar UI elements, including  selection, expanded/collapsed states, and nested display logic. Simplified to a flat structure.** Removed unused imports and fixed function naming.
--   : Frontend environment variables.
-    -   **Summary**: Stores environment-specific variables for the frontend.
-    -   **Changes**:  was frequently updated to match the correct preview domain.  was added/removed. **Crucially, updated to  to resolve domain mismatch issues.**
+    -   **Changes**: Added endpoints for  (CRUD, content retrieval). Added  with  and  endpoints.
+-   : **New file.** Reusable component for file uploads, listing, and deletion.
+    -   **Summary**: Provides the UI for attaching resources contextually to projects and tasks.
+    -   **Changes**: Implemented drag-and-drop, click-to-upload, file listing (name, size, type, date), file deletion. Fixed positioning (CSS, z-index),  call from , and integrated .
+-   : **New file.** Component for viewing various file types.
+    -   **Summary**: Displays images, PDFs, text files directly, and provides download for other documents.
+    -   **Changes**: Implemented logic for rendering different mime types. Includes zoom/rotate for images, embedded iframe for PDFs, text display, and download functionality for DOC/DOCX.
+-   , , , , : Frontend components for core entities.
+    -   **Summary**: Manage CRUD and display for their respective entities.
+    -   **Changes**: Added display of  field to all components (Pillars, Areas, Projects, Tasks list, Kanban tasks). **Added importance selection dropdown to Area and Project forms, and importance indicator display to Area cards and Project cards.** Integrated  into Project and Task detail views.
+-   : Main dashboard component.
+    -   **Summary**: Displays an overview of user data and key metrics.
+    -   **Changes**: Integrated  at the top for daily priorities.
+-   : **New file.** Dedicated component for the AI Coach on the dashboard.
+    -   **Summary**: Displays AI-recommended daily tasks and provides an interactive chat interface.
+    -   **Changes**: Implemented UI for daily priorities and the conversational chat interface (input, send button, message history, quick questions). Handles API calls to .
 -   : Backend environment variables.
-    -   **Summary**: Stores environment-specific variables for the backend.
-    -   **Changes**: Added , , , .
--   : **New file.** Migration script to add  to existing documents.
--   : **New file.** Migration script to remove  from existing pillars.
--   : **New file.** Script to clear stale authentication data.
--   , , , : **New files.** Scripts created for testing email notification setup.
+    -   **Changes**: Added .
 -   : Python dependencies.
     -   **Changes**: Added .
 </code_architecture>
 
 <pending_tasks>
--   Frontend integration of the Resources view with actual file upload/storage (current work).
--   Proper API Key management for Gemini API in  function.
 -   Implement User-Defined Achievements & Learning Paths.
--   Implement remaining features from Intelligent Today View (e.g., smart prioritization).
+-   Implement remaining features from Intelligent Today View (e.g., smart prioritization beyond current AI Coach).
 -   Implement Smart Recurring Tasks (remaining advanced patterns).
+-   Implement Advanced Analytics & Insights (beyond basic).
+-   Mobile Responsiveness Optimization.
+-   Advanced Task Dependencies.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was focused on implementing a comprehensive **File Management System**. This feature was chosen by the user as the next priority.
+Immediately prior to this summary, the AI engineer was focused on resolving a functional split issue with the AI Coach. The user explicitly requested that the AI Coach on the dashboard should *only* display the top 3-5 tasks to do today, while the main AI Coach section (likely a dedicated page or larger component) should handle all other queries and insights.
 
-The work on the File Management System has begun with the backend foundation:
-1.  **File/Resource Data Models Created**: New Pydantic models have been defined in  to represent files and manage the chunked upload process. These include:
-    *   : For storing metadata about uploaded files (e.g., , , , , , , ).
-    *   : For creating new resource entries.
-    *   : For returning resource details.
-    *   : For representing individual file chunks during upload (, , , ).
-    *   : To manage the state of a multi-chunk file upload (, , , , ).
+The previous interaction confirmed that the AI Coach was working contextually and conversationally, but the user identified that this behavior was not consistent across both intended locations. The AI engineer identified that the main  component was using an old, incorrect API call () instead of the newly implemented .
 
-2.  **ResourceService Implemented**: A new  class has been added to . This service contains the business logic for:
-    *   Creating, retrieving, updating, and deleting resources.
-    *   Initiating a chunked file upload ().
-    *   Handling individual file chunk uploads ().
-    *   Completing the file upload process ().
-    *   Performing cleanup operations for incomplete uploads.
-
-3.  **Dependency Added**: The  library () was added to  and subsequently installed. This library is used by the  to detect the content type of uploaded files.
-
-4.  **Resource API Endpoints Added**: New API endpoints have been defined in  to expose the file management functionality. These endpoints include:
-    *   : Create a new resource.
-    *   : Get all resources for a user.
-    *   : Get a specific resource.
-    *   : Delete a resource.
-    *   : Initiate a chunked upload session.
-    *   : Upload a file chunk.
-    *   : Complete a chunked upload.
-
-The immediate next action is to begin work on the frontend API client for these new resource endpoints.
-
+The current work involves:
+1.  **Identifying the specific component**:  in .
+2.  **Identifying the issue**: It is using an outdated API call.
+3.  **The immediate next action**: Fixing the  component to correctly utilize the  for its conversational functionality, thereby enabling it to handle broader queries and insights as requested by the user for the main AI Coach section.
 </current_work>
 
 <optional_next_step>
-Continue implementing the frontend API client for the new Resource management endpoints in .
+Complete the fix for  and ensure the functional split between the dashboard AI Coach and the main AI Coach section is correctly implemented.
 </optional_next_step>
