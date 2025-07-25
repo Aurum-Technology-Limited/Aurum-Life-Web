@@ -34,6 +34,30 @@ function App() {
     console.log('🔄 Active section updated to:', activeSection);
   }, [activeSection]);
 
+  // Update document title based on active section
+  useEffect(() => {
+    const sectionTitles = {
+      'dashboard': 'Dashboard',
+      'today': 'Today',
+      'pillars': 'Pillars',
+      'areas': 'Areas', 
+      'projects': 'Projects',
+      'project-templates': 'Project Templates',
+      'recurring-tasks': 'Recurring Tasks',
+      'tasks': 'Tasks',
+      'journal': 'Journal',
+      'learning': 'Learning',
+      'ai-coach': 'AI Coach',
+      'achievements': 'Achievements',
+      'profile': 'Profile',
+      'insights': 'Insights',
+      'notification-settings': 'Notifications'
+    };
+
+    const sectionTitle = sectionTitles[activeSection] || 'Dashboard';
+    document.title = `${sectionTitle} | Aurum Life`;
+  }, [activeSection]);
+
   // Check if we're on password reset page
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
