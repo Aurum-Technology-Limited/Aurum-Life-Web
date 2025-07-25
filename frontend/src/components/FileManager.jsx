@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { resourcesAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
+import FileViewer from './FileViewer';
 
 const FileManager = ({ 
   entityType, 
