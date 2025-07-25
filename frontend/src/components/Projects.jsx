@@ -31,6 +31,13 @@ import KanbanBoard from './KanbanBoard';
 import DonutChart from './ui/DonutChart';
 import FileManager from './FileManager';
 import IconPicker from './ui/IconPicker';
+import { 
+  getDynamicFontSize, 
+  getDynamicLineClamp, 
+  validateTextLength, 
+  CHARACTER_LIMITS,
+  getCharacterCounterData
+} from '../utils/textUtils';
 
 // Utility function for dynamic text sizing based on content length
 const getDynamicTextSize = (text, baseSize = 'text-lg') => {
