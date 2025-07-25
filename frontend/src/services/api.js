@@ -372,6 +372,11 @@ export const resourcesAPI = {
   }
 };
 
+// AI Coach API
+export const aiCoachAPI = {
+  getTodaysPriorities: () => apiClient.get('/ai_coach/today')
+};
+
 export default {
   client: apiClient,
   areas: areasAPI,
