@@ -484,12 +484,11 @@ async def get_pillars(
 @api_router.get("/pillars/{pillar_id}", response_model=PillarResponse)
 async def get_pillar(
     pillar_id: str, 
-    include_sub_pillars: bool = Query(True, description="Include nested sub-pillars"),
     include_areas: bool = Query(False, description="Include linked areas"),
     current_user: User = Depends(get_current_active_user)
 ):
     """Get pillar by ID"""
-    pillar = await PillarService.get_pillar(current_user.id, pillar_id, include_sub_pillars, include_areas)
+    pillar = await PillarService.get_pillar(current_user.id, pillar_id, include_areas)
     if not pillar:
         raise HTTPException(status_code=404, detail="Pillar not found")
     return pillar
