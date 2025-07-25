@@ -386,6 +386,20 @@ export const achievementsAPI = {
   checkAchievements: () => apiClient.post('/achievements/check')
 };
 
+// Custom Achievements API
+export const customAchievementsAPI = {
+  getCustomAchievements: (includeCompleted = true) => 
+    apiClient.get('/achievements/custom', { params: { include_completed: includeCompleted } }),
+  createCustomAchievement: (achievementData) => 
+    apiClient.post('/achievements/custom', achievementData),
+  updateCustomAchievement: (achievementId, achievementData) => 
+    apiClient.put(`/achievements/custom/${achievementId}`, achievementData),
+  deleteCustomAchievement: (achievementId) => 
+    apiClient.delete(`/achievements/custom/${achievementId}`),
+  checkCustomAchievements: () => 
+    apiClient.post('/achievements/custom/check')
+};
+
 export default {
   client: apiClient,
   areas: areasAPI,
