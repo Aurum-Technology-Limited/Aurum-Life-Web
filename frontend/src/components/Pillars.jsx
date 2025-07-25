@@ -21,7 +21,6 @@ const Pillars = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPillar, setEditingPillar] = useState(null);
-  const [expandedPillars, setExpandedPillars] = useState(new Set());
   const [formData, setFormData] = useState({
     name: '',
     description: '',
