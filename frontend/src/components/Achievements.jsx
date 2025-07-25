@@ -842,13 +842,28 @@ const Achievements = () => {
             <div className="flex items-center space-x-3 mt-6">
               <button
                 onClick={handleCreateCustomAchievement}
-                className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-500 transition-colors font-medium"
+                disabled={!createForm.name.trim() || !createForm.icon.trim()}
+                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg transition-all font-medium ${
+                  createForm.name.trim() && createForm.icon.trim()
+                    ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-500' 
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
               >
                 <Save size={20} />
                 <span>Create Achievement</span>
               </button>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  setCreateForm({
+                    name: '',
+                    description: '',
+                    icon: '🎯',
+                    target_type: 'complete_tasks',
+                    target_id: '',
+                    target_count: 1
+                  });
+                  setShowCreateModal(false);
+                }}
                 className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Cancel
