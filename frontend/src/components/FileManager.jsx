@@ -143,7 +143,7 @@ const FileManager = ({
       await resourcesAPI.deleteResource(resourceId);
       setSuccess('File deleted successfully');
       await loadResources();
-      refreshData();
+      onDataMutation('resource', 'delete', { entityType, entityId, resourceId });
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
