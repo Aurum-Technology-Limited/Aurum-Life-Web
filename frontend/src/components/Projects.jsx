@@ -960,16 +960,16 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 {/* Enhanced Progress Visualization */}
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-400">Progress</span>
-                    <span className="text-sm font-medium text-white">
+                    <span className="text-xs sm:text-sm text-gray-400">Progress</span>
+                    <span className="text-xs sm:text-sm font-medium text-white">
                       {getProgressPercentage(project)}%
                     </span>
                   </div>
                   
                   {/* Traditional Progress Bar */}
-                  <div className="w-full bg-gray-800 rounded-full h-2 mb-3">
+                  <div className="w-full bg-gray-800 rounded-full h-1.5 sm:h-2 mb-3">
                     <div
-                      className="h-2 rounded-full transition-all duration-300"
+                      className="h-1.5 sm:h-2 rounded-full transition-all duration-300"
                       style={{
                         backgroundColor: '#F4B400',
                         width: `${Math.min(100, Math.max(0, getProgressPercentage(project)))}%`
@@ -977,7 +977,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                     />
                   </div>
                   
-                  <p className="text-xs text-gray-500 mb-3">
+                  <p className="text-xs text-gray-500 mb-3 text-center">
                     {project.completed_task_count || 0} of {project.task_count || 0} tasks complete
                   </p>
 
