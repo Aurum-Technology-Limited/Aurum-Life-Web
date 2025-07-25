@@ -380,6 +380,12 @@ export const aiCoachAPI = {
   })
 };
 
+// Achievements API
+export const achievementsAPI = {
+  getAchievements: () => apiClient.get('/achievements'),
+  checkAchievements: () => apiClient.post('/achievements/check')
+};
+
 export default {
   client: apiClient,
   areas: areasAPI,
@@ -399,5 +405,6 @@ export default {
   insights: insightsAPI,
   resources: resourcesAPI,
   googleAuth: googleAuthAPI,
-  aiCoach: aiCoachAPI
+  aiCoach: aiCoachAPI,
+  achievements: achievementsAPI
 };
