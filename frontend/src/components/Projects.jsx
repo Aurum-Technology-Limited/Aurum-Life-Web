@@ -1068,6 +1068,17 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   />
                 </div>
 
+                {/* Icon Picker */}
+                <IconPicker
+                  value={formData.icon}
+                  onChange={(icon) => setFormData({ ...formData, icon })}
+                  label="Project Icon"
+                  placeholder="🚀"
+                  required={false}
+                  iconSet="projects"
+                  allowCustom={true}
+                />
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Area
