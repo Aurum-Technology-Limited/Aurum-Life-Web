@@ -18,9 +18,11 @@ class AiCoachService:
         - High: Due today (80 points)  
         - Medium: Recently unblocked dependencies (60 points)
         - Low: Oldest "In Progress" tasks (40 points)
+        - IMPORTANCE BOOST: Critical=50, High=35, Medium=20, Medium-Low=10, Low=5 points
+        - AREA/PROJECT IMPORTANCE: Inherited from parent area/project
         """
         try:
-            # Get all active (non-completed) tasks for the user
+            # Get all active (non-completed) tasks with project and area info
             tasks = await find_documents(
                 "tasks", 
                 {
@@ -32,6 +34,14 @@ class AiCoachService:
             
             if not tasks:
                 return []
+            
+            # Get projects and areas to access importance data
+            projects = await find_documents("projects", {"user_id": user_id})
+            areas = await find_documents("areas", {"user_id": user_id})
+            
+            # Create lookup dictionaries for easy access
+            project_lookup = {p["id"]: p for p in projects}
+            area_lookup = {a["id"]: a for a in areas}
             
             today = datetime.utcnow().date()
             scored_tasks = []
@@ -60,9 +70,7 @@ class AiCoachService:
                     reasons.append("Due today")
                 
                 # MEDIUM WEIGHT: Recently unblocked dependencies (60 points)
-                # Check if task has dependencies and they're recently completed
                 if task.get('dependency_tasks'):
-                    # For MVP, we'll check if task is not blocked (can_start != False)
                     if task.get('can_start', True):
                         score += 60
                         reasons.append("Dependencies cleared")
@@ -72,14 +80,46 @@ class AiCoachService:
                     score += 40
                     reasons.append("In progress")
                 
-                # PRIORITY BOOST: Add points based on task priority
+                # TASK PRIORITY BOOST: Add points based on task priority
                 priority_boost = {
                     'high': 30,
                     'medium': 20,
                     'low': 10
                 }.get(task.get('priority', 'medium'), 20)
-                
                 score += priority_boost
+                
+                # NEW: IMPORTANCE BOOST from project and area
+                importance_score = 0
+                project_importance = None
+                area_importance = None
+                
+                # Get project importance
+                project_id = task.get('project_id')
+                if project_id and project_id in project_lookup:
+                    project = project_lookup[project_id]
+                    project_importance = project.get('importance', 3)  # Default to medium (3)
+                    
+                    # Get area importance from project's area
+                    area_id = project.get('area_id')
+                    if area_id and area_id in area_lookup:
+                        area = area_lookup[area_id]
+                        area_importance = area.get('importance', 3)  # Default to medium (3)
+                
+                # Calculate combined importance score (project importance has higher weight)
+                if project_importance:
+                    # Project importance: Critical=50, High=35, Medium=20, Medium-Low=10, Low=5
+                    project_score = {5: 50, 4: 35, 3: 20, 2: 10, 1: 5}.get(project_importance, 20)
+                    importance_score += project_score
+                    reasons.append(f"High-importance project" if project_importance >= 4 else f"Important project")
+                
+                if area_importance:
+                    # Area importance (lower weight): Critical=25, High=20, Medium=10, Medium-Low=5, Low=2
+                    area_score = {5: 25, 4: 20, 3: 10, 2: 5, 1: 2}.get(area_importance, 10)
+                    importance_score += area_score
+                    if area_importance >= 4:
+                        reasons.append(f"Critical life area")
+                
+                score += importance_score
                 
                 # Only include tasks with some score (avoid recommending random low-priority tasks)
                 if score > 0:
@@ -87,7 +127,10 @@ class AiCoachService:
                         'task': task,
                         'score': score,
                         'reasons': reasons,
-                        'priority_boost': priority_boost
+                        'priority_boost': priority_boost,
+                        'importance_score': importance_score,
+                        'project_importance': project_importance,
+                        'area_importance': area_importance
                     })
             
             # Sort by score (highest first) and return top N
@@ -98,7 +141,7 @@ class AiCoachService:
             for item in scored_tasks[:limit]:
                 task = item['task']
                 
-                # Build coaching message
+                # Build enhanced coaching message with importance context
                 coaching_message = AiCoachService._build_coaching_message(item)
                 
                 recommendations.append({
@@ -110,7 +153,12 @@ class AiCoachService:
                     'priority': task.get('priority', 'medium'),
                     'score': item['score'],
                     'coaching_message': coaching_message,
-                    'reasons': item['reasons']
+                    'reasons': item['reasons'],
+                    'importance_context': {
+                        'project_importance': item['project_importance'],
+                        'area_importance': item['area_importance'],
+                        'importance_score': item['importance_score']
+                    }
                 })
             
             return recommendations
