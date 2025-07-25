@@ -848,6 +848,8 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
+                      {/* Project Icon */}
+                      <span className="text-2xl">{project.icon || '🚀'}</span>
                       <h3 className="font-semibold text-white text-lg">{project.name}</h3>
                       <div className="flex space-x-2">
                         <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>
