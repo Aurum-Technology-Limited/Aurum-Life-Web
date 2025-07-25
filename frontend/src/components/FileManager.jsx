@@ -15,7 +15,7 @@ const FileManager = ({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [dragActive, setDragActive] = useState(false);
-  const { refreshData } = useDataContext();
+  const { onDataMutation } = useDataContext();
 
   // Supported file types for validation
   const supportedTypes = {
