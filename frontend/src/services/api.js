@@ -78,7 +78,7 @@ export const pillarsAPI = {
   unarchivePillar: (pillarId) => apiClient.put(`/pillars/${pillarId}/unarchive`),
   deletePillar: (pillarId) => apiClient.delete(`/pillars/${pillarId}`)
 };
-// Notifications API
+// Enhanced notifications API with bulk actions
 export const notificationsAPI = {
   getPreferences: () => apiClient.get('/notifications/preferences'),
   updatePreferences: (preferences) => apiClient.put('/notifications/preferences', preferences),
@@ -86,7 +86,11 @@ export const notificationsAPI = {
     params: { unread_only: unreadOnly } 
   }),
   markAsRead: (notificationId) => apiClient.put(`/notifications/${notificationId}/read`),
-  sendTest: () => apiClient.post('/notifications/test')
+  sendTest: () => apiClient.post('/notifications/test'),
+  
+  // Bulk actions
+  markAllRead: () => apiClient.put('/notifications/mark-all-read'),
+  clearAllNotifications: () => apiClient.delete('/notifications/clear-all')
 };
 
 // Areas API with enhanced archiving support
