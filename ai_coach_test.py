@@ -321,8 +321,7 @@ class AiCoachTester:
         )
         
         # Test POST /api/ai_coach/chat without authentication
-        chat_data = {"message": "How can I stay motivated?"}
-        result = self.make_request('POST', '/ai_coach/chat', data=chat_data, use_auth=False)
+        result = self.make_request('POST', '/ai_coach/chat', params={"message": "How can I stay motivated?"}, use_auth=False)
         self.log_test(
             "AI COACH CHAT - NO AUTH",
             result['status_code'] in [401, 403],
