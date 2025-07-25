@@ -159,7 +159,7 @@ const Pillars = () => {
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => handleEditPillar(pillar)}
+                onClick={() => handleEdit(pillar)}
                 className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Edit pillar"
               >
