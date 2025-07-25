@@ -706,7 +706,6 @@ class PillarUpdate(BaseModel):
     description: Optional[str] = None
     icon: Optional[str] = None
     color: Optional[str] = None
-    parent_pillar_id: Optional[str] = None
     sort_order: Optional[int] = None
     time_allocation_percentage: Optional[float] = None
 
