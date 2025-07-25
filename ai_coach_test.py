@@ -529,7 +529,7 @@ class AiCoachTester:
         
         # Test with malformed JSON (this will be handled by the request framework)
         # We'll test with missing required fields instead
-        result = self.make_request('POST', '/ai_coach/chat', data={"not_message": "test"}, use_auth=True)
+        result = self.make_request('POST', '/ai_coach/chat', params={"not_message": "test"}, use_auth=True)
         self.log_test(
             "AI COACH CHAT - MISSING MESSAGE FIELD",
             result['status_code'] in [400, 422],
