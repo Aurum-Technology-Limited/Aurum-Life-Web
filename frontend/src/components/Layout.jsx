@@ -35,7 +35,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
     { id: 'tasks', name: 'Tasks', icon: CheckSquare, description: 'Goals & productivity' },
     { id: 'recurring-tasks', name: 'Recurring', icon: Repeat, description: 'Automated tasks' },
     { id: 'journal', name: 'Journal', icon: BookOpen, description: 'Reflection & writing' },
-    { id: 'learning', name: 'Learning', icon: BookOpen, description: 'Courses & growth' },
+    { id: 'feedback', name: 'Feedback', icon: MessageCircle, description: 'Share suggestions & get support' },
     { id: 'ai-coach', name: 'AI Coach', icon: MessageCircle, description: 'Personal guidance' },
     { id: 'achievements', name: 'Achievements', icon: Trophy, description: 'Badges & rewards' },
     { id: 'notification-settings', name: 'Notifications', icon: Settings, description: 'Notification preferences' },
