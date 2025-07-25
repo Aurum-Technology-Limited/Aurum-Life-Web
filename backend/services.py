@@ -289,6 +289,10 @@ class JournalService:
         # Trigger achievement check for journal entry creation (performance-optimized)
         try:
             await AchievementService.trigger_journal_entry_created(user_id)
+            # Also trigger custom achievements check
+            await CustomAchievementService.trigger_custom_achievements_check(
+                user_id, "journal_entry_created"
+            )
         except Exception as e:
             print(f"Warning: Achievement trigger failed for journal entry creation: {e}")
         
