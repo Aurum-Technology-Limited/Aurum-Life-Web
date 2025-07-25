@@ -64,6 +64,48 @@ code {
     flex-shrink: 1 !important;
     min-width: 0 !important;
   }
+
+  /* Comprehensive UI overflow fix utilities */
+  .flex-truncate-container {
+    display: flex !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .flex-truncate-text {
+    flex-shrink: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .flex-truncate-icon {
+    flex-shrink: 0 !important;
+  }
+
+  .flex-truncate-badges {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.25rem !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .flex-truncate-badge {
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    max-width: 100px !important;
+  }
+
+  .overflow-safe {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
 }
 
 
