@@ -146,7 +146,8 @@ const Areas = ({ onSectionChange }) => {
       description: '',
       color: '#F4B400',
       icon: 'target',
-      pillar_id: ''
+      pillar_id: '',
+      importance: 3
     });
   };
 
