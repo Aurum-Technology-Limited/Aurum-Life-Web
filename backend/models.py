@@ -689,6 +689,7 @@ class Pillar(BaseDocument):
     sort_order: int = 0
     archived: bool = False
     time_allocation_percentage: Optional[float] = None  # % of time/focus allocated to this pillar
+    date_created: datetime = Field(default_factory=datetime.utcnow)
 
 class PillarCreate(BaseModel):
     name: str
