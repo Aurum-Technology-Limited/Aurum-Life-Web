@@ -1396,9 +1396,9 @@ async def get_entity_resources(
         logger.error(f"Error getting entity resources: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve entity resources")
 
-from backend.models import User
-from backend.auth import get_current_active_user
-from backend.ai_coach_service import AiCoachService
+from models import User
+from auth import get_current_active_user
+from ai_coach_service import AiCoachService
 
 # AI Coach endpoints
 @api_router.get("/ai_coach/today")
