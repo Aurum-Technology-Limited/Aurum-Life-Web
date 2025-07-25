@@ -25,8 +25,7 @@ const Pillars = () => {
     time_allocation_percentage: null
   });
 
-  // Icon options for pillars
-  const iconOptions = ['🎯', '🏃‍♂️', '💪', '🧠', '💼', '❤️', '🌟', '🚀', '🌱', '🎨', '📚', '⚡'];
+  // Icon options for pillars - now handled by IconPicker component
   const colorOptions = ['#F4B400', '#4CAF50', '#2196F3', '#FF5722', '#9C27B0', '#FF9800', '#795548', '#607D8B'];
 
   useEffect(() => {
