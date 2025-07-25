@@ -1587,6 +1587,81 @@ async def check_custom_achievements(
         logger.error(f"Error checking custom achievements: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to check custom achievements")
 
+# Feedback and Support endpoint
+@api_router.post("/feedback")
+async def submit_feedback(
+    feedback_data: dict,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Submit user feedback and send email to support"""
+    try:
+        from email_service import EmailService
+        
+        # Extract feedback data
+        category = feedback_data.get('category', '')
+        subject = feedback_data.get('subject', 'User Feedback')
+        message = feedback_data.get('message', '')
+        user_email = feedback_data.get('email', current_user.email)
+        user_name = feedback_data.get('user_name', f"{current_user.first_name} {current_user.last_name}")
+        
+        # Create email content
+        category_labels = {
+            'suggestion': '💡 Feature Suggestion',
+            'bug_report': '🐛 Bug Report', 
+            'general_feedback': '💬 General Feedback',
+            'support_request': '🆘 Support Request',
+            'compliment': '💖 Compliment'
+        }
+        
+        category_label = category_labels.get(category, 'Feedback')
+        email_subject = f"[Aurum Life Feedback] {category_label}: {subject}"
+        
+        email_body = f"""
+New feedback received from Aurum Life user:
+
+📋 FEEDBACK DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Category: {category_label}
+Subject: {subject}
+
+👤 USER INFORMATION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Name: {user_name}
+Email: {user_email}
+User ID: {current_user.id}
+Submitted: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
+
+💬 MESSAGE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{message}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This feedback was submitted through the Aurum Life application.
+Please respond to: {user_email}
+        """.strip()
+        
+        # Send email to support
+        email_service = EmailService()
+        await email_service.send_email(
+            to_email="marc.alleyne@aurumtechnologyltd.com",
+            subject=email_subject,
+            body=email_body,
+            from_name=f"{user_name} (via Aurum Life)"
+        )
+        
+        # Log feedback submission
+        logger.info(f"Feedback submitted by user {current_user.id} ({user_email}): {category} - {subject}")
+        
+        return {
+            "success": True,
+            "message": "Feedback submitted successfully",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error submitting feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to submit feedback")
+
 # Include the router in the main app
 app.include_router(api_router)
 
