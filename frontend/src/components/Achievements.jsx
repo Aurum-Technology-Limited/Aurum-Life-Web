@@ -138,18 +138,35 @@ const Achievements = () => {
 
   useEffect(() => {
     loadAchievements();
+    loadProjects();
   }, []);
 
   const loadAchievements = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await achievementsAPI.getAchievements();
-      setAchievements(response.data.achievements);
+      
+      // Load both predefined and custom achievements
+      const [achievementsResponse, customResponse] = await Promise.all([
+        achievementsAPI.getAchievements(),
+        customAchievementsAPI.getCustomAchievements()
+      ]);
+      
+      setAchievements(achievementsResponse.data.achievements);
+      setCustomAchievements(customResponse.data.custom_achievements);
     } catch (err) {
       setError(handleApiError(err, 'Failed to load achievements'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadProjects = async () => {
+    try {
+      const response = await projectsAPI.getProjects();
+      setProjects(response.data);
+    } catch (err) {
+      console.error('Failed to load projects:', err);
     }
   };
 
