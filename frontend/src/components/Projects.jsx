@@ -971,6 +971,16 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   </div>
                 )}
 
+                {/* Created Date */}
+                {project.date_created && (
+                  <div className="flex items-center space-x-2 text-xs text-gray-500 mb-4">
+                    <Calendar className="h-3 w-3" />
+                    <span>
+                      Created: {new Date(project.date_created).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+
                 {/* Actions */}
                 <div className="flex space-x-2">
                   <button 
