@@ -16,6 +16,32 @@ code {
         monospace;
 }
 
+/* Custom utilities for text containment */
+@layer utilities {
+  .text-force-wrap {
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+  }
+  
+  .container-strict {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  
+  .text-adaptive-xs {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .text-adaptive-sm {
+    font-size: 0.875rem !important;
+    line-height: 1.25 !important;
+  }
+}
+
 
 
 @layer base {
