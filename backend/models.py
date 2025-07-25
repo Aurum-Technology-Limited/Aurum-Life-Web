@@ -387,6 +387,7 @@ class AreaUpdate(BaseModel):
     description: Optional[str] = None
     icon: Optional[str] = None
     color: Optional[str] = None
+    importance: Optional[ImportanceEnum] = None
     sort_order: Optional[int] = None
 
 # Project models
