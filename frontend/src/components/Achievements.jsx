@@ -110,9 +110,22 @@ const MilestoneCard = ({ milestone }) => (
 const Achievements = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [achievements, setAchievements] = useState([]);
+  const [customAchievements, setCustomAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [projects, setProjects] = useState([]);
   const { toast } = useToast();
+
+  // Create modal form state
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    description: '',
+    icon: '🎯',
+    target_type: 'complete_tasks',
+    target_id: '',
+    target_count: 1
+  });
   
   const categories = [
     { key: 'all', label: 'All Badges' },
