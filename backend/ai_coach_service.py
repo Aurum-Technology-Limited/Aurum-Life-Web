@@ -169,27 +169,52 @@ class AiCoachService:
     
     @staticmethod
     def _build_coaching_message(scored_item: Dict) -> str:
-        """Build an encouraging, action-oriented coaching message for the task"""
+        """Build an encouraging, action-oriented coaching message for the task with importance context"""
         task = scored_item['task']
         reasons = scored_item['reasons']
         score = scored_item['score']
+        importance_score = scored_item.get('importance_score', 0)
+        project_importance = scored_item.get('project_importance', 3)
         
         task_name = task.get('name', 'this task')
         
-        # High priority messages (overdue, due today)
-        if score >= 80:
+        # High importance + urgent tasks (critical path)
+        if score >= 100 and importance_score >= 35:
             if 'Overdue' in ' '.join(reasons):
-                return f"Time to tackle {task_name}. Breaking through overdue tasks builds momentum for everything else."
+                return f"🚨 Critical: {task_name} is both overdue AND high-importance. This needs immediate attention to avoid major impact."
             elif 'Due today' in ' '.join(reasons):
-                return f"Perfect timing to complete {task_name}. Finishing today's priorities feels amazing."
+                return f"🎯 Perfect timing: {task_name} is due today and highly important. Completing this will have maximum impact."
+        
+        # High priority messages (overdue, due today)
+        elif score >= 80:
+            if 'Overdue' in ' '.join(reasons):
+                if importance_score >= 35:
+                    return f"⚡ Priority focus: {task_name} is overdue for an important project. Let's get this back on track."
+                else:
+                    return f"Time to tackle {task_name}. Breaking through overdue tasks builds momentum for everything else."
+            elif 'Due today' in ' '.join(reasons):
+                if importance_score >= 35:
+                    return f"🏆 Today's key win: {task_name} is due and important. This completion will drive significant progress."
+                else:
+                    return f"Perfect timing to complete {task_name}. Finishing today's priorities feels amazing."
+        
+        # High importance but not urgent (important strategic work)
+        elif importance_score >= 35:
+            if project_importance >= 4:
+                return f"💡 Strategic focus: {task_name} is part of a critical project. Steady progress here creates lasting value."
+            else:
+                return f"🎯 Important work: {task_name} may not be urgent, but it's highly valuable. Great time to make progress."
         
         # Medium priority messages (unblocked dependencies)
         elif score >= 60:
             if 'Dependencies cleared' in ' '.join(reasons):
-                return f"Great news! {task_name} is ready to go. Dependencies are cleared - let's make progress."
+                return f"✅ Ready to roll: {task_name} is unblocked and ready for progress. Dependencies are cleared!"
         
         # Lower priority but still recommended
         else:
-            return f"Ready to advance {task_name}? Small consistent steps lead to big wins."
+            if importance_score >= 20:
+                return f"📈 Solid choice: {task_name} contributes to important goals. Small steps lead to big wins."
+            else:
+                return f"Ready to advance {task_name}? Consistent progress keeps momentum going."
         
         return f"Focus on {task_name} to keep your momentum going."
