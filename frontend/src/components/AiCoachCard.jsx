@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Clock, Flag, Play, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Brain, Clock, Flag, Play, RefreshCw, CheckCircle2, AlertCircle, MessageCircle, Send } from 'lucide-react';
 import { aiCoachAPI } from '../services/api';
 
 const AiCoachCard = ({ onStartFocusSession }) => {
