@@ -3257,27 +3257,6 @@ class CustomAchievementService:
         except Exception as e:
             print(f"Error in custom achievements trigger: {e}")
 
-    @staticmethod
-    async def get_today_view(user_id: str) -> TodayView:
-        """Get today's focused view with curated tasks"""
-        today_tasks = await TaskService.get_today_tasks(user_id)
-        available_tasks = await TaskService.get_available_tasks_for_today(user_id)
-        
-        # Calculate totals
-        total_tasks = len(today_tasks)
-        completed_tasks = len([t for t in today_tasks if t.completed])
-        estimated_duration = sum([t.estimated_duration or 0 for t in today_tasks])
-        
-        return TodayView(
-            date=datetime.now(),
-            tasks=today_tasks,
-            available_tasks=available_tasks,
-            total_tasks=total_tasks,
-            completed_tasks=completed_tasks,
-            estimated_duration=estimated_duration,
-            pomodoro_sessions=0  # TODO: Implement pomodoro session tracking
-        )
-
 class ResourceService:
     """Service for managing file resources and attachments"""
     
