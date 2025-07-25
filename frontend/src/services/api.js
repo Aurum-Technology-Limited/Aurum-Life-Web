@@ -285,6 +285,7 @@ export const resourcesAPI = {
     return apiClient.get('/resources', { params });
   },
   getResource: (resourceId) => apiClient.get(`/resources/${resourceId}`),
+  getResourceContent: (resourceId) => apiClient.get(`/resources/${resourceId}/content`),
   createResource: (resourceData) => apiClient.post('/resources', resourceData),
   updateResource: (resourceId, resourceData) => apiClient.put(`/resources/${resourceId}`, resourceData),
   deleteResource: (resourceId) => apiClient.delete(`/resources/${resourceId}`),
