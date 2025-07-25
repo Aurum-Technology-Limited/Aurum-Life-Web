@@ -1827,6 +1827,18 @@ class TaskService:
             # Get the updated task to check for parent task completion logic
             updated_task = await find_document("tasks", {"id": task_id, "user_id": user_id})
             if updated_task:
+                # Check if task was completed and trigger achievement check
+                if update_data.get("completed") or (
+                    "status" in update_data and 
+                    (update_data["status"] == TaskStatusEnum.completed or 
+                     (hasattr(update_data["status"], 'value') and update_data["status"].value == "completed"))
+                ):
+                    # Trigger achievement check for task completion (performance-optimized)
+                    try:
+                        await AchievementService.trigger_task_completed(user_id)
+                    except Exception as e:
+                        print(f"Warning: Achievement trigger failed for task completion: {e}")
+                
                 # If this is a sub-task, check if parent task completion should be updated
                 if updated_task.get("parent_task_id"):
                     await TaskService._update_parent_task_completion(updated_task["parent_task_id"], user_id)
