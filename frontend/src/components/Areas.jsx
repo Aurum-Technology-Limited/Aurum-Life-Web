@@ -256,45 +256,51 @@ const Areas = ({ onSectionChange }) => {
                       >
                         <span className="text-2xl">{area.icon || '🎯'}</span>
                       </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold text-white text-lg">{area.name}</h3>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h3 className="font-semibold text-white text-lg flex-truncate-text">{area.name}</h3>
                           {area.archived && (
-                            <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300">
+                            <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300 flex-truncate-icon">
                               Archived
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center space-x-2 text-sm text-gray-400">
+                        <div className="flex-truncate-container space-x-3 text-sm text-gray-400 mb-1">
                           {area.pillar_name && (
-                            <span className="flex items-center space-x-1">
-                              <Mountain className="h-3 w-3" />
-                              <span>{area.pillar_name}</span>
-                            </span>
+                            <div className="flex items-center space-x-1 flex-truncate-icon">
+                              <Mountain className="h-3 w-3 flex-shrink-0" />
+                              <span className="overflow-safe max-w-24">{area.pillar_name}</span>
+                            </div>
                           )}
-                          <span>
+                          <span className="flex-truncate-icon">
                             {area.projects?.length || 0} projects
                           </span>
-                          {/* Importance Indicator */}
-                          {area.importance && (
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          {area.date_created && (
+                            <span className="text-xs text-gray-500 overflow-safe max-w-20">
+                              Created {new Date(area.date_created).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                        {/* Importance Indicator */}
+                        {area.importance && (
+                          <div className="flex-truncate-badges">
+                            <span className={`flex-truncate-badge inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                               area.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
                               area.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
                               area.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
                               'bg-gray-800/30 text-gray-400 border border-gray-600'
                             }`}>
-                              {area.importance >= 5 ? '🔥 Critical' :
-                               area.importance >= 4 ? '⚡ High' :
-                               area.importance >= 3 ? '📊 Medium' :
-                               '📝 Low'} Impact
+                              {area.importance >= 5 ? '🔥' :
+                               area.importance >= 4 ? '⚡' :
+                               area.importance >= 3 ? '📊' :
+                               '📝'} <span className="ml-1 overflow-safe">
+                              {area.importance >= 5 ? 'Critical' :
+                               area.importance >= 4 ? 'High' :
+                               area.importance >= 3 ? 'Medium' :
+                               'Low'}</span>
                             </span>
-                          )}
-                          {area.date_created && (
-                            <span className="text-xs text-gray-500">
-                              Created {new Date(area.date_created).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex space-x-1">
