@@ -219,6 +219,7 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
     setFormData({
       name: project.name,
       description: project.description || '',
+      icon: project.icon || '🚀',
       area_id: project.area_id || '',
       status: project.status || 'Not Started',
       priority: project.priority || 'medium',
