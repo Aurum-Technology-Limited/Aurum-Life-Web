@@ -260,6 +260,88 @@ const AiCoachCard = ({ onStartFocusSession }) => {
           ))}
         </div>
       )}
+      
+      {/* Interactive Chat Interface */}
+      {showChat && (
+        <div className="mt-6 border-t border-gray-700/30 pt-4">
+          <h3 className="text-sm font-medium text-gray-300 mb-3">
+            Ask your AI Coach anything about your goals and progress
+          </h3>
+          
+          {/* Chat History */}
+          {chatHistory.length > 0 && (
+            <div className="max-h-60 overflow-y-auto mb-4 space-y-3">
+              {chatHistory.map((chat, index) => (
+                <div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-lg ${
+                    chat.type === 'user' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-800 text-gray-200 border border-gray-700'
+                  }`}>
+                    <p className="text-sm whitespace-pre-wrap">{chat.message}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      {chat.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-800 border border-gray-700 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2 text-gray-400">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">AI Coach is thinking...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Chat Input */}
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              value={chatMessage}
+              onChange={(e) => setChatMessage(e.target.value)}
+              onKeyPress={handleChatKeyPress}
+              placeholder="Ask about your pillars, areas, projects, tasks..."
+              className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              disabled={chatLoading}
+            />
+            <button
+              onClick={handleChatSubmit}
+              disabled={chatLoading || !chatMessage.trim()}
+              className="p-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+          
+          {/* Quick Questions */}
+          {chatHistory.length === 0 && (
+            <div className="mt-3">
+              <p className="text-xs text-gray-500 mb-2">Quick questions to get started:</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "How am I doing with my goals?",
+                  "What needs my attention?",
+                  "Show me my progress patterns",
+                  "Which pillar needs focus?"
+                ].map((question) => (
+                  <button
+                    key={question}
+                    onClick={() => setChatMessage(question)}
+                    className="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-xs transition-colors"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-gray-700/30">
