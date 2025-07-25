@@ -448,8 +448,8 @@ class AiCoachTester:
             message = test_case["message"]
             category = test_case["category"]
             
-            # Test the chat endpoint
-            result = self.make_request('POST', '/ai_coach/chat', data={"message": message}, use_auth=True)
+            # Test the chat endpoint - message should be a query parameter
+            result = self.make_request('POST', '/ai_coach/chat', params={"message": message}, use_auth=True)
             
             test_success = result['success']
             self.log_test(
