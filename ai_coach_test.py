@@ -520,7 +520,7 @@ class AiCoachTester:
         
         # Test chat with very long message
         long_message = "A" * 10000  # 10k characters
-        result = self.make_request('POST', '/ai_coach/chat', data={"message": long_message}, use_auth=True)
+        result = self.make_request('POST', '/ai_coach/chat', params={"message": long_message}, use_auth=True)
         self.log_test(
             "AI COACH CHAT - VERY LONG MESSAGE",
             result['success'] or result['status_code'] in [400, 413],
