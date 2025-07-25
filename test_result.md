@@ -980,6 +980,18 @@ backend:
           comment: "🎉 ENHANCED DATA MODELS WITH DATE_CREATED FIELD FUNCTIONALITY TESTING COMPLETED - 100% SUCCESS RATE! Comprehensive testing executed covering complete date_created field functionality as requested: ✅ GET ENDPOINTS DATE_CREATED FIELD INCLUSION - All GET endpoints include date_created field in responses: GET /api/pillars (includes date_created), GET /api/areas (includes date_created), GET /api/projects (includes date_created), GET /api/tasks (includes date_created), individual resource GET endpoints working correctly ✅ POST ENDPOINTS AUTO-SET DATE_CREATED - All POST endpoints automatically set date_created for new documents: POST /api/pillars (auto-sets date_created), POST /api/areas (auto-sets date_created), POST /api/projects (auto-sets date_created), POST /api/tasks (auto-sets date_created), date_created reflects actual creation time ✅ DATE_CREATED FIELD FORMAT CONSISTENCY - date_created format is consistent ISO datetime string across all collections, all date_created values have valid ISO format (4/4 tested), date_created timing is within expected range for new items ✅ MIGRATION VERIFICATION SUCCESSFUL - Existing data migration was successful (100% success rate), all 4 endpoints show successful migration (pillars, areas, projects, tasks), migrated data has valid date format, migration preserved original created_at values as date_created ✅ RESPONSE STRUCTURE VALIDATION - All API responses include the date_created field correctly, backward compatibility maintained (existing fields still work), date_created appears in correct format in JSON responses ✅ MINOR FIX APPLIED - Fixed missing date_created field in PillarResponse and AreaResponse models to ensure individual GET responses include the field. ENHANCED DATA MODELS WITH DATE_CREATED FIELD FUNCTIONALITY IS PRODUCTION-READY AND FULLY FUNCTIONAL!"
 
 frontend:
+  - task: "AI Coach Functional Split Implementation - Main AICoach.jsx Fix"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/AICoach.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "CRITICAL API INTEGRATION FIX: Updated AICoach.jsx component to use correct aiCoachAPI.chatWithCoach() instead of outdated chatAPI. The main AI Coach section was using old session-based chat API endpoints (chatAPI.sendMessage, chatAPI.getMessages) that don't exist in current backend. Fixed to use modern aiCoachAPI.chatWithCoach() endpoint that matches backend /ai_coach/chat. Removed session-based logic and updated to work with simple message/response model. This ensures proper functional split: Dashboard shows top 3-5 priorities, Main AI Coach handles all other queries and insights with full conversational capability. Ready for backend testing to verify API integration works correctly."
+
   - task: "Google OAuth Button Width Alignment Fix"
     implemented: true
     working: "NA"
