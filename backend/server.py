@@ -1419,6 +1419,24 @@ async def get_todays_priorities(
         logger.error(f"Error getting today's priorities: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to get today's priorities")
 
+@api_router.post("/ai_coach/chat")
+async def chat_with_ai_coach(
+    message: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Chat with the AI Coach about your data and get personalized insights"""
+    try:
+        response = await AiCoachService.chat_with_coach(current_user.id, message)
+        
+        return {
+            "success": True,
+            "response": response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error in AI coach chat: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to chat with AI coach")
+
 # Include the router in the main app
 app.include_router(api_router)
 
