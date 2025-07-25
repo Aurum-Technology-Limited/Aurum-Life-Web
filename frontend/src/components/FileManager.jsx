@@ -197,7 +197,7 @@ const FileManager = ({
         {showUpload && (
           <div className="mb-6">
             <div 
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors relative ${
                 dragActive 
                   ? 'border-blue-500 bg-blue-500/10' 
                   : 'border-gray-600 hover:border-gray-500'
@@ -222,11 +222,12 @@ const FileManager = ({
                 accept=".png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,.txt"
                 onChange={handleFileInputChange}
                 disabled={uploading}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                style={{ pointerEvents: uploading ? 'none' : 'auto' }}
               />
               
               {uploading && (
-                <div className="mt-4">
+                <div className="absolute inset-0 bg-gray-900/50 rounded-lg flex items-center justify-center z-20">
                   <div className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Uploading...
