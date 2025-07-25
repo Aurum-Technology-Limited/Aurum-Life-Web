@@ -41,6 +41,49 @@ const AiCoachCard = ({ onStartFocusSession }) => {
     }
   };
 
+  const handleChatSubmit = async () => {
+    if (!chatMessage.trim()) return;
+    
+    const userMessage = chatMessage.trim();
+    setChatMessage('');
+    setChatLoading(true);
+    
+    // Add user message to chat history
+    const newHistory = [...chatHistory, { 
+      type: 'user', 
+      message: userMessage, 
+      timestamp: new Date() 
+    }];
+    setChatHistory(newHistory);
+    
+    try {
+      const response = await aiCoachAPI.chatWithCoach(userMessage);
+      
+      // Add AI response to chat history
+      setChatHistory([...newHistory, { 
+        type: 'ai', 
+        message: response.data.response, 
+        timestamp: new Date() 
+      }]);
+    } catch (err) {
+      console.error('Error chatting with AI coach:', err);
+      setChatHistory([...newHistory, { 
+        type: 'ai', 
+        message: "I'm having trouble responding right now. Please try again in a moment.", 
+        timestamp: new Date() 
+      }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const handleChatKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleChatSubmit();
+    }
+  };
+
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'text-red-400 bg-red-400/10';
