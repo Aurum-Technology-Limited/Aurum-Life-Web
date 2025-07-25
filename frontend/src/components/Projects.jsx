@@ -876,50 +876,54 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
               >
                 {/* Project Header */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1 min-w-0 pr-3"> {/* Added min-w-0 and pr-3 for proper flex behavior */}
-                    <div className="flex items-center space-x-3 mb-2">
+                  <div className="flex-1 min-w-0 pr-2 max-w-full"> {/* Added max-w-full and reduced pr */}
+                    <div className="flex items-center space-x-2 mb-2"> {/* Reduced space-x */}
                       {/* Project Icon */}
-                      <span className="text-xl sm:text-2xl flex-shrink-0">{project.icon || '🚀'}</span>
-                      <h3 className={`font-semibold text-white ${getDynamicTextSize(project.name)} truncate flex-1 leading-tight`}>
-                        {project.name}
-                      </h3>
+                      <span className="text-lg sm:text-xl flex-shrink-0">{project.icon || '🚀'}</span>
+                      <div className="flex-1 min-w-0 max-w-full overflow-hidden"> {/* Added container for text */}
+                        <h3 className={`font-semibold text-white ${getDynamicTextSize(project.name, 'text-base')} truncate leading-tight break-words`}>
+                          {project.name}
+                        </h3>
+                      </div>
                     </div>
                     
                     {/* Status, Priority, and Importance Badges */}
-                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-2">
-                      <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full flex-shrink-0 ${getStatusColor(project.status)}`}>
-                        <span className="truncate max-w-20">{project.status}</span>
+                    <div className="flex flex-wrap gap-1 mb-2 max-w-full"> {/* Added max-w-full */}
+                      <span className={`px-1.5 py-0.5 text-xs rounded-full flex-shrink-0 ${getStatusColor(project.status)}`}>
+                        <span className="truncate max-w-16">{project.status}</span>
                       </span>
-                      <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full flex-shrink-0 ${getPriorityColor(project.priority)}`}>
-                        <span className="truncate max-w-16">{project.priority}</span>
+                      <span className={`px-1.5 py-0.5 text-xs rounded-full flex-shrink-0 ${getPriorityColor(project.priority)}`}>
+                        <span className="truncate max-w-12">{project.priority}</span>
                       </span>
                       {/* Importance Indicator */}
                       {project.importance && (
-                        <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full flex-shrink-0 ${
+                        <span className={`px-1.5 py-0.5 text-xs rounded-full flex-shrink-0 ${
                           project.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
                           project.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
                           project.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
                           'bg-gray-800/30 text-gray-400 border border-gray-600'
                         }`}>
-                          <span className="truncate max-w-20">
-                            {project.importance >= 5 ? '🔥 Critical' :
-                             project.importance >= 4 ? '⚡ High' :
-                             project.importance >= 3 ? '📊 Medium' :
-                             '📝 Low'} Impact
+                          <span className="truncate max-w-14">
+                            {project.importance >= 5 ? '🔥' :
+                             project.importance >= 4 ? '⚡' :
+                             project.importance >= 3 ? '📊' :
+                             '📝'}
                           </span>
                         </span>
                       )}
                       {project.archived && (
-                        <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full bg-gray-600 text-gray-300 flex-shrink-0">
-                          <span className="truncate max-w-16">Archived</span>
+                        <span className="px-1.5 py-0.5 text-xs rounded-full bg-gray-600 text-gray-300 flex-shrink-0">
+                          <span className="truncate max-w-12">Archive</span>
                         </span>
                       )}
                     </div>
                     
                     {project.area_name && (
-                      <p className={`${getDynamicTextSize(project.area_name, 'text-sm')} text-gray-400 truncate`}>
-                        {project.area_name}
-                      </p>
+                      <div className="max-w-full overflow-hidden"> {/* Added container */}
+                        <p className={`${getDynamicTextSize(project.area_name, 'text-xs')} text-gray-400 truncate`}>
+                          {project.area_name}
+                        </p>
+                      </div>
                     )}
                   </div>
                   
