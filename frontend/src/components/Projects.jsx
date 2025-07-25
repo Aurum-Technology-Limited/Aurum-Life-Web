@@ -30,6 +30,7 @@ import { useAuth } from '../contexts/AuthContext';
 import KanbanBoard from './KanbanBoard';
 import DonutChart from './ui/DonutChart';
 import FileManager from './FileManager';
+import IconPicker from './ui/IconPicker';
 
 const Projects = ({ onSectionChange, filterAreaId }) => {
   const { onDataMutation } = useDataContext();
