@@ -1366,7 +1366,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Task Area and Project Task Count Synchronization Fix"
+    - "AI Coach Functional Split Implementation - Main AICoach.jsx Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
