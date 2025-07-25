@@ -1006,28 +1006,28 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 </div>
 
                 {/* Stats - Improved Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4">
                   <div className="text-center">
-                    <p className="text-lg font-bold text-white">
+                    <p className="text-base sm:text-lg font-bold text-white">
                       {project.task_count || 0}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">Total Tasks</p>
+                    <p className="text-xs text-gray-500 truncate leading-tight">Total Tasks</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold text-white">
+                    <p className="text-base sm:text-lg font-bold text-white">
                       {project.active_task_count || 0}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">Active Tasks</p>
+                    <p className="text-xs text-gray-500 truncate leading-tight">Active Tasks</p>
                   </div>
                 </div>
 
                 {/* Due Date */}
                 {project.due_date && (
-                  <div className={`flex items-center space-x-2 text-sm mb-4 ${
+                  <div className={`flex items-center space-x-2 text-xs sm:text-sm mb-3 ${
                     isOverdue(project.due_date) ? 'text-red-400' : 'text-gray-400'
                   }`}>
-                    <Clock className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">
+                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate text-xs">
                       Due: {new Date(project.due_date).toLocaleDateString()}
                       {isOverdue(project.due_date) && ' (Overdue)'}
                     </span>
