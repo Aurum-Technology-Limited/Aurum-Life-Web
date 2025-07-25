@@ -622,6 +622,7 @@ class AreaResponse(BaseModel):
     archived: bool = False
     created_at: datetime
     updated_at: datetime
+    date_created: datetime
     project_count: int = 0
     completed_project_count: int = 0
     total_task_count: int = 0
