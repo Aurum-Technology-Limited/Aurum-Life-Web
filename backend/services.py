@@ -2531,8 +2531,8 @@ class ResourceService:
         except Exception as e:
             raise ValueError(f"Invalid file content: {e}")
         
-        # Validate file size (limit to 50MB for now)
-        max_file_size = 50 * 1024 * 1024  # 50MB
+        # Validate file size (limit to 10MB as per requirements)
+        max_file_size = 10 * 1024 * 1024  # 10MB
         if resource_data.file_size > max_file_size:
             raise ValueError(f"File size exceeds maximum limit of {max_file_size // (1024*1024)}MB")
         
