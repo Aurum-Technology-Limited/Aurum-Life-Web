@@ -290,6 +290,20 @@ const Areas = ({ onSectionChange }) => {
                           <span>
                             {area.projects?.length || 0} projects
                           </span>
+                          {/* Importance Indicator */}
+                          {area.importance && (
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              area.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
+                              area.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
+                              area.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
+                              'bg-gray-800/30 text-gray-400 border border-gray-600'
+                            }`}>
+                              {area.importance >= 5 ? '🔥 Critical' :
+                               area.importance >= 4 ? '⚡ High' :
+                               area.importance >= 3 ? '📊 Medium' :
+                               '📝 Low'} Impact
+                            </span>
+                          )}
                           {area.date_created && (
                             <span className="text-xs text-gray-500">
                               Created {new Date(area.date_created).toLocaleDateString()}
