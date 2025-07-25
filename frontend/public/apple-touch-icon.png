@@ -1,6 +1,21 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="180" height="180" rx="40" fill="#F4B400"/>
-  <circle cx="90" cy="70" r="25" fill="white"/>
-  <path d="M90 105 L65 130 L90 155 L115 130 Z" fill="white"/>
-  <text x="90" y="85" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#F4B400" text-anchor="middle">A</text>
+  <rect width="180" height="180" rx="40" fill="#1a2332"/>
+  <path d="M45 67.5c0-8.4 5.6-16.8 14-19.6C67.2 45 72.8 47.8 78.4 53.1c4.5-2.8 11.2-2.8 16.8 0 5.6-5.6 14-8.4 19.6-5.6 8.4 2.8 14 11.2 14 19.6 0 2.8 2.8 5.6 5.6 8.4 2.8 5.6 2.8 14 0 19.6-2.8 2.8-5.6 5.6-5.6 8.4 0 8.4-5.6 16.8-14 19.6-5.6 2.8-14 0-19.6-5.6-5.6 2.8-11.2 2.8-16.8 0-5.6 5.6-14 8.4-19.6 5.6C50.6 112.5 45 104.1 45 95.7c0-2.8-2.8-5.6-5.6-8.4-2.8-5.6-2.8-14 0-19.6 2.8-2.8 5.6-5.6 5.6-8.4z" fill="#D4AF37" stroke="#F4B400" stroke-width="2.8"/>
+  
+  <!-- Brain fold details -->
+  <path d="M58.8 75.9c2.8-1.7 5.6-1.1 8.4 1.1" stroke="#F4B400" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <path d="M72.8 61.9c1.7-2.8 4.5-4.5 8.4-2.8" stroke="#F4B400" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <path d="M92.4 64.7c2.8-1.7 6.7-0.6 8.4 2.8" stroke="#F4B400" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <path d="M109.2 78.7c1.7 2.8 1.1 6.7-1.1 8.4" stroke="#F4B400" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <path d="M103.6 98.5c2.8 1.7 3.4 5.6 1.1 8.4" stroke="#F4B400" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <path d="M87.2 106.9c2.8 1.7 5.6 4.5 2.8 8.4" stroke="#F4B400" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <path d="M70.2 103.9c-1.7 2.8-4.5 4.5-8.4 2.8" stroke="#F4B400" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <path d="M56.2 89.9c-2.8 1.7-6.7 0.6-8.4-2.8" stroke="#F4B400" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  
+  <!-- Additional brain texture -->
+  <path d="M65 85c3-2 7-1 9 2" stroke="#F4B400" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M85 78c2-3 6-3 8 0" stroke="#F4B400" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M95 92c3 2 3 6 0 8" stroke="#F4B400" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M82 102c2 3 1 7-2 9" stroke="#F4B400" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M68 95c-2 3-6 3-8 0" stroke="#F4B400" stroke-width="3" stroke-linecap="round" fill="none"/>
 </svg>
