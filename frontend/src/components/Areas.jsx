@@ -139,7 +139,7 @@ const Areas = ({ onSectionChange }) => {
       name: '',
       description: '',
       color: '#F4B400',
-      icon: 'target',
+      icon: '🎯',
       pillar_id: '',
       importance: 3
     });
