@@ -290,7 +290,15 @@ Remember: You're helping someone build their best life. Be their guide, motivato
             
             # Organize projects by status and importance
             active_projects = [p for p in projects if not p.get('archived')]
-            high_importance_projects = [p for p in active_projects if p.get('importance', 3) >= 4]
+            
+            # Helper function to safely get importance as integer
+            def get_importance_int(item, default=3):
+                try:
+                    return int(item.get('importance', default))
+                except (ValueError, TypeError):
+                    return default
+            
+            high_importance_projects = [p for p in active_projects if get_importance_int(p) >= 4]
             
             # Create comprehensive context for AI
             context_summary = f"""
@@ -301,13 +309,13 @@ PILLARS ({len(pillars)}):
 {', '.join([f"{p.get('name', 'Unnamed')} ({p.get('area_count', 0)} areas)" for p in pillars[:5]])}
 
 AREAS ({len(areas)}):
-- Critical areas: {len([a for a in areas if a.get('importance', 3) >= 5])}
-- High importance: {len([a for a in areas if a.get('importance', 3) == 4])}
-- Medium importance: {len([a for a in areas if a.get('importance', 3) == 3])}
+- Critical areas: {len([a for a in areas if get_importance_int(a) >= 5])}
+- High importance: {len([a for a in areas if get_importance_int(a) == 4])}
+- Medium importance: {len([a for a in areas if get_importance_int(a) == 3])}
 
 PROJECTS ({len(active_projects)} active):
-- Critical projects: {len([p for p in active_projects if p.get('importance', 3) >= 5])}
-- High importance: {len([p for p in active_projects if p.get('importance', 3) == 4])}
+- Critical projects: {len([p for p in active_projects if get_importance_int(p) >= 5])}
+- High importance: {len([p for p in active_projects if get_importance_int(p) == 4])}
 - In progress: {len([p for p in active_projects if p.get('status') == 'in_progress'])}
 - Not started: {len([p for p in active_projects if p.get('status') == 'not_started'])}
 
