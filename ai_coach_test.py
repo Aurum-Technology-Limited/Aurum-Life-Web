@@ -511,7 +511,7 @@ class AiCoachTester:
             return False
         
         # Test chat with empty message
-        result = self.make_request('POST', '/ai_coach/chat', data={"message": ""}, use_auth=True)
+        result = self.make_request('POST', '/ai_coach/chat', params={"message": ""}, use_auth=True)
         self.log_test(
             "AI COACH CHAT - EMPTY MESSAGE",
             result['status_code'] in [400, 422],
