@@ -122,7 +122,6 @@ const Pillars = () => {
       description: '',
       icon: '🎯',
       color: '#F4B400',
-      parent_pillar_id: '',
       time_allocation_percentage: null
     });
   };
