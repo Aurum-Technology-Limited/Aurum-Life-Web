@@ -1649,6 +1649,10 @@ Please respond to: {user_email}
             plain_text_content=email_body
         )
         
+        if not success:
+            logger.error(f"Failed to send feedback email for user {current_user.id}")
+            # Still return success to user since feedback was received, just email failed
+        
         # Log feedback submission
         logger.info(f"Feedback submitted by user {current_user.id} ({user_email}): {category} - {subject}")
         
