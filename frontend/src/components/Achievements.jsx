@@ -613,7 +613,7 @@ const Achievements = () => {
       {/* Create Custom Achievement Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">Create Your Own Achievement</h3>
               <button
@@ -624,7 +624,27 @@ const Achievements = () => {
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
+              {/* Preview Card */}
+              <div className="p-4 rounded-lg bg-gray-800 border border-gray-700">
+                <div className="flex items-center space-x-3">
+                  <div className="text-2xl">{createForm.icon}</div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-white">
+                      {createForm.name || 'Your Achievement Name'}
+                    </h4>
+                    <p className="text-sm text-gray-400">
+                      {createForm.description || 'Your achievement description'}
+                    </p>
+                    <div className="mt-2">
+                      <div className="text-xs text-gray-500">
+                        Target: {createForm.target_count} {createForm.target_type.replace('_', ' ')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
