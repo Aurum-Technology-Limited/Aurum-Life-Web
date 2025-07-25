@@ -395,5 +395,6 @@ export default {
   recurringTasks: recurringTasksAPI,
   insights: insightsAPI,
   resources: resourcesAPI,
-  googleAuth: googleAuthAPI
+  googleAuth: googleAuthAPI,
+  aiCoach: aiCoachAPI
 };
