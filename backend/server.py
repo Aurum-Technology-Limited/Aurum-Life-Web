@@ -1243,6 +1243,148 @@ async def test_notification_system(current_user: User = Depends(get_current_acti
         logger.error(f"Error sending test notification: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Resource Management API Endpoints
+@api_router.post("/resources", response_model=ResourceResponse)
+async def create_resource(
+    resource_data: ResourceCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Create a new file resource"""
+    try:
+        resource = await ResourceService.create_resource(current_user.id, resource_data)
+        return await ResourceService.get_resource(current_user.id, resource.id, track_access=False)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error creating resource: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create resource")
+
+@api_router.get("/resources", response_model=List[ResourceResponse])
+async def get_resources(
+    category: Optional[str] = Query(None, description="Filter by category"),
+    file_type: Optional[str] = Query(None, description="Filter by file type"),
+    folder_path: Optional[str] = Query(None, description="Filter by folder path"),
+    include_archived: bool = Query(False, description="Include archived resources"),
+    search: Optional[str] = Query(None, description="Search in filename, description, and tags"),
+    skip: int = Query(0, ge=0, description="Number of resources to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Number of resources to return"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get user's resources with filtering and pagination"""
+    try:
+        return await ResourceService.get_user_resources(
+            user_id=current_user.id,
+            category=category,
+            file_type=file_type,
+            folder_path=folder_path,
+            include_archived=include_archived,
+            search_query=search,
+            skip=skip,
+            limit=limit
+        )
+    except Exception as e:
+        logger.error(f"Error getting resources: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve resources")
+
+@api_router.get("/resources/{resource_id}", response_model=ResourceResponse)
+async def get_resource(
+    resource_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get a specific resource by ID"""
+    resource = await ResourceService.get_resource(current_user.id, resource_id)
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return resource
+
+@api_router.put("/resources/{resource_id}", response_model=ResourceResponse)
+async def update_resource(
+    resource_id: str,
+    resource_data: ResourceUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Update a resource"""
+    try:
+        success = await ResourceService.update_resource(current_user.id, resource_id, resource_data)
+        if not success:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        
+        return await ResourceService.get_resource(current_user.id, resource_id, track_access=False)
+    except Exception as e:
+        logger.error(f"Error updating resource: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update resource")
+
+@api_router.delete("/resources/{resource_id}")
+async def delete_resource(
+    resource_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Delete a resource"""
+    success = await ResourceService.delete_resource(current_user.id, resource_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return {"message": "Resource deleted successfully"}
+
+# Resource Attachment Endpoints
+@api_router.post("/resources/{resource_id}/attach")
+async def attach_resource_to_entity(
+    resource_id: str,
+    attachment_data: FileAttachmentRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Attach a resource to an entity"""
+    try:
+        success = await ResourceService.attach_resource_to_entity(
+            user_id=current_user.id,
+            resource_id=resource_id,
+            entity_type=attachment_data.entity_type,
+            entity_id=attachment_data.entity_id
+        )
+        if not success:
+            raise HTTPException(status_code=400, detail="Failed to attach resource")
+        return {"message": "Resource attached successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error attaching resource: {e}")
+        raise HTTPException(status_code=500, detail="Failed to attach resource")
+
+@api_router.delete("/resources/{resource_id}/detach")
+async def detach_resource_from_entity(
+    resource_id: str,
+    attachment_data: FileAttachmentRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Detach a resource from an entity"""
+    try:
+        success = await ResourceService.detach_resource_from_entity(
+            user_id=current_user.id,
+            resource_id=resource_id,
+            entity_type=attachment_data.entity_type,
+            entity_id=attachment_data.entity_id
+        )
+        return {"message": "Resource detached successfully"}
+    except Exception as e:
+        logger.error(f"Error detaching resource: {e}")
+        raise HTTPException(status_code=500, detail="Failed to detach resource")
+
+@api_router.get("/resources/entity/{entity_type}/{entity_id}", response_model=List[ResourceResponse])
+async def get_entity_resources(
+    entity_type: str,
+    entity_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get all resources attached to a specific entity"""
+    valid_entity_types = ["task", "project", "area", "pillar", "journal_entry"]
+    if entity_type not in valid_entity_types:
+        raise HTTPException(status_code=400, detail=f"Invalid entity type. Must be one of: {valid_entity_types}")
+    
+    try:
+        return await ResourceService.get_entity_resources(current_user.id, entity_type, entity_id)
+    except Exception as e:
+        logger.error(f"Error getting entity resources: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve entity resources")
+
 # Include the router in the main app
 app.include_router(api_router)
 
