@@ -124,131 +124,58 @@ const Pillars = () => {
     });
   };
 
-  const toggleExpanded = (pillarId) => {
-    const newExpanded = new Set(expandedPillars);
-    if (newExpanded.has(pillarId)) {
-      newExpanded.delete(pillarId);
-    } else {
-      newExpanded.add(pillarId);
-    }
-    setExpandedPillars(newExpanded);
-  };
-
-  const getAvailableParentPillars = () => {
-    const flattenPillars = (pillars) => {
-      let result = [];
-      for (const pillar of pillars) {
-        result.push(pillar);
-        if (pillar.sub_pillars) {
-          result = result.concat(flattenPillars(pillar.sub_pillars));
-        }
-      }
-      return result;
-    };
-    
-    const allPillars = flattenPillars(pillars);
-    // Exclude the pillar being edited and its descendants
-    return allPillars.filter(p => p.id !== editingPillar?.id);
-  };
-
-  const renderPillar = (pillar, depth = 0) => {
-    const hasSubPillars = pillar.sub_pillars && pillar.sub_pillars.length > 0;
-    const isExpanded = expandedPillars.has(pillar.id);
-
+  const renderPillar = (pillar) => {
     return (
       <div key={pillar.id} className="bg-gray-900 rounded-lg shadow-sm border border-gray-800">
         {/* Main Pillar Row */}
-        <div 
-          className="p-4 hover:bg-gray-800 transition-colors"
-          style={{ marginLeft: `${depth * 20}px` }}
-        >
+        <div className="p-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 flex-1">
-              {/* Expand/Collapse Button */}
-              <button
-                onClick={() => toggleExpanded(pillar.id)}
-                className={`p-1 rounded hover:bg-gray-700 transition-colors ${!hasSubPillars ? 'invisible' : ''}`}
-              >
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
-                )}
-              </button>
-
-              {/* Pillar Icon and Color */}
+            <div className="flex items-center space-x-4 flex-1">
               <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                className="w-12 h-12 rounded-lg flex items-center justify-center text-xl"
                 style={{ backgroundColor: pillar.color }}
               >
                 {pillar.icon}
               </div>
-
-              {/* Pillar Details */}
+              
               <div className="flex-1">
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-lg font-medium text-white">{pillar.name}</h3>
-                  {pillar.time_allocation_percentage && (
-                    <span className="text-sm text-gray-400">
-                      ({pillar.time_allocation_percentage}%)
-                    </span>
-                  )}
-                </div>
+                <h3 className="text-lg font-semibold text-white">{pillar.name}</h3>
                 {pillar.description && (
-                  <p className="text-sm text-gray-400 mt-1">{pillar.description}</p>
+                  <p className="text-gray-400 text-sm mt-1">{pillar.description}</p>
                 )}
                 
-                {/* Progress Summary */}
-                <div className="flex items-center space-x-4 text-xs text-gray-500 mt-2">
-                  <span className="flex items-center space-x-1">
-                    <Layers className="h-3 w-3" />
-                    <span>{pillar.area_count} areas</span>
-                  </span>
-                  <span className="flex items-center space-x-1">
-                    <Target className="h-3 w-3" />
-                    <span>{pillar.project_count} projects</span>
-                  </span>
-                  <span className="flex items-center space-x-1">
-                    <BarChart3 className="h-3 w-3" />
-                    <span>{pillar.progress_percentage.toFixed(1)}% complete</span>
-                  </span>
+                {/* Progress Stats */}
+                <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                  <span>{pillar.area_count} areas</span>
+                  <span>{pillar.project_count} projects</span>
+                  <span>{pillar.task_count} tasks</span>
+                  {pillar.progress_percentage > 0 && (
+                    <span className="text-green-400">{pillar.progress_percentage.toFixed(1)}% complete</span>
+                  )}
                 </div>
               </div>
             </div>
-
+            
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handleEdit(pillar)}
-                className="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-800 rounded-lg transition-colors"
-                title="Edit Pillar"
-              >
-                <Edit2 className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => handleArchive(pillar.id)}
                 className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
-                title="Archive Pillar"
+                title="Edit pillar"
               >
-                <Archive className="h-4 w-4" />
+                <Edit2 size={16} />
               </button>
+              
               <button
                 onClick={() => handleDelete(pillar.id)}
                 className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
-                title="Delete Pillar"
+                title="Delete pillar"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 size={16} />
               </button>
             </div>
           </div>
         </div>
-
-        {/* Sub-Pillars */}
-        {hasSubPillars && isExpanded && (
-          <div className="border-t border-gray-800">
-            {pillar.sub_pillars.map(subPillar => renderPillar(subPillar, depth + 1))}
-          </div>
-        )}
       </div>
     );
   };
