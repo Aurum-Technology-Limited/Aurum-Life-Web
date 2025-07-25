@@ -151,16 +151,11 @@ const Areas = ({ onSectionChange }) => {
       name: area.name,
       description: area.description || '',
       color: area.color || '#F4B400',
-      icon: area.icon || 'target',
+      icon: area.icon || '🎯', // Use emoji icon
       pillar_id: area.pillar_id || '',
       importance: area.importance || 3
     });
     setShowModal(true);
-  };
-
-  const getIconComponent = (iconName) => {
-    const iconOption = iconOptions.find(opt => opt.value === iconName);
-    return iconOption ? iconOption.component : Target;
   };
 
   if (loading) {
