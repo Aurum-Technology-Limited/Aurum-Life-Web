@@ -470,14 +470,13 @@ async def create_pillar(pillar_data: PillarCreate, current_user: User = Depends(
 
 @api_router.get("/pillars", response_model=List[PillarResponse])
 async def get_pillars(
-    include_sub_pillars: bool = Query(True, description="Include nested sub-pillars"),
     include_areas: bool = Query(False, description="Include linked areas"),
     include_archived: bool = Query(False, description="Include archived pillars"),
     current_user: User = Depends(get_current_active_user)
 ):
     """Get all pillars for user"""
     try:
-        return await PillarService.get_user_pillars(current_user.id, include_sub_pillars, include_areas, include_archived)
+        return await PillarService.get_user_pillars(current_user.id, include_areas, include_archived)
     except Exception as e:
         logger.error(f"Error getting pillars: {e}")
         raise HTTPException(status_code=500, detail=str(e))
