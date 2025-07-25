@@ -2902,6 +2902,328 @@ class AchievementService:
         except Exception as e:
             print(f"Error in course completion trigger: {e}")
 
+class CustomAchievementService:
+    """Service for managing user-defined custom achievements"""
+    
+    @staticmethod
+    async def create_custom_achievement(user_id: str, achievement_data: CustomAchievementCreate) -> CustomAchievement:
+        """Create a new custom achievement for the user"""
+        try:
+            # Validate target if specific ID is provided
+            if achievement_data.target_id:
+                await CustomAchievementService._validate_target(user_id, achievement_data.target_type, achievement_data.target_id)
+            
+            custom_achievement = CustomAchievement(
+                user_id=user_id,
+                **achievement_data.dict()
+            )
+            
+            await create_document("custom_achievements", custom_achievement.dict())
+            return custom_achievement
+            
+        except Exception as e:
+            print(f"Error creating custom achievement: {e}")
+            raise ValueError(f"Failed to create custom achievement: {str(e)}")
+    
+    @staticmethod
+    async def get_user_custom_achievements(user_id: str, include_completed: bool = True) -> List[CustomAchievementResponse]:
+        """Get all custom achievements for a user"""
+        try:
+            query = {"user_id": user_id}
+            if not include_completed:
+                query["is_completed"] = False
+            
+            achievements_docs = await find_documents("custom_achievements", query)
+            
+            responses = []
+            for doc in achievements_docs:
+                response = await CustomAchievementService._build_custom_achievement_response(doc)
+                responses.append(response)
+            
+            # Sort by completion status and creation date
+            responses.sort(key=lambda x: (x.is_completed, -x.created_date.timestamp()))
+            return responses
+            
+        except Exception as e:
+            print(f"Error getting custom achievements: {e}")
+            return []
+    
+    @staticmethod
+    async def _build_custom_achievement_response(doc: dict) -> CustomAchievementResponse:
+        """Build a custom achievement response with contextual information"""
+        response = CustomAchievementResponse(**doc)
+        
+        # Calculate progress percentage
+        if response.target_count > 0:
+            response.progress_percentage = min((response.current_progress / response.target_count) * 100, 100)
+        else:
+            response.progress_percentage = 0
+        
+        # Get target name if applicable
+        if response.target_id:
+            target_name = await CustomAchievementService._get_target_name(response.target_type, response.target_id)
+            response.target_name = target_name
+        
+        return response
+    
+    @staticmethod
+    async def _get_target_name(target_type: CustomAchievementTargetTypeEnum, target_id: str) -> Optional[str]:
+        """Get the name of the target entity"""
+        try:
+            if target_type == CustomAchievementTargetTypeEnum.complete_project:
+                project_doc = await find_document("projects", {"id": target_id})
+                return project_doc.get("name") if project_doc else None
+            
+            elif target_type == CustomAchievementTargetTypeEnum.complete_courses:
+                course_doc = await find_document("courses", {"id": target_id})
+                return course_doc.get("title") if course_doc else None
+            
+            return None
+            
+        except Exception as e:
+            print(f"Error getting target name: {e}")
+            return None
+    
+    @staticmethod
+    async def update_custom_achievement(user_id: str, achievement_id: str, achievement_data: CustomAchievementUpdate) -> bool:
+        """Update a custom achievement"""
+        try:
+            update_data = {k: v for k, v in achievement_data.dict().items() if v is not None}
+            update_data["updated_at"] = datetime.utcnow()
+            
+            return await update_document("custom_achievements", {
+                "id": achievement_id,
+                "user_id": user_id
+            }, update_data)
+            
+        except Exception as e:
+            print(f"Error updating custom achievement: {e}")
+            return False
+    
+    @staticmethod
+    async def delete_custom_achievement(user_id: str, achievement_id: str) -> bool:
+        """Delete a custom achievement"""
+        try:
+            return await delete_document("custom_achievements", {
+                "id": achievement_id,
+                "user_id": user_id
+            })
+            
+        except Exception as e:
+            print(f"Error deleting custom achievement: {e}")
+            return False
+    
+    @staticmethod
+    async def check_custom_achievements_progress(user_id: str):
+        """Check and update progress for all active custom achievements"""
+        try:
+            # Get all active custom achievements for user
+            active_achievements = await find_documents("custom_achievements", {
+                "user_id": user_id,
+                "is_active": True,
+                "is_completed": False
+            })
+            
+            newly_completed = []
+            
+            for achievement_doc in active_achievements:
+                achievement = CustomAchievement(**achievement_doc)
+                
+                # Calculate current progress
+                current_progress = await CustomAchievementService._calculate_custom_achievement_progress(
+                    user_id, achievement.target_type, achievement.target_id
+                )
+                
+                # Update progress if changed
+                if current_progress != achievement.current_progress:
+                    update_data = {"current_progress": current_progress}
+                    
+                    # Check if achievement is now completed
+                    if current_progress >= achievement.target_count and not achievement.is_completed:
+                        update_data.update({
+                            "is_completed": True,
+                            "completed_date": datetime.utcnow()
+                        })
+                        newly_completed.append(achievement)
+                    
+                    await update_document("custom_achievements", {"id": achievement.id}, update_data)
+            
+            # Create notifications for newly completed custom achievements
+            for achievement in newly_completed:
+                await CustomAchievementService._create_custom_achievement_notification(user_id, achievement)
+            
+            return newly_completed
+            
+        except Exception as e:
+            print(f"Error checking custom achievements progress: {e}")
+            return []
+    
+    @staticmethod
+    async def _calculate_custom_achievement_progress(user_id: str, target_type: CustomAchievementTargetTypeEnum, target_id: Optional[str] = None) -> int:
+        """Calculate current progress for a custom achievement"""
+        try:
+            if target_type == CustomAchievementTargetTypeEnum.complete_project:
+                if target_id:
+                    # Check if specific project is completed
+                    project_doc = await find_document("projects", {"id": target_id, "user_id": user_id})
+                    return 1 if project_doc and project_doc.get("status") == "Completed" else 0
+                else:
+                    # Count total completed projects
+                    return await count_documents("projects", {"user_id": user_id, "status": "Completed"})
+            
+            elif target_type == CustomAchievementTargetTypeEnum.complete_tasks:
+                if target_id:
+                    # Count completed tasks in specific project
+                    return await count_documents("tasks", {
+                        "user_id": user_id,
+                        "project_id": target_id,
+                        "completed": True
+                    })
+                else:
+                    # Count total completed tasks
+                    return await count_documents("tasks", {"user_id": user_id, "completed": True})
+            
+            elif target_type == CustomAchievementTargetTypeEnum.write_journal_entries:
+                return await count_documents("journal_entries", {"user_id": user_id})
+            
+            elif target_type == CustomAchievementTargetTypeEnum.complete_courses:
+                if target_id:
+                    # Check if specific course is completed
+                    progress_doc = await find_document("user_course_progress", {
+                        "user_id": user_id,
+                        "course_id": target_id,
+                        "progress_percentage": 100
+                    })
+                    return 1 if progress_doc else 0
+                else:
+                    # Count total completed courses
+                    return await count_documents("user_course_progress", {
+                        "user_id": user_id,
+                        "progress_percentage": 100
+                    })
+            
+            elif target_type == CustomAchievementTargetTypeEnum.maintain_streak:
+                # Get user's current streak
+                user_doc = await find_document("users", {"id": user_id})
+                return user_doc.get("current_streak", 0) if user_doc else 0
+            
+            elif target_type == CustomAchievementTargetTypeEnum.reach_level:
+                # Get user's current level
+                user_doc = await find_document("users", {"id": user_id})
+                return user_doc.get("level", 1) if user_doc else 1
+            
+            elif target_type == CustomAchievementTargetTypeEnum.earn_points:
+                # Get user's total points
+                user_doc = await find_document("users", {"id": user_id})
+                return user_doc.get("total_points", 0) if user_doc else 0
+            
+            return 0
+            
+        except Exception as e:
+            print(f"Error calculating custom achievement progress: {e}")
+            return 0
+    
+    @staticmethod
+    async def _validate_target(user_id: str, target_type: CustomAchievementTargetTypeEnum, target_id: str):
+        """Validate that the target entity exists and belongs to the user"""
+        try:
+            if target_type == CustomAchievementTargetTypeEnum.complete_project:
+                project_doc = await find_document("projects", {"id": target_id, "user_id": user_id})
+                if not project_doc:
+                    raise ValueError("Project not found or does not belong to user")
+            
+            elif target_type == CustomAchievementTargetTypeEnum.complete_tasks:
+                project_doc = await find_document("projects", {"id": target_id, "user_id": user_id})
+                if not project_doc:
+                    raise ValueError("Project not found or does not belong to user")
+            
+            elif target_type == CustomAchievementTargetTypeEnum.complete_courses:
+                course_doc = await find_document("courses", {"id": target_id})
+                if not course_doc:
+                    raise ValueError("Course not found")
+            
+        except Exception as e:
+            print(f"Error validating target: {e}")
+            raise
+    
+    @staticmethod
+    async def _create_custom_achievement_notification(user_id: str, achievement: CustomAchievement):
+        """Create a notification for custom achievement completion"""
+        try:
+            from notification_service import notification_service
+            
+            notification_data = {
+                "user_id": user_id,
+                "type": "achievement_unlocked",
+                "title": f"🎉 Custom Goal Achieved!",
+                "message": f"Congratulations! You've completed your custom goal: {achievement.name}",
+                "data": {
+                    "achievement_id": achievement.id,
+                    "achievement_name": achievement.name,
+                    "achievement_icon": achievement.icon,
+                    "achievement_type": "custom"
+                }
+            }
+            
+            await notification_service.create_notification(notification_data)
+            
+        except Exception as e:
+            print(f"Error creating custom achievement notification: {e}")
+    
+    # TRIGGER FUNCTIONS FOR CUSTOM ACHIEVEMENTS
+    # These are called from existing services when actions occur
+    
+    @staticmethod
+    async def trigger_custom_achievements_check(user_id: str, action_type: str, entity_id: str = None):
+        """Efficient trigger to check custom achievements when actions occur"""
+        try:
+            # Only check custom achievements that might be affected by this action
+            query = {"user_id": user_id, "is_active": True, "is_completed": False}
+            
+            # Filter by relevant target types based on action
+            if action_type == "task_completed":
+                query["target_type"] = {"$in": ["complete_tasks"]}
+            elif action_type == "project_completed":
+                query["target_type"] = {"$in": ["complete_project"]}
+            elif action_type == "journal_entry_created":
+                query["target_type"] = {"$in": ["write_journal_entries"]}
+            elif action_type == "course_completed":
+                query["target_type"] = {"$in": ["complete_courses"]}
+            
+            relevant_achievements = await find_documents("custom_achievements", query)
+            
+            # Check progress for each relevant achievement
+            for achievement_doc in relevant_achievements:
+                achievement = CustomAchievement(**achievement_doc)
+                
+                # Skip if this achievement is for a different entity
+                if achievement.target_id and entity_id and achievement.target_id != entity_id:
+                    continue
+                
+                # Calculate new progress
+                current_progress = await CustomAchievementService._calculate_custom_achievement_progress(
+                    user_id, achievement.target_type, achievement.target_id
+                )
+                
+                # Update if progress changed
+                if current_progress != achievement.current_progress:
+                    update_data = {"current_progress": current_progress}
+                    
+                    # Check if completed
+                    if current_progress >= achievement.target_count:
+                        update_data.update({
+                            "is_completed": True,
+                            "completed_date": datetime.utcnow()
+                        })
+                        
+                        # Create notification
+                        await CustomAchievementService._create_custom_achievement_notification(user_id, achievement)
+                    
+                    await update_document("custom_achievements", {"id": achievement.id}, update_data)
+            
+        except Exception as e:
+            print(f"Error in custom achievements trigger: {e}")
+
     @staticmethod
     async def get_today_view(user_id: str) -> TodayView:
         """Get today's focused view with curated tasks"""
