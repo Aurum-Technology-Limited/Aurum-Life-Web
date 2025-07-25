@@ -20,6 +20,7 @@ import {
 import { areasAPI, api } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import DonutChart from './ui/DonutChart';
+import IconPicker from './ui/IconPicker';
 
 const Areas = ({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
