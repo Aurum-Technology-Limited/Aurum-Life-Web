@@ -2490,6 +2490,9 @@ agent_communication:
         - working: "NA"
           agent: "main"  
           comment: "CRITICAL FIX: Resolved JSX syntax error in Projects.jsx caused by adjacent elements. Troubleshoot agent identified premature map function closing and orphaned button elements. Fixed JSX structure and removed duplicate code sections. Dynamic font sizing utilities implemented successfully with character limits and input validation."
+        - working: true
+          agent: "deep_testing_backend_v2"
+          comment: "CRITICAL TODAY API BUG FIXED! ✅ Root cause identified: get_today_view method was defined outside StatsService class, making it inaccessible to API endpoints. Fixed by moving method inside StatsService class and removing duplicate definition. Today API endpoints now fully functional - GET /api/today and GET /api/today/available-tasks working correctly with proper authentication and response structure. 'Failed to load today's data' error resolved!"
 
   - task: "Today API Endpoints Functionality Fix"
     implemented: true
