@@ -1396,6 +1396,29 @@ async def get_entity_resources(
         logger.error(f"Error getting entity resources: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve entity resources")
 
+from backend.models import User
+from backend.auth import get_current_active_user
+from backend.ai_coach_service import AiCoachService
+
+# AI Coach endpoints
+@api_router.get("/ai_coach/today")
+async def get_todays_priorities(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get AI-recommended priority tasks for today"""
+    try:
+        priorities = await AiCoachService.get_todays_priorities(current_user.id)
+        
+        return {
+            "success": True,
+            "recommendations": priorities,
+            "message": "Focus on these tasks to maximize your progress today." if priorities else "Great work! No urgent tasks today - consider working on your long-term goals.",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting today's priorities: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get today's priorities")
+
 # Include the router in the main app
 app.include_router(api_router)
 
