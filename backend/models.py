@@ -699,7 +699,6 @@ class PillarCreate(BaseModel):
     description: str = ""
     icon: str = "🎯"  
     color: str = "#F4B400"
-    parent_pillar_id: Optional[str] = None
     time_allocation_percentage: Optional[float] = None
 
 class PillarUpdate(BaseModel):
