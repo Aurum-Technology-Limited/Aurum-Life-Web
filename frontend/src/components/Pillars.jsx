@@ -251,25 +251,16 @@ const Pillars = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Icon
-                  </label>
-                  <div className="grid grid-cols-6 gap-2">
-                    {iconOptions.map(icon => (
-                      <button
-                        key={icon}
-                        type="button"
-                        onClick={() => setFormData({...formData, icon})}
-                        className={`p-2 text-lg rounded-lg border-2 transition-colors ${
-                          formData.icon === icon ? 'border-blue-500 bg-blue-500/20' : 'border-gray-700 hover:border-gray-600 bg-gray-800'
-                        }`}
-                      >
-                        {icon}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {/* Icon Picker */}
+                <IconPicker
+                  value={formData.icon}
+                  onChange={(icon) => setFormData({...formData, icon})}
+                  label="Icon"
+                  placeholder="🎯"
+                  required={false}
+                  iconSet="pillars"
+                  allowCustom={true}
+                />
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
