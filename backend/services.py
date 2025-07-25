@@ -2308,13 +2308,13 @@ class PillarService:
         return pillars
     
     @staticmethod
-    async def get_pillar(user_id: str, pillar_id: str, include_sub_pillars: bool = True, include_areas: bool = False) -> Optional[PillarResponse]:
+    async def get_pillar(user_id: str, pillar_id: str, include_areas: bool = False) -> Optional[PillarResponse]:
         """Get a specific pillar by ID"""
         pillar_doc = await find_document("pillars", {"id": pillar_id, "user_id": user_id})
         if not pillar_doc:
             return None
         
-        return await PillarService._build_pillar_response(pillar_doc, include_sub_pillars, include_areas)
+        return await PillarService._build_pillar_response(pillar_doc, include_areas)
     
     @staticmethod
     async def update_pillar(user_id: str, pillar_id: str, pillar_data: PillarUpdate) -> bool:
