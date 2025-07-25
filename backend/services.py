@@ -2485,6 +2485,393 @@ class StatsService:
             today_tasks=today_tasks
         )
 
+class AchievementService:
+    """Service for handling dynamic achievement tracking and unlocking"""
+    
+    @staticmethod
+    async def get_user_achievements(user_id: str) -> List[Dict]:
+        """Get all achievements for a user with progress"""
+        # Get all available badges
+        badges_docs = await find_documents("badges", {})
+        
+        # Get user's badge progress
+        user_badges_docs = await find_documents("user_badges", {"user_id": user_id})
+        user_badges_map = {ub["badge_id"]: ub for ub in user_badges_docs}
+        
+        achievements = []
+        for badge_doc in badges_docs:
+            badge = Badge(**badge_doc)
+            user_badge = user_badges_map.get(badge.id)
+            
+            # Calculate current progress
+            progress = await AchievementService._calculate_achievement_progress(
+                user_id, badge.category, badge.requirements
+            )
+            
+            achievement = {
+                "id": badge.id,
+                "name": badge.name,
+                "description": badge.description,
+                "icon": badge.icon,
+                "rarity": badge.rarity,
+                "category": badge.category,
+                "requirements": badge.requirements,
+                "earned": user_badge.get("earned", False) if user_badge else False,
+                "earned_date": user_badge.get("earned_date") if user_badge else None,
+                "progress": min(progress, 100)  # Cap at 100%
+            }
+            achievements.append(achievement)
+        
+        return achievements
+    
+    @staticmethod
+    async def _calculate_achievement_progress(user_id: str, category: str, requirements: Dict) -> int:
+        """Calculate progress towards an achievement based on requirements"""
+        try:
+            # Get user stats for calculations
+            stats_doc = await find_document("user_stats", {"user_id": user_id})
+            if not stats_doc:
+                return 0
+            
+            stats = UserStats(**stats_doc)
+            
+            # Handle different requirement types
+            for req_key, req_value in requirements.items():
+                if req_key == "tasks_completed":
+                    return min(int((stats.tasks_completed / req_value) * 100), 100)
+                
+                elif req_key == "journal_entries":
+                    return min(int((stats.total_journal_entries / req_value) * 100), 100)
+                
+                elif req_key == "courses_completed":
+                    return min(int((stats.courses_completed / req_value) * 100), 100)
+                
+                elif req_key == "projects_completed":
+                    return min(int((stats.completed_projects / req_value) * 100), 100)
+                
+                elif req_key == "login_streak":
+                    # For login streak, check user's current streak
+                    user_doc = await find_document("users", {"id": user_id})
+                    if user_doc:
+                        current_streak = user_doc.get("current_streak", 0)
+                        return min(int((current_streak / req_value) * 100), 100)
+                
+                elif req_key == "habit_streak":
+                    # Calculate based on current streak (simplified for now)
+                    user_doc = await find_document("users", {"id": user_id})
+                    if user_doc:
+                        current_streak = user_doc.get("current_streak", 0)
+                        return min(int((current_streak / req_value) * 100), 100)
+                
+                elif req_key == "meditation_sessions":
+                    # For meditation, use a simplified calculation
+                    return min(int((stats.total_journal_entries / req_value) * 50), 100)  # Simplified
+            
+            return 0
+            
+        except Exception as e:
+            print(f"Error calculating achievement progress: {e}")
+            return 0
+    
+    @staticmethod
+    async def check_and_unlock_achievements(user_id: str, trigger_action: str = None):
+        """Check if user has unlocked any new achievements and unlock them"""
+        try:
+            # Get all badges that user hasn't earned yet
+            earned_badge_ids = []
+            user_badges_docs = await find_documents("user_badges", {"user_id": user_id, "earned": True})
+            earned_badge_ids = [ub["badge_id"] for ub in user_badges_docs]
+            
+            # Get unearned badges
+            badges_docs = await find_documents("badges", {"id": {"$nin": earned_badge_ids}})
+            
+            newly_unlocked = []
+            
+            for badge_doc in badges_docs:
+                badge = Badge(**badge_doc)
+                
+                # Check if user meets requirements
+                if await AchievementService._check_achievement_requirements(user_id, badge.requirements):
+                    # Unlock the achievement
+                    await AchievementService._unlock_achievement(user_id, badge.id)
+                    newly_unlocked.append(badge)
+                    
+                    # Create notification for achievement unlock
+                    await AchievementService._create_achievement_notification(user_id, badge)
+            
+            return newly_unlocked
+            
+        except Exception as e:
+            print(f"Error checking achievements: {e}")
+            return []
+    
+    @staticmethod
+    async def _check_achievement_requirements(user_id: str, requirements: Dict) -> bool:
+        """Check if user meets the requirements for an achievement"""
+        try:
+            # Get user stats
+            stats_doc = await find_document("user_stats", {"user_id": user_id})
+            if not stats_doc:
+                return False
+            
+            stats = UserStats(**stats_doc)
+            
+            # Check each requirement
+            for req_key, req_value in requirements.items():
+                if req_key == "tasks_completed":
+                    if stats.tasks_completed < req_value:
+                        return False
+                
+                elif req_key == "journal_entries":
+                    if stats.total_journal_entries < req_value:
+                        return False
+                
+                elif req_key == "courses_completed":
+                    if stats.courses_completed < req_value:
+                        return False
+                
+                elif req_key == "projects_completed":
+                    if stats.completed_projects < req_value:
+                        return False
+                
+                elif req_key == "login_streak":
+                    user_doc = await find_document("users", {"id": user_id})
+                    if not user_doc or user_doc.get("current_streak", 0) < req_value:
+                        return False
+                
+                elif req_key == "habit_streak":
+                    user_doc = await find_document("users", {"id": user_id})
+                    if not user_doc or user_doc.get("current_streak", 0) < req_value:
+                        return False
+                
+                elif req_key == "meditation_sessions":
+                    # Simplified check for meditation sessions
+                    if stats.total_journal_entries < req_value / 2:  # Simplified calculation
+                        return False
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error checking achievement requirements: {e}")
+            return False
+    
+    @staticmethod
+    async def _unlock_achievement(user_id: str, badge_id: str):
+        """Unlock an achievement for a user"""
+        try:
+            # Check if user badge already exists
+            existing_badge = await find_document("user_badges", {
+                "user_id": user_id,
+                "badge_id": badge_id
+            })
+            
+            if existing_badge:
+                # Update existing badge to earned
+                await update_document("user_badges", {
+                    "user_id": user_id,
+                    "badge_id": badge_id
+                }, {
+                    "earned": True,
+                    "earned_date": datetime.utcnow()
+                })
+            else:
+                # Create new user badge
+                user_badge = UserBadge(
+                    user_id=user_id,
+                    badge_id=badge_id,
+                    earned=True,
+                    earned_date=datetime.utcnow()
+                )
+                await create_document("user_badges", user_badge.dict())
+            
+            # Update user stats
+            await atomic_update_document("user_stats", {"user_id": user_id}, {
+                "$inc": {"badges_earned": 1}
+            })
+            
+            print(f"✅ Achievement unlocked for user {user_id}: {badge_id}")
+            
+        except Exception as e:
+            print(f"Error unlocking achievement: {e}")
+    
+    @staticmethod
+    async def _create_achievement_notification(user_id: str, badge: Badge):
+        """Create a notification for achievement unlock"""
+        try:
+            # Import here to avoid circular imports
+            from notification_service import notification_service
+            
+            notification_data = {
+                "user_id": user_id,
+                "type": "achievement_unlocked",
+                "title": f"🎉 Achievement Unlocked!",
+                "message": f"Congratulations! You've earned the '{badge.name}' badge: {badge.description}",
+                "data": {
+                    "badge_id": badge.id,
+                    "badge_name": badge.name,
+                    "badge_icon": badge.icon,
+                    "badge_rarity": badge.rarity
+                }
+            }
+            
+            # Create browser notification
+            await notification_service.create_notification(notification_data)
+            
+        except Exception as e:
+            print(f"Error creating achievement notification: {e}")
+    
+    # PERFORMANCE-OPTIMIZED TRIGGER FUNCTIONS
+    # These are called from other services when relevant actions occur
+    
+    @staticmethod
+    async def trigger_task_completed(user_id: str):
+        """Efficient trigger when a task is completed"""
+        try:
+            # Only check task-related achievements to minimize database calls
+            task_badges = await find_documents("badges", {
+                "$or": [
+                    {"requirements.tasks_completed": {"$exists": True}},
+                    {"category": "productivity"}
+                ]
+            })
+            
+            # Get current user stats to check thresholds
+            stats_doc = await find_document("user_stats", {"user_id": user_id})
+            if not stats_doc:
+                return
+            
+            stats = UserStats(**stats_doc)
+            
+            # Check only relevant badges that might be close to unlocking
+            for badge_doc in task_badges:
+                badge = Badge(**badge_doc)
+                
+                # Skip already earned badges
+                existing_badge = await find_document("user_badges", {
+                    "user_id": user_id,
+                    "badge_id": badge.id,
+                    "earned": True
+                })
+                if existing_badge:
+                    continue
+                
+                # Check if this completion might unlock the badge
+                req_value = badge.requirements.get("tasks_completed")
+                if req_value and stats.tasks_completed >= req_value:
+                    await AchievementService._unlock_achievement(user_id, badge.id)
+                    await AchievementService._create_achievement_notification(user_id, badge)
+            
+        except Exception as e:
+            print(f"Error in task completion trigger: {e}")
+    
+    @staticmethod
+    async def trigger_project_completed(user_id: str):
+        """Efficient trigger when a project is completed"""
+        try:
+            project_badges = await find_documents("badges", {
+                "$or": [
+                    {"requirements.projects_completed": {"$exists": True}},
+                    {"category": "productivity"}
+                ]
+            })
+            
+            stats_doc = await find_document("user_stats", {"user_id": user_id})
+            if not stats_doc:
+                return
+            
+            stats = UserStats(**stats_doc)
+            
+            for badge_doc in project_badges:
+                badge = Badge(**badge_doc)
+                
+                existing_badge = await find_document("user_badges", {
+                    "user_id": user_id,
+                    "badge_id": badge.id,
+                    "earned": True
+                })
+                if existing_badge:
+                    continue
+                
+                req_value = badge.requirements.get("projects_completed")
+                if req_value and stats.completed_projects >= req_value:
+                    await AchievementService._unlock_achievement(user_id, badge.id)
+                    await AchievementService._create_achievement_notification(user_id, badge)
+            
+        except Exception as e:
+            print(f"Error in project completion trigger: {e}")
+    
+    @staticmethod
+    async def trigger_journal_entry_created(user_id: str):
+        """Efficient trigger when a journal entry is created"""
+        try:
+            journal_badges = await find_documents("badges", {
+                "$or": [
+                    {"requirements.journal_entries": {"$exists": True}},
+                    {"category": "reflection"}
+                ]
+            })
+            
+            stats_doc = await find_document("user_stats", {"user_id": user_id})
+            if not stats_doc:
+                return
+            
+            stats = UserStats(**stats_doc)
+            
+            for badge_doc in journal_badges:
+                badge = Badge(**badge_doc)
+                
+                existing_badge = await find_document("user_badges", {
+                    "user_id": user_id,
+                    "badge_id": badge.id,
+                    "earned": True
+                })
+                if existing_badge:
+                    continue
+                
+                req_value = badge.requirements.get("journal_entries")
+                if req_value and stats.total_journal_entries >= req_value:
+                    await AchievementService._unlock_achievement(user_id, badge.id)
+                    await AchievementService._create_achievement_notification(user_id, badge)
+            
+        except Exception as e:
+            print(f"Error in journal entry trigger: {e}")
+    
+    @staticmethod
+    async def trigger_course_completed(user_id: str):
+        """Efficient trigger when a course is completed"""
+        try:
+            course_badges = await find_documents("badges", {
+                "$or": [
+                    {"requirements.courses_completed": {"$exists": True}},
+                    {"category": "learning"}
+                ]
+            })
+            
+            stats_doc = await find_document("user_stats", {"user_id": user_id})
+            if not stats_doc:
+                return
+            
+            stats = UserStats(**stats_doc)
+            
+            for badge_doc in course_badges:
+                badge = Badge(**badge_doc)
+                
+                existing_badge = await find_document("user_badges", {
+                    "user_id": user_id,
+                    "badge_id": badge.id,
+                    "earned": True
+                })
+                if existing_badge:
+                    continue
+                
+                req_value = badge.requirements.get("courses_completed")
+                if req_value and stats.courses_completed >= req_value:
+                    await AchievementService._unlock_achievement(user_id, badge.id)
+                    await AchievementService._create_achievement_notification(user_id, badge)
+            
+        except Exception as e:
+            print(f"Error in course completion trigger: {e}")
+
     @staticmethod
     async def get_today_view(user_id: str) -> TodayView:
         """Get today's focused view with curated tasks"""
