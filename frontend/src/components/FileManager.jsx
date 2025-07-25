@@ -299,14 +299,11 @@ const FileManager = ({
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  {/* View/Download button - placeholder for now */}
+                  {/* View/Download button */}
                   <button
                     className="p-2 text-gray-400 hover:text-white transition-colors"
                     title="View file"
-                    onClick={() => {
-                      // TODO: Implement file viewing/download
-                      alert('File viewing will be implemented in the next phase');
-                    }}
+                    onClick={() => setViewingResource(resource)}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
