@@ -392,6 +392,7 @@ class Project(BaseDocument):
     completion_percentage: float = 0.0
     archived: bool = False
     sort_order: int = 0
+    date_created: datetime = Field(default_factory=datetime.utcnow)
 
 class ProjectCreate(BaseModel):
     area_id: str
