@@ -41,70 +41,103 @@ code {
     line-height: 1.25 !important;
   }
 
-  /* Enhanced text truncation for grid cards */
-  .truncate-flex {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    min-width: 0 !important;
-    flex-shrink: 1 !important;
-  }
-  
-  .flex-icon-text {
-    display: flex !important;
-    align-items: center !important;
-    min-width: 0 !important;
-  }
-  
-  .flex-icon-text .icon {
-    flex-shrink: 0 !important;
-  }
-  
-  .flex-icon-text .text {
-    flex-shrink: 1 !important;
-    min-width: 0 !important;
-  }
-
-  /* Comprehensive UI overflow fix utilities */
-  .flex-truncate-container {
+  /* Dynamic font sizing based on content length */
+  .dynamic-text-container {
     display: flex !important;
     align-items: center !important;
     min-width: 0 !important;
     max-width: 100% !important;
-  }
-
-  .flex-truncate-text {
-    flex-shrink: 1 !important;
-    min-width: 0 !important;
     overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
   }
 
-  .flex-truncate-icon {
+  .dynamic-text {
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+    line-height: 1.2 !important;
+    max-width: 100% !important;
+  }
+
+  /* Dynamic font sizing classes */
+  .text-dynamic-xs {
+    font-size: 0.65rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .text-dynamic-sm {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .text-dynamic-base {
+    font-size: 0.875rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .text-dynamic-lg {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Flexible layouts for cards */
+  .card-header-flex {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    min-width: 0 !important;
+    gap: 0.5rem !important;
+  }
+
+  .card-content-flex {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 120px) !important; /* Leave space for buttons */
+  }
+
+  .card-actions-flex {
     flex-shrink: 0 !important;
+    display: flex !important;
+    gap: 0.25rem !important;
   }
 
-  .flex-truncate-badges {
+  /* Badge container with wrapping */
+  .badge-container {
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 0.25rem !important;
-    min-width: 0 !important;
     max-width: 100% !important;
+    margin: 0.25rem 0 !important;
   }
 
-  .flex-truncate-badge {
+  .badge-item {
     flex-shrink: 0 !important;
+    max-width: 80px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
-    max-width: 100px !important;
   }
 
-  .overflow-safe {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+  /* Input character limit styling */
+  .input-with-counter {
+    position: relative;
+  }
+
+  .char-counter {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    pointer-events: none;
+  }
+
+  .char-counter.warning {
+    color: #F59E0B;
+  }
+
+  .char-counter.error {
+    color: #EF4444;
   }
 }
 
