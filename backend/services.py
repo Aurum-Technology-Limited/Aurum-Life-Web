@@ -1005,7 +1005,19 @@ class ProjectService:
     async def update_project(user_id: str, project_id: str, project_data: ProjectUpdate) -> bool:
         update_data = {k: v for k, v in project_data.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
-        return await update_document("projects", {"id": project_id, "user_id": user_id}, update_data)
+        
+        success = await update_document("projects", {"id": project_id, "user_id": user_id}, update_data)
+        
+        # Check if project was marked as completed and trigger achievement check
+        if success and "status" in update_data:
+            status_value = update_data["status"].value if hasattr(update_data["status"], 'value') else update_data["status"]
+            if status_value == "Completed":
+                try:
+                    await AchievementService.trigger_project_completed(user_id)
+                except Exception as e:
+                    print(f"Warning: Achievement trigger failed for project completion: {e}")
+        
+        return success
 
     @staticmethod
     async def archive_project(user_id: str, project_id: str) -> bool:
