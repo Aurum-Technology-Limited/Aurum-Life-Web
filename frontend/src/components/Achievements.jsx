@@ -522,6 +522,141 @@ const Achievements = () => {
           </p>
         )}
       </div>
+
+      {/* Create Custom Achievement Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Create Your Own Achievement</h3>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Achievement Name *
+                </label>
+                <input
+                  type="text"
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., Complete My First Marathon"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Optional description for your achievement"
+                  rows={3}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none"
+                />
+              </div>
+
+              {/* Icon */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Icon
+                </label>
+                <div className="flex items-center space-x-2">
+                  <span className="text-2xl">{createForm.icon}</span>
+                  <input
+                    type="text"
+                    value={createForm.icon}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, icon: e.target.value }))}
+                    placeholder="🎯"
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Goal Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Goal Type
+                </label>
+                <select
+                  value={createForm.target_type}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, target_type: e.target.value, target_id: '' }))}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
+                >
+                  <option value="complete_tasks">Complete Tasks</option>
+                  <option value="complete_project">Complete Project</option>
+                  <option value="write_journal_entries">Write Journal Entries</option>
+                  <option value="complete_courses">Complete Courses</option>
+                  <option value="maintain_streak">Maintain Streak</option>
+                </select>
+              </div>
+
+              {/* Target Project (if applicable) */}
+              {(createForm.target_type === 'complete_project' || createForm.target_type === 'complete_tasks') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {createForm.target_type === 'complete_project' ? 'Target Project' : 'Project (optional)'}
+                  </label>
+                  <select
+                    value={createForm.target_id}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, target_id: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
+                  >
+                    <option value="">
+                      {createForm.target_type === 'complete_project' ? 'Select a project' : 'Any project'}
+                    </option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Target Count */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Target {createForm.target_type === 'complete_project' ? 'Count' : 'Number'}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={createForm.target_count}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, target_count: parseInt(e.target.value) || 1 }))}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3 mt-6">
+              <button
+                onClick={handleCreateCustomAchievement}
+                className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-500 transition-colors font-medium"
+              >
+                <Save size={20} />
+                <span>Create Achievement</span>
+              </button>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
