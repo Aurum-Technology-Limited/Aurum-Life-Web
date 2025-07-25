@@ -2640,6 +2640,24 @@ class ResourceService:
         return await ResourceService._build_resource_response(resource_doc)
     
     @staticmethod
+    async def get_resource_content(user_id: str, resource_id: str) -> Optional[dict]:
+        """Get resource file content for viewing/downloading"""
+        resource_doc = await find_document("resources", {"id": resource_id, "user_id": user_id})
+        if not resource_doc:
+            return None
+        
+        # Track access
+        await ResourceService._track_resource_access(resource_id)
+        
+        return {
+            "id": resource_doc["id"],
+            "filename": resource_doc["filename"],
+            "mime_type": resource_doc["mime_type"],
+            "file_size": resource_doc["file_size"],
+            "file_content": resource_doc["file_content"]  # Base64 content
+        }
+    
+    @staticmethod
     async def _track_resource_access(resource_id: str):
         """Track when a resource is accessed"""
         await update_document(
