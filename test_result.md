@@ -63,6 +63,8 @@
 ##     -message: "Starting Pillar Hierarchy implementation - Phase 1: Backend Foundation. Will implement Pillar model, API endpoints, and Area-Pillar linking as per user confirmation."
 ##     -agent: "main"
 ##     -message: "Fixed Google OAuth button width alignment issue. Updated Login.jsx to use width='100%' for both login and register Google buttons instead of hardcoded width='400'. Google buttons now match the full width of other form elements like email and password inputs. Ready for testing."
+##     -agent: "main"
+##     -message: "Starting UI Overflow Fix - Phase 2: CSS-based truncation solution for Insights.jsx, Areas.jsx, and Projects.jsx. Will apply flexbox properties, text truncation with ellipsis, and proper container constraints to resolve persistent text overflow issues reported by user."
 
 # Protocol Guidelines for Main agent
 #
