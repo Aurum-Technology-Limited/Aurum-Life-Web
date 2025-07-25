@@ -1,28 +1,34 @@
 #!/usr/bin/env python3
 """
-DYNAMIC PREDEFINED ACHIEVEMENTS SYSTEM - PHASE 1 TESTING
-Complete end-to-end testing of the Dynamic Achievements System implementation.
+USER-DEFINED CUSTOM ACHIEVEMENTS SYSTEM - PHASE 2 TESTING
+Complete end-to-end testing of the Custom Achievements System implementation.
 
 FOCUS AREAS:
-1. ACHIEVEMENT SERVICE CORE FUNCTIONS - Test GET /api/achievements and POST /api/achievements/check
-2. AUTO-TRACKING TRIGGER FUNCTIONS - Test task completion, project completion, journal entry triggers
-3. PROGRESS CALCULATION - Test achievement progress calculation accuracy
-4. ACHIEVEMENT UNLOCKING - Test that achievements unlock when requirements are met
-5. NOTIFICATION SYSTEM - Test achievement notifications are created properly
-6. PERFORMANCE VERIFICATION - Verify trigger functions are efficient and don't add latency
+1. CUSTOM ACHIEVEMENT CRUD OPERATIONS - Test GET/POST/PUT/DELETE /api/achievements/custom endpoints
+2. CUSTOM ACHIEVEMENT MODELS & DATA - Test CustomAchievement model with all target types
+3. AUTO-TRACKING INTEGRATION - Test custom achievement triggers when actions occur
+4. PROGRESS CALCULATION - Test progress calculation for different target types
+5. COMPLETION & NOTIFICATIONS - Test achievement completion and notification creation
+6. TARGET VALIDATION - Test validation for projects/courses targets
 
 SPECIFIC ENDPOINTS TO TEST:
-- GET /api/achievements (get all achievements with progress calculation)
-- POST /api/achievements/check (manual achievement checking for testing)
+- GET /api/achievements/custom (get all user's custom achievements)
+- POST /api/achievements/custom (create new custom achievement)
+- PUT /api/achievements/custom/{id} (update custom achievement)
+- DELETE /api/achievements/custom/{id} (delete custom achievement)
+- POST /api/achievements/custom/check (check progress for all custom achievements)
 
-TRIGGER SCENARIOS TO TEST:
-- Task completion triggers (when tasks are marked complete)
-- Project completion triggers (when projects are marked "Completed")
-- Journal entry creation triggers (when new entries are created)
-- Course completion triggers (if applicable)
+TEST SCENARIOS:
+1. Basic CRUD Operations - Create, read, update, delete custom achievements
+2. Task-Based Goals - Create custom achievement for "Complete 5 tasks" and test trigger
+3. Project-Specific Goals - Create custom achievement for "Complete Project X" and test trigger
+4. Journal Entry Goals - Create custom achievement for "Write 3 journal entries" and test trigger
+5. Progress Tracking - Verify progress updates accurately as actions occur
+6. Completion & Notifications - Test achievement completion and notification creation
+7. Target Validation - Test validation for non-existent projects/targets
 
 AUTHENTICATION:
-- Use test credentials with realistic data for achievements testing
+- Use test credentials with realistic data for custom achievements testing
 """
 
 import requests
