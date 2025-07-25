@@ -873,42 +873,36 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {projects.map((project) => (
               <div
                 key={project.id}
-                className={`bg-gray-900/50 border rounded-xl p-4 hover:border-gray-700 transition-all duration-200 hover:shadow-lg overflow-hidden w-full max-w-full ${
+                className={`bg-gray-900/50 border rounded-xl p-4 hover:border-gray-700 transition-all duration-200 hover:shadow-lg ${
                   project.archived ? 'border-gray-700 opacity-75' : 'border-gray-800'
                 }`}
-                style={{ 
-                  wordWrap: 'break-word',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                  minWidth: 0,
-                  maxWidth: '100%'
-                }}
               >
                 {/* Project Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1 min-w-0 pr-2"> 
-                    <div className="flex-truncate-container space-x-2 mb-2"> 
+                <div className="card-header-flex mb-4">
+                  <div className="card-content-flex"> 
+                    <div className="dynamic-text-container space-x-2 mb-2"> 
                       {/* Project Icon */}
-                      <span className="text-lg flex-truncate-icon">{project.icon || '🚀'}</span>
-                      <h3 className="font-semibold text-white text-xs leading-tight flex-truncate-text">
-                        {project.name}
-                      </h3>
+                      <span className="text-lg flex-shrink-0">{project.icon || '🚀'}</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`font-semibold text-white dynamic-text ${getDynamicFontSize(project.name, 'title')}`}>
+                          {project.name}
+                        </h3>
+                      </div>
                     </div>
                     
                     {/* Status, Priority, and Importance Badges */}
-                    <div className="flex-truncate-badges mb-2"> 
-                      <span className={`px-1.5 py-0.5 text-xs rounded-full flex-truncate-badge ${getStatusColor(project.status)}`}>
+                    <div className="badge-container"> 
+                      <span className={`px-2 py-1 text-xs rounded-full badge-item ${getStatusColor(project.status)}`}>
                         {project.status}
                       </span>
-                      <span className={`px-1.5 py-0.5 text-xs rounded-full flex-truncate-badge ${getPriorityColor(project.priority)}`}>
+                      <span className={`px-2 py-1 text-xs rounded-full badge-item ${getPriorityColor(project.priority)}`}>
                         {project.priority}
                       </span>
-                      {/* Importance Indicator - Simplified */}
+                      {/* Importance Indicator */}
                       {project.importance && (
-                        <span className={`px-1.5 py-0.5 text-xs rounded-full flex-truncate-badge ${
+                        <span className={`px-2 py-1 text-xs rounded-full badge-item ${
                           project.importance >= 5 ? 'bg-red-900/30 text-red-300' :
                           project.importance >= 4 ? 'bg-orange-900/30 text-orange-300' :
                           project.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300' :
@@ -921,23 +915,23 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                         </span>
                       )}
                       {project.archived && (
-                        <span className="px-1.5 py-0.5 text-xs rounded-full bg-gray-600 text-gray-300 flex-truncate-badge">
+                        <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300 badge-item">
                           📁
                         </span>
                       )}
                     </div>
                     
                     {project.area_name && (
-                      <div className="min-w-0"> 
-                        <p className="text-xs text-gray-400 overflow-safe">
+                      <div className="mt-2">
+                        <p className={`text-gray-400 dynamic-text ${getDynamicFontSize(project.area_name, 'subtitle')}`}>
                           {project.area_name}
                         </p>
                       </div>
                     )}
                   </div>
                   
-                  {/* Action Buttons - Fixed positioning */}
-                  <div className="flex space-x-1 flex-shrink-0 ml-2">{/* Added flex-shrink-0 and ml-2 */}
+                  {/* Action Buttons */}
+                  <div className="card-actions-flex">
                     <button
                       onClick={() => handleArchive(project.id, project.archived)}
                       className={`p-2 rounded-lg transition-colors ${
