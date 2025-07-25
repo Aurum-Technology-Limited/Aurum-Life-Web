@@ -667,6 +667,17 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             )}
           </div>
           
+          {/* File Manager - Only show for existing tasks */}
+          {task && (
+            <div>
+              <FileManager 
+                entityType="task"
+                entityId={task.id}
+                entityName={task.name}
+              />
+            </div>
+          )}
+          
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
