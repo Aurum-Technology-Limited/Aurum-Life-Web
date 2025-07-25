@@ -286,6 +286,12 @@ class JournalService:
                                         {"id": entry_data.template_id},
                                         {"$inc": {"usage_count": 1}})
         
+        # Trigger achievement check for journal entry creation (performance-optimized)
+        try:
+            await AchievementService.trigger_journal_entry_created(user_id)
+        except Exception as e:
+            print(f"Warning: Achievement trigger failed for journal entry creation: {e}")
+        
         return entry
 
     @staticmethod
