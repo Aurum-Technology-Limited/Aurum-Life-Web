@@ -1034,8 +1034,8 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                   <div className={`flex items-center space-x-2 text-xs sm:text-sm mb-3 ${
                     isOverdue(project.due_date) ? 'text-red-400' : 'text-gray-400'
                   }`}>
-                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                    <span className="truncate text-xs">
+                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-truncate-icon" />
+                    <span className="overflow-safe text-xs">
                       Due: {new Date(project.due_date).toLocaleDateString()}
                       {isOverdue(project.due_date) && ' (Overdue)'}
                     </span>
@@ -1045,8 +1045,8 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 {/* Created Date */}
                 {project.date_created && (
                   <div className="flex items-center space-x-2 text-xs text-gray-500 mb-4">
-                    <Calendar className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate">
+                    <Calendar className="h-3 w-3 flex-truncate-icon" />
+                    <span className="overflow-safe">
                       Created: {new Date(project.date_created).toLocaleDateString()}
                     </span>
                   </div>
