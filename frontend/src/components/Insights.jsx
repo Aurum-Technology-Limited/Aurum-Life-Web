@@ -398,28 +398,28 @@ const Insights = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex-truncate-container space-x-2 flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 flex-1 min-w-0">
                       <div
-                        className="w-4 h-4 rounded-full flex-truncate-icon"
+                        className="w-4 h-4 rounded-full flex-shrink-0"
                         style={{ backgroundColor: area.color }}
                       />
-                      <h4 className="font-semibold text-white flex-truncate-text">
+                      <h4 className={`font-semibold text-white dynamic-text ${getDynamicFontSize(area.name, 'title')}`}>
                         {area.name}
                       </h4>
                     </div>
                   </div>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between text-gray-400">
-                      <span className="flex-truncate-icon">Projects:</span>
-                      <span className="flex-truncate-icon">{area.total_projects}</span>
+                      <span>Projects:</span>
+                      <span>{area.total_projects}</span>
                     </div>
                     <div className="flex justify-between text-gray-400">
-                      <span className="flex-truncate-icon">Tasks:</span>
-                      <span className="flex-truncate-icon">{area.completed_tasks}/{area.total_tasks}</span>
+                      <span>Tasks:</span>
+                      <span>{area.completed_tasks}/{area.total_tasks}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400 flex-truncate-icon">Completion:</span>
-                      <span className="text-white font-medium flex-truncate-icon">{area.completion_percentage}%</span>
+                      <span className="text-gray-400">Completion:</span>
+                      <span className="text-white font-medium">{area.completion_percentage}%</span>
                     </div>
                   </div>
                 </div>
