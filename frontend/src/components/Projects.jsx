@@ -14,7 +14,6 @@ import {
   Edit,
   Trash2,
   Archive,
-  Unarchive,
   FolderOpen,
   Target,
   TrendingUp,
@@ -22,18 +21,17 @@ import {
   FileText,
   Tag,
   Star,
-  StarOff,
   Eye,
   EyeOff,
   ChevronDown,
   ChevronRight,
-  Kanban,
   BarChart3,
   Settings,
   Copy,
   ExternalLink,
   Download,
-  Upload
+  Upload,
+  X
 } from 'lucide-react';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { useDataContext } from '../contexts/DataContext';
