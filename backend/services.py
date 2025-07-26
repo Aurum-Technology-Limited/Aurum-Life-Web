@@ -1868,6 +1868,12 @@ class TaskService:
                         )
                     except Exception as e:
                         print(f"Warning: Achievement trigger failed for task completion: {e}")
+                    
+                    # Check for tasks that become unblocked due to this completion
+                    try:
+                        await TaskService._check_and_notify_unblocked_tasks(user_id, task_id)
+                    except Exception as e:
+                        print(f"Warning: Unblocked task notification failed: {e}")
                 
                 # If this is a sub-task, check if parent task completion should be updated
                 if updated_task.get("parent_task_id"):
