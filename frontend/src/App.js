@@ -42,7 +42,6 @@ function App() {
       'areas': 'Areas', 
       'projects': 'Projects',
       'project-templates': 'Project Templates',
-      'recurring-tasks': 'Recurring Tasks',
       'tasks': 'Tasks',
       'journal': 'Journal',
       'feedback': 'Feedback & Support',
