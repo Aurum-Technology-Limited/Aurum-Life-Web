@@ -1185,6 +1185,18 @@ async def mark_all_notifications_read(
         logger.error(f"Error marking all notifications as read for user {current_user.id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to mark notifications as read")
 
+@api_router.delete("/notifications/clear-all", response_model=dict)
+async def clear_all_notifications(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Clear all notifications for the user"""
+    try:
+        count = await notification_service.clear_all_notifications(current_user.id)
+        return {"success": True, "message": f"Cleared {count} notifications", "count": count}
+    except Exception as e:
+        logger.error(f"Error clearing all notifications for user {current_user.id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to clear notifications")
+
 @api_router.delete("/notifications/{notification_id}", response_model=dict)
 async def delete_notification(
     notification_id: str,
@@ -1201,18 +1213,6 @@ async def delete_notification(
     except Exception as e:
         logger.error(f"Error deleting notification {notification_id} for user {current_user.id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete notification")
-
-@api_router.delete("/notifications/clear-all", response_model=dict)
-async def clear_all_notifications(
-    current_user: User = Depends(get_current_active_user)
-):
-    """Clear all notifications for the user"""
-    try:
-        count = await notification_service.clear_all_notifications(current_user.id)
-        return {"success": True, "message": f"Cleared {count} notifications", "count": count}
-    except Exception as e:
-        logger.error(f"Error clearing all notifications for user {current_user.id}: {e}")
-        raise HTTPException(status_code=500, detail="Failed to clear notifications")
 
 @api_router.post("/notifications/test", response_model=dict)
 async def test_notification_system(current_user: User = Depends(get_current_active_user)):
