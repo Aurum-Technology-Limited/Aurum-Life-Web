@@ -118,6 +118,9 @@ function App() {
       case 'notification-settings':
         console.log('🔔 Rendering NotificationSettings component');
         return <NotificationSettings {...props} />;
+      case 'notifications':
+        console.log('📋 Rendering NotificationCenter component');
+        return <NotificationCenter {...props} />;
       case 'profile':
         console.log('👤 Rendering Profile component');
         return <Profile {...props} />;
