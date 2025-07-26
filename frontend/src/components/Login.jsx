@@ -109,7 +109,6 @@ const Login = ({ switchToRegister }) => {
     setForgotPasswordMessage('');
     setError('');
 
-    const { forgotPassword } = useAuth();
     const result = await forgotPassword(forgotPasswordEmail);
     
     if (result.success) {
