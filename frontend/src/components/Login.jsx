@@ -5,7 +5,7 @@ import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { googleAuthAPI } from '../services/api';
 
 const Login = ({ switchToRegister }) => {
-  const { login, register } = useAuth();
+  const { login, register, forgotPassword } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
