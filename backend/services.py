@@ -3333,10 +3333,14 @@ class ResourceService:
     
     @staticmethod
     async def create_resource(user_id: str, resource_data: ResourceCreate) -> Resource:
-        """Create a new file resource"""
+        """Create a new file resource with contextual attachment support"""
         import base64
         import magic
         from datetime import datetime, timedelta
+        
+        # Validate parent entity if provided
+        if resource_data.parent_id and resource_data.parent_type:
+            await ResourceService._validate_parent_entity(user_id, resource_data.parent_id, resource_data.parent_type)
         
         # Validate file content is proper base64
         try:
@@ -3374,6 +3378,25 @@ class ResourceService:
         resource_dict = resource.dict()
         await create_document("resources", resource_dict)
         return resource
+    
+    @staticmethod
+    async def _validate_parent_entity(user_id: str, parent_id: str, parent_type: str):
+        """Validate that parent entity exists and belongs to user"""
+        entity_collections = {
+            "task": "tasks",
+            "project": "projects", 
+            "area": "areas",
+            "pillar": "pillars",
+            "journal_entry": "journal_entries"
+        }
+        
+        if parent_type not in entity_collections:
+            raise ValueError(f"Invalid parent type: {parent_type}. Must be one of: {', '.join(entity_collections.keys())}")
+        
+        collection_name = entity_collections[parent_type]
+        entity_doc = await find_document(collection_name, {"id": parent_id, "user_id": user_id})
+        if not entity_doc:
+            raise ValueError(f"Parent {parent_type} with ID {parent_id} not found or does not belong to user")
     
     @staticmethod
     def _determine_file_type(mime_type: str) -> FileTypeEnum:
