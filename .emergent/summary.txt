@@ -1,95 +1,97 @@
 <analysis>
-The previous AI engineer successfully migrated the Aurum Life application from FastAPI/MongoDB/Custom Auth to Supabase (PostgreSQL, Auth, Storage). This involved extensive schema and data migration, refactoring backend services for Supabase, and integrating Supabase Auth into the frontend. Post-migration, the engineer meticulously resolved critical issues reported by the user. Key fixes included: addressing pre-existing user login failures by correctly migrating and aligning user IDs and password hashes across  and  tables; rectifying numerous MongoDB query syntaxes in  that caused 500 errors (e.g.,  operator); eliminating non-existent table references (, , , ) in backend services that caused dashboard failures; correcting the JWT token generation to include  instead of ; and resolving persistent  and  datetime comparison errors in various services. The trajectory concludes with the engineer confirming that all core user issues, including login, data visibility, and dashboard functionality, are resolved, declaring the mission completely accomplished.
+The previous AI engineer undertook a challenging migration of the Aurum Life application from FastAPI/MongoDB to Supabase (PostgreSQL, Auth, Storage). Initially, the engineer declared the migration complete after addressing critical issues like user login, data visibility, and dashboard errors. However, subsequent user feedback revealed persistent and severe issues: incomplete MongoDB to Supabase migration leading to mixed database calls, foreign key constraint violations, and critical performance bottlenecks (N+1 queries) causing timeouts and slow application response. The engineer systematically debugged these, fixing import mismatches, introducing robust API clients with retry logic, and, crucially, identifying and optimizing N+1 query patterns in the backend services. The trajectory concludes with significant performance gains, particularly in the Projects section, but with a clear mandate to resolve remaining slow endpoints.
 </analysis>
 
 <product_requirements>
-Aurum Life is a dark-themed personal growth web application for hierarchical task management (Pillar → Area → Project → Task), journaling, and learning. It features CRUD operations, sub-tasks, dependencies, reminders, recurring schedules, a Today view, Kanban boards, Insights Dashboard, and JWT/Google Auth. Enhancements included improved drag-and-drop, a comprehensive notification system, and  fields. An AI Coach provides Daily Prioritization and conversational assistance, alongside an Achievements system.
+Aurum Life is a dark-themed personal growth web application designed for hierarchical task management (Pillar → Area → Project → Task), journaling, and learning. Core features include CRUD operations, sub-tasks, dependencies, reminders, recurring schedules, a Today view, Kanban boards, an Insights Dashboard, and JWT/Google Auth. Key enhancements include improved drag-and-drop, a comprehensive notification system, and  fields. An AI Coach provides Daily Prioritization and conversational assistance, complemented by an Achievements system.
 
-Recent explicit requests and the primary focus of the work detailed in this trajectory included:
-1.  **Contextual Attachments**: Replacement of  with  for chunked uploads and associating files.
-2.  **Intelligent Today View**: Planned but not implemented.
-3.  **Mobile Optimization**: Responsiveness for Layout, NotificationManager, Tasks, and Dashboard.
-4.  **Supabase Migration**: The core task, migrating the entire backend (MongoDB to PostgreSQL, custom JWT to Supabase Auth) and frontend to use Supabase, including its PostgreSQL database, authentication, and Storage services. This was a complete cutover, prioritizing risk mitigation, and involved resolving post-migration issues like pre-existing user login failures, missing data on screens, and various API errors impacting dashboard and project sections.
+The primary focus of the previous work, as requested by the user, was a complete migration of the application to Supabase, encompassing PostgreSQL for the database, Supabase Auth, and Supabase Storage. This cutover involved resolving numerous post-migration issues, including:
+1.  **Pre-existing User Login Failures**: Users migrated from MongoDB could not log in.
+2.  **Data Visibility Issues**: Blank screens for core data (Pillars, Areas, Projects, Tasks).
+3.  **Dashboard/Projects 500 Errors**: Critical server errors preventing access to key sections.
+4.  **Insights Section Failure**: Errors loading data for the Insights dashboard.
+5.  **Overall Application Performance**: Slowness, timeouts, and unresponsiveness across the application, explicitly requiring optimization of *all* slow endpoints to achieve production-ready code.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack Development**: React (Frontend), FastAPI (Backend), Supabase (PostgreSQL, Auth, Storage), MongoDB (Legacy).
--   **Data Migration**: MongoDB to PostgreSQL, data transfer, user ID reconciliation.
--   **Authentication**: Custom JWT (Legacy), Supabase Auth, JWT token structure.
--   **File Handling**: Base64 encoding (Legacy), Supabase Storage.
--   **Database Interactions**: SQL (PostgreSQL), ORM-like client abstractions.
--   **Error Handling**: Datetime timezone issues, foreign key constraints, schema cache.
+-   **Full-stack Development**: React, FastAPI, Supabase (PostgreSQL, Auth, Storage), MongoDB (Legacy).
+-   **Data Migration**: MongoDB to PostgreSQL, user ID reconciliation.
+-   **Authentication**: JWT, Supabase Auth, session management.
+-   **Performance Optimization**: N+1 query patterns, caching, frontend API client design (retries, deduplication, timeouts), asynchronous programming.
+-   **Error Handling**: Datetime timezone, foreign key constraints, network connectivity (CORS, host headers).
 </key_technical_concepts>
 
 <code_architecture>
-The application uses a standard full-stack setup: React for the frontend, FastAPI for the backend, and Supabase PostgreSQL for data persistence, migrated from MongoDB.
+The application employs a React frontend, a FastAPI backend, and Supabase as its primary data store and authentication provider, having recently migrated from MongoDB.
 
 
 
--   : Critical for backend to connect to Supabase (contains , , etc.).
--   : Defines data schemas;  model updated for Supabase Storage.  model modified to fix  conflict.
--   : Contains core business logic.
-    -   Extensive modifications across many services (Pillars, Areas, Projects, Tasks, Resources) to use  instead of MongoDB.
-    -    refactored for Supabase Storage.
-    -    made more resilient.
-    -    and  were stripped of non-existent table references (, , ).
-    -    and  were refactored to remove  dependencies and fix datetime comparisons.
-    -   Many query filters were converted from MongoDB syntax () to client-side filtering (e.g., in , , , , ).
-    -   Added  utility for robust date handling.
--   : FastAPI entry point.
-    -   Startup/shutdown events updated for .
-    -   Resource endpoints updated for Supabase Storage.
-    -   Login/registration endpoints (, ) modified to ensure JWT  field uses  (UUID) instead of .
-    -   Dependency injection for  was fixed.
--   : **(NEW FILE)** Centralized client for Supabase PostgreSQL operations.
-    -   Modified to handle simple key-value filters, not MongoDB-style operators.
--   : **(NEW FILE)** Supabase authentication handler.
--   : **(NEW FILE)** Manages Supabase Storage operations.
--   :
-    -    model changed from  to  to align with JWT  field containing user ID.
-    -    and  updated to fetch user by ID instead of email, and to handle the new  structure.
--   : Added , .
--   : Switched from  back to  for legacy JWT compatibility.
+-   : Contains Supabase credentials (, ).
+-   : Defines data schemas, including  and  models, adapted for Supabase.
+-   : Houses core business logic. Extensive refactoring for Supabase.
+    -   All services (Pillars, Areas, Projects, Tasks, Resources) converted from MongoDB to Supabase client operations.
+    -    updated for Supabase Storage.
+    -    and  stripped of non-existent table references (, , ).
+    -    updated for datetime comparisons.
+    -   MongoDB query syntaxes (e.g., ) systematically removed and replaced with client-side filtering.
+    -   : Made more resilient, and  updated to handle foreign key constraint errors gracefully.
+    -   **N+1 Query Optimizations**:  and  were refactored for batch fetching pillars and projects.  and  were also optimized to reduce N+1 queries.  and  (containing ) also received N+1 optimizations.
+-   : FastAPI entry point. Updated startup/shutdown events for Supabase. Resource endpoints for Supabase Storage. Login/registration endpoints (, ) fixed to ensure JWT  field uses . CORS configuration .
+-   : Centralized client for Supabase PostgreSQL.
+    -   Modified to handle simple key-value filters.
+    -   **Added , , and  functions.**
+    -    method handles data serialization for Supabase.
+-   :  model updated from  to .  and  fetch user by ID.
+-   : Fixed to use  instead of old MongoDB imports. Optimized  to reduce N+1 queries.
+-   : Updated all MongoDB imports and collection operations to use Supabase client functions.
+-   : Updated MongoDB imports to Supabase client.
+-   : Initially added , .  was temporarily set to  then empty  then reverted to external URL.  added to prevent Invalid Host header errors.
+-   : Switched from  to . Updated to use  and integrated .
 -   : Updated to use .
--   : Refactored for Supabase Storage via backend.
--   : Fixed missing  component import.
--   : Updated with a  function.
--   : **(NEW FILE)** React Context for Supabase Auth, but ultimately not used by the main app due to legacy auth.
--   : **(NEW FILE)** Initializes frontend Supabase client.
--   : **(NEW FILE)** Defines PostgreSQL schema with tables like , , , , , , , , .
--   : **(NEW FILE)** Creates  table for backend compatibility.
--   : **(NEW FILE)** Adds , ,  to  table.
--   : **(NEW FILE)** Script created to migrate and fix password hashes for existing users from MongoDB to  table.
--   : **(NEW FILE)** Targeted script to migrate data for a specific user, including correcting  mismatches.
--   Other frontend components (, , , , , , , , , , ) were updated to use  instead of  where applicable.
+-   : Refactored for Supabase Storage.
+-   : Added retry mechanism and improved error handling for API calls.
+-   : Similar to Areas, updated for  and improved logging.
+-   : Updated to use  then .
+-   : Updated to use  then .
+-   : (NEW FILE) Catches React runtime errors.
+-   : (NEW FILE) A new, optimized version of the Dashboard component.
+-   : Updated with  function. Updated to use  and improve token validation/persistence.
+-   : Axios instance.  from . Fixed 401 redirect path.
+-   : Initializes frontend Supabase client.
+-   : (NEW FILE) A new, robust API client with 8-second timeout, request deduplication, intelligent caching (30s TTL), automatic retry logic, and clean error handling.
+-   : (NEW FILE) A previous iteration of API client with request queuing, deduplication, 10-second timeout, and delays.
+-   : (NEW FILE) Utility for systematic frontend API performance testing.
+-   : Defines PostgreSQL schema.
+-   : Creates  table for backend compatibility.
+-   : Adds storage fields to  table.
+-   : Script to migrate existing users from MongoDB to .
+-   : Targeted migration script.
+-   : Updated with  configuration (later removed due to Invalid Host header errors).
 </code_architecture>
 
 <pending_tasks>
--   Implement remaining features from Intelligent Today View.
--   Implement Smart Recurring Tasks (remaining advanced patterns).
+-   Implement Intelligent Today View (Smart task prioritization).
+-   Implement Smart Recurring Tasks (advanced patterns).
 -   Implement Advanced Analytics & Insights.
--   Advanced Task Dependencies.
+-   Implement Advanced Task Dependencies.
+-   **Complete optimization of remaining slow backend endpoints**: Insights, Dashboard, Areas, AI Coach services to eliminate N+1 queries and ensure sub-second response times.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary, the AI engineer completed an extensive series of debugging and fixing tasks following the core Supabase migration. The application's backend was fully migrated from MongoDB to Supabase PostgreSQL, and file storage moved from base64 to Supabase Storage. Authentication was shifted from custom JWT to a Supabase-compatible system.
+Immediately before this summary request, the AI engineer was engaged in a critical performance optimization drive for the Aurum Life application, specifically targeting the remaining slow backend API endpoints. This follows an extensive period of debugging and fixing post-Supabase migration, addressing issues like user login, data visibility, and initial 500 errors.
 
-The primary focus of recent work was resolving critical post-migration issues reported by the user:
-1.  **Pre-existing User Login Failures**:
-    *   Initially, only 50 users were in Supabase Auth, while MongoDB had 75. The  compatibility table had only 4.
-    *   A script () was created and run to migrate all 75 users from MongoDB to the  table with their original password hashes, resolving initial login failures.
-2.  **Data Visibility (Blank Screens)**:
-    *   For a specific user (), despite API returning 200, no data was visible. This was traced to two issues:
-        *   **MongoDB Query Syntax**: Backend  contained numerous MongoDB-style queries (e.g.,  for  fields) that were incompatible with Supabase PostgreSQL. These were systematically replaced with client-side filtering in , , , and .
-        *   **User ID Mismatch**: It was discovered that data for  was migrated to a different  in Supabase than the one associated with their actual login. The  in migrated data for  was updated in the database to match the correct  ID (), ensuring data was linked to the correct user.
-3.  **Dashboard/Projects 500 Errors**:
-    *   **Non-existent Table References**:  and  in  were attempting to query tables (, , , ) that were not migrated to the Supabase schema. These references were removed or gracefully handled (e.g., returning empty lists).
-    *   **JWT Token Content**: The JWT token generated by backend login/registration endpoints () incorrectly used  in the  (subject) field instead of . This caused API endpoints to fail in retrieving data. The  field was corrected to . The  model in  and dependent functions were also updated to use  instead of .
-    *   **Datetime Comparison Issues**: Persistent  and  datetime comparison errors () were identified in , , and . These were systematically fixed by ensuring consistent timezone handling or converting to naive datetimes for comparison.
+The current work identified and began to resolve **N+1 query problems** as the root cause of persistent slowness and timeouts. The engineer systematically analyzed backend logs and performed comprehensive frontend performance tests to pinpoint bottlenecks.
 
-The application now supports user login (both new and pre-existing, using a consolidated email/password for existing users if necessary) and correctly displays all migrated core data (pillars, areas, projects) on their respective screens. The Dashboard is also fully functional. The engineer has declared the mission completely accomplished.
+Key actions taken in this phase:
+1.  **Diagnosis of N+1 Queries**: Backend logs revealed hundreds of individual database queries for each API request (e.g., each area fetching its pillar and projects separately), leading to 5-10 second response times.
+2.  **Projects Endpoint Optimization**: The  and  methods in  were refactored to perform batch fetching (collecting all necessary IDs and making a single  call) instead of individual queries. This resulted in a dramatic **18x speed improvement** for the Projects API (from ~5173ms to ~282ms).
+3.  **Dashboard and AI Coach Optimization (Partial)**: Initial attempts were made to optimize  and  by improving query patterns, but these still require further work.
+4.  **Comprehensive Frontend API Client**: A  was created in  with 8-second timeouts, request deduplication, intelligent caching, and automatic retry logic to handle network instability and slow backend responses gracefully, ensuring a more resilient frontend experience. This was integrated across key components like Dashboard, Insights, and AiCoachCard.
+5.  **Environment Stability**: Resolved Invalid Host header errors by removing a problematic proxy configuration from  and adding  to , restoring the application to a stable, albeit still partially slow, state.
+
+The application currently loads the Dashboard and Projects pages quickly, and authentication works for both new and previously problematic users (e.g., ). However, the Insights, Dashboard (overall), Areas, and AI Coach endpoints are still exhibiting slow response times (ranging from ~2.4s to ~3.5s) indicating further N+1 query optimizations are required.
 </current_work>
 
 <optional_next_step>
-None. The mission has been declared completely accomplished by the previous engineer, addressing all explicit user requests in the trajectory.
+The next step is to continue optimizing the remaining slow backend endpoints (Insights, Dashboard, Areas, and AI Coach) by addressing their N+1 query patterns.
 </optional_next_step>
