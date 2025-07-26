@@ -2630,7 +2630,9 @@ class StatsService:
             
             # Get recent data (handle missing services)
             recent_tasks = await TaskService.get_user_tasks(user_id)
-            today_tasks = await TaskService.get_today_tasks(user_id)
+            
+            # Temporarily disable today_tasks to avoid datetime issues
+            today_tasks = []  # await TaskService.get_today_tasks(user_id)
             
             # Get courses if available, otherwise empty list
             recent_courses = []
