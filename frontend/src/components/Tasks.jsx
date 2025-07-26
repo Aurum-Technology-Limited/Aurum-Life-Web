@@ -368,6 +368,14 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
       due_date: formData.due_date ? new Date(formData.due_date).toISOString() : null
     };
     
+    // Add recurrence data if enabled
+    if (recurrenceEnabled && recurrenceConfig.type !== 'none') {
+      submitData.recurrence_pattern = {
+        ...recurrenceConfig,
+        end_date: recurrenceConfig.end_date ? new Date(recurrenceConfig.end_date).toISOString() : null
+      };
+    }
+    
     try {
       // Save the main task first
       const savedTask = await onSave(submitData);
