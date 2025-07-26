@@ -800,45 +800,18 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             )}
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Category
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+          {/* Sub-task completion requirement */}
+          <div className="flex items-center">
+            <label className="flex items-center space-x-2 text-sm font-medium text-gray-300">
+              <input
+                type="checkbox"
+                checked={formData.sub_task_completion_required}
+                onChange={(e) => setFormData({ ...formData, sub_task_completion_required: e.target.checked })}
+                className="rounded bg-gray-800 border-gray-700 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
                 disabled={loading}
-              >
-                <option value="personal">Personal</option>
-                <option value="work">Work</option>
-                <option value="health">Health</option>
-                <option value="finance">Finance</option>
-                <option value="learning">Learning</option>
-                <option value="family">Family</option>
-                <option value="social">Social</option>
-                <option value="creative">Creative</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="spiritual">Spiritual</option>
-                <option value="travel">Travel</option>
-                <option value="goals">Goals</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center">
-              <label className="flex items-center space-x-2 text-sm font-medium text-gray-300">
-                <input
-                  type="checkbox"
-                  checked={formData.sub_task_completion_required}
-                  onChange={(e) => setFormData({ ...formData, sub_task_completion_required: e.target.checked })}
-                  className="rounded bg-gray-800 border-gray-700 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
-                  disabled={loading}
-                />
-                <span>Require all sub-tasks to complete</span>
-              </label>
-            </div>
+              />
+              <span>Require all sub-tasks to complete</span>
+            </label>
           </div>
           
           {/* Sub-tasks Section */}
