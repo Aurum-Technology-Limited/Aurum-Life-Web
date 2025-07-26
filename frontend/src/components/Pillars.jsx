@@ -7,7 +7,8 @@ import {
   TrendingUp, 
   Trash2, 
   Edit2,
-  BarChart3
+  BarChart3,
+  Layers
 } from 'lucide-react';
 import IconPicker from './ui/IconPicker';
 
