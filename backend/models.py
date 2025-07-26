@@ -486,8 +486,11 @@ class TaskUpdate(BaseModel):
     category: Optional[str] = None
     completed: Optional[bool] = None
     dependency_task_ids: Optional[List[str]] = None
+    # Legacy recurrence fields (maintained for backward compatibility)
     recurrence: Optional[RecurrenceEnum] = None
     recurrence_interval: Optional[int] = None
+    # New enhanced recurrence pattern
+    recurrence_pattern: Optional[RecurrencePattern] = None
     kanban_column: Optional[str] = None
     sort_order: Optional[int] = None
     estimated_duration: Optional[int] = None
