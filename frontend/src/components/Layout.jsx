@@ -14,7 +14,8 @@ import {
   User,
   BarChart3,
   FileText,
-  Mountain
+  Mountain,
+  Bell
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from './UserMenu';
