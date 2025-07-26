@@ -813,6 +813,8 @@ class NotificationPreferenceCreate(BaseModel):
     task_reminder_notifications: bool = True
     project_deadline_notifications: bool = True
     recurring_task_notifications: bool = True
+    achievement_notifications: bool = True
+    unblocked_task_notifications: bool = True
     reminder_advance_time: int = 30
     overdue_check_interval: int = 60
     quiet_hours_start: Optional[str] = "22:00"
