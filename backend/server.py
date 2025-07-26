@@ -109,7 +109,7 @@ async def google_auth(auth_request: GoogleAuthRequest):
             raise HTTPException(status_code=500, detail="Failed to authenticate user")
         
         # Create JWT token
-        token_data = {"sub": user.email}
+        token_data = {"sub": user.id}
         access_token = create_access_token(token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
         
         return GoogleAuthResponse(
