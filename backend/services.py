@@ -926,8 +926,9 @@ class AreaService:
             area_response.completed_task_count = completed_tasks
         else:
             # Just get counts (exclude archived projects unless specifically requested)
-            project_query = {"user_id": area_response.user_id, "area_id": area_response.id, "archived": {"$ne": True}}
-            projects_docs = await find_documents("projects", project_query)
+            all_projects = await find_documents("projects", {"user_id": area_response.user_id, "area_id": area_response.id})
+            # Filter non-archived projects on client side
+            projects_docs = [p for p in all_projects if not p.get("archived", False)]
             area_response.project_count = len(projects_docs)
             area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
         
