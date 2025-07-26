@@ -1416,6 +1416,18 @@ async def get_parent_resources(
         logger.error(f"Error getting parent resources: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve parent resources")
 
+@api_router.post("/resources/migrate-to-storage")
+async def migrate_files_to_storage(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Migrate user's base64 files to Supabase Storage"""
+    try:
+        result = await supabase_resource_service.migrate_base64_to_storage(user_id=current_user.id, batch_size=20)
+        return result
+    except Exception as e:
+        logger.error(f"Error migrating files: {e}")
+        raise HTTPException(status_code=500, detail="Failed to migrate files")
+
 from models import User
 from auth import get_current_active_user
 from ai_coach_service import AiCoachService
