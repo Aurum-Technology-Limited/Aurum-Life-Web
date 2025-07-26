@@ -17,7 +17,7 @@ class ComprehensiveBackendReviewTest:
         self.auth_token = None
         self.test_results = []
         self.marc_user_email = "marc.alleyne@aurumtechnologyltd.com"
-        self.marc_user_password = "NewPassword123!"
+        self.marc_user_password = "password123"
         self.new_test_user_email = "backend.review.test@aurumlife.com"
         self.new_test_user_password = "TestPass123!"
         
