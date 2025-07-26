@@ -1706,7 +1706,16 @@ class TaskService:
         
         # Check if task can start (dependencies met)
         if task_response.dependency_task_ids:
-            dependency_docs = await find_documents("tasks", {"id": {"$in": task_response.dependency_task_ids}})
+            # Get dependency tasks (handle Supabase compatibility)
+            dependency_docs = []
+            for dep_id in task_response.dependency_task_ids:
+                try:
+                    dep_task = await find_document("tasks", {"id": dep_id})
+                    if dep_task:
+                        dependency_docs.append(dep_task)
+                except Exception:
+                    continue
+                    
             task_response.can_start = all([dep.get("completed", False) for dep in dependency_docs])
             task_response.dependency_tasks = [TaskResponse(**dep) for dep in dependency_docs]
         else:
