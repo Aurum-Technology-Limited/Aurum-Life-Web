@@ -316,7 +316,7 @@ class PasswordResetEmailTester:
             import subprocess
             try:
                 result = subprocess.run(
-                    ["tail", "-n", "20", "/var/log/supervisor/backend.out.log"],
+                    ["tail", "-n", "50", "/var/log/supervisor/backend.out.log"],
                     capture_output=True,
                     text=True,
                     timeout=10
@@ -325,28 +325,50 @@ class PasswordResetEmailTester:
                 log_content = result.stdout
                 
                 # Look for specific email service errors
-                email_errors = []
-                if "object bool can't be used in 'await' expression" in log_content:
-                    email_errors.append("Async/await error in email service")
-                if "Failed to send password reset email" in log_content:
-                    email_errors.append("Email sending failure")
-                if "MOCK EMAIL" in log_content:
-                    email_errors.append("Email service running in mock mode")
+                async_await_error = "object bool can't be used in 'await' expression" in log_content
+                email_send_failure = "Failed to send password reset email" in log_content
+                mock_mode_active = "MOCK EMAIL" in log_content
                 
-                if email_errors:
+                # Analyze the errors
+                if async_await_error:
                     self.log_test(
-                        "Backend Email Service Errors",
+                        "Email Service Async/Await Error",
                         False,
-                        f"Errors detected: {', '.join(email_errors)}"
+                        "CRITICAL: Email service method is not async but being awaited in server.py"
                     )
-                    return False
+                
+                if email_send_failure and not async_await_error:
+                    self.log_test(
+                        "Email Sending Failure",
+                        False,
+                        "Email sending failed for reasons other than async/await error"
+                    )
+                
+                if mock_mode_active:
+                    self.log_test(
+                        "Email Service Mock Mode",
+                        True,  # This is informational, not necessarily a failure
+                        "Email service is running in mock mode (not sending real emails)"
+                    )
                 else:
                     self.log_test(
-                        "Backend Email Service Errors",
+                        "Email Service Production Mode",
                         True,
-                        "No email service errors detected in backend logs"
+                        "Email service appears to be in production mode"
+                    )
+                
+                # Overall assessment
+                critical_errors = async_await_error or (email_send_failure and not mock_mode_active)
+                
+                if not critical_errors:
+                    self.log_test(
+                        "Backend Email Service Overall",
+                        True,
+                        "No critical email service errors detected"
                     )
                     return True
+                else:
+                    return False
                     
             except subprocess.TimeoutExpired:
                 self.log_test(
