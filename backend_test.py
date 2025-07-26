@@ -382,6 +382,76 @@ class PasswordResetEmailTester:
             self.log_test("Backend Email Service Errors", False, f"Error: {str(e)}")
             return False
 
+    def test_sendgrid_real_email_sending(self):
+        """Test if SendGrid can actually send real emails"""
+        print("📬 TESTING SENDGRID REAL EMAIL SENDING")
+        print("=" * 60)
+        
+        try:
+            # Test the email service directly by creating a new instance
+            # This ensures it loads the current environment variables
+            import sys
+            sys.path.append('/app/backend')
+            
+            # Import after adding path
+            from email_service import EmailService
+            
+            # Create a fresh instance that should load current env vars
+            email_service = EmailService()
+            
+            self.log_test(
+                "Email Service Mock Mode Check",
+                not email_service.mock_mode,
+                f"Email service mock mode: {email_service.mock_mode}"
+            )
+            
+            self.log_test(
+                "SendGrid API Key Loaded",
+                bool(email_service.api_key),
+                f"API key loaded: {'Yes' if email_service.api_key else 'No'}"
+            )
+            
+            self.log_test(
+                "Sender Email Configured",
+                bool(email_service.sender_email),
+                f"Sender email: {email_service.sender_email if email_service.sender_email else 'Not configured'}"
+            )
+            
+            # If not in mock mode, try to send a test email
+            if not email_service.mock_mode:
+                try:
+                    result = email_service.send_password_reset_email(
+                        email=TEST_EMAIL,
+                        reset_token="test_token_12345",
+                        user_name="Test User"
+                    )
+                    
+                    self.log_test(
+                        "Real Email Sending Test",
+                        result,
+                        f"SendGrid email sending result: {'Success' if result else 'Failed'}"
+                    )
+                    
+                    return result
+                except Exception as e:
+                    self.log_test(
+                        "Real Email Sending Test",
+                        False,
+                        f"SendGrid email sending failed: {str(e)}"
+                    )
+                    return False
+            else:
+                self.log_test(
+                    "Real Email Sending Test",
+                    False,
+                    "Cannot test real email sending - service is in mock mode"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test("SendGrid Real Email Sending", False, f"Error: {str(e)}")
+            return False
+
     def test_sendgrid_configuration(self):
         """Test SendGrid configuration by analyzing response patterns"""
         print("📬 TESTING SENDGRID CONFIGURATION")
