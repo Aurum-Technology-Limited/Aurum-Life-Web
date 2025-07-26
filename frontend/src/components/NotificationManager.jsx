@@ -196,23 +196,23 @@ const NotificationManager = () => {
 
       {/* Notification dropdown */}
       {showNotifications && (
-        <div className="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-96 overflow-hidden z-50">
-          <div className="p-4 border-b border-gray-700">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-96 overflow-hidden z-50">
+          <div className="p-3 sm:p-4 border-b border-gray-700">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-medium text-white">Action Items</h3>
+              <h3 className="text-base sm:text-lg font-medium text-white">Action Items</h3>
               <button
                 onClick={() => setShowNotifications(false)}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-white p-1"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-xs sm:text-sm text-gray-400">
               Tasks that need your attention
             </p>
           </div>
 
-          <div className="max-h-80 overflow-y-auto p-4">
+          <div className="max-h-80 overflow-y-auto p-3 sm:p-4">
             {loading ? (
               <div className="text-center py-6 text-gray-400">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
@@ -237,7 +237,7 @@ const NotificationManager = () => {
             )}
           </div>
 
-          <div className="p-3 border-t border-gray-700 bg-gray-900">
+          <div className="p-2 sm:p-3 border-t border-gray-700 bg-gray-900">
             <button
               onClick={loadActionableNotifications}
               disabled={loading}
