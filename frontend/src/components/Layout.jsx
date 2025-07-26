@@ -34,7 +34,6 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
     { id: 'projects', name: 'Projects', icon: FolderOpen, description: 'Active projects' },
     { id: 'project-templates', name: 'Templates', icon: FileText, description: 'Project templates' },
     { id: 'tasks', name: 'Tasks', icon: CheckSquare, description: 'Goals & productivity' },
-    { id: 'recurring-tasks', name: 'Recurring', icon: Repeat, description: 'Automated tasks' },
     { id: 'journal', name: 'Journal', icon: BookOpen, description: 'Reflection & writing' },
     { id: 'ai-coach', name: 'AI Coach', icon: Brain, description: 'Personal guidance' },
     { id: 'achievements', name: 'Achievements', icon: Trophy, description: 'Badges & rewards' }
