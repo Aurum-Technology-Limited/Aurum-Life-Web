@@ -69,7 +69,7 @@ class PerformanceTest {
       return this.results;
     }
     
-    const authHeaders = { 'Authorization': `Bearer ${loginData.access_token}` };
+    const authHeaders = { headers: { 'Authorization': `Bearer ${loginData.access_token}` } };
     
     // Test 3: Current user (should be fast)
     await this.testEndpoint('Current User', '/api/auth/me', authHeaders);
