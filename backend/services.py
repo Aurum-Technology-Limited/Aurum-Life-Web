@@ -483,19 +483,26 @@ class JournalService:
             
             # Trend data (last 30 days)
             created_at = doc.get("created_at")
-            if created_at and created_at >= thirty_days_ago:
-                mood_trend.append({
-                    "date": created_at.date().isoformat(),
-                    "mood": mood,
-                    "mood_score": {"optimistic": 5, "inspired": 5, "excited": 5, "grateful": 4, 
-                                  "motivated": 4, "peaceful": 4, "reflective": 3, "challenging": 2, 
-                                  "frustrated": 2, "anxious": 1}.get(mood, 3)
-                })
-                energy_trend.append({
-                    "date": created_at.date().isoformat(),
-                    "energy_level": energy,
-                    "energy_score": energy_map.get(energy, 3)
-                })
+            if created_at:
+                # Handle timezone-aware datetime
+                if hasattr(created_at, 'replace') and created_at.tzinfo:
+                    created_at_naive = created_at.replace(tzinfo=None)
+                else:
+                    created_at_naive = created_at
+                    
+                if created_at_naive >= thirty_days_ago:
+                    mood_trend.append({
+                        "date": created_at_naive.date().isoformat(),
+                        "mood": mood,
+                        "mood_score": {"optimistic": 5, "inspired": 5, "excited": 5, "grateful": 4, 
+                                      "motivated": 4, "peaceful": 4, "reflective": 3, "challenging": 2, 
+                                      "frustrated": 2, "anxious": 1}.get(mood, 3)
+                    })
+                    energy_trend.append({
+                        "date": created_at_naive.date().isoformat(),
+                        "energy_level": energy,
+                        "energy_score": energy_map.get(energy, 3)
+                    })
         
         # Most common mood
         most_common_mood = max(mood_counts.items(), key=lambda x: x[1])[0] if mood_counts else "reflective"
