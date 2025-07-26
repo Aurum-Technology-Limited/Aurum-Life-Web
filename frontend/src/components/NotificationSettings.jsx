@@ -208,8 +208,10 @@ const NotificationSettings = () => {
                   { key: 'task_due_notifications', label: 'Task Due', desc: 'When tasks are due now' },
                   { key: 'task_overdue_notifications', label: 'Task Overdue', desc: 'When tasks become overdue' },
                   { key: 'task_reminder_notifications', label: 'Task Reminders', desc: 'Advance reminders before due time' },
+                  { key: 'unblocked_task_notifications', label: 'Unblocked Tasks', desc: 'When task dependencies are complete' },
                   { key: 'project_deadline_notifications', label: 'Project Deadlines', desc: 'When project deadlines approach' },
-                  { key: 'recurring_task_notifications', label: 'Recurring Tasks', desc: 'New recurring task instances' }
+                  { key: 'recurring_task_notifications', label: 'Recurring Tasks', desc: 'New recurring task instances' },
+                  { key: 'achievement_notifications', label: 'Achievement Unlocks', desc: 'New badges and achievements' }
                 ].map(({ key, label, desc }) => (
                   <div key={key} className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg">
                     <div>
