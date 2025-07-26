@@ -981,10 +981,16 @@ class ProjectService:
         query = {"user_id": user_id}
         if area_id:
             query["area_id"] = area_id
-        if not include_archived:
-            query["archived"] = {"$ne": True}
             
-        projects_docs = await find_documents("projects", query)
+        # Get all projects for the user/area
+        all_projects = await find_documents("projects", query)
+        
+        # Filter archived projects on the client side
+        if not include_archived:
+            projects_docs = [project for project in all_projects if not project.get("archived", False)]
+        else:
+            projects_docs = all_projects
+            
         projects_docs.sort(key=lambda x: x.get("sort_order", 0))
         
         projects = []
