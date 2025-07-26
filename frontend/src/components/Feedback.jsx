@@ -75,21 +75,20 @@ const Feedback = () => {
   const selectedCategory = feedbackCategories.find(cat => cat.value === formData.category);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <MessageSquare className="h-12 w-12 text-yellow-500 mr-3" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              Feedback & Support
-            </h1>
-          </div>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Your thoughts and suggestions help us make Aurum Life better for everyone. 
-            We read every message and appreciate your input!
-          </p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <div className="flex items-center justify-center mb-4">
+          <MessageSquare className="h-12 w-12 text-yellow-500 mr-3" />
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+            Feedback & Support
+          </h1>
         </div>
+        <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          Your thoughts and suggestions help us make Aurum Life better for everyone. 
+          We read every message and appreciate your input!
+        </p>
+      </div>
 
         {/* Success Message */}
         {success && (
