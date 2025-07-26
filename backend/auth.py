@@ -48,10 +48,10 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) 
     try:
         token = credentials.credentials
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        user_id: str = payload.get("sub")
+        if user_id is None:
             raise credentials_exception
-        token_data = TokenData(email=email)
+        token_data = TokenData(user_id=user_id)
     except JWTError:
         raise credentials_exception
     
