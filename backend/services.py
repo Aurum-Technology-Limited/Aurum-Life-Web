@@ -2258,8 +2258,9 @@ class InsightsService:
                             task_status_breakdown["in_progress"] -= 1
                         else:
                             task_status_breakdown["todo"] -= 1
-                except:
-                    pass  # Skip invalid dates
+                except (ValueError, TypeError):
+                    # Skip invalid date formats
+                    continue
         
         # Build insights payload
         insights = {
