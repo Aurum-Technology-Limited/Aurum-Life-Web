@@ -2557,6 +2557,9 @@ agent_communication:
         - working: true
           agent: "main"
           comment: "USER & ACCOUNT MENU IMPLEMENTED! ✅ Created comprehensive UserMenu.jsx component with dropdown functionality triggered by clicking user avatar in bottom-left sidebar. Features: Professional user avatar with initials, user name & email display, three menu items (Profile & Settings with Settings icon, Send Feedback with MessageCircle icon, Logout with LogOut icon), clean styling with hover effects and visual indicators. ✅ Integration: Updated Layout.jsx to replace static user info with interactive UserMenu component, proper navigation handling through handleNavigation function, click-away and escape key support for menu closure. ✅ Backend Verification: 100% success rate for all User Menu dependencies - authentication (login endpoint & JWT validation), profile endpoints (user data retrieval & updates), feedback endpoint (fully operational), session management (proper user data handling). User menu ready for testing!"
+        - working: true
+          agent: "main"
+          comment: "AVATAR FUNCTIONALITY UPGRADE COMPLETE! ✅ Phase 1: Simplified UserMenu.jsx to remove dropdown menu - avatar now directly navigates to profile page on click (faster, more intuitive UX). ✅ Phase 2: Relocated secondary actions to Profile.jsx - added Send Feedback button (green, MessageCircle icon) and enhanced Sign Out button (red, LogOut icon) in Help & Account section with professional styling and descriptions. ✅ UX Improvement: Eliminated intermediate dropdown step, making profile access immediate while providing logical homes for secondary actions. Code implementation verified correct by testing agent - avatar → profile navigation working, both relocated buttons properly styled and functional."
 
   - task: "Today API Endpoints Functionality Fix"
     implemented: true
