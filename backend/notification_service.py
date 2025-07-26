@@ -558,5 +558,128 @@ class NotificationService:
         
         return notifications_sent
 
+    @staticmethod
+    async def create_notification(notification_data: dict) -> Optional[BrowserNotification]:
+        """Create a browser notification"""
+        try:
+            # Add timestamp and ID if not provided
+            if "id" not in notification_data:
+                from uuid import uuid4
+                notification_data["id"] = str(uuid4())
+            if "created_at" not in notification_data:
+                notification_data["created_at"] = datetime.utcnow()
+            if "updated_at" not in notification_data:
+                notification_data["updated_at"] = datetime.utcnow()
+            
+            # Create the notification document
+            await create_document("browser_notifications", notification_data)
+            
+            # Return as BrowserNotification object
+            return BrowserNotification(**notification_data)
+            
+        except Exception as e:
+            logger.error(f"Error creating browser notification: {e}")
+            return None
+    
+    @staticmethod
+    async def get_user_browser_notifications(user_id: str, unread_only: bool = False) -> List[dict]:
+        """Get browser notifications for a user"""
+        try:
+            filter_criteria = {"user_id": user_id}
+            if unread_only:
+                filter_criteria["is_read"] = False
+            
+            notifications = await find_documents("browser_notifications", filter_criteria)
+            
+            # Sort by created_at descending (newest first)
+            notifications = sorted(notifications, key=lambda x: x.get('created_at', datetime.min), reverse=True)
+            
+            return notifications
+            
+        except Exception as e:
+            logger.error(f"Error getting browser notifications for user {user_id}: {e}")
+            return []
+    
+    @staticmethod
+    async def mark_notification_read(user_id: str, notification_id: str) -> bool:
+        """Mark a notification as read"""
+        try:
+            success = await update_document(
+                "browser_notifications",
+                {"id": notification_id, "user_id": user_id},
+                {
+                    "is_read": True,
+                    "read_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow()
+                }
+            )
+            return success
+            
+        except Exception as e:
+            logger.error(f"Error marking notification {notification_id} as read: {e}")
+            return False
+    
+    @staticmethod
+    async def mark_all_notifications_read(user_id: str) -> int:
+        """Mark all notifications as read for a user"""
+        try:
+            # Get all unread notifications
+            unread_notifications = await find_documents("browser_notifications", {
+                "user_id": user_id,
+                "is_read": False
+            })
+            
+            count = 0
+            for notification in unread_notifications:
+                success = await update_document(
+                    "browser_notifications",
+                    {"id": notification["id"], "user_id": user_id},
+                    {
+                        "is_read": True,
+                        "read_at": datetime.utcnow(),
+                        "updated_at": datetime.utcnow()
+                    }
+                )
+                if success:
+                    count += 1
+            
+            return count
+            
+        except Exception as e:
+            logger.error(f"Error marking all notifications as read for user {user_id}: {e}")
+            return 0
+    
+    @staticmethod
+    async def delete_notification(user_id: str, notification_id: str) -> bool:
+        """Delete a specific notification"""
+        try:
+            success = await delete_document("browser_notifications", {
+                "id": notification_id,
+                "user_id": user_id
+            })
+            return success
+            
+        except Exception as e:
+            logger.error(f"Error deleting notification {notification_id}: {e}")
+            return False
+    
+    @staticmethod
+    async def clear_all_notifications(user_id: str) -> int:
+        """Clear all notifications for a user"""
+        try:
+            # Get all notifications to count them
+            all_notifications = await find_documents("browser_notifications", {
+                "user_id": user_id
+            })
+            
+            # Delete all notifications for the user
+            await delete_document("browser_notifications", {"user_id": user_id})
+            
+            return len(all_notifications)
+            
+        except Exception as e:
+            logger.error(f"Error clearing all notifications for user {user_id}: {e}")
+            return 0
+
 # Create global notification service instance
 notification_service = NotificationService()
