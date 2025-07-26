@@ -1094,6 +1094,8 @@ class ProjectService:
 
     @staticmethod
     async def get_user_projects(user_id: str, area_id: str = None, include_archived: bool = False) -> List[ProjectResponse]:
+        """OPTIMIZED VERSION - Batch fetch all data to eliminate N+1 queries"""
+        
         query = {"user_id": user_id}
         if area_id:
             query["area_id"] = area_id
@@ -1109,10 +1111,58 @@ class ProjectService:
             
         projects_docs.sort(key=lambda x: x.get("sort_order", 0))
         
+        if not projects_docs:
+            return []
+        
+        # OPTIMIZATION: Batch fetch all related data instead of N individual queries
+        project_ids = [project["id"] for project in projects_docs]
+        area_ids = list(set([project.get("area_id") for project in projects_docs if project.get("area_id")]))
+        
+        # Batch fetch areas (1 query instead of N)
+        areas_dict = {}
+        if area_ids:
+            try:
+                # Try batch fetch first
+                areas_docs = await find_documents("areas", {"user_id": user_id})
+                areas_dict = {a["id"]: a for a in areas_docs if a["id"] in area_ids}
+            except Exception as e:
+                logger.warning(f"Batch areas fetch failed: {e}")
+        
+        # Batch fetch tasks for all projects (1 query instead of N)
+        tasks_dict = {}
+        try:
+            all_tasks = await find_documents("tasks", {"user_id": user_id})
+            for task in all_tasks:
+                project_id = task.get("project_id")
+                if project_id in project_ids:
+                    if project_id not in tasks_dict:
+                        tasks_dict[project_id] = []
+                    tasks_dict[project_id].append(task)
+        except Exception as e:
+            logger.warning(f"Batch tasks fetch failed: {e}")
+        
+        # Build project responses efficiently
         projects = []
         for doc in projects_docs:
-            project = await ProjectService._build_project_response(doc)
-            projects.append(project)
+            project_response = ProjectResponse(**doc)
+            
+            # Add area name from batch-fetched data
+            if project_response.area_id and project_response.area_id in areas_dict:
+                project_response.area_name = areas_dict[project_response.area_id]["name"]
+            
+            # Add task counts from batch-fetched data
+            project_tasks = tasks_dict.get(project_response.id, [])
+            project_response.task_count = len(project_tasks)
+            project_response.completed_task_count = len([t for t in project_tasks if t.get("status") == "completed"])
+            
+            # Calculate completion percentage
+            if project_response.task_count > 0:
+                completion_rate = (project_response.completed_task_count / project_response.task_count) * 100
+                project_response.completion_percentage = round(completion_rate, 1)
+            else:
+                project_response.completion_percentage = 0.0
+            
+            projects.append(project_response)
         
         return projects
 
