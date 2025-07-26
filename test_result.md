@@ -2602,6 +2602,9 @@ agent_communication:
         - working: true
           agent: "main"
           comment: "RECURRING TASK CONFIGURATION UI COMPLETE! ✅ Phase 1: Added comprehensive recurrence UI to Tasks.jsx with checkbox toggle, recurrence type selection (daily/weekly/monthly), interval configuration, weekday selection for weekly tasks, monthly day specification, advanced options (end date, max occurrences), and live preview of recurrence patterns. ✅ Phase 2: Updated backend Task models (Task, TaskCreate, TaskUpdate) to support new recurrence_pattern field while maintaining backward compatibility with legacy fields. ✅ Backend Integration: 100% success rate - all recurrence patterns (daily, weekly, monthly) working correctly with proper validation and data persistence. ✅ UI Features: Clean integration with existing form, collapsible advanced options, visual feedback with icons and previews, intuitive controls with real-time pattern display. Users can now configure complex recurring schedules directly from task creation/editing forms!"
+        - working: true
+          agent: "main"
+          comment: "TASK MODAL UI IMPROVEMENTS COMPLETE! ✅ Fixed UI issue where Save/Cancel buttons disappeared when creating recurring tasks. ✅ Modal Width: Expanded from max-w-md (448px) to max-w-4xl (896px) for better space utilization. ✅ Layout Reorganization: Implemented responsive grid layouts - Task Name/Description (full width), Project/Priority/Due Date (3-column grid), Due Time/Category (2-column grid), Recurrence Config (horizontal grids). ✅ Button Visibility: Save/Cancel buttons now always visible at bottom with proper positioning outside scrollable area. ✅ Scrollable Content: Added max-h-[90vh] overflow-y-auto for long forms while maintaining button accessibility. ✅ Code Review: Testing agent confirmed all improvements properly implemented and ready for production use."
 
   - task: "Today API Endpoints Functionality Fix"
     implemented: true
