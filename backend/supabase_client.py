@@ -9,8 +9,8 @@ from supabase import create_client, Client
 from dotenv import load_dotenv
 import logging
 
-# Load Supabase environment variables
-load_dotenv('.env.supabase')
+# Load environment variables from main .env file
+load_dotenv('.env')
 
 logger = logging.getLogger(__name__)
 
