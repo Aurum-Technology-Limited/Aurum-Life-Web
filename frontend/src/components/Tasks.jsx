@@ -789,12 +789,18 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                 disabled={loading}
               >
                 <option value="personal">Personal</option>
-                <option value="learning">Learning</option>
-                <option value="health">Health</option>
                 <option value="work">Work</option>
-                <option value="mindfulness">Mindfulness</option>
-                <option value="coaching">Coaching</option>
-                <option value="planning">Planning</option>
+                <option value="health">Health</option>
+                <option value="finance">Finance</option>
+                <option value="learning">Learning</option>
+                <option value="family">Family</option>
+                <option value="social">Social</option>
+                <option value="creative">Creative</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="spiritual">Spiritual</option>
+                <option value="travel">Travel</option>
+                <option value="goals">Goals</option>
+                <option value="urgent">Urgent</option>
               </select>
             </div>
             
