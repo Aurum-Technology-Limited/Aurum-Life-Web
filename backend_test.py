@@ -298,6 +298,68 @@ class PasswordResetEmailTester:
             self.log_test("Email Template and URL Construction", False, f"Error: {str(e)}")
             return False
 
+    def test_backend_email_service_errors(self):
+        """Check backend logs for email service errors"""
+        print("🔍 CHECKING BACKEND EMAIL SERVICE ERRORS")
+        print("=" * 60)
+        
+        try:
+            # Make a password reset request first
+            reset_data = {"email": TEST_EMAIL}
+            response = self.session.post(
+                f"{BACKEND_URL}/auth/forgot-password",
+                json=reset_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            # Check backend logs for email-related errors
+            import subprocess
+            try:
+                result = subprocess.run(
+                    ["tail", "-n", "20", "/var/log/supervisor/backend.out.log"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                
+                log_content = result.stdout
+                
+                # Look for specific email service errors
+                email_errors = []
+                if "object bool can't be used in 'await' expression" in log_content:
+                    email_errors.append("Async/await error in email service")
+                if "Failed to send password reset email" in log_content:
+                    email_errors.append("Email sending failure")
+                if "MOCK EMAIL" in log_content:
+                    email_errors.append("Email service running in mock mode")
+                
+                if email_errors:
+                    self.log_test(
+                        "Backend Email Service Errors",
+                        False,
+                        f"Errors detected: {', '.join(email_errors)}"
+                    )
+                    return False
+                else:
+                    self.log_test(
+                        "Backend Email Service Errors",
+                        True,
+                        "No email service errors detected in backend logs"
+                    )
+                    return True
+                    
+            except subprocess.TimeoutExpired:
+                self.log_test(
+                    "Backend Email Service Errors",
+                    False,
+                    "Timeout while checking backend logs"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test("Backend Email Service Errors", False, f"Error: {str(e)}")
+            return False
+
     def test_sendgrid_configuration(self):
         """Test SendGrid configuration by analyzing response patterns"""
         print("📬 TESTING SENDGRID CONFIGURATION")
