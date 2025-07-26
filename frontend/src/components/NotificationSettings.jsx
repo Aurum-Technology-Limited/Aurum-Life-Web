@@ -169,233 +169,232 @@ const NotificationSettings = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Notification Channels */}
         <div className="space-y-6">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
-                <Settings className="h-5 w-5 mr-2" style={{ color: '#F4B400' }} />
-                Notification Channels
-              </h2>
+          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
+              <Settings className="h-5 w-5 mr-2" style={{ color: '#F4B400' }} />
+              Notification Channels
+            </h2>
 
-              <div className="space-y-4">
-                {/* Browser Notifications */}
-                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Monitor className="h-5 w-5 text-blue-400" />
-                    <div>
-                      <h3 className="font-medium text-white">Browser Notifications</h3>
-                      <p className="text-sm text-gray-400">
-                        Show desktop notifications in your browser
-                      </p>
-                    </div>
+            <div className="space-y-4">
+              {/* Browser Notifications */}
+              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Monitor className="h-5 w-5 text-blue-400" />
+                  <div>
+                    <h3 className="font-medium text-white">Browser Notifications</h3>
+                    <p className="text-sm text-gray-400">
+                      Show desktop notifications in your browser
+                    </p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.browser_notifications}
-                      onChange={(e) => handleInputChange('browser_notifications', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
                 </div>
-
-                {/* Email Notifications */}
-                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-green-400" />
-                    <div>
-                      <h3 className="font-medium text-white">Email Notifications</h3>
-                      <p className="text-sm text-gray-400">
-                        Receive notifications via email
-                      </p>
-                    </div>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.email_notifications}
-                      onChange={(e) => handleInputChange('email_notifications', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                  </label>
-                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.browser_notifications}
+                    onChange={(e) => handleInputChange('browser_notifications', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
               </div>
-            </div>
 
-            {/* Notification Types */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
-                <Bell className="h-5 w-5 mr-2" style={{ color: '#F4B400' }} />
-                Notification Types
-              </h2>
-
-              <div className="space-y-3">
-                {[
-                  { key: 'task_due_notifications', label: 'Task Due', desc: 'When tasks are due now' },
-                  { key: 'task_overdue_notifications', label: 'Task Overdue', desc: 'When tasks become overdue' },
-                  { key: 'task_reminder_notifications', label: 'Task Reminders', desc: 'Advance reminders before due time' },
-                  { key: 'unblocked_task_notifications', label: 'Unblocked Tasks', desc: 'When task dependencies are complete' },
-                  { key: 'project_deadline_notifications', label: 'Project Deadlines', desc: 'When project deadlines approach' },
-                  { key: 'recurring_task_notifications', label: 'Recurring Tasks', desc: 'New recurring task instances' },
-                  { key: 'achievement_notifications', label: 'Achievement Unlocks', desc: 'New badges and achievements' }
-                ].map(({ key, label, desc }) => (
-                  <div key={key} className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg">
-                    <div>
-                      <h4 className="font-medium text-white">{label}</h4>
-                      <p className="text-sm text-gray-400">{desc}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData[key]}
-                        onChange={(e) => handleInputChange(key, e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
-                    </label>
+              {/* Email Notifications */}
+              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-5 w-5 text-green-400" />
+                  <div>
+                    <h3 className="font-medium text-white">Email Notifications</h3>
+                    <p className="text-sm text-gray-400">
+                      Receive notifications via email
+                    </p>
                   </div>
-                ))}
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.email_notifications}
+                    onChange={(e) => handleInputChange('email_notifications', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                </label>
               </div>
             </div>
           </div>
 
-          {/* Timing & Preferences */}
-          <div className="space-y-6">
-            {/* Timing Settings */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
-                <Clock className="h-5 w-5 mr-2" style={{ color: '#F4B400' }} />
-                Timing Settings
-              </h2>
+          {/* Notification Types */}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
+              <Bell className="h-5 w-5 mr-2" style={{ color: '#F4B400' }} />
+              Notification Types
+            </h2>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Reminder Advance Time (minutes)
+            <div className="space-y-3">
+              {[
+                { key: 'task_due_notifications', label: 'Task Due', desc: 'When tasks are due now' },
+                { key: 'task_overdue_notifications', label: 'Task Overdue', desc: 'When tasks become overdue' },
+                { key: 'task_reminder_notifications', label: 'Task Reminders', desc: 'Advance reminders before due time' },
+                { key: 'unblocked_task_notifications', label: 'Unblocked Tasks', desc: 'When task dependencies are complete' },
+                { key: 'project_deadline_notifications', label: 'Project Deadlines', desc: 'When project deadlines approach' },
+                { key: 'recurring_task_notifications', label: 'Recurring Tasks', desc: 'New recurring task instances' },
+                { key: 'achievement_notifications', label: 'Achievement Unlocks', desc: 'New badges and achievements' }
+              ].map(({ key, label, desc }) => (
+                <div key={key} className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg">
+                  <div>
+                    <h4 className="font-medium text-white">{label}</h4>
+                    <p className="text-sm text-gray-400">{desc}</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData[key]}
+                      onChange={(e) => handleInputChange(key, e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
                   </label>
-                  <input
-                    type="number"
-                    min="5"
-                    max="1440"
-                    value={formData.reminder_advance_time}
-                    onChange={(e) => handleInputChange('reminder_advance_time', parseInt(e.target.value))}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    How early to remind you before tasks are due
-                  </p>
                 </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">
-                      Quiet Hours Start
-                    </label>
-                    <input
-                      type="time"
-                      value={formData.quiet_hours_start}
-                      onChange={(e) => handleInputChange('quiet_hours_start', e.target.value)}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">
-                      Quiet Hours End
-                    </label>
-                    <input
-                      type="time"
-                      value={formData.quiet_hours_end}
-                      onChange={(e) => handleInputChange('quiet_hours_end', e.target.value)}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-gray-400">
-                  No notifications will be sent during quiet hours
+        {/* Timing & Preferences */}
+        <div className="space-y-6">
+          {/* Timing Settings */}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
+              <Clock className="h-5 w-5 mr-2" style={{ color: '#F4B400' }} />
+              Timing Settings
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Reminder Advance Time (minutes)
+                </label>
+                <input
+                  type="number"
+                  min="5"
+                  max="1440"
+                  value={formData.reminder_advance_time}
+                  onChange={(e) => handleInputChange('reminder_advance_time', parseInt(e.target.value))}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  How early to remind you before tasks are due
                 </p>
               </div>
-            </div>
 
-            {/* Digest Settings */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
-                <Mail className="h-5 w-5 mr-2" style={{ color: '#F4B400' }} />
-                Email Digests
-              </h2>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg">
-                  <div>
-                    <h4 className="font-medium text-white">Daily Digest</h4>
-                    <p className="text-sm text-gray-400">Summary of daily tasks and progress</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.daily_digest}
-                      onChange={(e) => handleInputChange('daily_digest', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">
+                    Quiet Hours Start
                   </label>
+                  <input
+                    type="time"
+                    value={formData.quiet_hours_start}
+                    onChange={(e) => handleInputChange('quiet_hours_start', e.target.value)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                  />
                 </div>
-
-                <div className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg">
-                  <div>
-                    <h4 className="font-medium text-white">Weekly Digest</h4>
-                    <p className="text-sm text-gray-400">Weekly progress summary and insights</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.weekly_digest}
-                      onChange={(e) => handleInputChange('weekly_digest', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">
+                    Quiet Hours End
                   </label>
+                  <input
+                    type="time"
+                    value={formData.quiet_hours_end}
+                    onChange={(e) => handleInputChange('quiet_hours_end', e.target.value)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500"
+                  />
                 </div>
               </div>
+              <p className="text-xs text-gray-400">
+                No notifications will be sent during quiet hours
+              </p>
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-white">
-                Actions
-              </h2>
+          {/* Digest Settings */}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
+              <Mail className="h-5 w-5 mr-2" style={{ color: '#F4B400' }} />
+              Email Digests
+            </h2>
 
-              <div className="space-y-3">
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-colors ${
-                    saved 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-yellow-500 hover:bg-yellow-600 text-black'
-                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {saved ? (
-                    <>
-                      <CheckCircle2 className="h-5 w-5" />
-                      <span>Saved!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-5 w-5" />
-                      <span>{saving ? 'Saving...' : 'Save Settings'}</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  onClick={handleTestNotification}
-                  disabled={testLoading}
-                  className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="h-5 w-5" />
-                  <span>{testLoading ? 'Sending...' : 'Send Test Notification'}</span>
-                </button>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg">
+                <div>
+                  <h4 className="font-medium text-white">Daily Digest</h4>
+                  <p className="text-sm text-gray-400">Summary of daily tasks and progress</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.daily_digest}
+                    onChange={(e) => handleInputChange('daily_digest', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                </label>
               </div>
+
+              <div className="flex items-center justify-between p-3 hover:bg-gray-800/30 rounded-lg">
+                <div>
+                  <h4 className="font-medium text-white">Weekly Digest</h4>
+                  <p className="text-sm text-gray-400">Weekly progress summary and insights</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.weekly_digest}
+                    onChange={(e) => handleInputChange('weekly_digest', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-white">
+              Actions
+            </h2>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                  saved 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-yellow-500 hover:bg-yellow-600 text-black'
+                } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {saved ? (
+                  <>
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span>Saved!</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-5 w-5" />
+                    <span>{saving ? 'Saving...' : 'Save Settings'}</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleTestNotification}
+                disabled={testLoading}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Send className="h-5 w-5" />
+                <span>{testLoading ? 'Sending...' : 'Send Test Notification'}</span>
+              </button>
             </div>
           </div>
         </div>
