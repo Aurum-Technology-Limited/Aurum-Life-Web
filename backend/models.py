@@ -1012,6 +1012,10 @@ class ResourceCreate(BaseModel):
     description: str = ""
     tags: List[str] = []
     folder_path: str = "/"
+    
+    # Contextual attachment fields
+    parent_id: Optional[str] = None  # ID of parent entity
+    parent_type: Optional[str] = None  # Type of parent entity ('project', 'task')
 
 class ResourceUpdate(BaseModel):
     filename: Optional[str] = None
