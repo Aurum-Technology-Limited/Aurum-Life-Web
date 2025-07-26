@@ -442,8 +442,11 @@ class Task(BaseDocument):
     completed: bool = False
     completed_at: Optional[datetime] = None
     dependency_task_ids: List[str] = []  # Tasks that must be completed first
+    # Legacy recurrence fields (maintained for backward compatibility)
     recurrence: RecurrenceEnum = RecurrenceEnum.none
     recurrence_interval: int = 1
+    # New enhanced recurrence pattern
+    recurrence_pattern: Optional[RecurrencePattern] = None
     next_due_date: Optional[datetime] = None
     kanban_column: str = "to_do"  # to_do, in_progress, review, done
     sort_order: int = 0
