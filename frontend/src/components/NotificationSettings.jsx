@@ -13,7 +13,7 @@ import {
   VolumeX,
   CheckCircle2,
   Save,
-  Test as TestIcon,
+  Send,
   Settings,
   Loader,
   AlertCircle
