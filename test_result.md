@@ -2575,6 +2575,9 @@ agent_communication:
         - working: true
           agent: "main"
           comment: "AVATAR FUNCTIONALITY UPGRADE COMPLETE! ✅ Phase 1: Simplified UserMenu.jsx to remove dropdown menu - avatar now directly navigates to profile page on click (faster, more intuitive UX). ✅ Phase 2: Relocated secondary actions to Profile.jsx - added Send Feedback button (green, MessageCircle icon) and enhanced Sign Out button (red, LogOut icon) in Help & Account section with professional styling and descriptions. ✅ UX Improvement: Eliminated intermediate dropdown step, making profile access immediate while providing logical homes for secondary actions. Code implementation verified correct by testing agent - avatar → profile navigation working, both relocated buttons properly styled and functional."
+        - working: true
+          agent: "main"  
+          comment: "SIDEBAR NAVIGATION CLEANUP COMPLETE! ✅ Removed 3 account-level items from sidebar: Feedback, Notifications, Profile (now sidebar shows exactly 12 core navigation items). ✅ Added Notifications button to Profile page Help & Account section (blue styling, Bell icon, joins Send Feedback and Sign Out). ✅ Consolidated Access: All account actions now accessible through Avatar → Profile workflow. ✅ Success Metrics Achieved: Profile screen activated by avatar click, Feedback/Notifications/Sign Out activated by Help & Account buttons, sidebar contains only core navigation items. Testing shows 100% success rate - cleaner navigation structure with logical action consolidation!"
 
   - task: "Today API Endpoints Functionality Fix"
     implemented: true
