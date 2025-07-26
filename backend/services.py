@@ -853,11 +853,15 @@ class AreaService:
 
     @staticmethod
     async def get_user_areas(user_id: str, include_projects: bool = False, include_archived: bool = False) -> List[AreaResponse]:
-        query = {"user_id": user_id}
+        # Get all areas for the user
+        all_areas = await find_documents("areas", {"user_id": user_id})
+        
+        # Filter archived areas on the client side
         if not include_archived:
-            query["archived"] = {"$ne": True}
+            areas_docs = [area for area in all_areas if not area.get("archived", False)]
+        else:
+            areas_docs = all_areas
             
-        areas_docs = await find_documents("areas", query)
         areas_docs.sort(key=lambda x: x.get("sort_order", 0))
         
         areas = []
