@@ -589,6 +589,7 @@ class PasswordResetEmailTester:
             self.test_password_reset_with_invalid_email,
             self.test_email_service_integration,
             self.test_backend_email_service_errors,
+            self.test_sendgrid_real_email_sending,
             self.test_sendgrid_configuration,
             self.test_email_template_and_url_construction,
             self.test_end_to_end_password_reset_flow
