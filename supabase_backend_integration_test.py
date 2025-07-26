@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://d8dc1b40-f7f7-4129-a298-e5d34fca13ef.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://ef742aff-654d-4d46-b965-c2befb9d14a8.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class SupabaseBackendTestSuite:

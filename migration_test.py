@@ -11,7 +11,7 @@ from datetime import datetime
 import uuid
 
 # Configuration
-BACKEND_URL = "https://d8dc1b40-f7f7-4129-a298-e5d34fca13ef.preview.emergentagent.com/api"
+BACKEND_URL = "https://ef742aff-654d-4d46-b965-c2befb9d14a8.preview.emergentagent.com/api"
 
 class MigrationTester:
     def __init__(self):
