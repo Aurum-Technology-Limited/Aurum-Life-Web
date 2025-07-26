@@ -426,10 +426,10 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-900 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-gray-800">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto border border-gray-800">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-bold text-white">
             {task ? 'Edit Task' : 'Create New Task'}
           </h2>
           <button
@@ -441,7 +441,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Task Name and Description - Full Width */}
           <div className="space-y-4">
             <div>
