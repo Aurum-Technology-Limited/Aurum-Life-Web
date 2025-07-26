@@ -63,7 +63,6 @@ class SupabaseDirectTestSuite:
         try:
             # Test create operation
             test_user_data = {
-                "email": "direct.test@aurumlife.com",
                 "username": "directtest",
                 "first_name": "Direct",
                 "last_name": "Test",
