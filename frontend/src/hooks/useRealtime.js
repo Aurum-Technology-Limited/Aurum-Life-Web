@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import SupabaseAPI from '../services/supabaseApi';
 
 export const useRealtime = (table, options = {}) => {
