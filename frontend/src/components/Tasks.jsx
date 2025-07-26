@@ -622,31 +622,30 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             {/* Recurrence Configuration */}
             {recurrenceEnabled && (
               <div className="space-y-4">
-                {/* Recurrence Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Repeat Pattern
-                  </label>
-                  <select
-                    value={recurrenceConfig.type}
-                    onChange={(e) => setRecurrenceConfig({ 
-                      ...recurrenceConfig, 
-                      type: e.target.value,
-                      // Reset specific configurations when changing type
-                      weekdays: e.target.value === 'weekly' ? recurrenceConfig.weekdays : [],
-                      month_day: e.target.value === 'monthly' ? recurrenceConfig.month_day : null
-                    })}
-                    className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
-                    disabled={loading}
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
-                </div>
-                
+                {/* Recurrence Type and Interval Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Interval */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Repeat Pattern
+                    </label>
+                    <select
+                      value={recurrenceConfig.type}
+                      onChange={(e) => setRecurrenceConfig({ 
+                        ...recurrenceConfig, 
+                        type: e.target.value,
+                        // Reset specific configurations when changing type
+                        weekdays: e.target.value === 'weekly' ? recurrenceConfig.weekdays : [],
+                        month_day: e.target.value === 'monthly' ? recurrenceConfig.month_day : null
+                      })}
+                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                      disabled={loading}
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Every
@@ -664,7 +663,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                         className="flex-1 px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
                         disabled={loading}
                       />
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-gray-400 w-16">
                         {recurrenceConfig.type === 'daily' ? 'day(s)' :
                          recurrenceConfig.type === 'weekly' ? 'week(s)' :
                          'month(s)'}
