@@ -244,17 +244,16 @@ const Feedback = () => {
           </form>
         </div>
 
-        {/* Footer Note */}
-        <div className="text-center mt-8 p-6 bg-gray-900/30 rounded-lg border border-gray-800">
-          <h3 className="text-lg font-semibold text-yellow-500 mb-2">We Value Your Input</h3>
-          <p className="text-gray-400 text-sm max-w-2xl mx-auto">
-            Your feedback is sent directly to our development team. We review every submission and 
-            use your insights to prioritize improvements and new features for Aurum Life.
-          </p>
-          <p className="text-xs text-gray-500 mt-3">
-            Response time: 1-3 business days for most inquiries
-          </p>
-        </div>
+      {/* Footer Note */}
+      <div className="text-center mt-8 p-6 bg-gray-900/30 rounded-lg border border-gray-800">
+        <h3 className="text-lg font-semibold text-yellow-500 mb-2">We Value Your Input</h3>
+        <p className="text-gray-400 text-sm max-w-2xl mx-auto">
+          Your feedback is sent directly to our development team. We review every submission and 
+          use your insights to prioritize improvements and new features for Aurum Life.
+        </p>
+        <p className="text-xs text-gray-500 mt-3">
+          Response time: 1-3 business days for most inquiries
+        </p>
       </div>
     </div>
   );
