@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Target, BookOpen, Trophy, Flame, Loader2 } from 'lucide-react';
-import { dashboardAPI, handleApiError } from '../services/api';
+import emergencyAPI from '../services/emergencyApi';
 import AiCoachCard from './AiCoachCard';
 
 const StatCard = ({ title, value, subtitle, icon: Icon, trend, loading = false }) => (
