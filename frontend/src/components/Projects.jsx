@@ -1414,7 +1414,7 @@ const Projects = ({ onSectionChange }) => {
                     onClick={() => handleArchiveProject(selectedProjectForView)}
                     className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 flex items-center gap-2"
                   >
-                    {selectedProjectForView.archived ? <Unarchive className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                    <Archive className="h-4 w-4" />
                     {selectedProjectForView.archived ? 'Unarchive' : 'Archive'}
                   </button>
                 </div>
