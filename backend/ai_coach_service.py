@@ -62,19 +62,43 @@ Remember: You're helping someone build their best life. Be their guide, motivato
     @staticmethod
     async def get_todays_priorities(user_id: str, limit: int = 3) -> List[Dict]:
         """
-        Get AI-powered priority recommendations using Gemini 2.0-flash with full user context
+        OPTIMIZED VERSION - Get AI-powered priority recommendations with minimal queries
         """
         try:
-            # Get comprehensive user data for AI context
-            tasks = await find_documents(
-                "tasks", 
-                {
-                    "user_id": user_id,
-                    "completed": False
-                }
-            )
+            # OPTIMIZATION: Get all user data in parallel to reduce total time
+            import asyncio
             
-            # Filter out archived tasks client-side (since Supabase doesn't have archived column)
+            # Execute all queries concurrently instead of sequentially
+            tasks_query = find_documents("tasks", {"user_id": user_id, "completed": False})
+            projects_query = find_documents("projects", {"user_id": user_id})
+            areas_query = find_documents("areas", {"user_id": user_id})
+            pillars_query = find_documents("pillars", {"user_id": user_id})
+            
+            # Wait for all queries to complete (parallel execution)
+            try:
+                tasks, projects, areas, pillars = await asyncio.gather(
+                    tasks_query, projects_query, areas_query, pillars_query,
+                    return_exceptions=True
+                )
+                
+                # Handle any query failures gracefully
+                if isinstance(tasks, Exception):
+                    logger.warning(f"Tasks query failed: {tasks}")
+                    tasks = []
+                if isinstance(projects, Exception):
+                    projects = []
+                if isinstance(areas, Exception):
+                    areas = []
+                if isinstance(pillars, Exception):
+                    pillars = []
+                    
+            except Exception as e:
+                logger.warning(f"Parallel queries failed: {e}")
+                # Fallback to simpler approach
+                tasks = await find_documents("tasks", {"user_id": user_id, "completed": False})
+                projects, areas, pillars = [], [], []
+            
+            # Filter out archived tasks client-side
             tasks = [task for task in tasks if not task.get("archived", False)]
             
             if not tasks:
@@ -86,15 +110,13 @@ Remember: You're helping someone build their best life. Be their guide, motivato
                     'reasons': []
                 }]
             
-            # Get supporting data for rich context
-            projects = await find_documents("projects", {"user_id": user_id})
-            areas = await find_documents("areas", {"user_id": user_id})
-            pillars = await find_documents("pillars", {"user_id": user_id})
-            
             # Create lookup dictionaries
             project_lookup = {p["id"]: p for p in projects}
             area_lookup = {a["id"]: a for a in areas}
             pillar_lookup = {p["id"]: p for p in pillars}
+            
+            # PERFORMANCE OPTIMIZATION: Limit to top 10 tasks to prevent timeout
+            tasks = tasks[:10]
             
             # Calculate basic scores (same algorithm as before)
             today = datetime.utcnow().date()
