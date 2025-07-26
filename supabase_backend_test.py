@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://1df32e51-ab85-4216-899a-0bb9c1ad2e08.aurumai.app')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'http://localhost:8001')
 API_BASE = f"{BACKEND_URL}/api"
 
 class SupabaseMigrationTestSuite:
