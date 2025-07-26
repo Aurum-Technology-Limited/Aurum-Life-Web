@@ -109,28 +109,17 @@ const Login = ({ switchToRegister }) => {
     setForgotPasswordMessage('');
     setError('');
 
-    try {
-      const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || '';
-      
-      const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: forgotPasswordEmail }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setForgotPasswordMessage(data.message);
-      } else {
-        setError(data.detail || 'Failed to send reset email');
-      }
-    } catch (error) {
-      setError('Network error. Please try again.');
+    const { forgotPassword } = useAuth();
+    const result = await forgotPassword(forgotPasswordEmail);
+    
+    if (result.success) {
+      setForgotPasswordMessage(result.message);
+      setShowForgotPassword(false);
+      setForgotPasswordEmail('');
+    } else {
+      setError(result.error);
     }
-
+    
     setForgotPasswordLoading(false);
   };
 
