@@ -43,9 +43,6 @@ def setup_schema():
         if not conn:
             raise Exception("All connection attempts failed")
         
-        logger.info("🔌 Connecting to Supabase PostgreSQL...")
-        conn = psycopg2.connect(db_url)
-        
         # Read and execute schema
         with open('supabase_schema.sql', 'r') as f:
             schema_sql = f.read()
