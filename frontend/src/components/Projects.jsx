@@ -121,7 +121,7 @@ const Projects = ({ onSectionChange }) => {
 
   const loadTemplates = async () => {
     try {
-      const response = await projectTemplatesAPI.getAll();
+      const response = await projectTemplatesAPI.getTemplates();
       setTemplates(response.data || []);
     } catch (err) {
       console.error('Error loading templates:', err);
