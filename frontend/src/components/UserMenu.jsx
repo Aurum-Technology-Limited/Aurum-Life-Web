@@ -1,75 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { User, MessageCircle, LogOut, Settings } from 'lucide-react';
+import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 const UserMenu = ({ onNavigate }) => {
-  const { user, logout } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
-  const buttonRef = useRef(null);
+  const { user } = useAuth();
 
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
-
-  // Close menu on escape key
-  useEffect(() => {
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [isOpen]);
-
-  const handleToggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const handleMenuItemClick = (action) => {
-    setIsOpen(false); // Close menu first
-    
-    switch (action) {
-      case 'profile':
-        onNavigate('profile');
-        break;
-      case 'feedback':
-        onNavigate('feedback');
-        break;
-      case 'logout':
-        handleLogout();
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      // Logout function should handle redirect to login page
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+  // Direct navigation to profile on avatar click
+  const handleAvatarClick = () => {
+    onNavigate('profile');
   };
 
   // Get user initials for avatar
@@ -109,33 +46,21 @@ const UserMenu = ({ onNavigate }) => {
 
   return (
     <div className="relative">
-      {/* User Avatar Button */}
+      {/* User Avatar Button - Direct to Profile */}
       <button
-        ref={buttonRef}
-        onClick={handleToggleMenu}
-        className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
-          isOpen
-            ? 'bg-yellow-500/20 border border-yellow-500/30'
-            : 'hover:bg-gray-800/50 border border-transparent'
-        }`}
-        aria-label="User menu"
-        aria-expanded={isOpen}
-        aria-haspopup="true"
+        onClick={handleAvatarClick}
+        className="w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 hover:bg-gray-800/50 border border-transparent hover:border-gray-700 group"
+        aria-label="Go to profile"
+        title="Click to view your profile"
       >
         {/* Avatar Circle */}
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-200 ${
-          isOpen
-            ? 'bg-yellow-500 text-black'
-            : 'bg-gradient-to-br from-yellow-500 to-yellow-600 text-white'
-        }`}>
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center font-semibold text-sm text-white transition-transform duration-200 group-hover:scale-105">
           {getUserInitials()}
         </div>
         
         {/* User Info */}
         <div className="flex-1 text-left min-w-0">
-          <p className={`font-medium text-sm truncate transition-colors duration-200 ${
-            isOpen ? 'text-yellow-500' : 'text-white'
-          }`}>
+          <p className="font-medium text-sm truncate text-white group-hover:text-yellow-400 transition-colors duration-200">
             {getUserDisplayName()}
           </p>
           <p className="text-xs text-gray-400 truncate">
@@ -143,78 +68,13 @@ const UserMenu = ({ onNavigate }) => {
           </p>
         </div>
 
-        {/* Menu Indicator */}
-        <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-          isOpen ? 'bg-yellow-500' : 'bg-gray-600 group-hover:bg-gray-500'
-        }`} />
+        {/* Profile Indicator Arrow */}
+        <div className="w-4 h-4 text-gray-500 group-hover:text-yellow-400 transition-colors duration-200">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
       </button>
-
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <>
-          {/* Backdrop for mobile */}
-          <div className="fixed inset-0 z-40 bg-black/20 md:hidden" />
-          
-          {/* Menu Panel */}
-          <div
-            ref={menuRef}
-            className="absolute bottom-full left-0 w-full mb-2 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
-            role="menu"
-            aria-orientation="vertical"
-          >
-            {/* Menu Items */}
-            <div className="py-2">
-              {/* Profile & Settings */}
-              <button
-                onClick={() => handleMenuItemClick('profile')}
-                className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-800/50 transition-colors duration-200 group"
-                role="menuitem"
-              >
-                <div className="p-2 rounded-lg bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors duration-200">
-                  <Settings className="h-4 w-4 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-white font-medium text-sm">Profile & Settings</p>
-                  <p className="text-gray-400 text-xs">Manage your account</p>
-                </div>
-              </button>
-
-              {/* Send Feedback */}
-              <button
-                onClick={() => handleMenuItemClick('feedback')}
-                className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-800/50 transition-colors duration-200 group"
-                role="menuitem"
-              >
-                <div className="p-2 rounded-lg bg-green-500/20 group-hover:bg-green-500/30 transition-colors duration-200">
-                  <MessageCircle className="h-4 w-4 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-white font-medium text-sm">Send Feedback</p>
-                  <p className="text-gray-400 text-xs">Share your thoughts</p>
-                </div>
-              </button>
-
-              {/* Divider */}
-              <div className="my-2 mx-4 border-t border-gray-700" />
-
-              {/* Logout */}
-              <button
-                onClick={() => handleMenuItemClick('logout')}
-                className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-red-500/10 transition-colors duration-200 group"
-                role="menuitem"
-              >
-                <div className="p-2 rounded-lg bg-red-500/20 group-hover:bg-red-500/30 transition-colors duration-200">
-                  <LogOut className="h-4 w-4 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-red-400 font-medium text-sm">Logout</p>
-                  <p className="text-gray-400 text-xs">Sign out of your account</p>
-                </div>
-              </button>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 };
