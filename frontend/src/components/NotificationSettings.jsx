@@ -14,19 +14,14 @@ import {
   CheckCircle2,
   Save,
   Test as TestIcon,
-  Settings
+  Settings,
+  Loader,
+  AlertCircle
 } from 'lucide-react';
-import { useNotifications } from '../contexts/NotificationContext';
+import { notificationsAPI } from '../services/api';
 
 const NotificationSettings = () => {
-  const { 
-    preferences, 
-    updatePreferences, 
-    browserPermission, 
-    requestBrowserPermission,
-    sendTestNotification 
-  } = useNotifications();
-
+  const [preferences, setPreferences] = useState(null);
   const [formData, setFormData] = useState({
     email_notifications: true,
     browser_notifications: true,
@@ -45,32 +40,52 @@ const NotificationSettings = () => {
     weekly_digest: true
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
   // Load preferences when component mounts
   useEffect(() => {
-    if (preferences) {
-      setFormData({
-        email_notifications: preferences.email_notifications ?? true,
-        browser_notifications: preferences.browser_notifications ?? true,
-        task_due_notifications: preferences.task_due_notifications ?? true,
-        task_overdue_notifications: preferences.task_overdue_notifications ?? true,
-        task_reminder_notifications: preferences.task_reminder_notifications ?? true,
-        project_deadline_notifications: preferences.project_deadline_notifications ?? true,
-        recurring_task_notifications: preferences.recurring_task_notifications ?? true,
-        achievement_notifications: preferences.achievement_notifications ?? true,
-        unblocked_task_notifications: preferences.unblocked_task_notifications ?? true,
-        reminder_advance_time: preferences.reminder_advance_time ?? 30,
-        overdue_check_interval: preferences.overdue_check_interval ?? 60,
-        quiet_hours_start: preferences.quiet_hours_start ?? '22:00',
-        quiet_hours_end: preferences.quiet_hours_end ?? '08:00',
-        daily_digest: preferences.daily_digest ?? false,
-        weekly_digest: preferences.weekly_digest ?? true
-      });
+    loadPreferences();
+  }, []);
+
+  const loadPreferences = async () => {
+    try {
+      setLoading(true);
+      const response = await notificationsAPI.getPreferences();
+      const prefs = response.data;
+      setPreferences(prefs);
+      
+      if (prefs) {
+        setFormData({
+          email_notifications: prefs.email_notifications ?? true,
+          browser_notifications: prefs.browser_notifications ?? true,
+          task_due_notifications: prefs.task_due_notifications ?? true,
+          task_overdue_notifications: prefs.task_overdue_notifications ?? true,
+          task_reminder_notifications: prefs.task_reminder_notifications ?? true,
+          project_deadline_notifications: prefs.project_deadline_notifications ?? true,
+          recurring_task_notifications: prefs.recurring_task_notifications ?? true,
+          achievement_notifications: prefs.achievement_notifications ?? true,
+          unblocked_task_notifications: prefs.unblocked_task_notifications ?? true,
+          reminder_advance_time: prefs.reminder_advance_time ?? 30,
+          overdue_check_interval: prefs.overdue_check_interval ?? 60,
+          quiet_hours_start: prefs.quiet_hours_start ?? '22:00',
+          quiet_hours_end: prefs.quiet_hours_end ?? '08:00',
+          daily_digest: prefs.daily_digest ?? false,
+          weekly_digest: prefs.weekly_digest ?? true
+        });
+      }
+    } catch (error) {
+      console.error('Error loading notification preferences:', error);
+      setMessage('Failed to load notification preferences');
+      setMessageType('error');
+    } finally {
+      setLoading(false);
     }
-  }, [preferences]);
+  };
 
   const handleInputChange = (name, value) => {
     setFormData(prev => ({
@@ -78,38 +93,59 @@ const NotificationSettings = () => {
       [name]: value
     }));
     setSaved(false);
+    setMessage('');
   };
 
   const handleSave = async () => {
-    setLoading(true);
+    setSaving(true);
+    setMessage('');
     try {
-      await updatePreferences(formData);
+      await notificationsAPI.updatePreferences(formData);
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setMessage('Notification settings saved successfully!');
+      setMessageType('success');
+      setTimeout(() => {
+        setSaved(false);
+        setMessage('');
+      }, 3000);
     } catch (error) {
       console.error('Error saving preferences:', error);
+      setMessage('Failed to save notification settings');
+      setMessageType('error');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   const handleTestNotification = async () => {
     setTestLoading(true);
+    setMessage('');
     try {
-      await sendTestNotification();
+      await notificationsAPI.sendTest();
+      setMessage('Test notification sent successfully!');
+      setMessageType('success');
+      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error sending test notification:', error);
+      setMessage('Failed to send test notification');
+      setMessageType('error');
     } finally {
       setTestLoading(false);
     }
   };
 
-  const handleRequestBrowserPermission = async () => {
-    const permission = await requestBrowserPermission();
-    if (permission === 'granted') {
-      handleInputChange('browser_notifications', true);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-center py-12">
+            <Loader className="h-8 w-8 animate-spin text-yellow-400" />
+            <span className="ml-3 text-gray-400">Loading notification settings...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
@@ -123,6 +159,22 @@ const NotificationSettings = () => {
             Configure how and when you receive notifications about your tasks and projects.
           </p>
         </div>
+
+        {/* Message Display */}
+        {message && (
+          <div className={`mb-6 p-4 rounded-lg flex items-center ${
+            messageType === 'success' 
+              ? 'bg-green-900/20 border border-green-600 text-green-400'
+              : 'bg-red-900/20 border border-red-600 text-red-400'
+          }`}>
+            {messageType === 'success' ? (
+              <CheckCircle2 className="h-5 w-5 mr-3" />
+            ) : (
+              <AlertCircle className="h-5 w-5 mr-3" />
+            )}
+            <span>{message}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Notification Channels */}
@@ -143,33 +195,17 @@ const NotificationSettings = () => {
                       <p className="text-sm text-gray-400">
                         Show desktop notifications in your browser
                       </p>
-                      {browserPermission !== 'granted' && (
-                        <p className="text-xs text-orange-400 mt-1">
-                          Permission required - click to enable
-                        </p>
-                      )}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {browserPermission !== 'granted' && (
-                      <button
-                        onClick={handleRequestBrowserPermission}
-                        className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors"
-                      >
-                        Enable
-                      </button>
-                    )}
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.browser_notifications && browserPermission === 'granted'}
-                        onChange={(e) => handleInputChange('browser_notifications', e.target.checked)}
-                        disabled={browserPermission !== 'granted'}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.browser_notifications}
+                      onChange={(e) => handleInputChange('browser_notifications', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
                 </div>
 
                 {/* Email Notifications */}
@@ -341,12 +377,12 @@ const NotificationSettings = () => {
               <div className="space-y-3">
                 <button
                   onClick={handleSave}
-                  disabled={loading}
+                  disabled={saving}
                   className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-colors ${
                     saved 
                       ? 'bg-green-600 text-white' 
                       : 'bg-yellow-500 hover:bg-yellow-600 text-black'
-                  } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {saved ? (
                     <>
@@ -356,7 +392,7 @@ const NotificationSettings = () => {
                   ) : (
                     <>
                       <Save className="h-5 w-5" />
-                      <span>{loading ? 'Saving...' : 'Save Settings'}</span>
+                      <span>{saving ? 'Saving...' : 'Save Settings'}</span>
                     </>
                   )}
                 </button>
