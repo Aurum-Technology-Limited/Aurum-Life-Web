@@ -36,10 +36,18 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       
-      // Redirect to login page
-      window.location.href = '/login';
+      // Redirect to correct login page
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
       
       return Promise.reject(new Error('Authentication failed. Please log in again.'));
+    }
+    
+    // Handle timeout errors specifically
+    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      console.error('Request timed out:', error);
+      return Promise.reject(new Error('Request timed out. Please try again.'));
     }
     
     console.error('API Error:', error.response?.data || error.message);
