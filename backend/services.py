@@ -37,9 +37,17 @@ class UserService:
         user_dict = user.dict()
         await create_document("users", user_dict)
         
-        # Initialize user stats
-        stats = UserStats(user_id=user.id)
-        await create_document("user_stats", stats.dict())
+        # Initialize user stats - with error handling
+        try:
+            stats = UserStats(user_id=user.id)
+            stats_dict = stats.dict()
+            # Remove any fields that might cause schema issues
+            if 'last_updated' in stats_dict:
+                stats_dict.pop('last_updated')
+            await create_document("user_stats", stats_dict)
+        except Exception as e:
+            logger.warning(f"Failed to create user stats for {user.email}: {e}")
+            # Don't fail user creation if stats creation fails
         
         return user
 
