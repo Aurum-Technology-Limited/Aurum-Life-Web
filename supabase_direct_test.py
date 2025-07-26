@@ -28,9 +28,9 @@ class SupabaseDirectTestSuite:
             if client:
                 print("✅ Supabase client initialized successfully")
                 
-                # Test basic query (check if users table exists)
-                result = client.table('users').select('id').limit(1).execute()
-                print(f"✅ Supabase database connection verified (users table accessible)")
+                # Test basic query (check if user_profiles table exists)
+                result = client.table('user_profiles').select('id').limit(1).execute()
+                print(f"✅ Supabase database connection verified (user_profiles table accessible)")
                 
                 self.test_results.append({
                     "test": "Supabase Client Connection", 
