@@ -91,27 +91,27 @@ const Feedback = () => {
       </div>
 
       {/* Success Message */}
-        {success && (
-          <div className="bg-green-900/20 border border-green-600 rounded-lg p-4 mb-6 flex items-center">
-            <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
-            <div>
-              <h3 className="text-green-400 font-semibold">Thank You!</h3>
-              <p className="text-green-300 text-sm">
-                Your feedback has been sent successfully. We'll get back to you soon!
-              </p>
-            </div>
+      {success && (
+        <div className="bg-green-900/20 border border-green-600 rounded-lg p-4 mb-6 flex items-center">
+          <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
+          <div>
+            <h3 className="text-green-400 font-semibold">Thank You!</h3>
+            <p className="text-green-300 text-sm">
+              Your feedback has been sent successfully. We'll get back to you soon!
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
-            <p className="text-red-400">{error}</p>
-          </div>
-        )}
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
+          <p className="text-red-400">{error}</p>
+        </div>
+      )}
 
-        {/* Feedback Form */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8">
+      {/* Feedback Form */}
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* Category Selection */}
