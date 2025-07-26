@@ -309,6 +309,10 @@ export const resourcesAPI = {
   getEntityResources: (entityType, entityId) => 
     apiClient.get(`/resources/entity/${entityType}/${entityId}`),
   
+  // Contextual attachment operations (new approach)
+  getParentResources: (parentType, parentId) => 
+    apiClient.get(`/resources/parent/${parentType}/${parentId}`),
+  
   // Utility function for file upload with validation and base64 conversion
   uploadFile: async (file, description = '', tags = [], category = 'document', folderPath = '/') => {
     // File validation
