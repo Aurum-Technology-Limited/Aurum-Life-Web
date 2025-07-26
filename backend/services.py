@@ -2420,11 +2420,13 @@ class PillarService:
         pillar_response = PillarResponse(**pillar_doc)
         
         # Get linked areas and calculate progress
-        areas_docs = await find_documents("areas", {
+        all_areas = await find_documents("areas", {
             "pillar_id": pillar_response.id,
-            "user_id": pillar_response.user_id,
-            "archived": {"$ne": True}
+            "user_id": pillar_response.user_id
         })
+        
+        # Filter non-archived areas on client side
+        areas_docs = [area for area in all_areas if not area.get("archived", False)]
         
         pillar_response.area_count = len(areas_docs)
         
