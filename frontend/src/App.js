@@ -50,7 +50,8 @@ function App() {
       'achievements': 'Achievements',
       'profile': 'Profile',
       'insights': 'Insights',
-      'notification-settings': 'Notifications'
+      'notification-settings': 'Notifications',
+      'notifications': 'Notification Center'
     };
 
     const sectionTitle = sectionTitles[activeSection] || 'Dashboard';
