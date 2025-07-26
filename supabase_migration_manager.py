@@ -339,18 +339,11 @@ class SupabaseMigrationManager:
         return transformed
     
     async def _insert_document(self, table_name: str, doc: Dict):
-        """Insert document into PostgreSQL table"""
+        """Insert document into PostgreSQL table using Supabase client"""
         try:
-            columns = list(doc.keys())
-            values = list(doc.values())
-            placeholders = ', '.join(['%s'] * len(values))
+            # Use Supabase client for insert
+            result = self.supabase.table(table_name).insert(doc).execute()
             
-            sql = f"INSERT INTO public.{table_name} ({', '.join(columns)}) VALUES ({placeholders})"
-            
-            with self.pg_conn.cursor() as cursor:
-                cursor.execute(sql, values)
-                self.pg_conn.commit()
-                
         except Exception as e:
             logger.error(f"❌ Insert failed for table {table_name}: {e}")
             raise
