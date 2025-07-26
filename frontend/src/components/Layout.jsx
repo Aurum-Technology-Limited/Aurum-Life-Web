@@ -182,7 +182,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
           </div>
         </div>
         
-        <main className="p-6 lg:p-8">
+        <main className="p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>
