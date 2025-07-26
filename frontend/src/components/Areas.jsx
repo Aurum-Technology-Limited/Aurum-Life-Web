@@ -184,6 +184,7 @@ const Areas = ({ onSectionChange }) => {
   };
 
   if (loading) {
+    console.log('🗂️ Areas: Rendering loading state');
     return (
       <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
         <div className="max-w-6xl mx-auto">
@@ -199,6 +200,8 @@ const Areas = ({ onSectionChange }) => {
       </div>
     );
   }
+
+  console.log('🗂️ Areas: Rendering main component, areas length:', areas.length, 'error:', error);
 
   return (
     <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
