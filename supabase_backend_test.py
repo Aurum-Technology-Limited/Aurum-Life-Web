@@ -668,7 +668,8 @@ class SupabaseMigrationTestSuite:
             await self.cleanup_session()
             
         # Print summary
-        self.print_test_summary()
+        success = self.print_test_summary()
+        return success
         
     def print_test_summary(self):
         """Print comprehensive test summary"""
