@@ -167,12 +167,13 @@ function App() {
                     {renderActiveSection()}
                   </Layout>
                 </ProtectedRoute>
-              </div>
-            </DndProvider>
-          </NotificationProvider>
-        </DataProvider>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+                </div>
+              </DndProvider>
+            </NotificationProvider>
+          </DataProvider>
+        </AuthProvider>
+      </GoogleOAuthProvider>
+    </ErrorBoundary>
   );
 }
 
