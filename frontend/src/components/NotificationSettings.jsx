@@ -60,6 +60,8 @@ const NotificationSettings = () => {
         task_reminder_notifications: preferences.task_reminder_notifications ?? true,
         project_deadline_notifications: preferences.project_deadline_notifications ?? true,
         recurring_task_notifications: preferences.recurring_task_notifications ?? true,
+        achievement_notifications: preferences.achievement_notifications ?? true,
+        unblocked_task_notifications: preferences.unblocked_task_notifications ?? true,
         reminder_advance_time: preferences.reminder_advance_time ?? 30,
         overdue_check_interval: preferences.overdue_check_interval ?? 60,
         quiet_hours_start: preferences.quiet_hours_start ?? '22:00',
