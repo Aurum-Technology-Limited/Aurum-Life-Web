@@ -58,12 +58,26 @@ const Areas = ({ onSectionChange }) => {
       setLoading(true);
       setError(null);
       console.log('🗂️ Areas: Calling areasAPI.getAreas with showArchived:', showArchived);
-      const response = await areasAPI.getAreas(true, showArchived); // Include projects and optionally archived
+      
+      // Add a timeout wrapper to detect hanging requests
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Custom timeout after 15 seconds')), 15000);
+      });
+      
+      const apiPromise = areasAPI.getAreas(true, showArchived);
+      
+      const response = await Promise.race([apiPromise, timeoutPromise]);
       console.log('🗂️ Areas: API response received, data length:', response.data?.length);
       setAreas(response.data);
       setError(null);
     } catch (err) {
       console.error('🗂️ Areas: Error loading areas:', err);
+      console.error('🗂️ Areas: Error details:', {
+        message: err.message,
+        status: err.response?.status,
+        code: err.code,
+        stack: err.stack
+      });
       
       // If it's an authentication error, don't retry
       if (err.response?.status === 401) {
@@ -82,6 +96,7 @@ const Areas = ({ onSectionChange }) => {
       setError('Failed to load areas');
     } finally {
       setLoading(false);
+      console.log('🗂️ Areas: loadAreas completed, setting loading to false');
     }
   };
 
