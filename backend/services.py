@@ -2349,11 +2349,15 @@ class PillarService:
     @staticmethod
     async def get_user_pillars(user_id: str, include_areas: bool = False, include_archived: bool = False) -> List[PillarResponse]:
         """Get all pillars for a user"""
-        query = {"user_id": user_id}
-        if not include_archived:
-            query["archived"] = {"$ne": True}
+        # Get all pillars for the user
+        all_pillars = await find_documents("pillars", {"user_id": user_id})
         
-        pillars_docs = await find_documents("pillars", query)
+        # Filter archived pillars on the client side
+        if not include_archived:
+            pillars_docs = [pillar for pillar in all_pillars if not pillar.get("archived", False)]
+        else:
+            pillars_docs = all_pillars
+            
         pillars_docs.sort(key=lambda x: x.get("sort_order", 0))
         
         pillars = []
