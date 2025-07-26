@@ -29,24 +29,12 @@ export const AuthProvider = ({ children }) => {
 
   const fetchCurrentUser = async (authToken) => {
     try {
-      console.log('Fetching current user with token:', authToken ? 'Token present' : 'No token');
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        console.log('User data fetched successfully:', userData.email);
-        setUser(userData);
-      } else {
-        console.warn('Token validation failed, status:', response.status);
-        // Token is invalid, clear it
-        logout();
-      }
+      console.log('🔐 Verifying user authentication...');
+      const response = await fixedAPI.getCurrentUser();
+      console.log('🔐 User authenticated successfully:', response.data.email);
+      setUser(response.data);
     } catch (error) {
-      console.error('Error fetching current user:', error);
+      console.warn('🔐 Token validation failed:', error.message);
       logout();
     } finally {
       setLoading(false);
