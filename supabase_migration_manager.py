@@ -240,25 +240,19 @@ class SupabaseMigrationManager:
                             "created_at": user_doc.get('created_at', datetime.now()).isoformat() if isinstance(user_doc.get('created_at'), datetime) else datetime.now().isoformat()
                         }
                         
-                        # Insert profile using direct SQL for better control
-                        with self.pg_conn.cursor() as cursor:
-                            cursor.execute("""
-                                INSERT INTO public.user_profiles (
-                                    id, username, first_name, last_name, google_id, 
-                                    profile_picture, is_active, level, total_points, 
-                                    current_streak, created_at
-                                ) VALUES (
-                                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                                )
-                            """, (
-                                profile_data['id'], profile_data['username'], 
-                                profile_data['first_name'], profile_data['last_name'], 
-                                profile_data['google_id'], profile_data['profile_picture'], 
-                                profile_data['is_active'], profile_data['level'], 
-                                profile_data['total_points'], profile_data['current_streak'],
-                                profile_data['created_at']
-                            ))
-                            self.pg_conn.commit()
+                        # Insert profile using Supabase client instead of direct SQL
+                        profile_insert = self.supabase.table('user_profiles').insert({
+                            "id": auth_user.id,
+                            "username": user_doc.get('username'),
+                            "first_name": user_doc.get('first_name', ''),
+                            "last_name": user_doc.get('last_name', ''),
+                            "google_id": user_doc.get('google_id'),
+                            "profile_picture": user_doc.get('profile_picture'),
+                            "is_active": user_doc.get('is_active', True),
+                            "level": user_doc.get('level', 1),
+                            "total_points": user_doc.get('total_points', 0),
+                            "current_streak": user_doc.get('current_streak', 0)
+                        }).execute()
                         
                         # Store mapping for other collections
                         self._store_user_mapping(user_doc['id'], auth_user.id)
