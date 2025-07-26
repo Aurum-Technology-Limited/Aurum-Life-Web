@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Brain, Clock, Flag, Play, RefreshCw, CheckCircle2, AlertCircle, MessageCircle, Send } from 'lucide-react';
-import { aiCoachAPI } from '../services/api';
+import emergencyAPI from '../services/emergencyApi';
 
 const AiCoachCard = ({ onStartFocusSession }) => {
   const [recommendations, setRecommendations] = useState([]);
