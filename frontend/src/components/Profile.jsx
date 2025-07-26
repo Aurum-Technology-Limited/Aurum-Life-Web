@@ -207,7 +207,7 @@ const Profile = ({ onSectionChange }) => {
           <div className="space-y-3">
             {/* Send Feedback Button */}
             <button
-              onClick={() => onNavigate && onNavigate('feedback')}
+              onClick={() => onSectionChange && onSectionChange('feedback')}
               className="w-full flex items-center space-x-3 px-4 py-3 bg-green-900/20 hover:bg-green-900/30 border border-green-700/30 hover:border-green-600/50 text-green-400 rounded-lg transition-all duration-200 group"
             >
               <div className="p-2 rounded-lg bg-green-500/20 group-hover:bg-green-500/30 transition-colors duration-200">
