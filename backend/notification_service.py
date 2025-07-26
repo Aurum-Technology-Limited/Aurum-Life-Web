@@ -13,7 +13,7 @@ from models import (
     NotificationPreference, NotificationPreferenceCreate, NotificationPreferenceUpdate,
     TaskReminder, TaskReminderCreate, NotificationResponse,
     NotificationTypeEnum, NotificationChannelEnum, PriorityEnum,
-    Task, Project, User
+    Task, Project, User, BrowserNotification
 )
 
 logger = logging.getLogger(__name__)
