@@ -2226,7 +2226,6 @@ class InsightsService:
         }
         
         # Get all tasks to calculate status breakdown
-        from database import find_documents
         all_tasks = await find_documents("tasks", {"user_id": user_id})
         
         for task_doc in all_tasks:
