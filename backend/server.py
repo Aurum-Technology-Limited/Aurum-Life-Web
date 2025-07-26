@@ -1254,10 +1254,10 @@ async def create_resource(
     resource_data: ResourceCreate,
     current_user: User = Depends(get_current_active_user)
 ):
-    """Create a new file resource"""
+    """Create a new file resource with Supabase Storage"""
     try:
-        resource = await ResourceService.create_resource(current_user.id, resource_data)
-        return await ResourceService.get_resource(current_user.id, resource.id, track_access=False)
+        resource = await supabase_resource_service.create_resource_with_storage(current_user.id, resource_data)
+        return await supabase_resource_service.get_resource_with_url(current_user.id, resource.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
