@@ -545,6 +545,238 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             </div>
           </div>
           
+          {/* Recurrence Configuration Section */}
+          <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <label className="flex items-center space-x-2 text-sm font-medium text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={recurrenceEnabled}
+                  onChange={(e) => {
+                    setRecurrenceEnabled(e.target.checked);
+                    if (!e.target.checked) {
+                      setRecurrenceConfig({
+                        type: 'none',
+                        interval: 1,
+                        weekdays: [],
+                        month_day: null,
+                        end_date: '',
+                        max_instances: null
+                      });
+                      setShowRecurrenceDetails(false);
+                    } else {
+                      setShowRecurrenceDetails(true);
+                    }
+                  }}
+                  className="rounded bg-gray-800 border-gray-700 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
+                  disabled={loading}
+                />
+                <Repeat className="h-4 w-4 text-gray-400" />
+                <span>Make this a recurring task</span>
+              </label>
+              
+              {recurrenceEnabled && (
+                <button
+                  type="button"
+                  onClick={() => setShowRecurrenceDetails(!showRecurrenceDetails)}
+                  className="flex items-center space-x-1 text-xs text-gray-400 hover:text-white transition-colors"
+                >
+                  {showRecurrenceDetails ? (
+                    <>
+                      <ChevronUp className="h-3 w-3" />
+                      <span>Hide Options</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3 w-3" />
+                      <span>More Options</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+            
+            {/* Recurrence Configuration */}
+            {recurrenceEnabled && (
+              <div className="space-y-4">
+                {/* Recurrence Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Repeat Pattern
+                  </label>
+                  <select
+                    value={recurrenceConfig.type}
+                    onChange={(e) => setRecurrenceConfig({ 
+                      ...recurrenceConfig, 
+                      type: e.target.value,
+                      // Reset specific configurations when changing type
+                      weekdays: e.target.value === 'weekly' ? recurrenceConfig.weekdays : [],
+                      month_day: e.target.value === 'monthly' ? recurrenceConfig.month_day : null
+                    })}
+                    className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                    disabled={loading}
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Interval */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Every
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="30"
+                        value={recurrenceConfig.interval}
+                        onChange={(e) => setRecurrenceConfig({ 
+                          ...recurrenceConfig, 
+                          interval: parseInt(e.target.value) || 1 
+                        })}
+                        className="flex-1 px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                        disabled={loading}
+                      />
+                      <span className="text-sm text-gray-400">
+                        {recurrenceConfig.type === 'daily' ? 'day(s)' :
+                         recurrenceConfig.type === 'weekly' ? 'week(s)' :
+                         'month(s)'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Weekly specific options */}
+                {recurrenceConfig.type === 'weekly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      On these days
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => {
+                            const updatedWeekdays = recurrenceConfig.weekdays.includes(day)
+                              ? recurrenceConfig.weekdays.filter(d => d !== day)
+                              : [...recurrenceConfig.weekdays, day];
+                            setRecurrenceConfig({ ...recurrenceConfig, weekdays: updatedWeekdays });
+                          }}
+                          className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                            recurrenceConfig.weekdays.includes(day)
+                              ? 'bg-yellow-600 text-black'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          }`}
+                          disabled={loading}
+                        >
+                          {day.substring(0, 3).toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Monthly specific options */}
+                {recurrenceConfig.type === 'monthly' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      On day of month
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={recurrenceConfig.month_day || ''}
+                      onChange={(e) => setRecurrenceConfig({ 
+                        ...recurrenceConfig, 
+                        month_day: parseInt(e.target.value) || null 
+                      })}
+                      placeholder="e.g., 15 for 15th of each month"
+                      className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                      disabled={loading}
+                    />
+                  </div>
+                )}
+                
+                {/* Advanced options */}
+                {showRecurrenceDetails && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-600">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        End Date (Optional)
+                      </label>
+                      <input
+                        type="date"
+                        value={recurrenceConfig.end_date}
+                        onChange={(e) => setRecurrenceConfig({ 
+                          ...recurrenceConfig, 
+                          end_date: e.target.value 
+                        })}
+                        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                        disabled={loading}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Max Occurrences (Optional)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        value={recurrenceConfig.max_instances || ''}
+                        onChange={(e) => setRecurrenceConfig({ 
+                          ...recurrenceConfig, 
+                          max_instances: parseInt(e.target.value) || null 
+                        })}
+                        placeholder="e.g., 10"
+                        className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Recurrence Preview */}
+                {recurrenceConfig.type !== 'none' && (
+                  <div className="bg-blue-900/20 border border-blue-600/30 rounded-lg p-3">
+                    <div className="flex items-start space-x-2">
+                      <Repeat className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-blue-300 font-medium">Preview:</p>
+                        <p className="text-xs text-blue-400 mt-1">
+                          {recurrenceConfig.type === 'daily' && 
+                            `Repeats every ${recurrenceConfig.interval} day${recurrenceConfig.interval > 1 ? 's' : ''}`
+                          }
+                          {recurrenceConfig.type === 'weekly' && 
+                            `Repeats every ${recurrenceConfig.interval} week${recurrenceConfig.interval > 1 ? 's' : ''} on ${
+                              recurrenceConfig.weekdays.length > 0 
+                                ? recurrenceConfig.weekdays.map(d => d.substring(0, 3).toUpperCase()).join(', ')
+                                : 'selected days'
+                            }`
+                          }
+                          {recurrenceConfig.type === 'monthly' && 
+                            `Repeats every ${recurrenceConfig.interval} month${recurrenceConfig.interval > 1 ? 's' : ''}${
+                              recurrenceConfig.month_day ? ` on day ${recurrenceConfig.month_day}` : ''
+                            }`
+                          }
+                          {recurrenceConfig.end_date && ` until ${new Date(recurrenceConfig.end_date).toLocaleDateString()}`}
+                          {recurrenceConfig.max_instances && ` (max ${recurrenceConfig.max_instances} times)`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
