@@ -12,7 +12,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://3c105990-8251-418b-add7-b761b0f7ecd6.preview.emergentagent.com/api"
+BACKEND_URL = "https://25d39911-b77f-4948-aab8-0b3bcaee8f2f.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"  # Real test email address
 TEST_USER_DATA = {
     "username": "test_user_email_reset",
