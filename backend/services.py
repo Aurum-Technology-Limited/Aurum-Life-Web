@@ -1510,10 +1510,8 @@ class TaskService:
         """Get tasks for today's view - due today or overdue"""
         try:
             today = datetime.now().date()
-            today_start = datetime.combine(today, datetime.min.time())
-            today_end = datetime.combine(today, datetime.max.time())
             
-            # Get all tasks for the user (we'll filter on the client side)
+            # Get all tasks for the user
             all_tasks = await find_documents("tasks", {"user_id": user_id})
             
             if not all_tasks:
@@ -1522,43 +1520,63 @@ class TaskService:
             # Filter tasks on the client side (due today or overdue and not completed)
             filtered_tasks = []
             for task in all_tasks:
-                is_completed = task.get("completed", False)
-                due_date = task.get("due_date")
-                
-                # Skip completed tasks
-                if is_completed:
+                try:
+                    is_completed = task.get("completed", False)
+                    due_date = task.get("due_date")
+                    
+                    # Skip completed tasks
+                    if is_completed:
+                        continue
+                    
+                    # Include if due today or overdue
+                    if due_date:
+                        # Use safe datetime handling
+                        try:
+                            if isinstance(due_date, str):
+                                due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+                            
+                            # Convert to timezone-naive date for comparison
+                            if hasattr(due_date, 'tzinfo') and due_date.tzinfo:
+                                due_date_naive = due_date.replace(tzinfo=None).date()
+                            elif hasattr(due_date, 'date'):
+                                due_date_naive = due_date.date()
+                            else:
+                                continue  # Skip if we can't process the date
+                                
+                            if due_date_naive <= today:
+                                filtered_tasks.append(task)
+                        except Exception:
+                            # Skip tasks with problematic dates
+                            continue
+                except Exception:
+                    # Skip problematic tasks
                     continue
-                    
-                # Include if due today or overdue
-                if due_date:
-                    if isinstance(due_date, str):
-                        due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
-                    
-                    # Convert to timezone-naive date for comparison
-                    if hasattr(due_date, 'date'):
-                        due_date_naive = due_date.replace(tzinfo=None).date() if due_date.tzinfo else due_date.date()
-                    else:
-                        due_date_naive = due_date
-                        
-                    if due_date_naive <= today:
-                        filtered_tasks.append(task)
                         
             # Sort by priority and due date
-            filtered_tasks.sort(key=lambda x: (
-                0 if x.get("priority") == "high" else 1 if x.get("priority") == "medium" else 2,
-                x.get("due_date") or datetime.max.isoformat()
-            ))
+            try:
+                filtered_tasks.sort(key=lambda x: (
+                    0 if x.get("priority") == "high" else 1 if x.get("priority") == "medium" else 2,
+                    x.get("due_date") or "9999-12-31"  # Use string fallback for sorting
+                ))
+            except Exception:
+                # If sorting fails, just return unsorted
+                pass
             
             # Build task responses
             tasks = []
             for doc in filtered_tasks[:20]:  # Limit to 20 tasks
-                task = await TaskService._build_task_response(doc, include_subtasks=False)
-                tasks.append(task)
+                try:
+                    task = await TaskService._build_task_response(doc, include_subtasks=False)
+                    tasks.append(task)
+                except Exception:
+                    # Skip tasks that can't be built
+                    continue
                 
             return tasks
             
         except Exception as e:
             logger.error(f"Error getting today tasks: {e}")
+            # Return empty list if everything fails
             return []
             
             return tasks
