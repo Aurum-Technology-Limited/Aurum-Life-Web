@@ -8,6 +8,7 @@ from typing import Optional, Dict, Any, List
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import logging
+from datetime import datetime
 
 # Load environment variables from main .env file
 load_dotenv('.env')
