@@ -54,23 +54,27 @@ const Areas = ({ onSectionChange }) => {
 
   const loadAreas = async (retryCount = 0) => {
     try {
+      console.log('🗂️ Areas: Starting loadAreas, retry count:', retryCount);
       setLoading(true);
       setError(null);
+      console.log('🗂️ Areas: Calling areasAPI.getAreas with showArchived:', showArchived);
       const response = await areasAPI.getAreas(true, showArchived); // Include projects and optionally archived
+      console.log('🗂️ Areas: API response received, data length:', response.data?.length);
       setAreas(response.data);
       setError(null);
     } catch (err) {
-      console.error('Error loading areas:', err);
+      console.error('🗂️ Areas: Error loading areas:', err);
       
       // If it's an authentication error, don't retry
       if (err.response?.status === 401) {
+        console.error('🗂️ Areas: Authentication error, not retrying');
         setError('Authentication failed. Please log in again.');
         return;
       }
       
       // Retry logic for network errors
       if (retryCount < 2 && (err.code === 'ECONNABORTED' || err.message.includes('timeout'))) {
-        console.log(`Retrying areas load (attempt ${retryCount + 1})`);
+        console.log(`🗂️ Areas: Retrying areas load (attempt ${retryCount + 1})`);
         setTimeout(() => loadAreas(retryCount + 1), 1000);
         return;
       }
