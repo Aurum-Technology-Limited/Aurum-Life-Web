@@ -622,8 +622,8 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             {/* Recurrence Configuration */}
             {recurrenceEnabled && (
               <div className="space-y-4">
-                {/* Recurrence Type and Interval Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Recurrence Type and Interval Grid - Mobile Responsive */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Repeat Pattern
