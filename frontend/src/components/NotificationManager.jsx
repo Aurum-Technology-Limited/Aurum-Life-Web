@@ -44,22 +44,22 @@ const ActionableNotification = ({ notification, onDismiss }) => {
   };
 
   return (
-    <div className={`p-4 rounded-lg border ${getNotificationColor(notification.type)} mb-3`}>
+    <div className={`p-3 sm:p-4 rounded-lg border ${getNotificationColor(notification.type)} mb-3`}>
       <div className="flex items-start space-x-3">
         <div className="flex-shrink-0 mt-1">
           {getNotificationIcon(notification.type)}
         </div>
-        <div className="flex-1">
-          <h4 className="text-sm font-medium text-white mb-1">
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-medium text-white mb-1 leading-tight">
             {notification.title}
           </h4>
-          <p className="text-sm text-gray-300 mb-2">
+          <p className="text-xs sm:text-sm text-gray-300 mb-2 leading-relaxed">
             {notification.message}
           </p>
           {notification.action && (
             <button
               onClick={notification.action}
-              className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors"
+              className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-3 py-1 rounded transition-colors"
             >
               {notification.actionText || 'View Task'}
             </button>
@@ -67,7 +67,7 @@ const ActionableNotification = ({ notification, onDismiss }) => {
         </div>
         <button
           onClick={() => onDismiss(notification.id)}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-gray-400 hover:text-white transition-colors p-1 flex-shrink-0"
         >
           <X className="h-4 w-4" />
         </button>
