@@ -150,23 +150,23 @@ const NotificationSettings = () => {
         </p>
       </div>
 
-        {/* Message Display */}
-        {message && (
-          <div className={`mb-6 p-4 rounded-lg flex items-center ${
-            messageType === 'success' 
-              ? 'bg-green-900/20 border border-green-600 text-green-400'
-              : 'bg-red-900/20 border border-red-600 text-red-400'
-          }`}>
-            {messageType === 'success' ? (
-              <CheckCircle2 className="h-5 w-5 mr-3" />
-            ) : (
-              <AlertCircle className="h-5 w-5 mr-3" />
-            )}
-            <span>{message}</span>
-          </div>
-        )}
+      {/* Message Display */}
+      {message && (
+        <div className={`p-4 rounded-lg flex items-center ${
+          messageType === 'success' 
+            ? 'bg-green-900/20 border border-green-600 text-green-400'
+            : 'bg-red-900/20 border border-red-600 text-red-400'
+        }`}>
+          {messageType === 'success' ? (
+            <CheckCircle2 className="h-5 w-5 mr-3" />
+          ) : (
+            <AlertCircle className="h-5 w-5 mr-3" />
+          )}
+          <span>{message}</span>
+        </div>
+      )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Notification Channels */}
           <div className="space-y-6">
             <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
