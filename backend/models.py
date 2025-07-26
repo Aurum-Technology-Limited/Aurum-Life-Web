@@ -467,8 +467,11 @@ class TaskCreate(BaseModel):
     reminder_date: Optional[datetime] = None
     category: str = "general"
     dependency_task_ids: List[str] = []
+    # Legacy recurrence fields (maintained for backward compatibility)
     recurrence: RecurrenceEnum = RecurrenceEnum.none
     recurrence_interval: int = 1
+    # New enhanced recurrence pattern
+    recurrence_pattern: Optional[RecurrencePattern] = None
     estimated_duration: Optional[int] = None
     sub_task_completion_required: bool = False
 
