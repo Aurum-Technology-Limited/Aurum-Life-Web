@@ -70,10 +70,12 @@ Remember: You're helping someone build their best life. Be their guide, motivato
                 "tasks", 
                 {
                     "user_id": user_id,
-                    "completed": False,
-                    "archived": {"$ne": True}
+                    "completed": False
                 }
             )
+            
+            # Filter out archived tasks client-side (since Supabase doesn't have archived column)
+            tasks = [task for task in tasks if not task.get("archived", False)]
             
             if not tasks:
                 return [{
