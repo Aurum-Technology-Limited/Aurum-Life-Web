@@ -75,13 +75,13 @@ class SupabaseDirectTestSuite:
                 "updated_at": datetime.utcnow().isoformat()
             }
             
-            user_id = await supabase_manager.create_document('users', test_user_data)
+            user_id = await supabase_manager.create_document('user_profiles', test_user_data)
             if user_id:
                 print(f"✅ Create operation successful: {user_id}")
-                self.created_entities.append(('users', user_id))
+                self.created_entities.append(('user_profiles', user_id))
                 
                 # Test read operation
-                user = await supabase_manager.find_document('users', {'id': user_id})
+                user = await supabase_manager.find_document('user_profiles', {'id': user_id})
                 if user and user['email'] == test_user_data['email']:
                     print("✅ Read operation successful")
                     
