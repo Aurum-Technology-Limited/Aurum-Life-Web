@@ -287,3 +287,11 @@ async def atomic_update_document(table_name: str, query: Dict[str, Any], update:
 async def aggregate_documents(table_name: str, pipeline: List[Dict]) -> List[Dict]:
     """Aggregate documents - simplified for Supabase"""
     return await supabase_manager.aggregate_documents(table_name, pipeline)
+
+async def bulk_update_documents(table_name: str, query: Dict[str, Any], update: Dict[str, Any]) -> int:
+    """Update multiple documents matching query"""
+    return await supabase_manager.bulk_update_documents(table_name, query, update)
+
+async def bulk_delete_documents(table_name: str, query: Dict[str, Any]) -> int:
+    """Delete multiple documents matching query"""
+    return await supabase_manager.bulk_delete_documents(table_name, query)
