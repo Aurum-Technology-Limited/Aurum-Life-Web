@@ -588,11 +588,11 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
               )}
             </div>
 
-            {/* File Manager */}
-            <FileManager 
-              entityType="project"
-              entityId={project?.id}
-              entityName={project?.name}
+            {/* File Attachment */}
+            <FileAttachment 
+              parentType="project"
+              parentId={project?.id}
+              parentName={project?.name}
               className="mb-8"
             />
 
