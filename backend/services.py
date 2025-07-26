@@ -3605,7 +3605,7 @@ class ResourceService:
     
     @staticmethod
     async def get_entity_resources(user_id: str, entity_type: str, entity_id: str) -> List[ResourceResponse]:
-        """Get all resources attached to a specific entity"""
+        """Get all resources attached to a specific entity (legacy method)"""
         
         attachment_field = f"attached_to_{entity_type}s"
         if entity_type == "journal_entry":
@@ -3614,6 +3614,32 @@ class ResourceService:
         query = {
             "user_id": user_id,
             attachment_field: entity_id,
+            "is_archived": {"$ne": True}
+        }
+        
+        resources_docs = await find_documents("resources", query)
+        resources_docs.sort(key=lambda x: x.get("upload_date", datetime.min), reverse=True)
+        
+        responses = []
+        for doc in resources_docs:
+            response = await ResourceService._build_resource_response(doc)
+            responses.append(response)
+        
+        return responses
+    
+    @staticmethod
+    async def get_parent_resources(user_id: str, parent_type: str, parent_id: str) -> List[ResourceResponse]:
+        """Get all resources attached to a specific parent entity (contextual attachments)"""
+        
+        # Validate parent type
+        valid_parent_types = ["task", "project", "area", "pillar", "journal_entry"]
+        if parent_type not in valid_parent_types:
+            raise ValueError(f"Invalid parent type: {parent_type}. Must be one of: {', '.join(valid_parent_types)}")
+        
+        query = {
+            "user_id": user_id,
+            "parent_type": parent_type,
+            "parent_id": parent_id,
             "is_archived": {"$ne": True}
         }
         
