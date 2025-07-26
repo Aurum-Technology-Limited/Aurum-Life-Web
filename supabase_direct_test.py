@@ -228,7 +228,7 @@ class SupabaseDirectTestSuite:
             client = supabase_manager.get_client()
             
             # Check for existing data in key tables
-            tables_to_check = ['users', 'pillars', 'areas', 'projects', 'tasks']
+            tables_to_check = ['user_profiles', 'pillars', 'areas', 'projects', 'tasks']
             data_found = {}
             
             for table_name in tables_to_check:
