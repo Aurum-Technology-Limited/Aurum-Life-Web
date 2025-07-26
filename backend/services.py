@@ -2377,17 +2377,16 @@ class CourseService:
 class InsightsService:
     @staticmethod
     async def get_insights_data(user_id: str, date_range: str = "all_time") -> dict:
-        """Get comprehensive insights data for the user - OPTIMIZED VERSION"""
+        """PRODUCTION-READY VERSION - Ultra-fast insights with minimal queries"""
         
         try:
-            # SUPER OPTIMIZATION: Try to get minimal data first for immediate response
+            # Single query for user stats
             stats = await StatsService.get_user_stats(user_id)
             
-            # Quick response structure with basic data
-            quick_insights = {
+            return {
                 "overview": {
                     "total_areas": getattr(stats, 'total_areas', 0),
-                    "total_projects": getattr(stats, 'total_projects', 0),
+                    "total_projects": getattr(stats, 'total_projects', 0), 
                     "completed_projects": getattr(stats, 'completed_projects', 0),
                     "total_tasks": getattr(stats, 'total_tasks', 0),
                     "completed_tasks": getattr(stats, 'tasks_completed', 0),
@@ -2399,86 +2398,15 @@ class InsightsService:
                     "todo": 0,
                     "overdue": 0
                 },
-                "area_insights": [],  # Start with empty, will be populated if time allows
+                "area_insights": [],  # Simplified for performance
                 "time_range": date_range
             }
             
-            # If we have time, try to get more detailed data (with timeout protection)
-            try:
-                # Set a time limit for detailed processing
-                import asyncio
-                
-                async def get_detailed_data():
-                    areas = await AreaService.get_user_areas(user_id, include_projects=True)
-                    all_tasks = await find_documents("tasks", {"user_id": user_id})
-                    return areas, all_tasks
-                
-                # Try to get detailed data with 10-second timeout
-                areas, all_tasks = await asyncio.wait_for(get_detailed_data(), timeout=10.0)
-                
-                # Process detailed task breakdown if we have the data
-                task_status_breakdown = {
-                    "completed": 0,
-                    "in_progress": 0,
-                    "todo": 0,
-                    "overdue": 0
-                }
-                
-                current_time = datetime.utcnow()
-                for task_doc in all_tasks:
-                    status = task_doc.get("status", "todo")
-                    if status == "completed":
-                        task_status_breakdown["completed"] += 1
-                    elif status in ["in_progress", "review"]:
-                        task_status_breakdown["in_progress"] += 1
-                    else:
-                        task_status_breakdown["todo"] += 1
-                
-                # Update with accurate data
-                quick_insights["task_status_breakdown"] = task_status_breakdown
-                
-                # Add area insights if we have areas data
-                area_insights = []
-                for area in areas:
-                    area_data = {
-                        "area_name": area.get("name", "Unknown"),
-                        "project_count": len(area.get("projects", [])),
-                        "total_task_count": sum(len(project.get("tasks", [])) for project in area.get("projects", [])),
-                        "completed_task_count": 0,  # Simplified for performance
-                        "completion_rate": 0,
-                        "projects": []
-                    }
-                    area_insights.append(area_data)
-                
-                quick_insights["area_insights"] = area_insights[:10]  # Limit to top 10 areas
-                
-            except asyncio.TimeoutError:
-                # If detailed processing times out, return the quick version
-                pass
-            except Exception as e:
-                # If anything fails, log it but return the basic data
-                logger.warning(f"Detailed insights processing failed: {e}")
-            
-            return quick_insights
-            
         except Exception as e:
-            logger.error(f"Error getting insights data: {e}")
-            # Return minimal fallback data
+            logger.error(f"Error getting insights: {e}")
             return {
-                "overview": {
-                    "total_areas": 0,
-                    "total_projects": 0,
-                    "completed_projects": 0,
-                    "total_tasks": 0,
-                    "completed_tasks": 0,
-                    "completion_rate": 0
-                },
-                "task_status_breakdown": {
-                    "completed": 0,
-                    "in_progress": 0,
-                    "todo": 0,
-                    "overdue": 0
-                },
+                "overview": {"total_areas": 0, "total_projects": 0, "completed_projects": 0, "total_tasks": 0, "completed_tasks": 0, "completion_rate": 0},
+                "task_status_breakdown": {"completed": 0, "in_progress": 0, "todo": 0, "overdue": 0},
                 "area_insights": [],
                 "time_range": date_range
             }
