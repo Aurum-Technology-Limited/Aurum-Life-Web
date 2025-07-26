@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BACKEND_URL = "https://fc488f1a-b6ad-4e7c-bf64-4eb3b4a9be77.preview.emergentagent.com/api"
+BACKEND_URL = "https://3c105990-8251-418b-add7-b761b0f7ecd6.preview.emergentagent.com/api"
 
 def get_auth_token():
     """Register and login to get auth token"""
