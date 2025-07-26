@@ -1499,7 +1499,13 @@ class TaskService:
                     if isinstance(due_date, str):
                         due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
                     
-                    if due_date.date() <= today:
+                    # Convert to timezone-naive date for comparison
+                    if hasattr(due_date, 'date'):
+                        due_date_naive = due_date.replace(tzinfo=None).date() if due_date.tzinfo else due_date.date()
+                    else:
+                        due_date_naive = due_date
+                        
+                    if due_date_naive <= today:
                         filtered_tasks.append(task)
                         
             # Sort by priority and due date
