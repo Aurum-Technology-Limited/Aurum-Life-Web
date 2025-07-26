@@ -3606,11 +3606,12 @@ class ResourceService:
         
         query = {
             "user_id": user_id,
-            attachment_field: entity_id,
-            "is_archived": {"$ne": True}
+            attachment_field: entity_id
         }
         
-        resources_docs = await find_documents("resources", query)
+        all_resources = await find_documents("resources", query)
+        # Filter non-archived resources on client side
+        resources_docs = [resource for resource in all_resources if not resource.get("is_archived", False)]
         resources_docs.sort(key=lambda x: x.get("upload_date", datetime.min), reverse=True)
         
         responses = []
