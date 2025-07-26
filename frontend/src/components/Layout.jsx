@@ -138,9 +138,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
 
         {/* Footer - User Menu */}
         <div className="absolute bottom-4 left-4 right-4">
-          <div className="bg-red-500 p-4 text-white rounded">
-            DEBUG: User Menu Should Appear Here
-          </div>
+          <UserMenu onNavigate={handleNavigation} />
         </div>
       </div>
 
