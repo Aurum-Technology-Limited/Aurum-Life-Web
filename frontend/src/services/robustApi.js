@@ -9,7 +9,7 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || '';
 const createApiClient = () => {
   const client = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 8000, // 8 second timeout
+    timeout: 20000, // Increase timeout to 20 seconds to handle slow backend
     headers: {
       'Content-Type': 'application/json',
     },
