@@ -54,7 +54,7 @@ class ScheduledJobs:
             
             # Clean up old notifications (keep for 30 days)
             from datetime import timedelta
-            from database import delete_documents
+            from supabase_client import delete_documents
             
             cutoff_date = datetime.utcnow() - timedelta(days=30)
             
