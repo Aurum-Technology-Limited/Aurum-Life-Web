@@ -96,7 +96,7 @@ class SupabaseDirectTestSuite:
                             print("✅ Update verification successful")
                             
                             # Test count operation
-                            count = await supabase_manager.count_documents('user_profiles', {'email': test_user_data['email']})
+                            count = await supabase_manager.count_documents('user_profiles', {'username': test_user_data['username']})
                             if count == 1:
                                 print("✅ Count operation successful")
                                 
