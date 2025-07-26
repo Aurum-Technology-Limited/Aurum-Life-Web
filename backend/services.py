@@ -554,7 +554,12 @@ class JournalService:
         for doc in entries_docs:
             created_at = doc.get("created_at")
             if created_at:
-                entry_dates.add(created_at.date())
+                # Handle timezone-aware datetime
+                if hasattr(created_at, 'replace') and created_at.tzinfo:
+                    created_at_naive = created_at.replace(tzinfo=None)
+                else:
+                    created_at_naive = created_at
+                entry_dates.add(created_at_naive.date())
         
         # Check consecutive days starting from today
         current_date = datetime.now().date()
