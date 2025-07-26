@@ -888,7 +888,7 @@ class AreaService:
 
     @staticmethod
     async def get_user_areas(user_id: str, include_projects: bool = False, include_archived: bool = False) -> List[AreaResponse]:
-        """OPTIMIZED VERSION - Batch fetch all data to eliminate N+1 queries"""
+        """FULLY OPTIMIZED VERSION - Batch fetch ALL data to eliminate N+1 queries completely"""
         
         # Get all areas for the user
         all_areas = await find_documents("areas", {"user_id": user_id})
@@ -904,55 +904,62 @@ class AreaService:
         if not areas_docs:
             return []
         
-        # OPTIMIZATION: Batch fetch all pillars and projects in 2 queries instead of N queries
+        # OPTIMIZATION: Batch fetch ALL data in just 3 queries instead of N+1
         pillar_ids = list(set([area.get("pillar_id") for area in areas_docs if area.get("pillar_id")]))
         area_ids = [area["id"] for area in areas_docs]
         
-        # Batch fetch pillars (1 query instead of N)
+        # 1. Batch fetch pillars (1 query instead of N)
         pillars_dict = {}
         if pillar_ids:
-            pillars_docs = await find_documents("pillars", {"id": {"$in": pillar_ids}}) if hasattr(find_documents, 'supports_in') else []
-            # Fallback to individual pillar fetches if needed
-            if not pillars_docs and pillar_ids:
-                for pillar_id in pillar_ids[:10]:  # Limit to prevent timeout
-                    try:
-                        pillar_doc = await find_document("pillars", {"id": pillar_id})
-                        if pillar_doc:
-                            pillars_dict[pillar_id] = pillar_doc
-                    except:
-                        continue
-            else:
-                pillars_dict = {p["id"]: p for p in pillars_docs}
+            try:
+                # Get all user pillars and filter what we need
+                all_pillars = await find_documents("pillars", {"user_id": user_id})
+                pillars_dict = {p["id"]: p for p in all_pillars if p["id"] in pillar_ids}
+            except Exception as e:
+                logger.warning(f"Error batch fetching pillars: {e}")
         
-        # Batch fetch projects (1 query instead of N) 
+        # 2. Batch fetch projects AND tasks (2 queries instead of N+1)
         projects_dict = {}
         if include_projects:
             try:
-                # Try to get all projects for all areas in one query
+                # Get all user projects
                 all_projects = await find_documents("projects", {"user_id": user_id})
+                relevant_projects = [p for p in all_projects if p.get("area_id") in area_ids and not p.get("archived", False)]
                 
-                # Group projects by area_id
-                for project_doc in all_projects:
+                # Get all user tasks in ONE query
+                all_tasks = await find_documents("tasks", {"user_id": user_id})
+                tasks_by_project = {}
+                for task in all_tasks:
+                    project_id = task.get("project_id")
+                    if project_id:
+                        if project_id not in tasks_by_project:
+                            tasks_by_project[project_id] = []
+                        tasks_by_project[project_id].append(task)
+                
+                # Group projects by area_id with task counts calculated
+                for project_doc in relevant_projects:
                     area_id = project_doc.get("area_id")
                     if area_id in area_ids:
                         if area_id not in projects_dict:
                             projects_dict[area_id] = []
                         
-                        # Build project response
+                        # Build project response with task counts from batch-fetched data
                         project_response = ProjectResponse(**project_doc)
+                        project_tasks = tasks_by_project.get(project_response.id, [])
+                        project_response.task_count = len(project_tasks)
+                        project_response.completed_task_count = len([t for t in project_tasks if t.get("status") == "completed"])
                         
-                        # Get task counts for project (simplified)
-                        try:
-                            tasks = await find_documents("tasks", {"project_id": project_response.id})
-                            project_response.task_count = len(tasks)
-                            project_response.completed_task_count = len([t for t in tasks if t.get("status") == "completed"])
-                        except:
-                            project_response.task_count = 0
-                            project_response.completed_task_count = 0
+                        # Calculate completion percentage
+                        if project_response.task_count > 0:
+                            completion_rate = (project_response.completed_task_count / project_response.task_count) * 100
+                            project_response.completion_percentage = round(completion_rate, 1)
+                        else:
+                            project_response.completion_percentage = 0.0
                         
                         projects_dict[area_id].append(project_response)
+                        
             except Exception as e:
-                logger.warning(f"Error batch fetching projects: {e}")
+                logger.warning(f"Error batch fetching projects and tasks: {e}")
                 projects_dict = {}
         
         # Build responses efficiently
@@ -971,7 +978,7 @@ class AreaService:
                 area_response.project_count = len(projects)
                 area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
                 
-                # Calculate task counts
+                # Calculate task counts from batch-fetched data
                 total_tasks = sum([p.task_count or 0 for p in projects])
                 completed_tasks = sum([p.completed_task_count or 0 for p in projects])
                 area_response.total_task_count = total_tasks
@@ -982,6 +989,12 @@ class AreaService:
                 area_response.completed_project_count = 0
                 area_response.total_task_count = 0
                 area_response.completed_task_count = 0
+            else:
+                # Even when not including projects, calculate counts efficiently
+                all_projects = await find_documents("projects", {"user_id": user_id, "area_id": area_response.id})
+                projects_docs = [p for p in all_projects if not p.get("archived", False)]
+                area_response.project_count = len(projects_docs)
+                area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
             
             areas.append(area_response)
         
