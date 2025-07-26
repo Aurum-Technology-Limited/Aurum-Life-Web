@@ -2525,55 +2525,81 @@ class StatsService:
     @staticmethod
     async def update_user_stats(user_id: str) -> UserStats:
         """Recalculate and update user statistics"""
-        # Get current counts (removed habits references)
-        total_journal_entries = await count_documents("journal_entries", {"user_id": user_id})
-        
-        # Updated task counts to work with projects
-        total_tasks = await count_documents("tasks", {"user_id": user_id})
-        tasks_completed = await count_documents("tasks", {"user_id": user_id, "completed": True})
-        
-        # New counts for areas and projects
-        total_areas = await count_documents("areas", {"user_id": user_id})
-        total_projects = await count_documents("projects", {"user_id": user_id})
-        completed_projects = await count_documents("projects", {"user_id": user_id, "status": "Completed"})
-        
-        courses_enrolled = await count_documents("user_course_progress", {"user_id": user_id})
-        courses_completed = await count_documents("user_course_progress", {"user_id": user_id, "progress_percentage": 100})
-        badges_earned = await count_documents("user_badges", {"user_id": user_id, "earned": True})
-        
-        # Calculate current streak (use journal streak instead of habits)
-        current_streak = await JournalService._calculate_journal_streak(user_id)
-        
-        stats_data = {
-            "user_id": user_id,
-            "total_journal_entries": total_journal_entries,
-            "total_tasks": total_tasks,
-            "tasks_completed": tasks_completed,
-            "total_areas": total_areas,
-            "total_projects": total_projects,
-            "completed_projects": completed_projects,
-            "courses_enrolled": courses_enrolled,
-            "courses_completed": courses_completed,
-            "badges_earned": badges_earned
-        }
-        
-        # Update or create stats
-        existing_stats = await find_document("user_stats", {"user_id": user_id})
-        if existing_stats:
-            await update_document("user_stats", {"user_id": user_id}, stats_data)
-        else:
-            stats = UserStats(**stats_data)
-            await create_document("user_stats", stats.dict())
-        
-        # Update user's current streak and total points (removed habits from calculation)
-        total_points = (tasks_completed * 15) + (badges_earned * 50) + (courses_completed * 100) + (completed_projects * 25)
-        await update_document("users", {"id": user_id}, {
-            "current_streak": current_streak,
-            "total_points": total_points,
-            "updated_at": datetime.utcnow()
-        })
-        
-        return UserStats(**stats_data)
+        try:
+            # Get current counts (removed habits references)
+            total_journal_entries = await count_documents("journal_entries", {"user_id": user_id})
+            
+            # Updated task counts to work with projects
+            total_tasks = await count_documents("tasks", {"user_id": user_id})
+            tasks_completed = await count_documents("tasks", {"user_id": user_id, "completed": True})
+            
+            # New counts for areas and projects
+            total_areas = await count_documents("areas", {"user_id": user_id})
+            total_projects = await count_documents("projects", {"user_id": user_id})
+            completed_projects = await count_documents("projects", {"user_id": user_id, "status": "Completed"})
+            
+            # Only query tables that exist (courses and badges may not exist)
+            courses_enrolled = 0
+            courses_completed = 0 
+            badges_earned = 0
+            
+            try:
+                courses_enrolled = await count_documents("user_course_progress", {"user_id": user_id})
+                courses_completed = await count_documents("user_course_progress", {"user_id": user_id, "progress_percentage": 100})
+            except Exception:
+                # Course tables don't exist - ignore
+                pass
+                
+            try:
+                badges_earned = await count_documents("user_badges", {"user_id": user_id, "earned": True})
+            except Exception:
+                # Badge tables don't exist - ignore 
+                pass
+            
+            # Calculate current streak (use journal streak instead of habits)
+            current_streak = 0
+            try:
+                current_streak = await JournalService._calculate_journal_streak(user_id)
+            except Exception:
+                # Journal streak calculation failed - use 0
+                pass
+            
+            stats_data = {
+                "user_id": user_id,
+                "total_journal_entries": total_journal_entries,
+                "total_tasks": total_tasks,
+                "tasks_completed": tasks_completed,
+                "total_areas": total_areas,
+                "total_projects": total_projects,
+                "completed_projects": completed_projects,
+                "courses_enrolled": courses_enrolled,
+                "courses_completed": courses_completed,
+                "badges_earned": badges_earned
+            }
+            
+            # Update or create stats
+            existing_stats = await find_document("user_stats", {"user_id": user_id})
+            if existing_stats:
+                await update_document("user_stats", {"user_id": user_id}, stats_data)
+            else:
+                stats = UserStats(**stats_data)
+                await create_document("user_stats", stats.dict())
+            
+            # Update user's current streak and total points (removed habits from calculation)
+            total_points = (tasks_completed * 15) + (badges_earned * 50) + (courses_completed * 100) + (completed_projects * 25)
+            await update_document("users", {"id": user_id}, {
+                "current_streak": current_streak,
+                "total_points": total_points,
+                "updated_at": datetime.utcnow()
+            })
+            
+            return UserStats(**stats_data)
+            
+        except Exception as e:
+            logger.error(f"Error updating user stats: {e}")
+            # Return default stats if everything fails
+            default_stats = UserStats(user_id=user_id)
+            return default_stats
 
     @staticmethod
     async def get_dashboard_data(user_id: str) -> UserDashboard:
