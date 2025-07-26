@@ -1016,7 +1016,15 @@ class ResourceCreate(BaseModel):
     category: ResourceCategoryEnum = ResourceCategoryEnum.document
     mime_type: str
     file_size: int
-    file_content: str  # Base64 encoded
+    
+    # Supabase Storage fields
+    storage_bucket: Optional[str] = None
+    storage_path: Optional[str] = None
+    file_url: Optional[str] = None
+    
+    # Legacy base64 content for backward compatibility
+    file_content: Optional[str] = None  # Base64 encoded file content
+    
     description: str = ""
     tags: List[str] = []
     folder_path: str = "/"
