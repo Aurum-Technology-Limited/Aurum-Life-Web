@@ -966,13 +966,13 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
             )}
           </div>
           
-          {/* File Manager - Only show for existing tasks */}
+          {/* File Attachment - Only show for existing tasks */}
           {task && (
             <div>
-              <FileManager 
-                entityType="task"
-                entityId={task.id}
-                entityName={task.name}
+              <FileAttachment 
+                parentType="task"
+                parentId={task.id}
+                parentName={task.name}
               />
             </div>
           )}
