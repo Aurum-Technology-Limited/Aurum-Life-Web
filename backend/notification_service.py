@@ -665,20 +665,15 @@ class NotificationService:
     
     @staticmethod
     async def clear_all_notifications(user_id: str) -> int:
-        """Clear all notifications for a user"""
+        """Clear all browser notifications for a user"""
         try:
-            # Get all notifications to count them
-            all_notifications = await find_documents("browser_notifications", {
-                "user_id": user_id
-            })
+            from database import get_collection
             
-            # Delete all notifications for the user
-            await delete_document("browser_notifications", {"user_id": user_id})
-            
-            return len(all_notifications)
-            
+            collection = await get_collection("browser_notifications")
+            result = await collection.delete_many({"user_id": user_id})
+            return result.deleted_count
         except Exception as e:
-            logger.error(f"Error clearing all notifications for user {user_id}: {e}")
+            logger.error(f"Error clearing notifications for user {user_id}: {e}")
             return 0
 
 # Create global notification service instance
