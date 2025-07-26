@@ -127,8 +127,8 @@ function App() {
         return <Profile {...props} />;
       case 'dashboard':
       default:
-        console.log('🏠 Rendering Dashboard component');
-        return <Dashboard {...props} />;
+        console.log('🏠 Rendering Optimized Dashboard component');
+        return <OptimizedDashboard {...props} />;
     }
   };
 
