@@ -1511,28 +1511,28 @@ class TaskService:
     async def get_available_tasks_for_today(user_id: str) -> List[TaskResponse]:
         """Get tasks that can be added to today's view (simplified without daily_tasks table)"""
         try:
-            today = datetime.now().date()
-            today_start = datetime.combine(today, datetime.min.time())
+            # Get all tasks for the user
+            all_tasks = await find_documents("tasks", {"user_id": user_id})
             
-            # Get all incomplete tasks
-            query = {
-                "user_id": user_id,
-                "completed": {"$ne": True}
-            }
+            if not all_tasks:
+                return []
             
-            tasks_docs = await find_documents("tasks", query)
+            # Filter incomplete tasks on the client side
+            incomplete_tasks = []
+            for task in all_tasks:
+                is_completed = task.get("completed", False)
+                if not is_completed:
+                    incomplete_tasks.append(task)
             
             # Sort by priority and due date
-            tasks_docs.sort(key=lambda x: (
+            incomplete_tasks.sort(key=lambda x: (
                 0 if x.get("priority") == "high" else 1 if x.get("priority") == "medium" else 2,
-                x.get("due_date") or datetime.max
+                x.get("due_date") or datetime.max.isoformat()
             ))
             
-            # Limit to top 20 to avoid overwhelming the UI
-            tasks_docs = tasks_docs[:20]
-            
+            # Build task responses (limit to 20)
             tasks = []
-            for doc in tasks_docs:
+            for doc in incomplete_tasks[:20]:
                 task = await TaskService._build_task_response(doc, include_subtasks=False)
                 tasks.append(task)
             
