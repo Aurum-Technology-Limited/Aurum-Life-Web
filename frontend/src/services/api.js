@@ -6,7 +6,7 @@ const API = `${BACKEND_URL}/api`;
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API,
-  timeout: 10000,
+  timeout: 30000, // Increase timeout to 30 seconds
   headers: {
     'Content-Type': 'application/json',
   },
