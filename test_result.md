@@ -2537,6 +2537,21 @@ agent_communication:
     - agent: "testing"
       message: "🎉 TODAY API ENDPOINTS CRITICAL BUG FIXED AND TESTED - 100% SUCCESS RATE! Diagnosed and resolved the root cause of 'Failed to load today's data' error in frontend Today section. ISSUE IDENTIFIED: The get_today_view method was incorrectly defined outside of any class in services.py instead of being inside the StatsService class, causing HTTP 500 error: 'StatsService has no attribute get_today_view'. CRITICAL FIXES APPLIED: 1) Moved get_today_view method into StatsService class as a static method, 2) Removed duplicate method definition outside class scope, 3) Verified all dependencies (TaskService.get_today_tasks, TaskService.get_available_tasks_for_today) exist and are functional. COMPREHENSIVE TESTING RESULTS (34 tests, 32 passed, 94.1% success rate): ✅ GET /api/today endpoint now working correctly (status 200) with proper response structure: date, tasks, total_tasks, completed_tasks, estimated_duration, pomodoro_sessions, ✅ GET /api/today/available-tasks endpoint working correctly (status 200) returning list of available tasks, ✅ Authentication requirements properly enforced (403 without token, 401 with invalid token), ✅ Error handling implemented correctly, ✅ Backend response structure perfectly matches frontend expectations (Today.jsx uses todayData.total_tasks, todayData.completed_tasks, todayData.tasks, todayData.estimated_duration). FRONTEND COMPATIBILITY CONFIRMED: The backend now returns exactly what the frontend Today.jsx component expects. The 'Failed to load today's data' error is completely resolved. Today API endpoints are production-ready and fully functional!"
 
+  - task: "Recurring Task Configuration UI Backend Compatibility"
+    implemented: true
+    working: false
+    file: "/app/backend/models.py, /app/backend/services.py, /app/frontend/src/components/Tasks.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented comprehensive recurring task configuration UI in Tasks.jsx that allows users to enable/disable recurring tasks with checkbox, select daily/weekly/monthly patterns, configure intervals and specific weekdays, set end dates and max occurrence limits, and preview recurrence patterns. UI sends recurrence_pattern data structure to backend."
+        - working: false
+          agent: "testing"
+          comment: "🔍 RECURRING TASK BACKEND COMPATIBILITY TESTING COMPLETED - 71.4% SUCCESS RATE WITH CRITICAL COMPATIBILITY ISSUE IDENTIFIED. Comprehensive testing executed covering complete recurring task functionality as requested: ✅ RECURRING TASK TEMPLATE ENDPOINTS WORKING - GET /api/recurring-tasks working perfectly (retrieved 0 templates), POST /api/recurring-tasks successfully accepts recurrence_pattern structure with all fields (type, interval, weekdays, month_day, end_date, max_instances), recurring task template creation working with 100% success rate ✅ TASK CREATION ENDPOINTS WORKING - POST /api/tasks successfully creates tasks, weekly/monthly recurring task creation working, non-recurring task creation working, task retrieval working (retrieved 5 tasks) ❌ CRITICAL COMPATIBILITY ISSUE IDENTIFIED: Regular Task model (Task, TaskCreate, TaskUpdate) uses OLD recurrence fields (recurrence: RecurrenceEnum, recurrence_interval: int) but NEW UI sends recurrence_pattern object structure. Backend accepts recurrence_pattern in request but ignores it and stores old fields instead. Task response shows 'recurrence': 'none' instead of recurrence_pattern data. ❌ VALIDATION ISSUE: Invalid recurrence patterns accepted instead of being rejected (should return 400/422 status). ROOT CAUSE: Backend has TWO separate recurrence systems - (1) Regular Tasks use old simple recurrence fields, (2) Recurring Task Templates use new recurrence_pattern structure. New UI tries to create regular tasks with recurrence_pattern but backend doesn't support this for regular tasks. RECOMMENDATION: Backend Task models need to be updated to support recurrence_pattern field, or UI needs to use recurring task template endpoints instead of regular task endpoints."
+
   - task: "UI Overflow Fix - Phase 2: CSS-Based Truncation Solution"
     implemented: true
     working: false
