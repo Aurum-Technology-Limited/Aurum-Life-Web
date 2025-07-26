@@ -2468,7 +2468,13 @@ class StatsService:
         if not stats_doc:
             # Create default stats
             stats = UserStats(user_id=user_id)
-            await create_document("user_stats", stats.dict())
+            stats_dict = stats.dict()
+            # Remove any fields that might cause schema cache issues
+            problematic_fields = ['updated_at', 'last_updated']
+            for field in problematic_fields:
+                if field in stats_dict:
+                    stats_dict.pop(field)
+            await create_document("user_stats", stats_dict)
             return stats
         return UserStats(**stats_doc)
 
