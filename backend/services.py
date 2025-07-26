@@ -3422,9 +3422,6 @@ class ResourceService:
         # Build query
         query = {"user_id": user_id}
         
-        if not include_archived:
-            query["is_archived"] = {"$ne": True}
-        
         if category:
             query["category"] = category
             
