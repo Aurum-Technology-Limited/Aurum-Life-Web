@@ -87,17 +87,17 @@ class SupabaseDirectTestSuite:
                     
                     # Test update operation
                     update_data = {'first_name': 'Updated Direct'}
-                    update_success = await supabase_manager.update_document('users', user_id, update_data)
+                    update_success = await supabase_manager.update_document('user_profiles', user_id, update_data)
                     if update_success:
                         print("✅ Update operation successful")
                         
                         # Verify update
-                        updated_user = await supabase_manager.find_document('users', {'id': user_id})
+                        updated_user = await supabase_manager.find_document('user_profiles', {'id': user_id})
                         if updated_user and updated_user['first_name'] == 'Updated Direct':
                             print("✅ Update verification successful")
                             
                             # Test count operation
-                            count = await supabase_manager.count_documents('users', {'email': test_user_data['email']})
+                            count = await supabase_manager.count_documents('user_profiles', {'email': test_user_data['email']})
                             if count == 1:
                                 print("✅ Count operation successful")
                                 
