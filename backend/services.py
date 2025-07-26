@@ -506,22 +506,23 @@ class JournalService:
             # Trend data (last 30 days)
             created_at = doc.get("created_at")
             if created_at:
-                # Handle timezone-aware datetime
-                if hasattr(created_at, 'replace') and created_at.tzinfo:
-                    created_at_naive = created_at.replace(tzinfo=None)
-                else:
-                    created_at_naive = created_at
-                    
-                if created_at_naive >= thirty_days_ago:
+                # Use safe datetime comparison
+                if safe_datetime_compare(created_at, thirty_days_ago):
+                    # Handle timezone conversion for date extraction
+                    if isinstance(created_at, str):
+                        created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    if hasattr(created_at, 'tzinfo') and created_at.tzinfo:
+                        created_at = created_at.replace(tzinfo=None)
+                        
                     mood_trend.append({
-                        "date": created_at_naive.date().isoformat(),
+                        "date": created_at.date().isoformat(),
                         "mood": mood,
                         "mood_score": {"optimistic": 5, "inspired": 5, "excited": 5, "grateful": 4, 
                                       "motivated": 4, "peaceful": 4, "reflective": 3, "challenging": 2, 
                                       "frustrated": 2, "anxious": 1}.get(mood, 3)
                     })
                     energy_trend.append({
-                        "date": created_at_naive.date().isoformat(),
+                        "date": created_at.date().isoformat(),
                         "energy_level": energy,
                         "energy_score": energy_map.get(energy, 3)
                     })
