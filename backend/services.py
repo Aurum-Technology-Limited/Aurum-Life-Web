@@ -1457,66 +1457,40 @@ class TaskService:
 
     @staticmethod
     async def get_today_tasks(user_id: str) -> List[TaskResponse]:
-        """Get curated tasks for today's view"""
-        today = datetime.now().date()
-        
-        # Get tasks specifically added to today's view
-        daily_tasks_docs = await find_documents("daily_tasks", {
-            "user_id": user_id,
-            "date": {
-                "$gte": datetime.combine(today, datetime.min.time()),
-                "$lte": datetime.combine(today, datetime.max.time())
-            }
-        })
-        
-        if daily_tasks_docs:
-            # Sort by user-defined order
-            daily_tasks_docs.sort(key=lambda x: x.get("sort_order", 0))
-            task_ids = [dt["task_id"] for dt in daily_tasks_docs]
-            
-            # Get the actual task data
-            tasks_docs = await find_documents("tasks", {
-                "id": {"$in": task_ids},
-                "user_id": user_id
-            })
-            
-            # Build task responses
-            tasks = []
-            for task_doc in tasks_docs:
-                task = await TaskService._build_task_response(task_doc, include_subtasks=True)
-                tasks.append(task)
-            
-            # Sort tasks by daily_tasks sort_order
-            task_order_map = {dt["task_id"]: dt["sort_order"] for dt in daily_tasks_docs}
-            tasks.sort(key=lambda t: task_order_map.get(t.id, 999))
-            
-            return tasks
-        else:
-            # Fallback to original behavior: tasks due today or overdue
+        """Get tasks for today's view - due today or overdue"""
+        try:
+            today = datetime.now().date()
             today_start = datetime.combine(today, datetime.min.time())
             today_end = datetime.combine(today, datetime.max.time())
             
-            # Query for tasks due today or overdue
-            pipeline = [
-                {
-                    "$match": {
-                        "user_id": user_id,
-                        "$or": [
-                            {"due_date": {"$gte": today_start, "$lte": today_end}},
-                            {"due_date": {"$lt": today_start}, "completed": False}
-                        ]
-                    }
-                },
-                {"$sort": {"priority": -1, "due_date": 1}}
-            ]
+            # Get tasks due today or overdue (simplified without daily_tasks table)
+            tasks_docs = await find_documents("tasks", {
+                "user_id": user_id,
+                "$or": [
+                    {"due_date": {"$gte": today_start, "$lte": today_end}},
+                    {"due_date": {"$lt": today_start}, "completed": False}
+                ]
+            })
             
-            # Get tasks from aggregation pipeline
-            tasks_docs = await aggregate_documents("tasks", pipeline)
+            if not tasks_docs:
+                return []
+            
+            # Sort by priority and due date
+            tasks_docs.sort(key=lambda x: (
+                -x.get("priority", 0),  # Higher priority first
+                x.get("due_date", datetime.max)  # Earlier due dates first
+            ))
             
             tasks = []
-            for doc in tasks_docs:
+            for doc in tasks_docs[:20]:  # Limit to 20 tasks
                 task = await TaskService._build_task_response(doc, include_subtasks=False)
                 tasks.append(task)
+                
+            return tasks
+            
+        except Exception as e:
+            logger.error(f"Error getting today tasks: {e}")
+            return []
             
             return tasks
 
