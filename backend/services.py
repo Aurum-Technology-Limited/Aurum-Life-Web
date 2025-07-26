@@ -595,7 +595,10 @@ class JournalService:
 
     @staticmethod
     async def initialize_default_templates():
-        """Initialize default journal templates for the system"""
+        """Initialize default journal templates - Disabled during Supabase migration"""
+        # TODO: Re-enable after fixing foreign key constraints between auth.users and public.users
+        logger.info("⚠️ Default journal templates initialization skipped during Supabase migration")
+        return
         default_templates = [
             {
                 "name": "Daily Reflection",
