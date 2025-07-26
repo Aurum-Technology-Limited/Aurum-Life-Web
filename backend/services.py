@@ -2539,16 +2539,21 @@ class StatsService:
     async def get_user_stats(user_id: str) -> UserStats:
         stats_doc = await find_document("user_stats", {"user_id": user_id})
         if not stats_doc:
-            # Create default stats
-            stats = UserStats(user_id=user_id)
-            stats_dict = stats.dict()
-            # Remove any fields that might cause schema cache issues
-            problematic_fields = ['updated_at', 'last_updated']
-            for field in problematic_fields:
-                if field in stats_dict:
-                    stats_dict.pop(field)
-            await create_document("user_stats", stats_dict)
-            return stats
+            # Create default stats - with error handling for foreign key constraints
+            try:
+                stats = UserStats(user_id=user_id)
+                stats_dict = stats.dict()
+                # Remove any fields that might cause schema cache issues
+                problematic_fields = ['updated_at', 'last_updated']
+                for field in problematic_fields:
+                    if field in stats_dict:
+                        stats_dict.pop(field)
+                await create_document("user_stats", stats_dict)
+                return stats
+            except Exception as e:
+                logger.error(f"Error creating user stats: {e}")
+                # Return default stats without persisting if creation fails
+                return UserStats(user_id=user_id)
         return UserStats(**stats_doc)
 
     @staticmethod
