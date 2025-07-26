@@ -830,6 +830,8 @@ class NotificationPreferenceUpdate(BaseModel):
     task_reminder_notifications: Optional[bool] = None
     project_deadline_notifications: Optional[bool] = None
     recurring_task_notifications: Optional[bool] = None
+    achievement_notifications: Optional[bool] = None
+    unblocked_task_notifications: Optional[bool] = None
     reminder_advance_time: Optional[int] = None
     overdue_check_interval: Optional[int] = None
     quiet_hours_start: Optional[str] = None
