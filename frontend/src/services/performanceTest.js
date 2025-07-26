@@ -10,15 +10,22 @@ class PerformanceTest {
     this.results = [];
   }
   
-  async testEndpoint(name, url, headers = {}) {
+  async testEndpoint(name, url, options = {}) {
     const startTime = Date.now();
     console.log(`🧪 Testing ${name}...`);
     
     try {
-      const response = await fetch(`${API_BASE}${url}`, {
-        headers: { 'Content-Type': 'application/json', ...headers },
+      const fetchOptions = {
+        method: options.method || 'GET',
+        headers: { 'Content-Type': 'application/json', ...options.headers },
         timeout: 10000
-      });
+      };
+      
+      if (options.body) {
+        fetchOptions.body = options.body;
+      }
+      
+      const response = await fetch(`${API_BASE}${url}`, fetchOptions);
       
       const endTime = Date.now();
       const duration = endTime - startTime;
