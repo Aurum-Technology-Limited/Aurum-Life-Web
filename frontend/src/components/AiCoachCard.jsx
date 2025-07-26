@@ -21,11 +21,13 @@ const AiCoachCard = ({ onStartFocusSession }) => {
     setError('');
     
     try {
-      const response = await aiCoachAPI.getTodaysPriorities();
+      console.log('🤖 AI Coach: Loading priorities');
+      const response = await emergencyAPI.aiCoach();
       setRecommendations(response.data.recommendations || []);
       setMessage(response.data.message || '');
+      console.log('🤖 AI Coach: Priorities loaded successfully');
     } catch (err) {
-      console.error('Error loading AI priorities:', err);
+      console.error('🤖 AI Coach: Error loading priorities:', err);
       setError('Unable to load today\'s priorities');
     } finally {
       setLoading(false);
