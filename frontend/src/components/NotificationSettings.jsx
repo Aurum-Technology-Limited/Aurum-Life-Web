@@ -1,16 +1,9 @@
-/**
- * Notification Settings Component for Aurum Life
- * Allows users to configure their notification preferences
- */
-
 import React, { useState, useEffect } from 'react';
 import { 
   Bell, 
   Mail, 
   Monitor, 
   Clock, 
-  Volume2, 
-  VolumeX,
   CheckCircle2,
   Save,
   Send,
