@@ -2525,9 +2525,7 @@ class StatsService:
     @staticmethod
     async def update_user_stats(user_id: str) -> UserStats:
         """Recalculate and update user statistics"""
-        # Get current counts
-        total_habits = await count_documents("habits", {"user_id": user_id})
-        habits_completed_today = await count_documents("habits", {"user_id": user_id, "is_completed_today": True})
+        # Get current counts (removed habits references)
         total_journal_entries = await count_documents("journal_entries", {"user_id": user_id})
         
         # Updated task counts to work with projects
@@ -2543,14 +2541,11 @@ class StatsService:
         courses_completed = await count_documents("user_course_progress", {"user_id": user_id, "progress_percentage": 100})
         badges_earned = await count_documents("user_badges", {"user_id": user_id, "earned": True})
         
-        # Calculate current streak (from habits)
-        habits = await find_documents("habits", {"user_id": user_id})
-        current_streak = max([h.get("current_streak", 0) for h in habits] + [0])
+        # Calculate current streak (use journal streak instead of habits)
+        current_streak = await JournalService._calculate_journal_streak(user_id)
         
         stats_data = {
             "user_id": user_id,
-            "total_habits": total_habits,
-            "habits_completed_today": habits_completed_today,
             "total_journal_entries": total_journal_entries,
             "total_tasks": total_tasks,
             "tasks_completed": tasks_completed,
@@ -2559,8 +2554,7 @@ class StatsService:
             "completed_projects": completed_projects,
             "courses_enrolled": courses_enrolled,
             "courses_completed": courses_completed,
-            "badges_earned": badges_earned,
-            "last_updated": datetime.utcnow()
+            "badges_earned": badges_earned
         }
         
         # Update or create stats
@@ -2571,8 +2565,8 @@ class StatsService:
             stats = UserStats(**stats_data)
             await create_document("user_stats", stats.dict())
         
-        # Update user's current streak and total points
-        total_points = (habits_completed_today * 10) + (tasks_completed * 15) + (badges_earned * 50) + (courses_completed * 100) + (completed_projects * 25)
+        # Update user's current streak and total points (removed habits from calculation)
+        total_points = (tasks_completed * 15) + (badges_earned * 50) + (courses_completed * 100) + (completed_projects * 25)
         await update_document("users", {"id": user_id}, {
             "current_streak": current_streak,
             "total_points": total_points,
