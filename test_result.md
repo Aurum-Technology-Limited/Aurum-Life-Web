@@ -2517,9 +2517,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Sidebar Navigation Cleanup and Profile Enhancement"
+    - "Supabase Authentication System - User Migration Fix"
   stuck_tasks:
-    - "Enhanced Drag & Drop Frontend Implementation - Phase 2"
+    - "None"
   test_all: false
   test_priority: "high_first"
 
