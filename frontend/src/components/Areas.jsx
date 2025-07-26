@@ -52,15 +52,30 @@ const Areas = ({ onSectionChange }) => {
     '#F59E0B', '#06B6D4', '#84CC16', '#F97316', '#EC4899'
   ];
 
-  const loadAreas = async () => {
+  const loadAreas = async (retryCount = 0) => {
     try {
       setLoading(true);
+      setError(null);
       const response = await areasAPI.getAreas(true, showArchived); // Include projects and optionally archived
       setAreas(response.data);
       setError(null);
     } catch (err) {
-      setError('Failed to load areas');
       console.error('Error loading areas:', err);
+      
+      // If it's an authentication error, don't retry
+      if (err.response?.status === 401) {
+        setError('Authentication failed. Please log in again.');
+        return;
+      }
+      
+      // Retry logic for network errors
+      if (retryCount < 2 && (err.code === 'ECONNABORTED' || err.message.includes('timeout'))) {
+        console.log(`Retrying areas load (attempt ${retryCount + 1})`);
+        setTimeout(() => loadAreas(retryCount + 1), 1000);
+        return;
+      }
+      
+      setError('Failed to load areas');
     } finally {
       setLoading(false);
     }
