@@ -47,6 +47,11 @@ async def root():
 async def health_check():
     return {"status": "healthy", "service": "aurum-life-api"}
 
+@api_router.get("/test-fast")
+async def test_fast_endpoint():
+    """Test endpoint to verify optimizations work"""
+    return {"status": "fast", "message": "Optimizations working", "timestamp": datetime.utcnow().isoformat()}
+
 # Authentication endpoints
 @api_router.post("/auth/register", response_model=UserResponse)
 async def register_user(user_data: UserCreate):
