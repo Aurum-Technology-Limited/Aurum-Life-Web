@@ -101,3 +101,20 @@ class SupabaseAuth:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found"
             )
+
+# Export functions for use in FastAPI dependencies
+async def get_current_user(supabase_user: dict = Depends(SupabaseAuth.verify_token)) -> User:
+    """Get current authenticated user with profile data"""
+    return await SupabaseAuth.get_current_user(supabase_user)
+
+async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+    """Get current active user"""
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inactive user"
+        )
+    return current_user
+
+# Export token verification function
+verify_token = SupabaseAuth.verify_token
