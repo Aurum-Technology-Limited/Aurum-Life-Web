@@ -1409,7 +1409,7 @@ async def get_parent_resources(
 ):
     """Get all resources attached to a specific parent entity (contextual attachments)"""
     try:
-        return await ResourceService.get_parent_resources(current_user.id, parent_type, parent_id)
+        return await supabase_resource_service.get_resources_by_parent(current_user.id, parent_type, parent_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
