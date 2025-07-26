@@ -17,7 +17,9 @@ async def test_storage_service():
     
     try:
         # Import after environment is loaded
-        from backend.supabase_storage import storage_service
+        import sys
+        sys.path.append('/app/backend')
+        from supabase_storage import storage_service
         
         print("✅ Storage service imported")
         
