@@ -59,16 +59,28 @@ const Areas = ({ onSectionChange }) => {
       setError(null);
       console.log('🗂️ Areas: Calling areasAPI.getAreas with showArchived:', showArchived);
       
-      // Add a timeout wrapper to detect hanging requests
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Custom timeout after 15 seconds')), 15000);
+      // Try using fetch directly instead of axios as backup
+      const token = localStorage.getItem('auth_token');
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      
+      console.log('🗂️ Areas: Using direct fetch with URL:', `${backendUrl}/api/areas`);
+      
+      const fetchResponse = await fetch(`${backendUrl}/api/areas?include_projects=true&include_archived=${showArchived}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 15000
       });
       
-      const apiPromise = areasAPI.getAreas(true, showArchived);
+      if (!fetchResponse.ok) {
+        throw new Error(`HTTP ${fetchResponse.status}: ${fetchResponse.statusText}`);
+      }
       
-      const response = await Promise.race([apiPromise, timeoutPromise]);
-      console.log('🗂️ Areas: API response received, data length:', response.data?.length);
-      setAreas(response.data);
+      const data = await fetchResponse.json();
+      console.log('🗂️ Areas: Direct fetch success, data length:', data?.length);
+      setAreas(data);
       setError(null);
     } catch (err) {
       console.error('🗂️ Areas: Error loading areas:', err);
@@ -80,7 +92,7 @@ const Areas = ({ onSectionChange }) => {
       });
       
       // If it's an authentication error, don't retry
-      if (err.response?.status === 401) {
+      if (err.status === 401 || err.message.includes('401')) {
         console.error('🗂️ Areas: Authentication error, not retrying');
         setError('Authentication failed. Please log in again.');
         return;
