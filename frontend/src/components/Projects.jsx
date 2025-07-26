@@ -30,7 +30,7 @@ import { useDataContext } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import KanbanBoard from './KanbanBoard';
 import DonutChart from './ui/DonutChart';
-import FileManager from './FileManager';
+import FileAttachment from './FileAttachment';
 import IconPicker from './ui/IconPicker';
 import { 
   getDynamicFontSize, 
