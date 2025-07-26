@@ -1966,6 +1966,71 @@ class TaskService:
         return await delete_document("tasks", {"id": task_id, "user_id": user_id})
 
     @staticmethod
+    async def _check_and_notify_unblocked_tasks(user_id: str, completed_task_id: str):
+        """Check for tasks that are now unblocked due to the completion of a dependency task and send notifications"""
+        try:
+            # Find all tasks that have the completed task as a dependency
+            dependent_tasks = await find_documents("tasks", {
+                "user_id": user_id,
+                "dependency_task_ids": completed_task_id,
+                "completed": False  # Only consider incomplete tasks
+            })
+            
+            if not dependent_tasks:
+                return  # No dependent tasks found
+            
+            # For each dependent task, check if all its dependencies are now complete
+            for dependent_task in dependent_tasks:
+                all_dependencies_complete = True
+                dependency_task_ids = dependent_task.get("dependency_task_ids", [])
+                
+                if dependency_task_ids:
+                    # Check if all dependency tasks are completed
+                    for dep_task_id in dependency_task_ids:
+                        dep_task = await find_document("tasks", {
+                            "id": dep_task_id, 
+                            "user_id": user_id
+                        })
+                        if not dep_task or not dep_task.get("completed", False):
+                            all_dependencies_complete = False
+                            break
+                
+                # If all dependencies are complete, send unblocked notification
+                if all_dependencies_complete:
+                    # Get project name for context
+                    project_doc = await find_document("projects", {
+                        "id": dependent_task.get("project_id"),
+                        "user_id": user_id
+                    })
+                    project_name = project_doc.get("name", "Unknown Project") if project_doc else "Unknown Project"
+                    
+                    # Get the completed task name
+                    completed_task_doc = await find_document("tasks", {
+                        "id": completed_task_id,
+                        "user_id": user_id
+                    })
+                    completed_task_name = completed_task_doc.get("name", "Unknown Task") if completed_task_doc else "Unknown Task"
+                    
+                    # Create notification
+                    from notification_service import notification_service
+                    await notification_service.create_notification({
+                        "user_id": user_id,
+                        "type": NotificationTypeEnum.unblocked_task,
+                        "title": "✅ Task Unblocked",
+                        "message": f"'{completed_task_name}' is complete. You can now begin '{dependent_task.get('name', 'Unknown Task')}'.",
+                        "related_task_id": dependent_task.get("id"),
+                        "related_project_id": dependent_task.get("project_id"),
+                        "project_name": project_name,
+                        "priority": dependent_task.get("priority", "medium"),
+                        "created_at": datetime.utcnow(),
+                        "is_read": False,
+                        "channels": ["browser"]  # Default to browser notifications
+                    })
+                    
+        except Exception as e:
+            print(f"Error in _check_and_notify_unblocked_tasks: {e}")
+
+    @staticmethod
     async def get_kanban_board(user_id: str, project_id: str) -> KanbanBoard:
         project_doc = await find_document("projects", {"id": project_id, "user_id": user_id})
         if not project_doc:
