@@ -43,44 +43,22 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const authToken = data.access_token;
-        
-        localStorage.setItem('auth_token', authToken);
-        setToken(authToken);
-        
-        // Fetch user data
-        const userResponse = await fetch(`${API_BASE_URL}/api/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-          },
-        });
-
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          setUser(userData);
-          return { success: true };
-        } else {
-          // Handle user data fetch failure
-          const userErrorData = await userResponse.json();
-          return { success: false, error: userErrorData.detail || 'Failed to fetch user data' };
-        }
-      } else {
-        const errorData = await response.json();
-        return { success: false, error: errorData.detail || 'Login failed' };
-      }
+      console.log('🔐 Attempting login...');
+      const response = await fixedAPI.login({ email, password });
+      
+      const authToken = response.data.access_token;
+      localStorage.setItem('auth_token', authToken);
+      setToken(authToken);
+      
+      // Fetch user data with new token
+      const userData = await fixedAPI.getCurrentUser();
+      setUser(userData.data);
+      
+      console.log('🔐 Login successful:', userData.data.email);
+      return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Network error' };
+      console.error('🔐 Login failed:', error.message);
+      return { success: false, error: error.message };
     }
   };
 
