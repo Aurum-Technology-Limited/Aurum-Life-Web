@@ -50,21 +50,44 @@ class PasswordResetEmailTester:
         print("=" * 60)
         
         try:
-            # Check if SendGrid API key is configured
-            sendgrid_key = os.getenv('SENDGRID_API_KEY', 'Not found in environment')
-            sender_email = os.getenv('SENDER_EMAIL', 'Not found in environment')
+            # Read the backend .env file to check configuration
+            env_file_path = "/app/backend/.env"
+            sendgrid_key = None
+            sender_email = None
             
-            # Test backend environment by checking if email service is properly configured
-            # We'll do this by examining the backend logs or response patterns
+            if os.path.exists(env_file_path):
+                with open(env_file_path, 'r') as f:
+                    for line in f:
+                        if line.startswith('SENDGRID_API_KEY='):
+                            sendgrid_key = line.split('=', 1)[1].strip()
+                        elif line.startswith('SENDER_EMAIL='):
+                            sender_email = line.split('=', 1)[1].strip()
+            
+            # Check if SendGrid API key is properly configured
+            sendgrid_configured = sendgrid_key and sendgrid_key != 'your_sendgrid_api_key_here' and len(sendgrid_key) > 10
+            sender_configured = sender_email and '@' in sender_email
             
             self.log_test(
-                "Environment Variables Check",
-                True,
-                f"SENDGRID_API_KEY: {'Configured' if sendgrid_key != 'Not found in environment' else 'Missing'}, "
-                f"SENDER_EMAIL: {sender_email}"
+                "SendGrid API Key Configuration",
+                sendgrid_configured,
+                f"SendGrid API Key: {'Properly configured' if sendgrid_configured else 'Missing or placeholder'}"
             )
             
-            return True
+            self.log_test(
+                "Sender Email Configuration", 
+                sender_configured,
+                f"Sender Email: {sender_email if sender_configured else 'Missing or invalid'}"
+            )
+            
+            # Check if email service is in mock mode or production mode
+            mock_mode = not sendgrid_configured
+            self.log_test(
+                "Email Service Mode",
+                True,  # This is informational
+                f"Email service running in {'MOCK' if mock_mode else 'PRODUCTION'} mode"
+            )
+            
+            return sendgrid_configured and sender_configured
             
         except Exception as e:
             self.log_test("Environment Configuration", False, f"Error: {str(e)}")
