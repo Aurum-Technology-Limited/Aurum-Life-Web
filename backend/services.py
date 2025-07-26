@@ -17,6 +17,28 @@ from google.auth.transport import requests as google_requests
 
 logger = logging.getLogger(__name__)
 
+def safe_datetime_compare(dt, compare_date):
+    """Safely compare datetime objects handling timezone issues"""
+    if dt is None:
+        return False
+    
+    try:
+        # Convert string to datetime if needed
+        if isinstance(dt, str):
+            dt = datetime.fromisoformat(dt.replace('Z', '+00:00'))
+        
+        # Make timezone-naive if timezone-aware
+        if hasattr(dt, 'tzinfo') and dt.tzinfo is not None:
+            dt = dt.replace(tzinfo=None)
+        
+        # Convert datetime to date if needed
+        if hasattr(dt, 'date'):
+            dt = dt.date()
+        
+        return dt >= compare_date
+    except Exception:
+        return False
+
 class UserService:
     @staticmethod
     async def create_user(user_data: UserCreate) -> User:
