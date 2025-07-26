@@ -429,11 +429,8 @@ class NotificationService:
     async def clear_all_notifications(user_id: str) -> int:
         """Clear all browser notifications for a user"""
         try:
-            from database import get_collection
-            
-            collection = await get_collection("browser_notifications")
-            result = await collection.delete_many({"user_id": user_id})
-            return result.deleted_count
+            query = {"user_id": user_id}
+            return await bulk_delete_documents("browser_notifications", query)
         except Exception as e:
             logger.error(f"Error clearing notifications for user {user_id}: {e}")
             return 0
