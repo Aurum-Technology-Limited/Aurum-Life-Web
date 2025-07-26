@@ -82,9 +82,25 @@ class SupabaseMigrationManager:
             logger.info("✅ MongoDB client connected")
             
             # Initialize PostgreSQL connection for direct SQL operations
-            db_url = f"postgresql://postgres:{self.supabase_db_password}@db.{self.supabase_project_ref}.supabase.co:5432/postgres"
-            self.pg_conn = psycopg2.connect(db_url)
-            logger.info("✅ PostgreSQL connection established")
+            # Try different connection URLs for Supabase
+            db_urls = [
+                f"postgresql://postgres.{self.supabase_project_ref}:{self.supabase_db_password}@aws-0-us-east-1.pooler.supabase.com:6543/postgres",
+                f"postgresql://postgres:{self.supabase_db_password}@{self.supabase_project_ref}.supabase.co:5432/postgres"
+            ]
+            
+            self.pg_conn = None
+            for db_url in db_urls:
+                try:
+                    logger.info(f"Trying PostgreSQL connection...")
+                    self.pg_conn = psycopg2.connect(db_url)
+                    logger.info("✅ PostgreSQL connection established")
+                    break
+                except Exception as conn_error:
+                    logger.warning(f"Connection attempt failed: {conn_error}")
+                    continue
+            
+            if not self.pg_conn:
+                logger.info("⚠️ Direct PostgreSQL connection failed, using Supabase client only")
             
         except Exception as e:
             logger.error(f"❌ Connection initialization failed: {e}")
