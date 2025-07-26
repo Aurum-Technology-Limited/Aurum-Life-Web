@@ -772,6 +772,7 @@ class NotificationTypeEnum(str, Enum):
     project_deadline = "project_deadline"
     recurring_task = "recurring_task"
     achievement_unlocked = "achievement_unlocked"
+    unblocked_task = "unblocked_task"
 
 class NotificationChannelEnum(str, Enum):
     browser = "browser"
