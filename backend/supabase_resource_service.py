@@ -183,11 +183,14 @@ class SupabaseResourceService:
         """Migrate existing base64-stored files to Supabase Storage"""
         try:
             # Get resources that still have base64 content
-            query = {"file_content": {"$ne": None}}
+            query = {}
             if user_id:
                 query["user_id"] = user_id
             
             resources_docs = await find_documents("resources", query, limit=batch_size)
+            
+            # Filter to only resources with file_content client-side
+            resources_docs = [r for r in resources_docs if r.get("file_content") is not None]
             
             if not resources_docs:
                 return {"success": True, "message": "No resources to migrate", "migrated": 0}
