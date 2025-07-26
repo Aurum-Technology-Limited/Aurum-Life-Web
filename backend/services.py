@@ -1074,6 +1074,8 @@ class ProjectService:
 
     @staticmethod
     async def get_area_projects(area_id: str, include_archived: bool = False) -> List[ProjectResponse]:
+        """OPTIMIZED VERSION - Get projects for a specific area with batch task fetching"""
+        
         # Get all projects for the area
         all_projects = await find_documents("projects", {"area_id": area_id})
         
@@ -1085,10 +1087,45 @@ class ProjectService:
             
         projects_docs.sort(key=lambda x: x.get("sort_order", 0))
         
+        if not projects_docs:
+            return []
+        
+        # OPTIMIZATION: Batch fetch tasks for all projects (1 query instead of N)
+        project_ids = [project["id"] for project in projects_docs]
+        tasks_dict = {}
+        
+        try:
+            # Get user_id from first project to limit task query scope
+            user_id = projects_docs[0].get("user_id")
+            if user_id:
+                all_tasks = await find_documents("tasks", {"user_id": user_id})
+                for task in all_tasks:
+                    project_id = task.get("project_id")
+                    if project_id in project_ids:
+                        if project_id not in tasks_dict:
+                            tasks_dict[project_id] = []
+                        tasks_dict[project_id].append(task)
+        except Exception as e:
+            logger.warning(f"Batch tasks fetch failed: {e}")
+        
+        # Build responses efficiently
         projects = []
         for doc in projects_docs:
-            project = await ProjectService._build_project_response(doc)
-            projects.append(project)
+            project_response = ProjectResponse(**doc)
+            
+            # Add task counts from batch-fetched data
+            project_tasks = tasks_dict.get(project_response.id, [])
+            project_response.task_count = len(project_tasks)
+            project_response.completed_task_count = len([t for t in project_tasks if t.get("status") == "completed"])
+            
+            # Calculate completion percentage
+            if project_response.task_count > 0:
+                completion_rate = (project_response.completed_task_count / project_response.task_count) * 100
+                project_response.completion_percentage = round(completion_rate, 1)
+            else:
+                project_response.completion_percentage = 0.0
+            
+            projects.append(project_response)
         
         return projects
 
