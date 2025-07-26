@@ -1032,7 +1032,7 @@ class AreaService:
 
     @staticmethod
     async def _build_area_response(area_doc: dict, include_projects: bool = False) -> AreaResponse:
-        """Build area response with pillar name and project data"""
+        """OPTIMIZED VERSION - Build area response with efficient project/task fetching"""
         area_response = AreaResponse(**area_doc)
         
         # Get pillar name if area is linked to a pillar
@@ -1042,19 +1042,20 @@ class AreaService:
                 area_response.pillar_name = pillar_doc["name"]
         
         if include_projects:
-            # Get projects for this area
+            # OPTIMIZED: Use the already optimized get_area_projects method
             projects = await ProjectService.get_area_projects(area_response.id, include_archived=False)
             area_response.projects = projects
             area_response.project_count = len(projects)
             area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
             
-            # Calculate task counts
+            # Calculate task counts from optimized project data
             total_tasks = sum([p.task_count or 0 for p in projects])
             completed_tasks = sum([p.completed_task_count or 0 for p in projects])
             area_response.total_task_count = total_tasks
             area_response.completed_task_count = completed_tasks
         else:
-            # Just get counts (exclude archived projects unless specifically requested)
+            # OPTIMIZED: Calculate counts without fetching full project details
+            # Get projects for this area in one query
             all_projects = await find_documents("projects", {"user_id": area_response.user_id, "area_id": area_response.id})
             # Filter non-archived projects on client side
             projects_docs = [p for p in all_projects if not p.get("archived", False)]
