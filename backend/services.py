@@ -2604,34 +2604,45 @@ class StatsService:
     @staticmethod
     async def get_dashboard_data(user_id: str) -> UserDashboard:
         """Get all dashboard data for a user"""
-        # Update stats first
-        stats = await StatsService.update_user_stats(user_id)
-        
-        # Get user data
-        user = await UserService.get_user(user_id)
-        if not user:
-            raise ValueError("User not found")
-        
-        # Get recent data
-        recent_tasks = await TaskService.get_user_tasks(user_id)
-        recent_courses = await CourseService.get_user_courses(user_id)
-        today_tasks = await TaskService.get_today_tasks(user_id)
-        
-        # Get areas with projects
-        areas = await AreaService.get_user_areas(user_id, include_projects=True)
-        
-        # Get badges (placeholder for now)
-        recent_achievements = []
-        
-        return UserDashboard(
-            user=user,
-            stats=stats,
-            recent_tasks=recent_tasks[:5],
-            recent_courses=recent_courses[:3],
-            recent_achievements=recent_achievements,
-            areas=areas,
-            today_tasks=today_tasks
-        )
+        try:
+            # Update stats first
+            stats = await StatsService.update_user_stats(user_id)
+            
+            # Get user data
+            user = await UserService.get_user(user_id)
+            if not user:
+                raise ValueError("User not found")
+            
+            # Get recent data (handle missing services)
+            recent_tasks = await TaskService.get_user_tasks(user_id)
+            today_tasks = await TaskService.get_today_tasks(user_id)
+            
+            # Get courses if available, otherwise empty list
+            recent_courses = []
+            try:
+                recent_courses = await CourseService.get_user_courses(user_id)
+            except Exception as e:
+                logger.warning(f"Course service not available: {e}")
+            
+            # Get areas with projects
+            areas = await AreaService.get_user_areas(user_id, include_projects=True)
+            
+            # Get badges (placeholder for now)
+            recent_achievements = []
+            
+            return UserDashboard(
+                user=user,
+                stats=stats,
+                recent_tasks=recent_tasks[:5] if recent_tasks else [],
+                recent_courses=recent_courses[:3] if recent_courses else [],
+                recent_achievements=recent_achievements,
+                areas=areas if areas else [],
+                today_tasks=today_tasks if today_tasks else []
+            )
+            
+        except Exception as e:
+            logger.error(f"Error getting dashboard data: {e}")
+            raise
 
     @staticmethod
     async def get_today_view(user_id: str) -> TodayView:
