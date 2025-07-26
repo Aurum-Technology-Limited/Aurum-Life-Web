@@ -17,13 +17,26 @@ class EmailDeliveryError(Exception):
 
 class EmailService:
     def __init__(self):
+        # Force reload of environment variables
+        from dotenv import load_dotenv
+        from pathlib import Path
+        ROOT_DIR = Path(__file__).parent
+        load_dotenv(ROOT_DIR / '.env')
+        
         self.api_key = os.getenv('SENDGRID_API_KEY')
         self.sender_email = os.getenv('SENDER_EMAIL')
+        
+        # Debug logging
+        logger.info(f"EmailService initialization:")
+        logger.info(f"  SENDGRID_API_KEY present: {bool(self.api_key)}")
+        logger.info(f"  SENDGRID_API_KEY first 10 chars: {self.api_key[:10] if self.api_key else 'None'}")
+        logger.info(f"  SENDER_EMAIL: {self.sender_email}")
         
         if not self.api_key or self.api_key == 'your_sendgrid_api_key_here':
             logger.warning("SendGrid API key not configured. Email functionality will be mocked.")
             self.mock_mode = True
         else:
+            logger.info("SendGrid API key configured. Email functionality will use SendGrid.")
             self.mock_mode = False
             self.client = SendGridAPIClient(self.api_key)
 
