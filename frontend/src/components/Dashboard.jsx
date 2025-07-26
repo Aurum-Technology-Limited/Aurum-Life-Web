@@ -4,29 +4,29 @@ import { dashboardAPI, handleApiError } from '../services/api';
 import AiCoachCard from './AiCoachCard';
 
 const StatCard = ({ title, value, subtitle, icon: Icon, trend, loading = false }) => (
-  <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group hover:scale-105">
-    <div className="flex items-center justify-between mb-4">
+  <div className="p-4 sm:p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group hover:scale-105">
+    <div className="flex items-center justify-between mb-3 sm:mb-4">
       <div 
-        className="w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
+        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
         style={{ backgroundColor: '#F4B400' }}
       >
         {loading ? (
-          <Loader2 size={24} className="animate-spin" style={{ color: '#0B0D14' }} />
+          <Loader2 size={20} className="animate-spin sm:w-6 sm:h-6" style={{ color: '#0B0D14' }} />
         ) : (
-          <Icon size={24} style={{ color: '#0B0D14' }} />
+          <Icon size={20} className="sm:w-6 sm:h-6" style={{ color: '#0B0D14' }} />
         )}
       </div>
       {trend && (
         <div className="flex items-center space-x-1 text-green-400">
-          <TrendingUp size={16} />
-          <span className="text-sm font-medium">+{trend}%</span>
+          <TrendingUp size={14} className="sm:w-4 sm:h-4" />
+          <span className="text-xs sm:text-sm font-medium">+{trend}%</span>
         </div>
       )}
     </div>
-    <h3 className="text-2xl font-bold text-white mb-1">
+    <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">
       {loading ? '-' : value}
     </h3>
-    <p className="text-sm text-gray-400">{title}</p>
+    <p className="text-xs sm:text-sm text-gray-400">{title}</p>
     {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
   </div>
 );
