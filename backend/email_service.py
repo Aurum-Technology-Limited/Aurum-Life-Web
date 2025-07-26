@@ -79,7 +79,7 @@ class EmailService:
         print("=" * 50)
         return True
 
-    def send_password_reset_email(self, email: str, reset_token: str, user_name: str = "User"):
+    async def send_password_reset_email(self, email: str, reset_token: str, user_name: str = "User"):
         """
         Send password reset email with secure reset link
         
