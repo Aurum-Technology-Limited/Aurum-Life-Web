@@ -1040,11 +1040,18 @@ class ResourceResponse(BaseModel):
     upload_date: datetime
     last_accessed: Optional[datetime]
     access_count: int
+    
+    # Contextual attachment fields
+    parent_id: Optional[str] = None
+    parent_type: Optional[str] = None
+    
+    # Legacy attachment relationships (deprecated)
     attached_to_tasks: List[str]
     attached_to_projects: List[str]
     attached_to_areas: List[str]
     attached_to_pillars: List[str]
     attached_to_journal_entries: List[str]
+    
     version: int
     parent_resource_id: Optional[str]
     is_current_version: bool
