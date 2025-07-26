@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
-from database import find_documents
+from supabase_client import find_documents
 import logging
 import os
 from emergentintegrations.llm.chat import LlmChat, UserMessage
