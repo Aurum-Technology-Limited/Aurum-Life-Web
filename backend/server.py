@@ -1385,7 +1385,7 @@ async def get_entity_resources(
     entity_id: str,
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all resources attached to a specific entity"""
+    """Get all resources attached to a specific entity (legacy method)"""
     valid_entity_types = ["task", "project", "area", "pillar", "journal_entry"]
     if entity_type not in valid_entity_types:
         raise HTTPException(status_code=400, detail=f"Invalid entity type. Must be one of: {valid_entity_types}")
@@ -1395,6 +1395,21 @@ async def get_entity_resources(
     except Exception as e:
         logger.error(f"Error getting entity resources: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve entity resources")
+
+@api_router.get("/resources/parent/{parent_type}/{parent_id}", response_model=List[ResourceResponse])
+async def get_parent_resources(
+    parent_type: str,
+    parent_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get all resources attached to a specific parent entity (contextual attachments)"""
+    try:
+        return await ResourceService.get_parent_resources(current_user.id, parent_type, parent_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting parent resources: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve parent resources")
 
 from models import User
 from auth import get_current_active_user
