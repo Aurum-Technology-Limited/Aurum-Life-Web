@@ -90,7 +90,7 @@ const Feedback = () => {
         </p>
       </div>
 
-        {/* Success Message */}
+      {/* Success Message */}
         {success && (
           <div className="bg-green-900/20 border border-green-600 rounded-lg p-4 mb-6 flex items-center">
             <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
