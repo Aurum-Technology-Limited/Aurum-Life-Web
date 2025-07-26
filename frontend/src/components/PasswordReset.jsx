@@ -1,112 +1,95 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { Lock, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../contexts/SupabaseAuthContext';
+import { Eye, EyeOff, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 
 const PasswordReset = () => {
-  const { login } = useAuth();
+  const { supabase } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [token, setToken] = useState('');
   
   const [formData, setFormData] = useState({
-    newPassword: '',
+    password: '',
     confirmPassword: ''
   });
 
-  // Get token from URL parameters without React Router
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token');
-
   useEffect(() => {
-    if (!token || token.trim() === '') {
-      setError('Invalid or missing reset token. Please request a new password reset.');
+    // Get token from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get('token');
+    
+    if (resetToken) {
+      setToken(resetToken);
+    } else {
+      setError('Invalid or missing reset token');
     }
-  }, [token]);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Validation
-    if (formData.newPassword !== formData.confirmPassword) {
+    // Validate passwords
+    if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
 
-    if (formData.newPassword.length < 6) {
+    if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
       setLoading(false);
       return;
     }
 
     try {
-      const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || '';
-      
-      const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: token,
-          new_password: formData.newPassword,
-        }),
+      // Use Supabase to update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: formData.password
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (updateError) {
+        setError(updateError.message || 'Failed to reset password');
+      } else {
         setSuccess(true);
         // Redirect to login after 3 seconds
         setTimeout(() => {
           window.location.href = '/';
         }, 3000);
-      } else {
-        setError(data.message || 'Failed to reset password');
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      console.error('Password reset error:', error);
+      setError('Network error occurred');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  };
-
-  const handleBackToLogin = () => {
-    window.location.href = '/';
   };
 
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0D14' }}>
         <div className="w-full max-w-md p-8">
-          {/* Logo/Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Aurum Life</h1>
-            <p className="text-gray-400">Password Reset Successful</p>
-          </div>
-
-          {/* Success Message */}
-          <div className="mb-6 p-4 bg-green-900/20 border border-green-600 rounded-lg flex items-center">
-            <CheckCircle2 className="h-5 w-5 text-green-400 mr-3" />
-            <span className="text-green-400 text-sm">
-              Password has been reset successfully! You can now login with your new password.
-            </span>
-          </div>
-
           <div className="text-center">
-            <p className="text-gray-400 text-sm mb-4">
-              You will be redirected to the login page in 3 seconds...
+            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="h-8 w-8 text-white" />
+            </div>
+            
+            <h1 className="text-2xl font-bold text-white mb-4">Password Reset Successful!</h1>
+            <p className="text-gray-400 mb-6">
+              Your password has been successfully updated. You will be redirected to the login page shortly.
             </p>
-            <button
-              onClick={handleBackToLogin}
-              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded-lg transition-colors"
-            >
-              Login Now
-            </button>
+            
+            <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+              <div className="bg-yellow-500 h-2 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+            </div>
+            
+            <p className="text-sm text-gray-500">
+              Redirecting in 3 seconds...
+            </p>
           </div>
         </div>
       </div>
@@ -119,13 +102,13 @@ const PasswordReset = () => {
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Aurum Life</h1>
-          <p className="text-gray-400">Create New Password</p>
+          <p className="text-gray-400">Reset Your Password</p>
         </div>
 
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-white mb-2">Reset Password</h2>
+          <h2 className="text-xl font-semibold text-white mb-2">Create New Password</h2>
           <p className="text-gray-400 text-sm">
-            Enter your new password below to complete the reset process.
+            Enter your new password below. Make sure it's strong and secure.
           </p>
         </div>
 
@@ -147,11 +130,12 @@ const PasswordReset = () => {
               <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
-                value={formData.newPassword}
-                onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full pl-10 pr-12 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 placeholder="Enter new password"
                 required
+                minLength={6}
               />
               <button
                 type="button"
@@ -161,7 +145,9 @@ const PasswordReset = () => {
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Password must be at least 6 characters long</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Password must be at least 6 characters long
+            </p>
           </div>
 
           <div>
@@ -177,6 +163,7 @@ const PasswordReset = () => {
                 className="w-full pl-10 pr-12 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 placeholder="Confirm new password"
                 required
+                minLength={6}
               />
               <button
                 type="button"
@@ -188,28 +175,48 @@ const PasswordReset = () => {
             </div>
           </div>
 
+          {/* Password Strength Indicator */}
+          {formData.password && (
+            <div className="space-y-2">
+              <div className="text-sm text-gray-300">Password Strength:</div>
+              <div className="flex space-x-1">
+                <div className={`h-2 w-1/4 rounded ${formData.password.length >= 6 ? 'bg-red-500' : 'bg-gray-600'}`}></div>
+                <div className={`h-2 w-1/4 rounded ${formData.password.length >= 8 ? 'bg-yellow-500' : 'bg-gray-600'}`}></div>
+                <div className={`h-2 w-1/4 rounded ${formData.password.length >= 10 && /[A-Z]/.test(formData.password) ? 'bg-yellow-500' : 'bg-gray-600'}`}></div>
+                <div className={`h-2 w-1/4 rounded ${formData.password.length >= 12 && /[A-Z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password) ? 'bg-green-500' : 'bg-gray-600'}`}></div>
+              </div>
+              <div className="text-xs text-gray-500">
+                {formData.password.length < 6 && 'Too short'}
+                {formData.password.length >= 6 && formData.password.length < 8 && 'Weak'}
+                {formData.password.length >= 8 && formData.password.length < 10 && 'Fair'}
+                {formData.password.length >= 10 && /[A-Z]/.test(formData.password) && 'Good'}
+                {formData.password.length >= 12 && /[A-Z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password) && 'Strong'}
+              </div>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading || !token}
             className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-700 text-gray-900 font-semibold rounded-lg transition-colors"
           >
-            {loading ? 'Resetting Password...' : 'Reset Password'}
+            {loading ? 'Updating Password...' : 'Update Password'}
           </button>
         </form>
 
         {/* Back to Login */}
         <div className="mt-6 text-center">
-          <button
-            onClick={handleBackToLogin}
+          <a
+            href="/"
             className="text-yellow-500 hover:text-yellow-400 text-sm"
           >
             ← Back to Login
-          </button>
+          </a>
         </div>
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-400">
-          <p>Complete the reset to continue your growth journey</p>
+          <p>Secure password reset powered by Supabase</p>
         </div>
       </div>
     </div>
