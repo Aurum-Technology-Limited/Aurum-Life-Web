@@ -216,3 +216,11 @@ async def delete_document(table_name: str, query: Dict[str, Any]):
 async def count_documents(table_name: str, query: Dict[str, Any] = None):
     """Count documents matching query"""
     return await supabase_manager.count_documents(table_name, query)
+
+async def atomic_update_document(table_name: str, query: Dict[str, Any], update: Dict[str, Any]):
+    """Atomic update document"""
+    return await supabase_manager.atomic_update_document(table_name, query, update)
+
+async def aggregate_documents(table_name: str, pipeline: List[Dict]) -> List[Dict]:
+    """Aggregate documents - simplified for Supabase"""
+    return await supabase_manager.aggregate_documents(table_name, pipeline)
