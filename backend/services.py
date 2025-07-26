@@ -3427,22 +3427,28 @@ class ResourceService:
             
         if file_type:
             query["file_type"] = file_type
-            
         if folder_path:
             query["folder_path"] = folder_path
         
-        # Search functionality
-        if search_query:
-            search_regex = {"$regex": search_query, "$options": "i"}
-            query["$or"] = [
-                {"filename": search_regex},
-                {"original_filename": search_regex},
-                {"description": search_regex},
-                {"tags": {"$in": [search_query]}}
-            ]
-        
-        # Get resources with pagination
+        # Get resources (search functionality removed for Supabase compatibility)
         resources_docs = await find_documents("resources", query)
+        
+        # Filter archived resources on client side
+        if not include_archived:
+            resources_docs = [resource for resource in resources_docs if not resource.get("is_archived", False)]
+        
+        # Apply search filter on client side if provided
+        if search_query:
+            search_lower = search_query.lower()
+            filtered_resources = []
+            for resource in resources_docs:
+                # Check filename, original_filename, description, and tags
+                if (search_lower in resource.get("filename", "").lower() or
+                    search_lower in resource.get("original_filename", "").lower() or
+                    search_lower in resource.get("description", "").lower() or
+                    any(search_lower in str(tag).lower() for tag in resource.get("tags", []))):
+                    filtered_resources.append(resource)
+            resources_docs = filtered_resources
         
         # Sort by upload_date descending
         resources_docs.sort(key=lambda x: x.get("upload_date", datetime.min), reverse=True)
