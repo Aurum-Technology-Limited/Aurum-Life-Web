@@ -71,7 +71,7 @@ const Insights = () => {
       }
       
       console.log('📊 Insights: Calling API with URL:', apiUrl);
-      const response = await insightsAPI.getInsights(selectedDateRange, selectedAreaId);
+      const response = await emergencyAPI.getInsights(selectedDateRange, selectedAreaId);
       console.log('📊 Insights: API response received:', response.data);
       setInsightsData(response.data);
       console.log('📊 Insights data loaded:', response.data);
