@@ -14,19 +14,31 @@ const apiClient = axios.create({
 
 // Add request interceptor for common parameters and authentication
 apiClient.interceptors.request.use((config) => {
+  // Add performance timing
+  config.metadata = { startTime: Date.now() };
+  
   // Add authentication token if available
   const token = localStorage.getItem('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
-  // Don't add user_id anymore since we use authentication
+  // Add performance headers
+  config.headers['Cache-Control'] = 'no-cache';
+  
   return config;
 });
 
-// Add response interceptor for error handling
+// Add response interceptor for error handling and performance tracking
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log slow requests
+    const duration = Date.now() - response.config.metadata.startTime;
+    if (duration > 2000) {
+      console.warn(`🐌 Slow API request: ${response.config.url} took ${duration}ms`);
+    }
+    return response;
+  },
   (error) => {
     // Handle 401 Unauthorized errors
     if (error.response?.status === 401) {
