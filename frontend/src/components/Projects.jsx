@@ -1287,7 +1287,7 @@ const Projects = ({ onSectionChange }) => {
                   onClick={() => handleArchiveProject(selectedProjectForView)}
                   className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800"
                 >
-                  {selectedProjectForView.archived ? <Unarchive className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                  <Archive className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => openDeleteModal(selectedProjectForView)}
