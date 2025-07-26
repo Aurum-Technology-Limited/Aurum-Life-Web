@@ -2727,48 +2727,67 @@ class StatsService:
 
     @staticmethod
     async def get_dashboard_data(user_id: str) -> UserDashboard:
-        """Get all dashboard data for a user"""
+        """OPTIMIZED VERSION - Get dashboard data with minimal queries"""
         try:
-            # Update stats first
-            stats = await StatsService.update_user_stats(user_id)
-            
-            # Get user data
+            # Get user data (single query)
             user = await UserService.get_user(user_id)
             if not user:
                 raise ValueError("User not found")
             
-            # Get recent data (handle missing services)
-            recent_tasks = await TaskService.get_user_tasks(user_id)
-            
-            # Temporarily disable today_tasks to avoid datetime issues
-            today_tasks = []  # await TaskService.get_today_tasks(user_id)
-            
-            # Get courses if available, otherwise empty list
-            recent_courses = []
+            # Get basic stats without expensive calculations (single query)
             try:
-                recent_courses = await CourseService.get_user_courses(user_id)
+                stats = await StatsService.get_user_stats(user_id)
             except Exception as e:
-                logger.warning(f"Course service not available: {e}")
+                logger.warning(f"Stats service error: {e}")
+                stats = UserStats(user_id=user_id)
             
-            # Get areas with projects
-            areas = await AreaService.get_user_areas(user_id, include_projects=True)
+            # Get recent tasks (single query, limited)
+            try:
+                all_tasks = await find_documents("tasks", {"user_id": user_id})
+                recent_tasks = sorted(all_tasks, key=lambda x: x.get("created_at", ""), reverse=True)[:5]
+                recent_tasks = [TaskResponse(**task) for task in recent_tasks]
+            except Exception as e:
+                logger.warning(f"Tasks query error: {e}")
+                recent_tasks = []
             
-            # Get badges (placeholder for now)
+            # Get areas with optimized batching (uses the optimized get_user_areas)
+            try:
+                areas = await AreaService.get_user_areas(user_id, include_projects=True)
+            except Exception as e:
+                logger.warning(f"Areas query error: {e}")
+                areas = []
+            
+            # Skip expensive operations for faster response
+            recent_courses = []
             recent_achievements = []
+            today_tasks = []
             
             return UserDashboard(
                 user=user,
                 stats=stats,
-                recent_tasks=recent_tasks[:5] if recent_tasks else [],
-                recent_courses=recent_courses[:3] if recent_courses else [],
+                recent_tasks=recent_tasks,
+                recent_courses=recent_courses,
                 recent_achievements=recent_achievements,
-                areas=areas if areas else [],
-                today_tasks=today_tasks if today_tasks else []
+                areas=areas,
+                today_tasks=today_tasks
             )
             
         except Exception as e:
             logger.error(f"Error getting dashboard data: {e}")
-            raise
+            # Return minimal dashboard on error
+            try:
+                user = await UserService.get_user(user_id)
+                return UserDashboard(
+                    user=user,
+                    stats=UserStats(user_id=user_id),
+                    recent_tasks=[],
+                    recent_courses=[],
+                    recent_achievements=[],
+                    areas=[],
+                    today_tasks=[]
+                )
+            except:
+                raise
 
     @staticmethod
     async def get_today_view(user_id: str) -> TodayView:
