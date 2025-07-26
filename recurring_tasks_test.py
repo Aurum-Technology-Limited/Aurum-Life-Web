@@ -13,7 +13,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://1df32e51-ab85-4216-899a-d6fb51daa96a.preview.emergentagent.com/api"
+BACKEND_URL = "https://d8dc1b40-f7f7-4129-a298-e5d34fca13ef.preview.emergentagent.com/api"
 
 class RecurringTasksTester:
     def __init__(self):
