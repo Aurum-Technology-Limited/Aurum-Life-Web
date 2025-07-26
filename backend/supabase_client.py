@@ -295,3 +295,7 @@ async def bulk_update_documents(table_name: str, query: Dict[str, Any], update: 
 async def bulk_delete_documents(table_name: str, query: Dict[str, Any]) -> int:
     """Delete multiple documents matching query"""
     return await supabase_manager.bulk_delete_documents(table_name, query)
+
+async def delete_documents(table_name: str, query: Dict[str, Any]) -> int:
+    """Delete multiple documents matching query (alias for bulk_delete_documents)"""
+    return await bulk_delete_documents(table_name, query)
