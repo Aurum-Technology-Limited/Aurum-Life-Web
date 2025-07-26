@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 
 const PasswordReset = () => {
