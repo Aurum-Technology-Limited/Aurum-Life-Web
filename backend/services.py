@@ -1774,11 +1774,11 @@ class TaskService:
             "parent_task_id": None  # Only main tasks can be dependencies
         }
         
-        # Exclude the current task to prevent self-dependency
-        if exclude_task_id:
-            query["id"] = {"$ne": exclude_task_id}
-        
         tasks_docs = await find_documents("tasks", query)
+        
+        # Filter out the current task to prevent self-dependency
+        if exclude_task_id:
+            tasks_docs = [task for task in tasks_docs if task["id"] != exclude_task_id]
         
         # Return simplified task data for dependency selection
         return [
