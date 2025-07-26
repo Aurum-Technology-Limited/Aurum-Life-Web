@@ -725,9 +725,9 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                   </div>
                 )}
                 
-                {/* Advanced options */}
+                {/* Advanced options - Better Grid Layout */}
                 {showRecurrenceDetails && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-600">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-600">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         End Date (Optional)
@@ -742,6 +742,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                         className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
                         disabled={loading}
                       />
+                      <p className="text-xs text-gray-400 mt-1">When to stop repeating</p>
                     </div>
                     
                     <div>
@@ -761,6 +762,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                         className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
                         disabled={loading}
                       />
+                      <p className="text-xs text-gray-400 mt-1">How many times to repeat</p>
                     </div>
                   </div>
                 )}
