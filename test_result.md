@@ -109,7 +109,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Build Aurum Life personal growth platform with habit tracking, journaling, task management, mindfulness, learning, AI coaching, and achievements system"
+user_problem_statement: "Migrate Aurum Life from MongoDB + Custom Auth to Supabase PostgreSQL + Supabase Auth"
 
 backend:
   - task: "Git History Secret Removal (GitHub Push Protection Fix)"
