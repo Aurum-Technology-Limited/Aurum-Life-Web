@@ -2569,9 +2569,10 @@ class StatsService:
             current_streak = 0
             try:
                 current_streak = await JournalService._calculate_journal_streak(user_id)
-            except Exception:
+            except Exception as e:
                 # Journal streak calculation failed - use 0
-                pass
+                logger.warning(f"Journal streak calculation failed: {e}")
+                current_streak = 0
             
             stats_data = {
                 "user_id": user_id,
