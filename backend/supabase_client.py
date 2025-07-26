@@ -48,11 +48,33 @@ class SupabaseManager:
     async def create_document(self, table_name: str, document: Dict[str, Any]) -> str:
         """Create a new document in the specified table"""
         try:
+            # Convert datetime objects to ISO string format
+            document = self._serialize_document(document)
+            
             result = self.client.table(table_name).insert(document).execute()
             return result.data[0]['id'] if result.data else None
         except Exception as e:
             logger.error(f"Create failed for table {table_name}: {e}")
             raise
+    
+    def _serialize_document(self, doc: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert datetime objects to ISO string format for JSON serialization"""
+        serialized = {}
+        for key, value in doc.items():
+            if isinstance(value, datetime):
+                serialized[key] = value.isoformat()
+            elif isinstance(value, dict):
+                serialized[key] = self._serialize_document(value)
+            elif isinstance(value, list):
+                serialized[key] = [
+                    self._serialize_document(item) if isinstance(item, dict)
+                    else item.isoformat() if isinstance(item, datetime)
+                    else item
+                    for item in value
+                ]
+            else:
+                serialized[key] = value
+        return serialized
     
     async def find_document(self, table_name: str, query: Dict[str, Any]) -> Optional[Dict]:
         """Find a single document"""
