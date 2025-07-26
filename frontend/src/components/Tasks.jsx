@@ -473,8 +473,8 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
               />
             </div>
           </div>
-          {/* Project, Priority, Due Date Grid - 3 Columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Project, Priority, Due Date Grid - Mobile Responsive */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Project
