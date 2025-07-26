@@ -780,7 +780,7 @@ const Projects = ({ onSectionChange }) => {
               onClick={() => setViewMode('kanban')}
               className={`p-2 rounded ${viewMode === 'kanban' ? 'bg-yellow-500 text-gray-900' : 'text-gray-400 hover:text-white'}`}
             >
-              <Kanban className="h-4 w-4" />
+              <Grid className="h-4 w-4" />
             </button>
           </div>
         </div>
