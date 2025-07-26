@@ -101,10 +101,9 @@ class EmailService:
             reset_token: Secure reset token
             user_name: User's first name or username
         """
-        # In production, this would be your actual frontend domain
-        reset_url = f"https://your-domain.com/reset-password?token={reset_token}"
-        # For development, you might use localhost
-        # reset_url = f"http://localhost:3000/reset-password?token={reset_token}"
+        # Use the correct frontend URL for password reset
+        frontend_url = os.getenv('FRONTEND_URL', 'https://3c105990-8251-418b-add7-b761b0f7ecd6.preview.emergentagent.com')
+        reset_url = f"{frontend_url}/reset-password?token={reset_token}"
         
         subject = "Reset Your Aurum Life Password"
         
