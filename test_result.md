@@ -315,6 +315,18 @@ backend:
           agent: "testing"
           comment: "✅ CONTEXTUAL FILE ATTACHMENTS SYSTEM - BACKEND API: 100% FUNCTIONAL AND PRODUCTION-READY! Comprehensive testing executed covering complete contextual file attachments system: ✅ RESOURCE MODEL UPDATES - parent_id and parent_type fields working correctly, direct parent-child relationships established, ResourceCreate/ResourceResponse models updated ✅ PARENT ENTITY VALIDATION - _validate_parent_entity method working, invalid parent references properly rejected, cross-user security enforced ✅ NEW CONTEXTUAL RETRIEVAL ENDPOINT - /api/resources/parent/{parent_type}/{parent_id} working perfectly, parent-based file retrieval functional ✅ COMPREHENSIVE PARENT TYPE VALIDATION - All parent types (project, task, area, pillar, journal_entry) supported, invalid parent types properly rejected ✅ RESOURCE CREATION WITH PARENT - Direct file attachment working, parent validation during creation functional ✅ CROSS-USER SECURITY - User isolation enforced, parent entity ownership validated ✅ BACKWARD COMPATIBILITY - Legacy attachment methods still functional, no breaking changes ✅ CRITICAL DEPENDENCY FIX - Fixed missing libmagic dependency that was causing 500 errors during resource creation. System now supports direct file attachment to projects and tasks without separate attachment step as requested by user."
 
+  - task: "Contextual File Attachments System - Frontend Component"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/FileAttachment.jsx, /app/frontend/src/services/api.js, /app/frontend/src/components/Projects.jsx, /app/frontend/src/components/Tasks.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented contextual file attachments frontend system as requested. Created new FileAttachment.jsx component focused on direct parent-child file relationships. Component features: simple UI with attach button, drag-drop support, progress indicators, file list with view/delete actions. Added uploadFileWithParent and getParentResources methods to API service. Integrated FileAttachment component into Projects.jsx (ProjectListView) and Tasks.jsx (TaskModal) replacing the old FileManager component. System now provides seamless contextual file attachment directly in project and task detail views without separate attachment step."
+
   - task: "Remove Child Pillar Functionality from Pillar System"
     implemented: true
     working: true
