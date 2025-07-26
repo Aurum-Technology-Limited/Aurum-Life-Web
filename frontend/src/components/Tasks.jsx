@@ -146,6 +146,18 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
     sub_task_completion_required: false  // New field for sub-task completion requirement
   });
   
+  // Recurrence configuration state
+  const [recurrenceEnabled, setRecurrenceEnabled] = useState(false);
+  const [recurrenceConfig, setRecurrenceConfig] = useState({
+    type: 'none',
+    interval: 1,
+    weekdays: [],
+    month_day: null,
+    end_date: '',
+    max_instances: null
+  });
+  const [showRecurrenceDetails, setShowRecurrenceDetails] = useState(false);
+  
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
   const [subtasks, setSubtasks] = useState([]);  // For managing sub-tasks
