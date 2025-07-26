@@ -837,6 +837,15 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 <option key={area.id} value={area.id}>{area.name}</option>
               ))}
             </select>
+            {/* Manage Templates Button */}
+            <button
+              onClick={() => onSectionChange('project-templates')}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700 hover:text-white"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Manage Templates</span>
+            </button>
+            {/* New Project Button */}
             <button
               onClick={() => setShowModal(true)}
               className="flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
