@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Send, MessageSquare, Bug, Lightbulb, Heart, Star } from 'lucide-react';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 
 const Feedback = () => {
