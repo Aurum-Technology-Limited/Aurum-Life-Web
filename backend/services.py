@@ -2533,7 +2533,13 @@ class StatsService:
                 await update_document("user_stats", {"user_id": user_id}, stats_data)
             else:
                 stats = UserStats(**stats_data)
-                await create_document("user_stats", stats.dict())
+                stats_dict = stats.dict()
+                # Remove any fields that might cause schema cache issues
+                problematic_fields = ['updated_at', 'last_updated']
+                for field in problematic_fields:
+                    if field in stats_dict:
+                        stats_dict.pop(field)
+                await create_document("user_stats", stats_dict)
             
             # Update user's current streak and total points (removed habits from calculation)
             total_points = (tasks_completed * 15) + (badges_earned * 50) + (courses_completed * 100) + (completed_projects * 25)
