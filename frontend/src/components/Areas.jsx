@@ -58,41 +58,15 @@ const Areas = ({ onSectionChange }) => {
       setLoading(true);
       setError(null);
       console.log('🗂️ Areas: Calling areasAPI.getAreas with showArchived:', showArchived);
-      
-      // Try using fetch directly instead of axios as backup
-      const token = localStorage.getItem('auth_token');
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
-      
-      console.log('🗂️ Areas: Using direct fetch with URL:', `${backendUrl}/api/areas`);
-      
-      const fetchResponse = await fetch(`${backendUrl}/api/areas?include_projects=true&include_archived=${showArchived}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 15000
-      });
-      
-      if (!fetchResponse.ok) {
-        throw new Error(`HTTP ${fetchResponse.status}: ${fetchResponse.statusText}`);
-      }
-      
-      const data = await fetchResponse.json();
-      console.log('🗂️ Areas: Direct fetch success, data length:', data?.length);
-      setAreas(data);
+      const response = await areasAPI.getAreas(true, showArchived); // Include projects and optionally archived
+      console.log('🗂️ Areas: API response received, data length:', response.data?.length);
+      setAreas(response.data);
       setError(null);
     } catch (err) {
       console.error('🗂️ Areas: Error loading areas:', err);
-      console.error('🗂️ Areas: Error details:', {
-        message: err.message,
-        status: err.response?.status,
-        code: err.code,
-        stack: err.stack
-      });
       
       // If it's an authentication error, don't retry
-      if (err.status === 401 || err.message.includes('401')) {
+      if (err.response?.status === 401) {
         console.error('🗂️ Areas: Authentication error, not retrying');
         setError('Authentication failed. Please log in again.');
         return;
