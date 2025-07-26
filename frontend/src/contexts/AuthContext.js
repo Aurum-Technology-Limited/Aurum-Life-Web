@@ -146,6 +146,29 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const forgotPassword = async (email) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return { success: true, message: data.message };
+      } else {
+        const errorData = await response.json();
+        return { success: false, error: errorData.detail || 'Password reset failed' };
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      return { success: false, error: 'Network error' };
+    }
+  };
+
   const value = {
     user,
     token,
@@ -155,6 +178,7 @@ export const AuthProvider = ({ children }) => {
     register,
     updateProfile,
     logout,
+    forgotPassword,
   };
 
   return (
