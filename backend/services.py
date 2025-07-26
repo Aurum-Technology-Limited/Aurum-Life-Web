@@ -3,9 +3,9 @@ import hashlib
 import os
 from typing import List, Optional
 from datetime import datetime, timedelta
-from database import (
+from supabase_client import (
     create_document, find_document, find_documents,
-    update_document, delete_document, count_documents, aggregate_documents, atomic_update_document
+    update_document, delete_document, count_documents, supabase_manager
 )
 from models import *
 from auth import get_password_hash, verify_password
