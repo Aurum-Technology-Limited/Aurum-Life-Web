@@ -402,7 +402,7 @@ const NotificationSettings = () => {
                   disabled={testLoading}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <TestIcon className="h-5 w-5" />
+                  <Send className="h-5 w-5" />
                   <span>{testLoading ? 'Sending...' : 'Send Test Notification'}</span>
                 </button>
               </div>
