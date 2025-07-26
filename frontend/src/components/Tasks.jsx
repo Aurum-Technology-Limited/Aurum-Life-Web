@@ -473,34 +473,26 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
               />
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Project, Priority, Due Date Grid - 3 Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Project *
+                Project
               </label>
               <select
                 value={formData.project_id}
                 onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none"
                 disabled={loading || loadingProjects}
                 required
               >
-                <option value="">Select a project</option>
-                {projects.map(project => (
+                <option value="">Select Project</option>
+                {projects.map((project) => (
                   <option key={project.id} value={project.id}>
-                    {project.name} ({project.area_name})
+                    {project.name}
                   </option>
                 ))}
               </select>
-              {loadingProjects && (
-                <p className="text-xs text-gray-400 mt-1">Loading projects...</p>
-              )}
-              {!loadingProjects && projects.length === 0 && (
-                <p className="text-xs text-red-400 mt-1">
-                  No projects available. Please create a project first.
-                </p>
-              )}
             </div>
             
             <div>
@@ -510,17 +502,16 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none"
                 disabled={loading}
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
+                <option value="critical">Critical</option>
               </select>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Due Date
@@ -529,11 +520,14 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                 type="date"
                 value={formData.due_date}
                 onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none"
                 disabled={loading}
               />
             </div>
-            
+          </div>
+
+          {/* Due Time and Category - 2 Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Due Time (Optional)
@@ -542,9 +536,35 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
                 type="time"
                 value={formData.due_time}
                 onChange={(e) => setFormData({ ...formData, due_time: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none"
                 disabled={loading}
               />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Category
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none"
+                disabled={loading}
+              >
+                <option value="personal">Personal</option>
+                <option value="work">Work</option>
+                <option value="health">Health</option>
+                <option value="finance">Finance</option>
+                <option value="learning">Learning</option>
+                <option value="family">Family</option>
+                <option value="social">Social</option>
+                <option value="creative">Creative</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="spiritual">Spiritual</option>
+                <option value="travel">Travel</option>
+                <option value="goals">Goals</option>
+                <option value="urgent">Urgent</option>
+              </select>
             </div>
           </div>
           
