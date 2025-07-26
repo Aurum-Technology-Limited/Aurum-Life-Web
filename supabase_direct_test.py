@@ -68,7 +68,7 @@ class SupabaseDirectTestSuite:
                 "description": "Testing direct Supabase operations",
                 "icon": "🧪",
                 "color": "#FF5722",
-                "user_id": "test-user-id",  # This should be a valid user ID in production
+                "user_id": str(uuid.uuid4()),  # Generate a valid UUID
                 "sort_order": 1,
                 "archived": False,
                 "created_at": datetime.utcnow().isoformat(),
