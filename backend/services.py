@@ -1463,26 +1463,39 @@ class TaskService:
             today_start = datetime.combine(today, datetime.min.time())
             today_end = datetime.combine(today, datetime.max.time())
             
-            # Get tasks due today or overdue (simplified without daily_tasks table)
-            tasks_docs = await find_documents("tasks", {
-                "user_id": user_id,
-                "$or": [
-                    {"due_date": {"$gte": today_start, "$lte": today_end}},
-                    {"due_date": {"$lt": today_start}, "completed": False}
-                ]
-            })
+            # Get all tasks for the user (we'll filter on the client side)
+            all_tasks = await find_documents("tasks", {"user_id": user_id})
             
-            if not tasks_docs:
+            if not all_tasks:
                 return []
             
+            # Filter tasks on the client side (due today or overdue and not completed)
+            filtered_tasks = []
+            for task in all_tasks:
+                is_completed = task.get("completed", False)
+                due_date = task.get("due_date")
+                
+                # Skip completed tasks
+                if is_completed:
+                    continue
+                    
+                # Include if due today or overdue
+                if due_date:
+                    if isinstance(due_date, str):
+                        due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+                    
+                    if due_date.date() <= today:
+                        filtered_tasks.append(task)
+                        
             # Sort by priority and due date
-            tasks_docs.sort(key=lambda x: (
-                -x.get("priority", 0),  # Higher priority first
-                x.get("due_date", datetime.max)  # Earlier due dates first
+            filtered_tasks.sort(key=lambda x: (
+                0 if x.get("priority") == "high" else 1 if x.get("priority") == "medium" else 2,
+                x.get("due_date") or datetime.max.isoformat()
             ))
             
+            # Build task responses
             tasks = []
-            for doc in tasks_docs[:20]:  # Limit to 20 tasks
+            for doc in filtered_tasks[:20]:  # Limit to 20 tasks
                 task = await TaskService._build_task_response(doc, include_subtasks=False)
                 tasks.append(task)
                 
