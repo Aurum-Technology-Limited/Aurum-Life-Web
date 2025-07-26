@@ -22,7 +22,7 @@ import {
   Clock,
   AlertTriangle
 } from 'lucide-react';
-import { insightsAPI } from '../services/robustApi';
+import emergencyAPI from '../services/emergencyApi';
 import { useDataContext } from '../contexts/DataContext';
 import Breadcrumb from './Breadcrumb';
 import { getDynamicFontSize } from '../utils/textUtils';
