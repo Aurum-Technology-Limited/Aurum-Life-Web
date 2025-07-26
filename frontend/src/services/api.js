@@ -374,6 +374,71 @@ export const resourcesAPI = {
       console.error('File upload error:', error);
       throw error;
     }
+  },
+
+  // Contextual file upload with parent relationship (new approach)
+  uploadFileWithParent: async (file, description = '', parentType, parentId, category = 'document', folderPath = '/') => {
+    // File validation
+    const allowedTypes = [
+      'image/png', 'image/jpeg', 'image/gif',
+      'application/pdf', 'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(`File type ${file.type} is not supported. Allowed types: PNG, JPEG, GIF, PDF, DOC, DOCX, TXT`);
+    }
+    
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      throw new Error(`File size ${(file.size / 1024 / 1024).toFixed(2)}MB exceeds the 10MB limit`);
+    }
+    
+    try {
+      // Convert file to base64
+      const base64Content = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          // Remove the data URL prefix (e.g., "data:image/png;base64,")
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      
+      // Determine file type enum
+      let fileType = 'other';
+      if (file.type.startsWith('image/')) {
+        fileType = 'image';
+      } else if (file.type.includes('pdf') || file.type.includes('msword') || file.type.includes('wordprocessingml') || file.type === 'text/plain') {
+        fileType = 'document';
+      }
+      
+      // Create resource data with parent relationship
+      const resourceData = {
+        filename: file.name,
+        original_filename: file.name,
+        file_type: fileType,
+        category: category,
+        mime_type: file.type,
+        file_size: file.size,
+        file_content: base64Content,
+        description: description,
+        tags: [],
+        folder_path: folderPath,
+        parent_id: parentId,
+        parent_type: parentType
+      };
+      
+      const response = await resourcesAPI.createResource(resourceData);
+      return response.data;
+      
+    } catch (error) {
+      console.error('Contextual file upload error:', error);
+      throw error;
+    }
   }
 };
 
