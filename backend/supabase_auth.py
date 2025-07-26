@@ -51,7 +51,7 @@ class SupabaseAuth:
             raise credentials_exception
     
     @staticmethod
-    async def get_current_user(supabase_user: dict = Depends(verify_token)) -> User:
+    async def get_current_user(supabase_user: dict) -> User:
         """Get current authenticated user with profile data"""
         try:
             # Get user profile from our user_profiles table
