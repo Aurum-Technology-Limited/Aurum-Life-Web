@@ -4,10 +4,16 @@ Handles file uploads, storage, and management with Supabase Storage
 """
 
 import base64
-import magic
 import uuid
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+
+# Try to import magic, but don't fail if it's not available
+try:
+    import magic
+    HAS_MAGIC = True
+except ImportError:
+    HAS_MAGIC = False
 
 from models import Resource, ResourceCreate, ResourceUpdate, ResourceResponse, FileTypeEnum
 from supabase_client import create_document, find_document, find_documents, update_document, delete_document
