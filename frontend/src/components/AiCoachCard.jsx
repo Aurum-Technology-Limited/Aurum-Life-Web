@@ -59,7 +59,7 @@ const AiCoachCard = ({ onStartFocusSession }) => {
     setChatHistory(newHistory);
     
     try {
-      const response = await aiCoachAPI.chatWithCoach(userMessage);
+      const response = await emergencyAPI.aiCoachChat(userMessage);
       
       // Add AI response to chat history
       setChatHistory([...newHistory, { 
