@@ -446,7 +446,7 @@ class SupabaseMigrationTestSuite:
             journal_data = {
                 "title": "Supabase Migration Test Entry",
                 "content": "Testing journal functionality after Supabase migration. Everything seems to be working well!",
-                "mood": "happy",
+                "mood": "optimistic",
                 "energy_level": "high",
                 "tags": ["supabase", "migration", "testing"]
             }
