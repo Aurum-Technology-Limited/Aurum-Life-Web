@@ -61,52 +61,57 @@ class SupabaseDirectTestSuite:
         print("\n🧪 Test 2: Supabase CRUD Operations")
         
         try:
-            # Test create operation
-            test_user_data = {
-                "username": "directtest",
-                "first_name": "Direct",
-                "last_name": "Test",
-                "is_active": True,
-                "level": 1,
-                "total_points": 0,
-                "current_streak": 0,
+            # Test create operation with pillars (no foreign key constraints)
+            test_pillar_data = {
+                "name": "Direct Test Pillar",
+                "description": "Testing direct Supabase operations",
+                "icon": "🧪",
+                "color": "#FF5722",
+                "user_id": "test-user-id",  # This should be a valid user ID in production
+                "sort_order": 1,
+                "archived": False,
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat()
             }
             
-            user_id = await supabase_manager.create_document('user_profiles', test_user_data)
-            if user_id:
-                print(f"✅ Create operation successful: {user_id}")
-                self.created_entities.append(('user_profiles', user_id))
+            pillar_id = await supabase_manager.create_document('pillars', test_pillar_data)
+            if pillar_id:
+                print(f"✅ Create operation successful: {pillar_id}")
+                self.created_entities.append(('pillars', pillar_id))
                 
                 # Test read operation
-                user = await supabase_manager.find_document('user_profiles', {'id': user_id})
-                if user and user['username'] == test_user_data['username']:
+                pillar = await supabase_manager.find_document('pillars', {'id': pillar_id})
+                if pillar and pillar['name'] == test_pillar_data['name']:
                     print("✅ Read operation successful")
                     
                     # Test update operation
-                    update_data = {'first_name': 'Updated Direct'}
-                    update_success = await supabase_manager.update_document('user_profiles', user_id, update_data)
+                    update_data = {'description': 'Updated description for direct test'}
+                    update_success = await supabase_manager.update_document('pillars', pillar_id, update_data)
                     if update_success:
                         print("✅ Update operation successful")
                         
                         # Verify update
-                        updated_user = await supabase_manager.find_document('user_profiles', {'id': user_id})
-                        if updated_user and updated_user['first_name'] == 'Updated Direct':
+                        updated_pillar = await supabase_manager.find_document('pillars', {'id': pillar_id})
+                        if updated_pillar and updated_pillar['description'] == 'Updated description for direct test':
                             print("✅ Update verification successful")
                             
                             # Test count operation
-                            count = await supabase_manager.count_documents('user_profiles', {'username': test_user_data['username']})
+                            count = await supabase_manager.count_documents('pillars', {'name': test_pillar_data['name']})
                             if count == 1:
                                 print("✅ Count operation successful")
                                 
-                                self.test_results.append({
-                                    "test": "Supabase CRUD Operations", 
-                                    "status": "PASSED", 
-                                    "details": "Create, read, update, and count operations successful"
-                                })
-                                return True
-                                
+                                # Test find_documents (multiple)
+                                pillars = await supabase_manager.find_documents('pillars', {'user_id': test_pillar_data['user_id']})
+                                if len(pillars) >= 1:
+                                    print(f"✅ Find documents operation successful: {len(pillars)} pillars found")
+                                    
+                                    self.test_results.append({
+                                        "test": "Supabase CRUD Operations", 
+                                        "status": "PASSED", 
+                                        "details": "Create, read, update, count, and find operations successful"
+                                    })
+                                    return True
+                                    
             print("❌ CRUD operations failed")
             self.test_results.append({
                 "test": "Supabase CRUD Operations", 
