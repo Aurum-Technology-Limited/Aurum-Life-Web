@@ -779,6 +779,66 @@ class NotificationChannelEnum(str, Enum):
     email = "email"
     both = "both"
 
+# Browser Notification Models
+class BrowserNotification(BaseDocument):
+    """Browser notification for real-time notifications"""
+    user_id: str
+    type: NotificationTypeEnum
+    title: str
+    message: str
+    
+    # Related entity information
+    related_task_id: Optional[str] = None
+    related_project_id: Optional[str] = None
+    related_area_id: Optional[str] = None
+    related_pillar_id: Optional[str] = None
+    related_achievement_id: Optional[str] = None
+    
+    # Metadata
+    project_name: Optional[str] = None
+    task_name: Optional[str] = None
+    priority: Optional[PriorityEnum] = None
+    
+    # Notification state
+    is_read: bool = False
+    read_at: Optional[datetime] = None
+    channels: List[str] = ["browser"]  # browser, email
+    
+    # Scheduling (for future notifications)
+    scheduled_for: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+
+class BrowserNotificationCreate(BaseModel):
+    type: NotificationTypeEnum
+    title: str
+    message: str
+    related_task_id: Optional[str] = None
+    related_project_id: Optional[str] = None
+    related_area_id: Optional[str] = None
+    related_pillar_id: Optional[str] = None
+    related_achievement_id: Optional[str] = None
+    project_name: Optional[str] = None
+    task_name: Optional[str] = None
+    priority: Optional[PriorityEnum] = None
+    channels: List[str] = ["browser"]
+    scheduled_for: Optional[datetime] = None
+
+class BrowserNotificationResponse(BaseModel):
+    id: str
+    user_id: str
+    type: NotificationTypeEnum
+    title: str
+    message: str
+    related_task_id: Optional[str] = None
+    related_project_id: Optional[str] = None
+    project_name: Optional[str] = None
+    task_name: Optional[str] = None
+    priority: Optional[PriorityEnum] = None
+    is_read: bool
+    read_at: Optional[datetime] = None
+    created_at: datetime
+    sent_at: Optional[datetime] = None
+
 class NotificationPreference(BaseDocument):
     user_id: str
     
