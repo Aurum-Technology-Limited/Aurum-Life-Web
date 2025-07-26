@@ -567,7 +567,6 @@ class UserStats(BaseDocument):
     courses_enrolled: int = 0
     courses_completed: int = 0
     badges_earned: int = 0
-    last_updated: datetime = Field(default_factory=datetime.utcnow)
 
 # Project Template Models
 class TaskTemplateCreate(BaseModel):
