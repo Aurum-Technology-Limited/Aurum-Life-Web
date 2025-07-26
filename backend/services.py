@@ -2209,15 +2209,18 @@ class CourseService:
 class InsightsService:
     @staticmethod
     async def get_insights_data(user_id: str, date_range: str = "all_time") -> dict:
-        """Get comprehensive insights data for the user"""
+        """Get comprehensive insights data for the user - OPTIMIZED VERSION"""
         
-        # Get basic stats
+        # Get basic stats (single DB call)
         stats = await StatsService.get_user_stats(user_id)
         
-        # Get areas with project data for insights
+        # Get areas with project data for insights (single DB call with includes)
         areas = await AreaService.get_user_areas(user_id, include_projects=True)
         
-        # Calculate task status breakdown
+        # OPTIMIZATION: Get all tasks in one query and process in memory
+        all_tasks = await find_documents("tasks", {"user_id": user_id})
+        
+        # Calculate task status breakdown efficiently
         task_status_breakdown = {
             "completed": 0,
             "in_progress": 0,
@@ -2225,9 +2228,8 @@ class InsightsService:
             "overdue": 0
         }
         
-        # Get all tasks to calculate status breakdown
-        all_tasks = await find_documents("tasks", {"user_id": user_id})
-        
+        # Process all tasks in memory (no additional DB calls)
+        current_time = datetime.utcnow()
         for task_doc in all_tasks:
             status = task_doc.get("status", "todo")
             if status == "completed":
@@ -2235,19 +2237,19 @@ class InsightsService:
             elif status == "in_progress":
                 task_status_breakdown["in_progress"] += 1
             elif status == "review":
-                # Map 'review' to 'in_progress' for frontend compatibility
                 task_status_breakdown["in_progress"] += 1
-            else:  # todo and any other status
+            else:
                 task_status_breakdown["todo"] += 1
             
-            # Check for overdue tasks (simplified logic)
+            # OPTIMIZATION: Check for overdue tasks efficiently
             due_date = task_doc.get("due_date")
             if due_date and not task_doc.get("completed", False):
-                from datetime import datetime
                 try:
                     if isinstance(due_date, str):
-                        due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
-                    if due_date < datetime.utcnow():
+                        # Handle timezone-aware parsing more efficiently
+                        due_date_clean = due_date.replace('Z', '+00:00') if 'Z' in due_date else due_date
+                        due_date = datetime.fromisoformat(due_date_clean)
+                    if due_date < current_time:
                         task_status_breakdown["overdue"] += 1
                         # Remove from other categories to avoid double counting
                         if status == "completed":
