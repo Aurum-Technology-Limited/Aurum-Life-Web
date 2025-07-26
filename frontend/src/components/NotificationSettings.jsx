@@ -129,29 +129,26 @@ const NotificationSettings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <Loader className="h-8 w-8 animate-spin text-yellow-400" />
-            <span className="ml-3 text-gray-400">Loading notification settings...</span>
-          </div>
+      <div className="space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader className="h-8 w-8 animate-spin text-yellow-400" />
+          <span className="ml-3 text-gray-400">Loading notification settings...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: '#F4B400' }}>
-            Notification Settings
-          </h1>
-          <p className="text-gray-400">
-            Configure how and when you receive notifications about your tasks and projects.
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-3xl font-bold mb-2" style={{ color: '#F4B400' }}>
+          Notification Settings
+        </h1>
+        <p className="text-gray-400 max-w-2xl mx-auto">
+          Configure how and when you receive notifications about your tasks and projects.
+        </p>
+      </div>
 
         {/* Message Display */}
         {message && (
