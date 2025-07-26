@@ -22,7 +22,26 @@ def setup_schema():
         project_ref = os.getenv('SUPABASE_PROJECT_REF')
         password = os.getenv('SUPABASE_DB_PASSWORD')
         
-        db_url = f"postgresql://postgres:{password}@db.{project_ref}.supabase.co:5432/postgres"
+        # Try different connection formats
+        db_urls = [
+            f"postgresql://postgres.{project_ref}:{password}@aws-0-us-east-1.pooler.supabase.com:6543/postgres",
+            f"postgresql://postgres:{password}@{project_ref}.supabase.co:5432/postgres",
+            f"postgresql://postgres:{password}@db.{project_ref}.supabase.co:5432/postgres"
+        ]
+        
+        conn = None
+        for db_url in db_urls:
+            try:
+                logger.info(f"🔌 Attempting connection: {db_url.replace(password, '***')}")
+                conn = psycopg2.connect(db_url)
+                logger.info("✅ Connection successful!")
+                break
+            except Exception as e:
+                logger.warning(f"❌ Connection failed: {e}")
+                continue
+        
+        if not conn:
+            raise Exception("All connection attempts failed")
         
         logger.info("🔌 Connecting to Supabase PostgreSQL...")
         conn = psycopg2.connect(db_url)
