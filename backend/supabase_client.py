@@ -163,6 +163,43 @@ class SupabaseManager:
             logger.error(f"Count failed for table {table_name}: {e}")
             raise
 
+    async def bulk_update_documents(self, table_name: str, query: Dict[str, Any], update: Dict[str, Any]) -> int:
+        """Update multiple documents matching query"""
+        try:
+            # Convert datetime objects to ISO string format
+            update = self._serialize_document(update)
+            
+            query_builder = self.client.table(table_name).update(update)
+            
+            # Apply query filters
+            if query:
+                for key, value in query.items():
+                    query_builder = query_builder.eq(key, value)
+            
+            result = query_builder.execute()
+            return len(result.data) if result.data else 0
+            
+        except Exception as e:
+            logger.error(f"Bulk update failed for table {table_name}: {e}")
+            raise
+
+    async def bulk_delete_documents(self, table_name: str, query: Dict[str, Any]) -> int:
+        """Delete multiple documents matching query"""
+        try:
+            query_builder = self.client.table(table_name).delete()
+            
+            # Apply query filters
+            if query:
+                for key, value in query.items():
+                    query_builder = query_builder.eq(key, value)
+            
+            result = query_builder.execute()
+            return len(result.data) if result.data else 0
+            
+        except Exception as e:
+            logger.error(f"Bulk delete failed for table {table_name}: {e}")
+            raise
+
     async def atomic_update_document(self, table_name: str, query: Dict[str, Any], update: Dict[str, Any]):
         """Atomic update - for Supabase, this is just a regular update with RLS protection"""
         document_id = query.get('id')
