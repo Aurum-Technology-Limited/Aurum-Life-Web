@@ -481,6 +481,22 @@ class SupabaseMigrationTestSuite:
                                                 "details": f"Created, retrieved, searched journal entries and accessed insights successfully"
                                             })
                                             return True
+                                        else:
+                                            print(f"❌ Journal insights failed: {insights_response.status}")
+                                            error_text = await insights_response.text()
+                                            print(f"Error: {error_text}")
+                                else:
+                                    print(f"❌ Journal search failed: {search_response.status}")
+                                    error_text = await search_response.text()
+                                    print(f"Error: {error_text}")
+                        else:
+                            print(f"❌ Journal retrieval failed: {get_response.status}")
+                            error_text = await get_response.text()
+                            print(f"Error: {error_text}")
+                else:
+                    print(f"❌ Journal creation failed: {response.status}")
+                    error_text = await response.text()
+                    print(f"Error: {error_text}")
                                             
                 print("❌ Journal CRUD operations failed")
                 self.test_results.append({
