@@ -239,11 +239,11 @@ backend:
 
   - task: "Supabase Authentication System - User Migration Fix"
     implemented: true
-    working: true
+    working: false
     file: "backend/supabase_auth.py, fix_user_migration.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
@@ -257,6 +257,9 @@ backend:
       - working: true
         agent: "main"
         comment: "CRITICAL USER LOGIN ISSUE RESOLVED - 100% SUCCESS! Root cause identified and fixed: During Supabase migration, 75 MongoDB users were created in Supabase Auth with temporary passwords, but only 4 users were properly migrated to the public.users table that the legacy authentication system uses. Created fix_user_migration.py script that successfully migrated all 75 MongoDB users to public.users table with their original password hashes preserved. Verification completed: ✅ All 75 users now in public.users table ✅ Original password hashes preserved ✅ Authentication system tested and working ✅ Users can now login with their original credentials. The user continuity issue has been completely resolved - existing users can now login with their pre-migration credentials."
+      - working: false
+        agent: "testing"
+        comment: "🔍 SUPABASE AUTHENTICATION SYSTEM POST-MIGRATION TESTING COMPLETED - 50% SUCCESS RATE WITH CRITICAL DEPENDENCY INJECTION ISSUE IDENTIFIED. Comprehensive testing executed covering complete authentication system after user migration fix: ✅ MIGRATED USER LOGIN WORKING - Successfully verified that migrated users can login with their original pre-migration credentials (test@example.com with password 'testpass' working), user migration fix is functional, 76 users found in public.users table including migrated users with preserved password hashes ✅ AUTHENTICATION ERROR HANDLING WORKING - All error scenarios handled correctly (invalid credentials rejected with 401, missing tokens rejected with 422, invalid tokens rejected with 422, malformed headers rejected with 422) ✅ PROTECTED ENDPOINTS RESPONDING - All 6 protected endpoints return responses (not 401/403 errors), authentication middleware is functional ❌ CRITICAL ISSUE: FASTAPI DEPENDENCY INJECTION BROKEN - JWT token validation failing with Pydantic error 'Field required' for missing query args/kwargs, caused by incorrect wrapper function in server.py lines 38-40 using *args, **kwargs which breaks FastAPI's dependency injection system, /auth/me and all protected endpoints return HTTP 422 instead of user data ❌ NEW USER REGISTRATION FAILING - HTTP 500 internal server error during registration, likely due to user_stats table schema issues (missing 'updated_at' column error in logs) ❌ USER DATA INTEGRITY COMPROMISED - Cannot retrieve user data due to dependency injection issue, JWT tokens generated but cannot be validated. ROOT CAUSE: Authentication system uses old auth.py with JWT tokens but wrapper function breaks FastAPI dependency injection. RECOMMENDATION: Fix server.py get_current_active_user wrapper function to properly handle FastAPI dependencies instead of using *args, **kwargs."
 
   - task: "Remove Habits Section Entirely"
     implemented: true
