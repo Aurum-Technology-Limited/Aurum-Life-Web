@@ -128,6 +128,11 @@ export const emergencyAPI = {
     'ai_coach'
   ),
   
+  aiCoachChat: (message) => queuedApiCall(
+    () => apiClient.post('/api/ai_coach/chat', { message }),
+    null // No caching for chat messages
+  ),
+  
   currentUser: () => queuedApiCall(
     () => apiClient.get('/api/auth/me'),
     'current_user'
