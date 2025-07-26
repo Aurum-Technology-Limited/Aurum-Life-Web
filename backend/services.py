@@ -1689,9 +1689,20 @@ class TaskService:
         elif not task_response.kanban_column:
             task_response.kanban_column = "to_do"
         
-        # Check if overdue
+        # Check if overdue (with safe datetime comparison)
         if task_response.due_date and not task_response.completed:
-            task_response.is_overdue = task_response.due_date < datetime.utcnow()
+            try:
+                due_date = task_response.due_date
+                now = datetime.utcnow()
+                
+                # Ensure both dates are timezone-naive for comparison
+                if hasattr(due_date, 'tzinfo') and due_date.tzinfo is not None:
+                    due_date = due_date.replace(tzinfo=None)
+                
+                task_response.is_overdue = due_date < now
+            except Exception:
+                # If comparison fails, assume not overdue
+                task_response.is_overdue = False
         
         # Check if task can start (dependencies met)
         if task_response.dependency_task_ids:
