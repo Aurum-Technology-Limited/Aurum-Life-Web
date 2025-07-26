@@ -958,11 +958,15 @@ class ProjectService:
 
     @staticmethod
     async def get_area_projects(area_id: str, include_archived: bool = False) -> List[ProjectResponse]:
-        query = {"area_id": area_id}
+        # Get all projects for the area
+        all_projects = await find_documents("projects", {"area_id": area_id})
+        
+        # Filter archived projects on the client side
         if not include_archived:
-            query["archived"] = {"$ne": True}
+            projects_docs = [project for project in all_projects if not project.get("archived", False)]
+        else:
+            projects_docs = all_projects
             
-        projects_docs = await find_documents("projects", query)
         projects_docs.sort(key=lambda x: x.get("sort_order", 0))
         
         projects = []
