@@ -8,7 +8,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
-import Dashboard from './components/Dashboard';
+import OptimizedDashboard from './components/OptimizedDashboard';
 import Today from './components/Today';
 import Pillars from './components/Pillars';
 import Areas from './components/Areas';
@@ -24,6 +24,7 @@ import Insights from './components/Insights';
 import PasswordReset from './components/PasswordReset';
 import NotificationSettings from './components/NotificationSettings';
 import NotificationCenter from './components/NotificationCenter';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
