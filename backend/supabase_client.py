@@ -129,6 +129,9 @@ class SupabaseManager:
                             update: Dict[str, Any]) -> bool:
         """Update a document"""
         try:
+            # Convert datetime objects to ISO string format
+            update = self._serialize_document(update)
+            
             result = self.client.table(table_name).update(update).eq('id', document_id).execute()
             return len(result.data) > 0
         except Exception as e:
