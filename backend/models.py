@@ -62,7 +62,7 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    email: Optional[str] = None
+    user_id: Optional[str] = None
 
 class UserProfileUpdate(BaseModel):
     first_name: Optional[str] = None
