@@ -963,7 +963,7 @@ class ResourceCategoryEnum(str, Enum):
     document = "document"
 
 class Resource(BaseDocument):
-    """File/Resource model for contextual attachments"""
+    """File/Resource model for contextual attachments with Supabase Storage"""
     user_id: str
     filename: str
     original_filename: str  # Original name when uploaded
@@ -971,7 +971,15 @@ class Resource(BaseDocument):
     category: ResourceCategoryEnum = ResourceCategoryEnum.document  
     mime_type: str
     file_size: int  # Size in bytes
-    file_content: str  # Base64 encoded file content for reliable storage/display
+    
+    # Supabase Storage fields (replaces base64 file_content)
+    storage_bucket: str  # Supabase Storage bucket name
+    storage_path: str    # Path in Supabase Storage
+    file_url: Optional[str] = None  # Public URL if available
+    
+    # Legacy field for backward compatibility (deprecated)
+    file_content: Optional[str] = None  # Base64 encoded - only for migration
+    
     description: str = ""
     tags: List[str] = []
     
