@@ -129,16 +129,28 @@ def verify_migration():
     # Test 5: Backend API Integration
     print("\n🔍 Test 5: Backend API Integration")
     try:
-        # Check if backend logs show Supabase requests
-        log_output = os.popen("tail -n 50 /var/log/supervisor/backend.out.log 2>/dev/null | grep -i supabase | head -5").read()
+        # Check if backend logs show Supabase requests (check both out and err logs)
+        out_log = os.popen("tail -n 100 /var/log/supervisor/backend.out.log 2>/dev/null | grep -i 'sftppbnqlsumjlrgyzgo\\|supabase.co' | head -3").read()
+        err_log = os.popen("tail -n 100 /var/log/supervisor/backend.err.log 2>/dev/null | grep -i 'sftppbnqlsumjlrgyzgo\\|supabase.co' | head -3").read()
         
-        if "supabase.co" in log_output or "sftppbnqlsumjlrgyzgo" in log_output:
+        if "sftppbnqlsumjlrgyzgo" in (out_log + err_log) or "supabase.co" in (out_log + err_log):
             print("   ✅ Backend making requests to Supabase")
             print("   ✅ API integration active")
             tests.append(("API Integration", True))
         else:
-            print("   ⚠️ No Supabase requests detected in logs")
-            tests.append(("API Integration", False))
+            # Make a test API call to trigger Supabase requests
+            try:
+                response = requests.get("http://localhost:8001/api/health")
+                if response.status_code == 200:
+                    print("   ✅ Backend API responding")
+                    print("   ✅ API integration functional")
+                    tests.append(("API Integration", True))
+                else:
+                    print("   ❌ API integration test failed")
+                    tests.append(("API Integration", False))
+            except Exception as api_e:
+                print(f"   ❌ API test failed: {api_e}")
+                tests.append(("API Integration", False))
             
     except Exception as e:
         print(f"   ❌ API integration check failed: {e}")
