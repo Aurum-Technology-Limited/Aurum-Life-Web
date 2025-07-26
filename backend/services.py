@@ -11,8 +11,11 @@ from supabase_client import (
 from models import *
 from auth import get_password_hash, verify_password
 import json
+import logging
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+
+logger = logging.getLogger(__name__)
 
 class UserService:
     @staticmethod
