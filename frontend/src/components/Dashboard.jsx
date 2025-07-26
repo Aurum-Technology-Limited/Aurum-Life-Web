@@ -87,17 +87,17 @@ const Dashboard = ({ onSectionChange }) => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-white mb-4">
+      <div className="text-center mb-8 sm:mb-12">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">
           Welcome to Your Growth Journey
         </h1>
-        <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+        <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto px-4">
           Track your progress, build lasting habits, and unlock your potential with personalized insights and coaching.
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           title="Current Streak"
           value={dashboardData?.user?.current_streak || 0}
