@@ -792,6 +792,8 @@ class NotificationPreference(BaseDocument):
     task_reminder_notifications: bool = True
     project_deadline_notifications: bool = True
     recurring_task_notifications: bool = True
+    achievement_notifications: bool = True  # For achievement unlocks
+    unblocked_task_notifications: bool = True  # For task dependency notifications
     
     # Timing preferences
     reminder_advance_time: int = 30  # minutes before due time
