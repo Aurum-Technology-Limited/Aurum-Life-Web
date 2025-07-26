@@ -20,7 +20,8 @@ import {
   EyeOff,
   List,
   ArrowLeft,
-  GripVertical
+  GripVertical,
+  FileText
 } from 'lucide-react';
 import { useDrag, useDrop, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
