@@ -963,7 +963,7 @@ class ResourceCategoryEnum(str, Enum):
     document = "document"
 
 class Resource(BaseDocument):
-    """File/Resource model for document management"""
+    """File/Resource model for contextual attachments"""
     user_id: str
     filename: str
     original_filename: str  # Original name when uploaded
@@ -980,7 +980,11 @@ class Resource(BaseDocument):
     last_accessed: Optional[datetime] = None
     access_count: int = 0
     
-    # Attachment relationships
+    # Contextual attachment - direct parent relationship
+    parent_id: Optional[str] = None  # ID of parent entity (project, task, etc.)
+    parent_type: Optional[str] = None  # Type of parent entity ('project', 'task', etc.)
+    
+    # Legacy attachment relationships (deprecated but kept for backward compatibility)
     attached_to_tasks: List[str] = []      # Task IDs this file is attached to
     attached_to_projects: List[str] = []   # Project IDs this file is attached to  
     attached_to_areas: List[str] = []      # Area IDs this file is attached to
