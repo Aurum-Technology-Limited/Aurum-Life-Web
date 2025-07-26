@@ -1,6 +1,6 @@
 import React from 'react';
 import { User, Settings, Bell, LogOut, Trophy, BarChart3 } from 'lucide-react';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const UserMenu = ({ user, onClose, onNavigate, onLogout }) => {
   const handleMenuClick = (action) => {
