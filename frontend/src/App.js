@@ -14,7 +14,6 @@ import Pillars from './components/Pillars';
 import Areas from './components/Areas';
 import Projects from './components/Projects';
 import ProjectTemplates from './components/ProjectTemplates';
-import RecurringTasks from './components/RecurringTasks';
 import Journal from './components/Journal';
 import Tasks from './components/Tasks';
 import Feedback from './components/Feedback';
