@@ -182,7 +182,7 @@ class SupabaseDirectTestSuite:
         
         try:
             client = supabase_manager.get_client()
-            expected_tables = ['users', 'pillars', 'areas', 'projects', 'tasks', 'journal_entries']
+            expected_tables = ['user_profiles', 'pillars', 'areas', 'projects', 'tasks', 'journal_entries']
             
             accessible_tables = []
             for table_name in expected_tables:
