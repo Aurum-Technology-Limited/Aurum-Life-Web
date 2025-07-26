@@ -1335,8 +1335,8 @@ async def delete_resource(
     resource_id: str,
     current_user: User = Depends(get_current_active_user)
 ):
-    """Delete a resource"""
-    success = await ResourceService.delete_resource(current_user.id, resource_id)
+    """Delete a resource and its file from Supabase Storage"""
+    success = await supabase_resource_service.delete_resource(current_user.id, resource_id)
     if not success:
         raise HTTPException(status_code=404, detail="Resource not found")
     return {"message": "Resource deleted successfully"}
