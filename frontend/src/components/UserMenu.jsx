@@ -1,80 +1,103 @@
 import React from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { User, Settings, Bell, LogOut, Trophy, BarChart3 } from 'lucide-react';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 
-const UserMenu = ({ onNavigate }) => {
-  const { user } = useAuth();
-
-  // Direct navigation to profile on avatar click
-  const handleAvatarClick = () => {
-    onNavigate('profile');
-  };
-
-  // Get user initials for avatar
-  const getUserInitials = () => {
-    if (!user) return 'U';
-    
-    const firstName = user.first_name || '';
-    const lastName = user.last_name || '';
-    
-    if (firstName && lastName) {
-      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    } else if (firstName) {
-      return firstName.charAt(0).toUpperCase();
-    } else if (user.username) {
-      return user.username.charAt(0).toUpperCase();
+const UserMenu = ({ user, onClose, onNavigate, onLogout }) => {
+  const handleMenuClick = (action) => {
+    if (action === 'logout') {
+      onLogout();
+    } else {
+      onNavigate(action);
     }
-    
-    return 'U';
-  };
-
-  const getUserDisplayName = () => {
-    if (!user) return 'User';
-    
-    const firstName = user.first_name || '';
-    const lastName = user.last_name || '';
-    
-    if (firstName && lastName) {
-      return `${firstName} ${lastName}`;
-    } else if (firstName) {
-      return firstName;
-    } else if (user.username) {
-      return user.username;
-    }
-    
-    return 'User';
+    onClose();
   };
 
   return (
-    <div className="relative">
-      {/* User Avatar Button - Direct to Profile */}
-      <button
-        onClick={handleAvatarClick}
-        className="w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 hover:bg-gray-800/50 border border-transparent hover:border-gray-700 group"
-        aria-label="Go to profile"
-        title="Click to view your profile"
-      >
-        {/* Avatar Circle */}
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center font-semibold text-sm text-white transition-transform duration-200 group-hover:scale-105">
-          {getUserInitials()}
+    <div className="absolute right-0 bottom-full mb-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+      {/* User Info */}
+      <div className="p-4 border-b border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+            <span className="text-gray-900 font-semibold">
+              {user?.first_name?.[0] || user?.username?.[0] || user?.email?.[0] || 'U'}
+            </span>
+          </div>
+          <div>
+            <div className="text-white font-medium">
+              {user?.first_name && user?.last_name 
+                ? `${user.first_name} ${user.last_name}`
+                : user?.username || user?.email || 'User'
+              }
+            </div>
+            <div className="text-gray-400 text-sm">{user?.email}</div>
+          </div>
         </div>
         
-        {/* User Info */}
-        <div className="flex-1 text-left min-w-0">
-          <p className="font-medium text-sm truncate text-white group-hover:text-yellow-400 transition-colors duration-200">
-            {getUserDisplayName()}
-          </p>
-          <p className="text-xs text-gray-400 truncate">
-            {user?.email || 'user@example.com'}
-          </p>
+        <div className="mt-3 flex items-center justify-between text-sm">
+          <span className="text-gray-400">Level {user?.level || 1}</span>
+          <span className="text-yellow-500 font-medium">{user?.total_points || 0} points</span>
         </div>
+        
+        {user?.current_streak > 0 && (
+          <div className="mt-1 text-sm text-gray-400">
+            🔥 {user.current_streak} day streak
+          </div>
+        )}
+      </div>
 
-        {/* Profile Indicator Arrow */}
-        <div className="w-4 h-4 text-gray-500 group-hover:text-yellow-400 transition-colors duration-200">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </div>
-      </button>
+      {/* Menu Items */}
+      <div className="py-2">
+        <button
+          onClick={() => handleMenuClick('profile')}
+          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+        >
+          <User className="h-4 w-4" />
+          <span>Profile</span>
+        </button>
+        
+        <button
+          onClick={() => handleMenuClick('achievements')}
+          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+        >
+          <Trophy className="h-4 w-4" />
+          <span>Achievements</span>
+        </button>
+        
+        <button
+          onClick={() => handleMenuClick('insights')}
+          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+        >
+          <BarChart3 className="h-4 w-4" />
+          <span>Insights</span>
+        </button>
+        
+        <button
+          onClick={() => handleMenuClick('notification-settings')}
+          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+        >
+          <Bell className="h-4 w-4" />
+          <span>Notifications</span>
+        </button>
+        
+        <button
+          onClick={() => handleMenuClick('profile')}
+          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+        >
+          <Settings className="h-4 w-4" />
+          <span>Settings</span>
+        </button>
+      </div>
+
+      {/* Logout */}
+      <div className="border-t border-gray-700 py-2">
+        <button
+          onClick={() => handleMenuClick('logout')}
+          className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-gray-700 transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Sign Out</span>
+        </button>
+      </div>
     </div>
   );
 };

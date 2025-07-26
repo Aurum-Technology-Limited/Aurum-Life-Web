@@ -1,191 +1,267 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Brain, 
-  BookOpen, 
+  Home, 
+  Calendar, 
+  Target, 
+  FolderOpen, 
   CheckSquare, 
-  MessageCircle, 
+  BookOpen, 
+  MessageSquare, 
+  Bot, 
   Trophy, 
+  User, 
+  BarChart3, 
   Settings,
+  Bell,
   Menu,
   X,
-  Calendar,
-  Layers,
-  FolderOpen,
-  User,
-  BarChart3,
-  FileText,
-  Mountain,
-  Bell
+  ChevronDown,
+  LogOut,
+  Mountain
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import UserMenu from './UserMenu';
+import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import NotificationManager from './NotificationManager';
+import UserMenu from './UserMenu';
 
 const Layout = ({ children, activeSection, onSectionChange }) => {
+  const { user, logout } = useAuth();
+  const { notifications } = useNotification();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const navigation = [
-    { id: 'dashboard', name: 'Dashboard', icon: Brain, description: 'Overview & insights' },
-    { id: 'today', name: 'Today', icon: Calendar, description: 'Today\'s tasks & focus' },
-    { id: 'insights', name: 'Insights', icon: BarChart3, description: 'Data & analytics' },
-    { id: 'pillars', name: 'Pillars', icon: Mountain, description: 'Life domains hierarchy' },
-    { id: 'areas', name: 'Areas', icon: Layers, description: 'Life domains' },
-    { id: 'projects', name: 'Projects', icon: FolderOpen, description: 'Active projects' },
-    { id: 'project-templates', name: 'Templates', icon: FileText, description: 'Project templates' },
-    { id: 'tasks', name: 'Tasks', icon: CheckSquare, description: 'Goals & productivity' },
-    { id: 'journal', name: 'Journal', icon: BookOpen, description: 'Reflection & writing' },
-    { id: 'ai-coach', name: 'AI Coach', icon: Brain, description: 'Personal guidance' },
-    { id: 'achievements', name: 'Achievements', icon: Trophy, description: 'Badges & rewards' }
+  // Navigation items
+  const navigationItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'today', label: 'Today', icon: Calendar },
+    { id: 'pillars', label: 'Pillars', icon: Mountain },
+    { id: 'areas', label: 'Areas', icon: Target },
+    { id: 'projects', label: 'Projects', icon: FolderOpen },
+    { id: 'project-templates', label: 'Templates', icon: BookOpen },
+    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+    { id: 'journal', label: 'Journal', icon: BookOpen },
+    { id: 'insights', label: 'Insights', icon: BarChart3 },
+    { id: 'feedback', label: 'Feedback', icon: MessageSquare },
+    { id: 'ai-coach', label: 'AI Coach', icon: Bot },
+    { id: 'achievements', label: 'Achievements', icon: Trophy },
   ];
 
   const handleNavigation = (sectionId) => {
-    console.log('🖱️ Layout: Navigation clicked for section:', sectionId);
-    console.log('🔄 Layout: Calling onSectionChange with:', sectionId);
+    console.log('🔄 Layout: Navigating to', sectionId);
     onSectionChange(sectionId);
-    setSidebarOpen(false);
+    setSidebarOpen(false); // Close mobile sidebar
   };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setShowUserMenu(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showUserMenu && !event.target.closest('.user-menu-container')) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D14' }}>
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg transition-all duration-200"
-          style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-        >
-          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Sidebar */}
-      <div className={`
-        fixed inset-y-0 left-0 z-40 w-80 transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        border-r border-gray-800
-      `}
-      style={{ backgroundColor: 'rgba(11, 13, 20, 0.95)' }}
-      >
-        {/* Logo */}
-        <div className="flex items-center h-20 px-6 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <div 
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: '#F4B400' }}
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-gray-900 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="text-gray-400 hover:text-white"
+          >
+            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+          <h1 className="text-xl font-bold text-white">Aurum Life</h1>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {/* Notifications */}
+          <div className="relative">
+            <button className="text-gray-400 hover:text-white relative">
+              <Bell className="h-6 w-6" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+          </div>
+          
+          {/* User Menu */}
+          <div className="relative user-menu-container">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2 text-gray-400 hover:text-white"
             >
-              <Brain size={24} style={{ color: '#0B0D14' }} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold" style={{ color: '#F4B400' }}>
-                Aurum Life
-              </h1>
-              <p className="text-xs text-gray-400">Personal Growth Platform</p>
-            </div>
+              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                <span className="text-gray-900 font-semibold text-sm">
+                  {user?.first_name?.[0] || user?.username?.[0] || user?.email?.[0] || 'U'}
+                </span>
+              </div>
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            
+            {showUserMenu && (
+              <UserMenu 
+                user={user} 
+                onClose={() => setShowUserMenu(false)}
+                onNavigate={handleNavigation}
+                onLogout={handleLogout}
+              />
+            )}
           </div>
         </div>
-
-        {/* Navigation */}
-        <nav className="mt-8 px-4">
-          {navigation.map((item) => {
-            const isActive = activeSection === item.id;
-            
-            // Debug logging for insights button specifically
-            if (item.id === 'insights') {
-              console.log('🔍 Debug: Rendering insights button with id:', item.id);
-            }
-            
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  console.log('🖱️ Button clicked with item.id:', item.id);
-                  handleNavigation(item.id);
-                }}
-                className={`
-                  w-full flex items-center px-4 py-3 mb-2 rounded-lg text-left
-                  transition-all duration-200 group hover:scale-105
-                  ${isActive 
-                    ? 'shadow-lg transform' 
-                    : 'hover:bg-gray-800/50'
-                  }
-                `}
-                style={{
-                  backgroundColor: isActive ? '#F4B400' : 'transparent',
-                  color: isActive ? '#0B0D14' : '#ffffff'
-                }}
-              >
-                <item.icon 
-                  size={20} 
-                  className={`mr-3 ${isActive ? '' : 'group-hover:scale-110 transition-transform'}`}
-                />
-                <div>
-                  <div className={`font-medium ${isActive ? 'text-gray-900' : ''}`}>
-                    {item.name}
-                  </div>
-                  <div className={`text-xs ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>
-                    {item.description}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Footer - User Menu */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <UserMenu onNavigate={handleNavigation} />
-        </div>
       </div>
 
-      {/* Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Main content */}
-      <div className="lg:ml-80 min-h-screen">
-        {/* Top header with level display */}
-        <div className="sticky top-0 z-20 bg-[#0B0D14]/95 backdrop-blur-sm border-b border-gray-800/50 p-4 lg:p-6">
-          <div className="flex items-center justify-between">
-            <div className="lg:hidden">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50"
-              >
-                <Menu size={24} />
-              </button>
+      <div className="flex">
+        {/* Sidebar */}
+        <div className={`
+          fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 border-r border-gray-700 transform transition-transform duration-300 ease-in-out
+          lg:translate-x-0 lg:static lg:inset-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          {/* Logo */}
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-700">
+            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+              <span className="text-gray-900 font-bold text-sm">AL</span>
             </div>
-            
-            {/* Header actions */}
-            <div className="ml-auto flex items-center space-x-2 sm:space-x-4">
-              {/* Notification Manager */}
-              <NotificationManager />
+            <h1 className="text-xl font-bold text-white">Aurum Life</h1>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeSection === item.id;
               
-              {/* Level display - responsive */}
-              {user && (
-                <div className="inline-flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20">
-                  <span className="text-yellow-400 font-medium text-sm sm:text-base">
-                    <span className="hidden sm:inline">Level </span>{user.level}
-                  </span>
-                  <span className="text-gray-400 hidden sm:inline">•</span>
-                  <span className="text-gray-300 text-xs sm:text-sm">
-                    <span className="hidden sm:inline">{user.total_points} points</span>
-                    <span className="sm:hidden">{user.total_points}p</span>
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavigation(item.id)}
+                  className={`
+                    w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors
+                    ${isActive 
+                      ? 'bg-yellow-500 text-gray-900 font-medium' 
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                    }
+                  `}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* User Section - Desktop */}
+          <div className="hidden lg:block border-t border-gray-700 p-4">
+            <div className="relative user-menu-container">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
+              >
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <span className="text-gray-900 font-semibold text-sm">
+                    {user?.first_name?.[0] || user?.username?.[0] || user?.email?.[0] || 'U'}
                   </span>
                 </div>
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-white">
+                    {user?.first_name && user?.last_name 
+                      ? `${user.first_name} ${user.last_name}`
+                      : user?.username || user?.email || 'User'
+                    }
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Level {user?.level || 1} • {user?.total_points || 0} pts
+                  </div>
+                </div>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              
+              {showUserMenu && (
+                <UserMenu 
+                  user={user} 
+                  onClose={() => setShowUserMenu(false)}
+                  onNavigate={handleNavigation}
+                  onLogout={handleLogout}
+                />
               )}
             </div>
           </div>
         </div>
-        
-        <main className="p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
+
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1 lg:ml-0">
+          {/* Desktop Header */}
+          <div className="hidden lg:flex items-center justify-between bg-gray-900 border-b border-gray-700 px-6 py-4">
+            <div>
+              <h2 className="text-2xl font-bold text-white capitalize">
+                {navigationItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
+              </h2>
+              <p className="text-gray-400 text-sm mt-1">
+                Welcome back, {user?.first_name || user?.username || 'User'}
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {/* Notifications */}
+              <div className="relative">
+                <button 
+                  onClick={() => handleNavigation('notifications')}
+                  className="text-gray-400 hover:text-white relative"
+                >
+                  <Bell className="h-6 w-6" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {notifications.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+              
+              {/* Settings */}
+              <button 
+                onClick={() => handleNavigation('notification-settings')}
+                className="text-gray-400 hover:text-white"
+              >
+                <Settings className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Page Content */}
+          <main className="p-6">
+            {children}
+          </main>
+        </div>
       </div>
+
+      {/* Notification Manager */}
+      <NotificationManager />
     </div>
   );
 };
