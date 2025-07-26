@@ -113,7 +113,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Aurum Life application reported slow performance and Insights section showing 'Error Loading Insights - Failed to load insights data'. User requested to fix Insights issue first, then optimize overall performance."
+user_problem_statement: "Continue performance optimization of remaining slow backend endpoints: Areas (~3s), Insights (~3.5s), Dashboard (~2.4s), and AI Coach (~2.8s) by eliminating N+1 query patterns. Projects endpoint already optimized (18x speed improvement from ~5173ms to ~282ms)."
 
 backend:
   - task: "Insights API Endpoint MongoDB Import Fix"
