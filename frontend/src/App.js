@@ -26,6 +26,9 @@ import NotificationSettings from './components/NotificationSettings';
 import NotificationCenter from './components/NotificationCenter';
 import ErrorBoundary from './components/ErrorBoundary';
 
+// Import performance test for debugging
+import './services/performanceTest';
+
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
