@@ -1103,6 +1103,32 @@ const Projects = ({ onSectionChange, filterAreaId }) => {
                 </button>
               </div>
 
+              {/* Create from Template Option - Only show for new projects */}
+              {!editingProject && (
+                <div className="mb-6 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-5 w-5 text-blue-400" />
+                      <div>
+                        <h3 className="text-blue-400 font-medium">Create from Template</h3>
+                        <p className="text-blue-300/70 text-sm">Start with a pre-built project structure</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleCloseModal();
+                        onSectionChange('project-templates');
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm font-medium"
+                    >
+                      <FileText className="h-4 w-4" />
+                      <span>Browse Templates</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="input-with-counter">
                   <label className="block text-sm font-medium text-gray-300 mb-2">
