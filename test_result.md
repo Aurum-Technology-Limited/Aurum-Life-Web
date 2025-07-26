@@ -2404,11 +2404,23 @@ frontend:
 
 test_plan:
   current_focus:
-    []
+    - "Sidebar Navigation Cleanup and Profile Enhancement"
   stuck_tasks:
     - "Enhanced Drag & Drop Frontend Implementation - Phase 2"
   test_all: false
   test_priority: "high_first"
+
+  - task: "Sidebar Navigation Cleanup and Profile Enhancement"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Layout.jsx, /app/frontend/src/components/Profile.jsx, /app/frontend/src/components/UserMenu.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented sidebar navigation cleanup and profile enhancement: 1) Removed Feedback, Notifications, and Profile from main sidebar navigation 2) Added Notifications button to Profile page's Help & Account section (joining Send Feedback and Sign Out) 3) Consolidated all account-level actions in Profile page accessible through avatar click. Need comprehensive testing to verify: sidebar contains only 12 core navigation items, avatar click navigates directly to Profile page, Profile page has 3 buttons in Help & Account section (Send Feedback, Notifications, Sign Out), complete user flow works correctly."
 
   - task: "User & Account Menu Implementation"
     implemented: true
