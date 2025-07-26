@@ -60,6 +60,7 @@ const Insights = () => {
 
   const loadInsightsData = async () => {
     try {
+      console.log('📊 Insights: Starting loadInsightsData');
       setLoading(true);
       setError(null);
       
@@ -69,13 +70,17 @@ const Insights = () => {
         apiUrl += `&area_id=${selectedAreaId}`;
       }
       
+      console.log('📊 Insights: Calling API with URL:', apiUrl);
       const response = await insightsAPI.getInsights(selectedDateRange, selectedAreaId);
+      console.log('📊 Insights: API response received:', response.data);
       setInsightsData(response.data);
       console.log('📊 Insights data loaded:', response.data);
     } catch (err) {
+      console.error('📊 Insights: Error loading data:', err);
       setError('Failed to load insights data');
       console.error('Error loading insights:', err);
     } finally {
+      console.log('📊 Insights: Setting loading to false');
       setLoading(false);
     }
   };
