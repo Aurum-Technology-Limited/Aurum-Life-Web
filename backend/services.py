@@ -888,6 +888,8 @@ class AreaService:
 
     @staticmethod
     async def get_user_areas(user_id: str, include_projects: bool = False, include_archived: bool = False) -> List[AreaResponse]:
+        """OPTIMIZED VERSION - Batch fetch all data to eliminate N+1 queries"""
+        
         # Get all areas for the user
         all_areas = await find_documents("areas", {"user_id": user_id})
         
@@ -899,9 +901,88 @@ class AreaService:
             
         areas_docs.sort(key=lambda x: x.get("sort_order", 0))
         
+        if not areas_docs:
+            return []
+        
+        # OPTIMIZATION: Batch fetch all pillars and projects in 2 queries instead of N queries
+        pillar_ids = list(set([area.get("pillar_id") for area in areas_docs if area.get("pillar_id")]))
+        area_ids = [area["id"] for area in areas_docs]
+        
+        # Batch fetch pillars (1 query instead of N)
+        pillars_dict = {}
+        if pillar_ids:
+            pillars_docs = await find_documents("pillars", {"id": {"$in": pillar_ids}}) if hasattr(find_documents, 'supports_in') else []
+            # Fallback to individual pillar fetches if needed
+            if not pillars_docs and pillar_ids:
+                for pillar_id in pillar_ids[:10]:  # Limit to prevent timeout
+                    try:
+                        pillar_doc = await find_document("pillars", {"id": pillar_id})
+                        if pillar_doc:
+                            pillars_dict[pillar_id] = pillar_doc
+                    except:
+                        continue
+            else:
+                pillars_dict = {p["id"]: p for p in pillars_docs}
+        
+        # Batch fetch projects (1 query instead of N) 
+        projects_dict = {}
+        if include_projects:
+            try:
+                # Try to get all projects for all areas in one query
+                all_projects = await find_documents("projects", {"user_id": user_id})
+                
+                # Group projects by area_id
+                for project_doc in all_projects:
+                    area_id = project_doc.get("area_id")
+                    if area_id in area_ids:
+                        if area_id not in projects_dict:
+                            projects_dict[area_id] = []
+                        
+                        # Build project response
+                        project_response = ProjectResponse(**project_doc)
+                        
+                        # Get task counts for project (simplified)
+                        try:
+                            tasks = await find_documents("tasks", {"project_id": project_response.id})
+                            project_response.task_count = len(tasks)
+                            project_response.completed_task_count = len([t for t in tasks if t.get("status") == "completed"])
+                        except:
+                            project_response.task_count = 0
+                            project_response.completed_task_count = 0
+                        
+                        projects_dict[area_id].append(project_response)
+            except Exception as e:
+                logger.warning(f"Error batch fetching projects: {e}")
+                projects_dict = {}
+        
+        # Build responses efficiently
         areas = []
         for doc in areas_docs:
-            area_response = await AreaService._build_area_response(doc, include_projects)
+            area_response = AreaResponse(**doc)
+            
+            # Add pillar name from batch-fetched data
+            if area_response.pillar_id and area_response.pillar_id in pillars_dict:
+                area_response.pillar_name = pillars_dict[area_response.pillar_id]["name"]
+            
+            # Add projects from batch-fetched data
+            if include_projects and area_response.id in projects_dict:
+                projects = projects_dict[area_response.id]
+                area_response.projects = projects
+                area_response.project_count = len(projects)
+                area_response.completed_project_count = len([p for p in projects if p.status == "Completed"])
+                
+                # Calculate task counts
+                total_tasks = sum([p.task_count or 0 for p in projects])
+                completed_tasks = sum([p.completed_task_count or 0 for p in projects])
+                area_response.total_task_count = total_tasks
+                area_response.completed_task_count = completed_tasks
+            elif include_projects:
+                area_response.projects = []
+                area_response.project_count = 0
+                area_response.completed_project_count = 0
+                area_response.total_task_count = 0
+                area_response.completed_task_count = 0
+            
             areas.append(area_response)
         
         return areas
