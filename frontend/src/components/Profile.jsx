@@ -219,6 +219,20 @@ const Profile = ({ onSectionChange }) => {
               </div>
             </button>
 
+            {/* Notifications Button */}
+            <button
+              onClick={() => onSectionChange && onSectionChange('notification-settings')}
+              className="w-full flex items-center space-x-3 px-4 py-3 bg-blue-900/20 hover:bg-blue-900/30 border border-blue-700/30 hover:border-blue-600/50 text-blue-400 rounded-lg transition-all duration-200 group"
+            >
+              <div className="p-2 rounded-lg bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors duration-200">
+                <Bell className="h-4 w-4 text-blue-400" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-blue-400 font-medium text-sm">Notifications</p>
+                <p className="text-blue-500/70 text-xs">Manage notification preferences</p>
+              </div>
+            </button>
+
             {/* Logout Button */}
             <button
               onClick={handleLogout}
