@@ -81,7 +81,7 @@ class SupabaseDirectTestSuite:
                 
                 # Test read operation
                 user = await supabase_manager.find_document('user_profiles', {'id': user_id})
-                if user and user['email'] == test_user_data['email']:
+                if user and user['username'] == test_user_data['username']:
                     print("✅ Read operation successful")
                     
                     # Test update operation
