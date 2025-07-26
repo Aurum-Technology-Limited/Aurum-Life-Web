@@ -1692,7 +1692,12 @@ app.add_middleware(
 # Startup and shutdown events
 @app.on_event("startup")
 async def startup_db_client():
-    await connect_to_mongo()
+    # Initialize Supabase connection
+    try:
+        supabase_client = supabase_manager.get_client()
+        logger.info("✅ Supabase client initialized")
+    except Exception as e:
+        logger.error(f"❌ Error initializing Supabase client: {e}")
     
     # Initialize default journal templates
     try:
@@ -1701,18 +1706,10 @@ async def startup_db_client():
     except Exception as e:
         logger.error(f"❌ Error initializing journal templates: {e}")
     
-    # Fix existing journal entries (migration)
-    try:
-        await JournalService.fix_existing_journal_entries()
-        logger.info("✅ Journal entries migration check completed")
-    except Exception as e:
-        logger.error(f"❌ Error in journal entries migration: {e}")
-    
-    logger.info("🚀 Aurum Life API started successfully")
+    logger.info("🚀 Aurum Life API started with Supabase")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    await close_mongo_connection()
     logger.info("💤 Aurum Life API shutdown complete")
 
 if __name__ == "__main__":
