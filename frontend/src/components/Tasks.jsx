@@ -287,6 +287,31 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
         sub_task_completion_required: task.sub_task_completion_required || false // New field
       });
       
+      // Handle recurrence data if editing a recurring task
+      if (task.recurrence_pattern) {
+        setRecurrenceEnabled(true);
+        setRecurrenceConfig({
+          type: task.recurrence_pattern.type || 'none',
+          interval: task.recurrence_pattern.interval || 1,
+          weekdays: task.recurrence_pattern.weekdays || [],
+          month_day: task.recurrence_pattern.month_day || null,
+          end_date: task.recurrence_pattern.end_date ? task.recurrence_pattern.end_date.split('T')[0] : '',
+          max_instances: task.recurrence_pattern.max_instances || null
+        });
+        setShowRecurrenceDetails(true);
+      } else {
+        setRecurrenceEnabled(false);
+        setRecurrenceConfig({
+          type: 'none',
+          interval: 1,
+          weekdays: [],
+          month_day: null,
+          end_date: '',
+          max_instances: null
+        });
+        setShowRecurrenceDetails(false);
+      }
+      
       // Load existing subtasks if editing
       if (task.id) {
         loadSubtasks(task.id);
@@ -310,6 +335,18 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
         project_id: '', // Will be set after projects load
         sub_task_completion_required: false // New field
       });
+      
+      // Reset recurrence for new tasks
+      setRecurrenceEnabled(false);
+      setRecurrenceConfig({
+        type: 'none',
+        interval: 1,
+        weekdays: [],
+        month_day: null,
+        end_date: '',
+        max_instances: null
+      });
+      setShowRecurrenceDetails(false);
       
       // Clear subtasks when creating new task
       setSubtasks([]);
