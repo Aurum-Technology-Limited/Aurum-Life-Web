@@ -2611,10 +2611,10 @@ class PillarService:
     
     @staticmethod
     async def _build_pillar_response(pillar_doc: dict, include_areas: bool = False) -> PillarResponse:
-        """Build a comprehensive pillar response with progress data"""
+        """OPTIMIZED VERSION - Build pillar response with batch fetching to eliminate N+1 queries"""
         pillar_response = PillarResponse(**pillar_doc)
         
-        # Get linked areas and calculate progress
+        # Get linked areas in one query
         all_areas = await find_documents("areas", {
             "pillar_id": pillar_response.id,
             "user_id": pillar_response.user_id
@@ -2622,23 +2622,95 @@ class PillarService:
         
         # Filter non-archived areas on client side
         areas_docs = [area for area in all_areas if not area.get("archived", False)]
-        
         pillar_response.area_count = len(areas_docs)
         
-        # Calculate project and task statistics
+        if not areas_docs:
+            # No areas, set default values
+            pillar_response.project_count = 0
+            pillar_response.task_count = 0
+            pillar_response.completed_task_count = 0
+            pillar_response.progress_percentage = 0
+            if include_areas:
+                pillar_response.areas = []
+            return pillar_response
+        
+        # OPTIMIZATION: Batch fetch ALL data for all areas in this pillar
+        area_ids = [area["id"] for area in areas_docs]
+        
+        # Get all projects for all areas in one query
+        all_projects = await find_documents("projects", {"user_id": pillar_response.user_id})
+        relevant_projects = [p for p in all_projects if p.get("area_id") in area_ids and not p.get("archived", False)]
+        
+        # Get all tasks for the user in one query  
+        all_tasks = await find_documents("tasks", {"user_id": pillar_response.user_id})
+        
+        # Group projects by area_id and tasks by project_id
+        projects_by_area = {}
+        tasks_by_project = {}
+        
+        for project in relevant_projects:
+            area_id = project.get("area_id")
+            if area_id not in projects_by_area:
+                projects_by_area[area_id] = []
+            projects_by_area[area_id].append(project)
+        
+        for task in all_tasks:
+            project_id = task.get("project_id")
+            if project_id:
+                if project_id not in tasks_by_project:
+                    tasks_by_project[project_id] = []
+                tasks_by_project[project_id].append(task)
+        
+        # Build area responses efficiently with batch-fetched data
         total_projects = 0
         total_tasks = 0
         completed_tasks = 0
-        
         areas = []
-        for area_doc in areas_docs:
-            area_response = await AreaService._build_area_response(area_doc, include_projects=True)
-            areas.append(area_response)
-            
-            total_projects += area_response.project_count
-            total_tasks += area_response.total_task_count
-            completed_tasks += area_response.completed_task_count
         
+        for area_doc in areas_docs:
+            area_response = AreaResponse(**area_doc)
+            area_id = area_response.id
+            
+            # Get projects for this area from batch-fetched data
+            area_projects = projects_by_area.get(area_id, [])
+            
+            # Build project responses with task counts from batch-fetched data
+            project_responses = []
+            for project_doc in area_projects:
+                project_response = ProjectResponse(**project_doc)
+                project_tasks = tasks_by_project.get(project_response.id, [])
+                project_response.task_count = len(project_tasks)
+                project_response.completed_task_count = len([t for t in project_tasks if t.get("status") == "completed"])
+                
+                # Calculate completion percentage
+                if project_response.task_count > 0:
+                    completion_rate = (project_response.completed_task_count / project_response.task_count) * 100
+                    project_response.completion_percentage = round(completion_rate, 1)
+                else:
+                    project_response.completion_percentage = 0.0
+                
+                project_responses.append(project_response)
+            
+            # Set area response data
+            if include_areas:
+                area_response.projects = project_responses
+            area_response.project_count = len(project_responses)
+            area_response.completed_project_count = len([p for p in project_responses if p.status == "Completed"])
+            
+            # Calculate task counts for this area
+            area_task_count = sum([p.task_count or 0 for p in project_responses])
+            area_completed_tasks = sum([p.completed_task_count or 0 for p in project_responses])
+            area_response.total_task_count = area_task_count
+            area_response.completed_task_count = area_completed_tasks
+            
+            # Add to pillar totals
+            total_projects += area_response.project_count
+            total_tasks += area_task_count
+            completed_tasks += area_completed_tasks
+            
+            areas.append(area_response)
+        
+        # Set pillar response totals
         pillar_response.project_count = total_projects
         pillar_response.task_count = total_tasks
         pillar_response.completed_task_count = completed_tasks
