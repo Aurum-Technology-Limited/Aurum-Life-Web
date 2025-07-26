@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { User, Mail, Edit2, Save, X, AlertCircle, CheckCircle2, MessageCircle, LogOut } from 'lucide-react';
 
-const Profile = ({ onNavigate }) => {
+const Profile = ({ onSectionChange }) => {
   const { user, updateProfile, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
