@@ -680,7 +680,7 @@ class JournalService:
             
             if not existing:
                 template = JournalTemplate(
-                    user_id="system",
+                    user_id="00000000-0000-0000-0000-000000000000",  # System UUID
                     is_default=True,
                     usage_count=0,
                     **template_data
