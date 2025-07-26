@@ -50,7 +50,11 @@ class PerformanceTest {
     
     // Test 2: Login (get auth token)
     const loginData = await this.testEndpoint('Login', '/api/auth/login', {
-      'Content-Type': 'application/json'
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'marc.alleyne@aurumtechnologyltd.com',
+        password: 'password123'
+      })
     });
     
     if (!loginData?.access_token) {
