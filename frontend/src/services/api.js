@@ -86,6 +86,7 @@ export const notificationsAPI = {
     params: { unread_only: unreadOnly } 
   }),
   markAsRead: (notificationId) => apiClient.put(`/notifications/${notificationId}/read`),
+  deleteNotification: (notificationId) => apiClient.delete(`/notifications/${notificationId}`),
   sendTest: () => apiClient.post('/notifications/test'),
   
   // Bulk actions
