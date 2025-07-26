@@ -7,7 +7,7 @@ import os
 import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta, time
-from supabase_client import find_document, find_documents, create_document, update_document, delete_document
+from supabase_client import find_document, find_documents, create_document, update_document, delete_document, bulk_update_documents, bulk_delete_documents
 from email_service import email_service
 from models import (
     NotificationPreference, NotificationPreferenceCreate, NotificationPreferenceUpdate,
