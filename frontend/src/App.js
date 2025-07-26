@@ -152,12 +152,13 @@ function App() {
   }
 
   return (
-    <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
-      <AuthProvider>
-        <DataProvider>
-          <NotificationProvider>
-            <DndProvider backend={HTML5Backend}>
-              <div className="App">
+    <ErrorBoundary>
+      <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
+        <AuthProvider>
+          <DataProvider>
+            <NotificationProvider>
+              <DndProvider backend={HTML5Backend}>
+                <div className="App">
                 <ProtectedRoute>
                   <Layout 
                     activeSection={activeSection} 
