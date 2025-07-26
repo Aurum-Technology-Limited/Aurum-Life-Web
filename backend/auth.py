@@ -61,7 +61,7 @@ async def get_current_user(token_data: TokenData = Depends(verify_token)) -> Use
     """Get the current authenticated user."""
     from services import UserService
     
-    user = await UserService.get_user_by_email(token_data.email)
+    user = await UserService.get_user(token_data.user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
