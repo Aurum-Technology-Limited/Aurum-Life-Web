@@ -33,7 +33,7 @@ import {
   Upload,
   X
 } from 'lucide-react';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useDataContext } from '../contexts/DataContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { projectsAPI, areasAPI, projectTemplatesAPI } from '../services/api';
