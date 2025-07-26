@@ -19,7 +19,7 @@ import {
   LogOut,
   Mountain
 } from 'lucide-react';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import NotificationManager from './NotificationManager';
 import UserMenu from './UserMenu';
