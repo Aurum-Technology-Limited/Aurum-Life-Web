@@ -203,13 +203,34 @@ const Profile = ({ onNavigate }) => {
 
         {/* Account Actions */}
         <div className="mt-8 bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Account Actions</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Help & Account</h3>
           <div className="space-y-3">
+            {/* Send Feedback Button */}
+            <button
+              onClick={() => onNavigate && onNavigate('feedback')}
+              className="w-full flex items-center space-x-3 px-4 py-3 bg-green-900/20 hover:bg-green-900/30 border border-green-700/30 hover:border-green-600/50 text-green-400 rounded-lg transition-all duration-200 group"
+            >
+              <div className="p-2 rounded-lg bg-green-500/20 group-hover:bg-green-500/30 transition-colors duration-200">
+                <MessageCircle className="h-4 w-4 text-green-400" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-green-400 font-medium text-sm">Send Feedback</p>
+                <p className="text-green-500/70 text-xs">Share your thoughts and suggestions</p>
+              </div>
+            </button>
+
+            {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="w-full px-4 py-3 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors"
+              className="w-full flex items-center space-x-3 px-4 py-3 bg-red-900/20 hover:bg-red-900/30 border border-red-700/30 hover:border-red-600/50 text-red-400 rounded-lg transition-all duration-200 group"
             >
-              Sign Out
+              <div className="p-2 rounded-lg bg-red-500/20 group-hover:bg-red-500/30 transition-colors duration-200">
+                <LogOut className="h-4 w-4 text-red-400" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-red-400 font-medium text-sm">Sign Out</p>
+                <p className="text-red-500/70 text-xs">Sign out of your account</p>
+              </div>
             </button>
           </div>
         </div>
