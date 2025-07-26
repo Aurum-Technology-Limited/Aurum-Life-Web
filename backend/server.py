@@ -35,9 +35,8 @@ logger = logging.getLogger(__name__)
 # Default user ID for demo (in real app, this would come from authentication)
 DEFAULT_USER_ID = "demo-user-123"
 
-def get_current_active_user(*args, **kwargs):
-    """Use the old auth system for compatibility"""
-    return old_get_current_active_user(*args, **kwargs)
+# Use the old auth system for compatibility  
+get_current_active_user = old_get_current_active_user
 
 # Health check endpoints
 @api_router.get("/")
