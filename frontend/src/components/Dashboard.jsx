@@ -42,13 +42,16 @@ const Dashboard = ({ onSectionChange }) => {
 
   const fetchDashboardData = async () => {
     try {
+      console.log('🏠 Dashboard: Starting data fetch');
       setLoading(true);
       setError(null);
       
-      const response = await dashboardAPI.getDashboard();
+      const response = await emergencyAPI.dashboard();
+      console.log('🏠 Dashboard: Data loaded successfully');
       setDashboardData(response.data);
     } catch (err) {
-      setError(handleApiError(err, 'Failed to load dashboard data'));
+      console.error('🏠 Dashboard: Failed to load data:', err.message);
+      setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
