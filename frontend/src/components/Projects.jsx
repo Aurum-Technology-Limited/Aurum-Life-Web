@@ -103,7 +103,7 @@ const Projects = ({ onSectionChange }) => {
   const loadProjects = async () => {
     try {
       setLoading(true);
-      const response = await projectsAPI.getAll();
+      const response = await projectsAPI.getProjects();
       setProjects(response.data || []);
       setError(null);
     } catch (err) {
