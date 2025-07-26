@@ -967,11 +967,13 @@ class AreaService:
         for doc in areas_docs:
             area_response = AreaResponse(**doc)
             
-            # Add pillar name from batch-fetched data
+            # Add pillar name from batch-fetched data (with null safety)
             if area_response.pillar_id and area_response.pillar_id in pillars_dict:
                 area_response.pillar_name = pillars_dict[area_response.pillar_id]["name"]
+            else:
+                area_response.pillar_name = None  # Ensure explicit null instead of undefined
             
-            # Add projects from batch-fetched data
+            # Add projects from batch-fetched data (with default values)
             if include_projects and area_response.id in projects_dict:
                 projects = projects_dict[area_response.id]
                 area_response.projects = projects
@@ -984,17 +986,24 @@ class AreaService:
                 area_response.total_task_count = total_tasks
                 area_response.completed_task_count = completed_tasks
             elif include_projects:
+                # Ensure default values when no projects found
                 area_response.projects = []
                 area_response.project_count = 0
                 area_response.completed_project_count = 0
                 area_response.total_task_count = 0
                 area_response.completed_task_count = 0
             else:
-                # Even when not including projects, calculate counts efficiently
-                all_projects = await find_documents("projects", {"user_id": user_id, "area_id": area_response.id})
-                projects_docs = [p for p in all_projects if not p.get("archived", False)]
-                area_response.project_count = len(projects_docs)
-                area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
+                # Even when not including projects, calculate counts efficiently (with error handling)
+                try:
+                    all_projects = await find_documents("projects", {"user_id": user_id, "area_id": area_response.id})
+                    projects_docs = [p for p in all_projects if not p.get("archived", False)]
+                    area_response.project_count = len(projects_docs)
+                    area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
+                except Exception as e:
+                    logger.warning(f"Error calculating project counts for area {area_response.id}: {e}")
+                    # Provide default values if count calculation fails
+                    area_response.project_count = 0
+                    area_response.completed_project_count = 0
             
             areas.append(area_response)
         
