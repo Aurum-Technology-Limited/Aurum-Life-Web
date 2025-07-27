@@ -332,7 +332,7 @@ const Projects = ({ onSectionChange }) => {
       });
       
       await loadProjects();
-      await refreshAreas();
+      await loadAreas();
       setShowDeleteModal(false);
       setSelectedProject(null);
       
