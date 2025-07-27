@@ -1037,11 +1037,11 @@ class AreaService:
         """OPTIMIZED VERSION - Build area response with efficient project/task fetching"""
         area_response = AreaResponse(**area_doc)
         
-        # Get pillar name if area is linked to a pillar
+        # Get pillar name if area is linked to a pillar (prevent N+1 - should be batch-fetched by caller)
         if area_response.pillar_id:
-            pillar_doc = await find_document("pillars", {"id": area_response.pillar_id})
-            if pillar_doc:
-                area_response.pillar_name = pillar_doc["name"]
+            # Note: Pillar name should be provided by batch-fetched data from calling method
+            # Individual pillar queries removed to prevent N+1 patterns
+            area_response.pillar_name = None  # Will be populated by optimized caller methods
         
         if include_projects:
             # OPTIMIZED: Use the already optimized get_area_projects method
