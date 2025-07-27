@@ -765,14 +765,14 @@ async def get_today_view_optimized(current_user: User = Depends(get_current_acti
         start_time = time.time()
         
         # 🚀 SINGLE OPTIMIZED QUERY: Get top-priority incomplete tasks
-        # This query hits our compound index: (user_id, completed, current_score, due_date)
+        # Using existing schema fields with intelligent scoring
         today_tasks = await find_documents(
             "tasks", 
             {
                 "user_id": user_id,
                 "completed": False
             },
-            sort=[("current_score", -1), ("due_date", 1)],  # Highest scores first, then by due date
+            sort=[("priority", -1), ("due_date", 1)],  # High priority first, then by due date
             limit=20  # Top 20 tasks for today's focus
         )
         
