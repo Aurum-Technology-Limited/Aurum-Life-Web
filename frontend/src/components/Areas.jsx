@@ -122,7 +122,7 @@ const Areas = ({ onSectionChange }) => {
         onDataMutation('area', 'delete', { areaId });
       } catch (err) {
         console.error('Error deleting area:', err);
-        setError('Failed to delete area');
+        // Error handling is now managed by TanStack Query
       }
     }
   };
