@@ -11,7 +11,13 @@ from datetime import timedelta
 # Import our models and services
 from supabase_client import supabase_manager
 from models import *
-from services import *
+from optimized_services import (
+    OptimizedPillarService, 
+    OptimizedAreaService, 
+    OptimizedProjectService,
+    OptimizedStatsService
+)
+from performance_monitor import perf_monitor
 from notification_service import notification_service
 from auth import get_current_active_user as old_get_current_active_user, verify_token as old_verify_token, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, verify_password
 from supabase_resource_service import supabase_resource_service
