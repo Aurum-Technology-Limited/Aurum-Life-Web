@@ -19,7 +19,7 @@ import time
 import subprocess
 
 # Configuration
-BACKEND_URL = "https://38853866-8c42-43b3-ba54-ac4df0ec8d87.preview.emergentagent.com/api"
+BACKEND_URL = "https://f3436837-b2f7-41f6-8f79-d2f18535f691.preview.emergentagent.com/api"
 TEST_EMAIL = "test@example.com"  # As requested in the review
 TEST_USER_DATA = {
     "username": "test_user_improvements",
@@ -250,7 +250,7 @@ class PasswordResetImprovementsTester:
             email_service = EmailService()
             
             # Test the reset URL construction by checking environment
-            expected_frontend_url = "https://38853866-8c42-43b3-ba54-ac4df0ec8d87.preview.emergentagent.com"
+            expected_frontend_url = "https://f3436837-b2f7-41f6-8f79-d2f18535f691.preview.emergentagent.com"
             
             # Check if the frontend URL is correctly configured
             frontend_url = os.getenv('FRONTEND_URL', expected_frontend_url)

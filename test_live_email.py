@@ -34,7 +34,7 @@ def test_beautiful_notification_email():
         task_name="Complete Email Notification Setup",
         project_name="Aurum Life Enhancement Project",
         priority="high",
-        action_url="https://38853866-8c42-43b3-ba54-ac4df0ec8d87.preview.emergentagent.com/tasks"
+        action_url="https://f3436837-b2f7-41f6-8f79-d2f18535f691.preview.emergentagent.com/tasks"
     )
     
     print(f"Recipient: {recipient_email}")
@@ -61,7 +61,7 @@ def test_beautiful_notification_email():
             
             This is a live test email showcasing that your notification system is working perfectly.
             
-            View your tasks at: https://38853866-8c42-43b3-ba54-ac4df0ec8d87.preview.emergentagent.com/tasks
+            View your tasks at: https://f3436837-b2f7-41f6-8f79-d2f18535f691.preview.emergentagent.com/tasks
             
             Best regards,
             Aurum Life Team
