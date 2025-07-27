@@ -499,25 +499,38 @@ const Journal = () => {
   const handleSaveEntry = async (formData) => {
     try {
       setModalLoading(true);
+      setError(null);
+      
+      // Add timeout protection for save operations
+      const saveOperation = selectedEntry
+        ? journalAPI.updateEntry(selectedEntry.id, formData)
+        : journalAPI.createEntry(formData);
+      
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Save operation timed out')), 15000)
+      );
+      
+      const response = await Promise.race([saveOperation, timeoutPromise]);
       
       if (selectedEntry) {
-        await journalAPI.updateEntry(selectedEntry.id, formData);
-        // Update local state
         setEntries(prev => prev.map(entry =>
           entry.id === selectedEntry.id
-            ? { ...entry, ...formData, tags: formData.tags || [] }
+            ? { ...entry, ...formData, tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [] }
             : entry
         ));
       } else {
-        const response = await journalAPI.createEntry(formData);
-        // Add to local state
-        setEntries(prev => [response.data, ...prev]);
+        setEntries(prev => [response?.data || { ...formData, id: Date.now(), created_at: new Date().toISOString() }, ...prev]);
       }
       
       setModalOpen(false);
       setSelectedEntry(null);
     } catch (err) {
-      setError(handleApiError(err, selectedEntry ? 'Failed to update entry' : 'Failed to create entry'));
+      console.error('Journal save error:', err);
+      if (err.message.includes('timeout')) {
+        setError('Save operation timed out. Please try again.');
+      } else {
+        setError(handleApiError(err, selectedEntry ? 'Failed to update entry' : 'Failed to create entry'));
+      }
     } finally {
       setModalLoading(false);
     }
