@@ -1,6 +1,7 @@
 import secrets
 import hashlib
 import os
+import uuid
 from typing import List, Optional
 from datetime import datetime, timedelta
 from supabase_client import (
