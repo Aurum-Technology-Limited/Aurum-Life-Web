@@ -15,8 +15,17 @@ import IconPicker from './ui/IconPicker';
 
 const Pillars = () => {
   const { onDataMutation } = useDataContext();
-  const [pillars, setPillars] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { invalidatePillars } = useInvalidateQueries();
+  
+  // Use TanStack Query with include_areas=true to get accurate counts
+  const { 
+    data: pillars = [], 
+    isLoading: loading, 
+    error, 
+    isError,
+    refetch 
+  } = usePillarsQuery(true, true, false); // includeSubPillars=true, includeAreas=true, includeArchived=false
+  
   const [showModal, setShowModal] = useState(false);
   const [editingPillar, setEditingPillar] = useState(null);
   const [formData, setFormData] = useState({
