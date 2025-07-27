@@ -968,7 +968,7 @@ async def get_subtasks(task_id: str, current_user: User = Depends(get_current_ac
 
 # Daily Task Curation endpoints
 @api_router.get("/today/available-tasks", response_model=List[TaskResponse])
-async def get_available_tasks_optimized(current_user: dict = Depends(get_current_user)):
+async def get_available_tasks_optimized(current_user: User = Depends(get_current_active_user)):
     """
     🚀 THE ARCHITECT'S OPTIMIZED AVAILABLE TASKS - PHASE 4 IMPLEMENTATION
     Get available tasks for today with sub-100ms response time guarantee
