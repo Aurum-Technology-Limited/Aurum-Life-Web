@@ -770,13 +770,7 @@ async def get_today_view_optimized(current_user: User = Depends(get_current_acti
             "tasks", 
             {
                 "user_id": user_id,
-                "completed": False,
-                # Focus on meaningful tasks - either high score or due soon
-                "$or": [
-                    {"current_score": {"$gte": 30}},  # High priority tasks (top 30% of scale)
-                    {"due_date": {"$lte": datetime.utcnow() + timedelta(days=3)}},  # Due within 3 days
-                    {"scheduled_date": {"$lte": datetime.utcnow().date()}}  # Scheduled for today or past
-                ]
+                "completed": False
             },
             sort=[("current_score", -1), ("due_date", 1)],  # Highest scores first, then by due date
             limit=20  # Top 20 tasks for today's focus
