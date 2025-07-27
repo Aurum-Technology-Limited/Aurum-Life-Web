@@ -641,6 +641,13 @@ class N1QueryPerformanceTestSuite:
                 
             print("✅ Authentication successful")
             
+            # Create test data
+            if not await self.create_test_data():
+                print("❌ Test data creation failed - cannot proceed with comprehensive tests")
+                print("⚠️ Will run basic performance tests only")
+            else:
+                print("✅ Test data created successfully")
+            
             # Run all performance tests
             await self.test_areas_api_performance()
             await self.test_database_query_monitoring()
