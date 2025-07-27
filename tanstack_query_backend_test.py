@@ -16,8 +16,8 @@ class TanStackQueryBackendTestSuite:
     def __init__(self):
         self.session = None
         self.auth_token = None
-        self.test_user_email = "final.test@aurumlife.com"
-        self.test_user_password = "password123"
+        self.test_user_email = "tanstack.test@aurumlife.com"
+        self.test_user_password = "TanStackTest123!"
         self.test_results = []
         self.performance_metrics = {}
         
