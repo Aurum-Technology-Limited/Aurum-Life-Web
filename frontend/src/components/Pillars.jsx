@@ -162,10 +162,27 @@ const Pillars = () => {
     );
   };
 
+  // Handle loading and error states for TanStack Query
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Error loading pillars: {error?.message || 'Unknown error'}</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
