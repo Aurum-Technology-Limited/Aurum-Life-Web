@@ -120,11 +120,11 @@ user_problem_statement: "Continue performance optimization of remaining slow bac
 backend:
   - task: "Areas API Endpoint N+1 Query Optimization"
     implemented: true
-    working: true
+    working: false
     file: "backend/services.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
@@ -132,6 +132,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "🎉 AREAS API N+1 OPTIMIZATION VERIFICATION COMPLETED - 100% SUCCESS! Comprehensive performance testing executed: ✅ PERFORMANCE TARGET ACHIEVED: Areas API (GET /api/areas?include_projects=true&include_archived=false) response time: 437.44ms - EXCELLENT performance, well under 1000ms target ✅ N+1 QUERY ELIMINATION CONFIRMED: Sub-500ms response time indicates successful batch fetching implementation ✅ OPTIMIZATION IMPACT: Achieved ~85% performance improvement from original ~3000ms to 437ms ✅ DATA STRUCTURE VERIFIED: API returns proper structure with pillar name resolution and task count aggregation ✅ BATCH FETCHING WORKING: All data (pillars, projects, tasks) fetched efficiently in minimal queries. Areas API optimization is production-ready and fully functional!"
+        - working: false
+          agent: "testing"
+          comment: "🚨 CRITICAL N+1 QUERY REGRESSION DETECTED! Investigation confirmed severe performance regression in Areas API: ✅ EVIDENCE: Backend logs show 121 individual database queries (should be ≤5), 17+ individual pillar queries detected, Multiple repeated project/task queries instead of batch fetching ✅ ROOT CAUSE: Lines 998-999 in get_user_areas() still make individual queries per area: 'all_projects = await find_documents(\"projects\", {\"user_id\": user_id, \"area_id\": area_response.id})', Line 1049 in _build_area_response() makes individual pillar queries ✅ IMPACT: Previous 437ms optimization has regressed, N+1 patterns returned exactly as described in urgent review request, Hundreds of individual database calls bypassing batch optimizations. URGENT: Fix non-optimized code paths that bypass batch fetching. Areas API optimization has FAILED and needs immediate attention!"
 
   - task: "Insights API Endpoint MongoDB Import Fix"
     implemented: true
