@@ -191,9 +191,9 @@ async def create_test_user_and_verify_auth():
         # Clean up test user
         print(f"\n5️⃣ Cleaning up test user...")
         try:
-            await supabase.table('user_stats').delete().eq('user_id', test_user_id).execute()
-            await supabase.table('user_profiles').delete().eq('id', test_user_id).execute()  
-            await supabase.table('users').delete().eq('id', test_user_id).execute()
+            supabase.table('user_stats').delete().eq('user_id', test_user_id).execute()
+            supabase.table('user_profiles').delete().eq('id', test_user_id).execute()  
+            supabase.table('users').delete().eq('id', test_user_id).execute()
             print("🧹 Test user cleaned up")
         except Exception as cleanup_error:
             print(f"⚠️ Cleanup failed: {cleanup_error}")
