@@ -33,7 +33,10 @@ export const useDashboardQuery = () => {
 export const useAreasQuery = (includeProjects = false, includeArchived = false) => {
   return useQuery({
     queryKey: queryKeys.areas(includeProjects, includeArchived),
-    queryFn: () => areasAPI.getAreas(includeProjects, includeArchived),
+    queryFn: async () => {
+      const response = await areasAPI.getAreas(includeProjects, includeArchived);
+      return response.data; // Extract data from axios response
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes - areas change less frequently
     meta: {
