@@ -1388,7 +1388,7 @@ frontend:
 
   - task: "Google OAuth Button Width Alignment Fix"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/Login.jsx"
     stuck_count: 0
     priority: "medium"
