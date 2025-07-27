@@ -15,7 +15,7 @@ class ForeignKeyConstraintTestSuite:
     def __init__(self):
         self.session = None
         self.auth_token = None
-        self.test_user_email = "testuser@aurumlife.com"
+        self.test_user_email = "fk.test.final@aurumlife.com"
         self.test_user_password = "TestPass123!"
         self.test_results = []
         self.created_resources = {
