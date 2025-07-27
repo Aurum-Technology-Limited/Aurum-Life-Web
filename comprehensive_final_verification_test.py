@@ -187,7 +187,7 @@ class ComprehensiveFinalVerificationSuite:
                     if not missing_fields:
                         print(f"✅ /api/dashboard endpoint working ({response_time:.1f}ms)")
                         print(f"   User: {dashboard_data['user'].get('first_name', 'Unknown')}")
-                        print(f"   Stats: Level {dashboard_data['stats'].get('level', 0)}, {dashboard_data['stats'].get('total_points', 0)} points")
+                        print(f"   Stats: {dashboard_data['stats'].get('tasks_completed', 0)} completed / {dashboard_data['stats'].get('total_tasks', 0)} total tasks")
                         print(f"   Recent tasks: {len(dashboard_data.get('recent_tasks', []))}")
                         print(f"   Areas: {len(dashboard_data.get('areas', []))}")
                         
