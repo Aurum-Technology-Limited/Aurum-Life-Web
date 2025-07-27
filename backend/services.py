@@ -1914,6 +1914,80 @@ class TaskService:
         return task_response
 
     @staticmethod
+    async def _build_task_response_optimized(
+        task_doc: dict, 
+        dependency_docs: dict = None,
+        subtasks_map: dict = None,
+        task_dependency_map: dict = None,
+        include_subtasks: bool = True
+    ) -> TaskResponse:
+        """Optimized version of _build_task_response that uses pre-fetched data"""
+        task_response = TaskResponse(**task_doc)
+        
+        # Map status to kanban column for consistent kanban view
+        status_to_column = {
+            "todo": "to_do",
+            "in_progress": "in_progress", 
+            "review": "review",
+            "completed": "done"
+        }
+        
+        # Set kanban_column based on status, fallback to existing kanban_column
+        if task_response.status:
+            task_response.kanban_column = status_to_column.get(task_response.status.value, task_response.kanban_column or "to_do")
+        elif not task_response.kanban_column:
+            task_response.kanban_column = "to_do"
+        
+        # Check if overdue (with safe datetime comparison)
+        if task_response.due_date and not task_response.completed:
+            try:
+                due_date = task_response.due_date
+                now = datetime.utcnow()
+                
+                # Ensure both dates are timezone-naive for comparison
+                if hasattr(due_date, 'tzinfo') and due_date.tzinfo is not None:
+                    due_date = due_date.replace(tzinfo=None)
+                
+                task_response.is_overdue = due_date < now
+            except Exception:
+                # If comparison fails, assume not overdue
+                task_response.is_overdue = False
+        
+        # Check if task can start (dependencies met) - OPTIMIZED VERSION
+        task_id = task_response.id
+        if task_dependency_map and task_id in task_dependency_map:
+            dependency_ids = task_dependency_map[task_id]
+            if dependency_ids and dependency_docs:
+                # Use pre-fetched dependency data
+                available_deps = []
+                for dep_id in dependency_ids:
+                    if dep_id in dependency_docs:
+                        available_deps.append(dependency_docs[dep_id])
+                
+                task_response.can_start = all([dep.get("completed", False) for dep in available_deps])
+                task_response.dependency_tasks = [TaskResponse(**dep) for dep in available_deps]
+            else:
+                task_response.can_start = True
+                task_response.dependency_tasks = []
+        else:
+            task_response.can_start = True
+            task_response.dependency_tasks = []
+        
+        # Get subtasks if requested - OPTIMIZED VERSION
+        if include_subtasks and subtasks_map and task_id in subtasks_map:
+            subtasks_docs = subtasks_map[task_id]
+            subtasks_docs.sort(key=lambda x: x.get("sort_order", 0))
+            task_response.sub_tasks = [
+                await TaskService._build_task_response_optimized(
+                    sub, dependency_docs, subtasks_map, task_dependency_map, False
+                ) for sub in subtasks_docs
+            ]
+        elif include_subtasks:
+            task_response.sub_tasks = []
+        
+        return task_response
+
+    @staticmethod
     async def get_task_with_dependencies(user_id: str, task_id: str) -> Optional[TaskResponse]:
         """Get a task with its dependencies populated"""
         return await TaskService.get_task_with_subtasks(user_id, task_id)
