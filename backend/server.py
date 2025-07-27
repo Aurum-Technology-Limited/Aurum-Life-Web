@@ -296,6 +296,21 @@ async def get_dashboard(current_user: User = Depends(get_current_active_user)):
         logger.error(f"Error getting dashboard data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Performance monitoring endpoint
+@api_router.get("/performance")
+async def get_performance_metrics(current_user: User = Depends(get_current_active_user)):
+    """Get real-time performance metrics and N+1 query detection"""
+    summary = perf_monitor.get_performance_summary()
+    n1_warnings = perf_monitor.detect_n1_patterns()
+    
+    return {
+        "performance_summary": summary,
+        "n1_query_warnings": n1_warnings,
+        "status": "optimized" if not n1_warnings else "needs_attention",
+        "user_id": current_user.id,
+        "timestamp": summary.get("timestamp")
+    }
+
 # Enhanced Journal endpoints
 @api_router.post("/journal", response_model=JournalEntry)
 async def create_journal_entry(entry_data: JournalEntryCreate, current_user: User = Depends(get_current_active_user)):
