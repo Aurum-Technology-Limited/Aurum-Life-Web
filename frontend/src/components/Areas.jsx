@@ -211,11 +211,19 @@ const Areas = ({ onSectionChange }) => {
         </div>
 
         {/* Error Display */}
-        {error && (
+        {isError && (
           <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
-            <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-              <span className="text-red-400">{error}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+                <span className="text-red-400">{error?.message || 'Failed to load areas'}</span>
+              </div>
+              <button
+                onClick={() => refetchAreas()}
+                className="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
+              >
+                Retry
+              </button>
             </div>
           </div>
         )}
