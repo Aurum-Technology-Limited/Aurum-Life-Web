@@ -383,13 +383,15 @@ const Journal = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    // Load data with proper error handling and timeout protection
+    // Load data with enhanced error handling and longer timeout protection
     const loadJournalData = async () => {
       setLoading(true);
       setError(null);
       
       try {
-        // Use Promise.race to implement timeout protection
+        console.log('📔 Journal: Starting comprehensive data loading');
+        
+        // Use Promise.race with longer timeout for journal data
         await Promise.race([
           Promise.all([
             fetchEntriesWithFallback(),
@@ -397,12 +399,18 @@ const Journal = () => {
             fetchInsightsWithFallback()
           ]),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Loading timeout')), 8000)
+            setTimeout(() => reject(new Error('Journal loading timeout - switching to offline mode')), 20000)
           )
         ]);
+        
+        console.log('📔 Journal: All data loaded successfully');
       } catch (err) {
-        console.error('Journal data loading failed:', err);
-        setError('Unable to load journal data. Some features may not be available.');
+        console.warn('📔 Journal: Data loading timeout, continuing with fallback data');
+        if (err.message.includes('timeout')) {
+          setError('Journal is loading slowly. Using offline mode with sample data.');
+        } else {
+          setError('Some journal features may not be available. Working in offline mode.');
+        }
       } finally {
         setLoading(false);
       }
