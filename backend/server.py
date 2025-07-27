@@ -1010,7 +1010,7 @@ async def get_available_tasks_optimized(current_user: User = Depends(get_current
                 "user_id": user_id,
                 "completed": False
             },
-            sort=[("current_score", -1), ("due_date", 1)],  # Highest priority first
+            sort=[("priority", -1), ("due_date", 1)],  # Highest priority first
             limit=50  # Reasonable limit for performance
         )
         
