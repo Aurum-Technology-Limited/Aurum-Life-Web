@@ -175,21 +175,30 @@ export const usePrefetchQueries = () => {
     prefetchAreas: () => {
       queryClient.prefetchQuery({
         queryKey: queryKeys.areas(true, false),
-        queryFn: () => areasAPI.getAreas(true, false),
+        queryFn: async () => {
+          const response = await areasAPI.getAreas(true, false);
+          return response.data; // Extract data from axios response
+        },
         staleTime: 5 * 60 * 1000,
       });
     },
     prefetchProjects: (areaId = null) => {
       queryClient.prefetchQuery({
         queryKey: queryKeys.projects(areaId, false),
-        queryFn: () => projectsAPI.getProjects(areaId, false),
+        queryFn: async () => {
+          const response = await projectsAPI.getProjects(areaId, false);
+          return response.data; // Extract data from axios response
+        },
         staleTime: 5 * 60 * 1000,
       });
     },
     prefetchInsights: () => {
       queryClient.prefetchQuery({
         queryKey: queryKeys.insights(),
-        queryFn: () => insightsAPI.getInsights(),
+        queryFn: async () => {
+          const response = await insightsAPI.getInsights();
+          return response.data; // Extract data from axios response
+        },
         staleTime: 10 * 60 * 1000,
       });
     },
