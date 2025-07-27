@@ -10,7 +10,7 @@ from datetime import timedelta, datetime
 import time
 
 # Import our models and services
-from supabase_client import supabase_manager
+from supabase_client import supabase_manager, find_document, find_documents
 from models import *
 from optimized_services import (
     OptimizedPillarService, 
