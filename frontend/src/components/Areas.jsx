@@ -117,7 +117,7 @@ const Areas = ({ onSectionChange }) => {
     if (window.confirm('Are you sure? This will delete all projects and tasks in this area.')) {
       try {
         await areasAPI.deleteArea(areaId);
-        loadAreas();
+        refetchAreas();
         // Notify data context of the mutation
         onDataMutation('area', 'delete', { areaId });
       } catch (err) {
