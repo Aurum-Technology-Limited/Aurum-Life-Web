@@ -3,7 +3,7 @@ Supabase Authentication Endpoints
 Replaces traditional JWT auth endpoints with Supabase Auth integration
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from supabase_client import supabase_manager
 from supabase_auth import verify_token
 from models import UserCreate, UserLogin, UserResponse
