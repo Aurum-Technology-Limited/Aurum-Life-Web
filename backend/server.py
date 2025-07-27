@@ -816,7 +816,7 @@ async def get_today_view_optimized(current_user: User = Depends(get_current_acti
         # 🚀 SINGLE QUERY: Get user stats for dashboard context
         user_stats = await find_document("user_stats", {"user_id": user_id}) or {}
         
-        # Calculate quick analytics from pre-computed data
+        # Calculate quick analytics from calculated data
         high_priority_count = sum(1 for task in prioritized_tasks if task.current_score >= 70)
         overdue_count = sum(1 for task in prioritized_tasks if task.is_overdue)
         average_score = total_score / len(prioritized_tasks) if prioritized_tasks else 0
