@@ -87,7 +87,7 @@ const Areas = ({ onSectionChange }) => {
         // Notify data context of the mutation
         onDataMutation('area', 'create', response.data || formData);
       }
-      loadAreas();
+      refetchAreas();
       handleCloseModal();
     } catch (err) {
       console.error('Error saving area:', err);
