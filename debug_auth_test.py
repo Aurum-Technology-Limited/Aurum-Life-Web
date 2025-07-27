@@ -118,6 +118,84 @@ async def debug_auth():
                                 print(f"❌ Protected endpoint access failed: {me_response.status}")
                     else:
                         print("❌ No token received in login response")
+                elif response.status == 401:
+                    print("❌ User login failed - likely due to email confirmation requirement")
+                    print("🔍 Let's try with an existing confirmed user...")
+                    
+                    # Try with a known working user
+                    existing_users = [
+                        {"email": "nav.test@aurumlife.com", "password": "TestPass123!"},
+                        {"email": "final.test@aurumlife.com", "password": "TestPass123!"},
+                        {"email": "marc.alleyne@aurumtechnologyltd.com", "password": "TestPass123!"}
+                    ]
+                    
+                    for existing_user in existing_users:
+                        print(f"\n🧪 Trying existing user: {existing_user['email']}")
+                        async with session.post(f"{API_BASE}/auth/login", json=existing_user) as existing_response:
+                            print(f"Existing user login status: {existing_response.status}")
+                            if existing_response.status == 200:
+                                existing_data = await existing_response.json()
+                                existing_token = existing_data.get("access_token")
+                                if existing_token:
+                                    print(f"✅ Existing user login successful: {existing_user['email']}")
+                                    
+                                    # Test with existing user
+                                    headers = {"Authorization": f"Bearer {existing_token}"}
+                                    
+                                    # Test pillar creation with existing user
+                                    print("\n🧪 Test 5: Pillar Creation with Existing User")
+                                    pillar_data = {
+                                        "name": "Existing User Test Pillar",
+                                        "description": "Testing pillar creation with existing user",
+                                        "icon": "🏛️",
+                                        "color": "#2196F3",
+                                        "time_allocation": 25
+                                    }
+                                    
+                                    async with session.post(f"{API_BASE}/pillars", json=pillar_data, headers=headers) as pillar_response:
+                                        print(f"Pillar creation response status: {pillar_response.status}")
+                                        pillar_text = await pillar_response.text()
+                                        print(f"Pillar creation response: {pillar_text}")
+                                        
+                                        if pillar_response.status == 200:
+                                            print("✅ Pillar creation successful - NO FOREIGN KEY CONSTRAINT VIOLATION!")
+                                            
+                                            # Test area creation
+                                            pillar_data_response = await pillar_response.json()
+                                            pillar_id = pillar_data_response.get('id')
+                                            
+                                            print("\n🧪 Test 6: Area Creation with Existing User")
+                                            area_data = {
+                                                "name": "Existing User Test Area",
+                                                "description": "Testing area creation with existing user",
+                                                "pillar_id": pillar_id,
+                                                "icon": "📁",
+                                                "color": "#4CAF50",
+                                                "importance": 3
+                                            }
+                                            
+                                            async with session.post(f"{API_BASE}/areas", json=area_data, headers=headers) as area_response:
+                                                print(f"Area creation response status: {area_response.status}")
+                                                area_text = await area_response.text()
+                                                print(f"Area creation response: {area_text}")
+                                                
+                                                if area_response.status == 200:
+                                                    print("✅ Area creation successful - NO FOREIGN KEY CONSTRAINT VIOLATION!")
+                                                else:
+                                                    if "foreign key" in area_text.lower() or "not present in table" in area_text.lower():
+                                                        print("🚨 FOREIGN KEY CONSTRAINT VIOLATION DETECTED!")
+                                                    else:
+                                                        print(f"❌ Area creation failed for other reason: {area_response.status}")
+                                        else:
+                                            if "foreign key" in pillar_text.lower() or "not present in table" in pillar_text.lower():
+                                                print("🚨 FOREIGN KEY CONSTRAINT VIOLATION DETECTED!")
+                                            else:
+                                                print(f"❌ Pillar creation failed for other reason: {pillar_response.status}")
+                                    
+                                    return  # Exit after successful test with existing user
+                            else:
+                                existing_text = await existing_response.text()
+                                print(f"   Failed: {existing_response.status} - {existing_text}")
                 else:
                     print(f"❌ User login failed: {response.status}")
         except Exception as e:
