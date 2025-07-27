@@ -91,7 +91,7 @@ const Areas = ({ onSectionChange }) => {
       handleCloseModal();
     } catch (err) {
       console.error('Error saving area:', err);
-      setError(editingArea ? 'Failed to update area' : 'Failed to create area');
+      // Error handling is now managed by TanStack Query
     }
   };
 
