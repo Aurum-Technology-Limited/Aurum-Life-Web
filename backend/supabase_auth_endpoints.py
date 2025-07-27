@@ -11,8 +11,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Create router for auth endpoints
-auth_router = APIRouter()
+# Create router for auth endpoints with /auth prefix
+auth_router = APIRouter(prefix="/auth")
 
 @auth_router.post("/register", response_model=UserResponse)
 async def register_user(user_data: UserCreate):
