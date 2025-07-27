@@ -2082,8 +2082,9 @@ This feedback was submitted through the Aurum Life application.
         logger.error(f"Error submitting feedback: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to submit feedback")
 
-# Include the router in the main app
+# Include the routers in the main app
 app.include_router(api_router)
+app.include_router(auth_router, prefix="/api")
 
 # CORS middleware
 app.add_middleware(
