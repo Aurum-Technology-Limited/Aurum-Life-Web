@@ -106,7 +106,7 @@ const Areas = ({ onSectionChange }) => {
         // Notify data context of the mutation  
         onDataMutation('area', 'archive', { areaId });
       }
-      loadAreas();
+      refetchAreas();
     } catch (err) {
       console.error('Error archiving/unarchiving area:', err);
       setError(`Failed to ${isArchived ? 'unarchive' : 'archive'} area`);
