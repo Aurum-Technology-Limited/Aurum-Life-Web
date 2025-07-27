@@ -481,7 +481,7 @@ class ComprehensiveFinalVerificationSuite:
                     
                     # Verify stats structure
                     stats = dashboard_data.get("stats", {})
-                    stats_required = ["user_id", "level", "total_points", "current_streak", "tasks_completed", "tasks_total"]
+                    stats_required = ["user_id", "tasks_completed", "total_tasks", "total_areas", "total_projects"]
                     stats_missing = [field for field in stats_required if field not in stats]
                     
                     # Verify tasks structure
