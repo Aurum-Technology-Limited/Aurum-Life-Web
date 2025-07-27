@@ -18,7 +18,10 @@ export const queryKeys = {
 export const useDashboardQuery = () => {
   return useQuery({
     queryKey: queryKeys.dashboard,
-    queryFn: () => emergencyAPI.dashboard(),
+    queryFn: async () => {
+      const response = await emergencyAPI.dashboard();
+      return response.data; // Extract data from axios response
+    },
     staleTime: 3 * 60 * 1000, // 3 minutes - dashboard needs fresher data
     gcTime: 10 * 60 * 1000, // 10 minutes cache
     retry: 2, // Retry twice for critical dashboard data
