@@ -158,19 +158,23 @@ function App() {
   // If on password reset page, show the PasswordReset component
   if (isPasswordResetPage) {
     return (
-      <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
-        <AuthProvider>
-          <DataProvider>
-            <NotificationProvider>
-              <DndProvider backend={HTML5Backend}>
-                <div className="App">
-                  <PasswordReset />
-                </div>
-              </DndProvider>
-            </NotificationProvider>
-          </DataProvider>
-        </AuthProvider>
-      </GoogleOAuthProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
+            <AuthProvider>
+              <DataProvider>
+                <NotificationProvider>
+                  <DndProvider backend={HTML5Backend}>
+                    <div className="App">
+                      <PasswordReset />
+                    </div>
+                  </DndProvider>
+                </NotificationProvider>
+              </DataProvider>
+            </AuthProvider>
+          </GoogleOAuthProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     );
   }
 
