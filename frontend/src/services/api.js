@@ -3,13 +3,16 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Create axios instance with default config
+// Create axios instance with enhanced config for stability
 const apiClient = axios.create({
   baseURL: API,
-  timeout: 10000, // Reduce to 10 seconds for faster failure detection
+  timeout: 30000, // Increase to 30 seconds for complex operations
   headers: {
     'Content-Type': 'application/json',
   },
+  // Add retry configuration
+  maxRetries: 2,
+  retryDelay: 1000, // 1 second delay between retries
 });
 
 // Add request interceptor for common parameters and authentication
