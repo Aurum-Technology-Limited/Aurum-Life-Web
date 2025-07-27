@@ -50,8 +50,8 @@ logger = logging.getLogger(__name__)
 # Default user ID for demo (in real app, this would come from authentication)
 DEFAULT_USER_ID = "demo-user-123"
 
-# Use the old auth system for compatibility  
-get_current_active_user = old_get_current_active_user
+# Use Supabase Auth system for production
+# get_current_active_user and verify_token are now imported from supabase_auth
 
 # Health check endpoints
 @api_router.get("/")
