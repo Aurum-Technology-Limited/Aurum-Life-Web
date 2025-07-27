@@ -16,7 +16,7 @@ auth_router = APIRouter()
 
 @auth_router.post("/register", response_model=UserResponse)
 async def register_user(user_data: UserCreate):
-    """Register a new user with Supabase Auth"""
+    """Register a new user with Supabase Auth and ensure backward compatibility"""
     try:
         supabase = supabase_manager.get_client()
         
@@ -34,9 +34,11 @@ async def register_user(user_data: UserCreate):
         })
         
         if auth_response.user:
+            user_id = auth_response.user.id
+            
             # Create user profile in our user_profiles table
             profile_data = {
-                "id": auth_response.user.id,
+                "id": user_id,
                 "username": user_data.username,
                 "first_name": user_data.first_name,
                 "last_name": user_data.last_name,
@@ -49,8 +51,50 @@ async def register_user(user_data: UserCreate):
             # Insert profile
             await supabase_manager.create_document("user_profiles", profile_data)
             
+            # CRITICAL FIX: Also create user in legacy users table for backward compatibility
+            legacy_user_data = {
+                "id": user_id,  # Use same ID as Supabase Auth
+                "username": user_data.username,
+                "email": user_data.email,
+                "first_name": user_data.first_name,
+                "last_name": user_data.last_name,
+                "password_hash": None,  # Supabase Auth handles password
+                "google_id": None,
+                "profile_picture": None,
+                "is_active": True,
+                "level": 1,
+                "total_points": 0,
+                "current_streak": 0
+            }
+            
+            try:
+                await supabase_manager.create_document("users", legacy_user_data)
+                logger.info(f"✅ User {user_id} synchronized to legacy users table")
+            except Exception as legacy_error:
+                logger.error(f"⚠️ Failed to create legacy user record: {legacy_error}")
+                # Don't fail registration if legacy table insert fails
+            
+            # Create initial user stats
+            try:
+                stats_data = {
+                    "user_id": user_id,
+                    "total_journal_entries": 0,
+                    "total_tasks": 0,
+                    "tasks_completed": 0,
+                    "total_areas": 0,
+                    "total_projects": 0,
+                    "completed_projects": 0,
+                    "courses_enrolled": 0,
+                    "courses_completed": 0,
+                    "badges_earned": 0
+                }
+                await supabase_manager.create_document("user_stats", stats_data)
+                logger.info(f"✅ User stats created for {user_id}")
+            except Exception as stats_error:
+                logger.error(f"⚠️ Failed to create user stats: {stats_error}")
+            
             return UserResponse(
-                id=auth_response.user.id,
+                id=user_id,
                 username=user_data.username,
                 email=user_data.email,
                 first_name=user_data.first_name,
