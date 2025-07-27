@@ -32,30 +32,29 @@ const StatCard = ({ title, value, subtitle, icon: Icon, trend, loading = false }
 );
 
 const Dashboard = ({ onSectionChange }) => {
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  // Replace useState and useEffect with TanStack Query
+  const { 
+    data: dashboardData, 
+    isLoading: loading, 
+    error, 
+    isError,
+    refetch: refetchDashboard 
+  } = useDashboardQuery();
+  
+  // Prefetch related data for faster navigation
+  const { prefetchAreas, prefetchProjects, prefetchInsights } = usePrefetchQueries();
+  
+  // Prefetch commonly accessed routes on dashboard load
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      console.log('🏠 Dashboard: Starting data fetch');
-      setLoading(true);
-      setError(null);
-      
-      const response = await emergencyAPI.dashboard();
-      console.log('🏠 Dashboard: Data loaded successfully');
-      setDashboardData(response.data);
-    } catch (err) {
-      console.error('🏠 Dashboard: Failed to load data:', err.message);
-      setError('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Prefetch with a small delay to prioritize dashboard loading first
+    const timer = setTimeout(() => {
+      prefetchAreas();
+      prefetchInsights();
+      prefetchProjects();
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [prefetchAreas, prefetchInsights, prefetchProjects]);
 
   const getCompletionRate = () => {
     if (!dashboardData?.stats) return 0;
