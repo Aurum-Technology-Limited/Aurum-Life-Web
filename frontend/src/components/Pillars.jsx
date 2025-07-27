@@ -55,8 +55,9 @@ const Pillars = () => {
         await api.post('/pillars', submitData);
       }
       
-      await fetchPillars();
-      onDataMutation?.();
+      // Trigger data refresh and invalidate cache
+      onDataMutation('pillar', editingPillar ? 'update' : 'create', submitData);
+      invalidatePillars(); // Refresh TanStack Query cache
       handleCloseModal();
     } catch (error) {
       console.error('Error saving pillar:', error);
