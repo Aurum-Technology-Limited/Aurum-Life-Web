@@ -776,15 +776,42 @@ async def get_today_view_optimized(current_user: User = Depends(get_current_acti
             limit=20  # Top 20 tasks for today's focus
         )
         
-        # 🚀 MINIMAL PROCESSING: Data is pre-calculated, no hierarchical lookups needed
+        # 🚀 MINIMAL PROCESSING: Calculate scores from existing data
         prioritized_tasks = []
         total_score = 0.0
         
         for task_doc in today_tasks:
-            # Convert to TaskResponse with zero additional queries
-            task_response = TaskResponse(**task_doc)
+            # Calculate current_score from existing fields
+            priority_score = {"high": 75, "medium": 50, "low": 25}.get(task_doc.get("priority", "medium"), 50)
+            
+            # Add overdue bonus
+            due_date = task_doc.get("due_date")
+            overdue_bonus = 0
+            is_overdue = False
+            if due_date:
+                try:
+                    if isinstance(due_date, str):
+                        due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+                    is_overdue = due_date < datetime.utcnow()
+                    if is_overdue:
+                        overdue_bonus = 20
+                except:
+                    pass
+            
+            current_score = priority_score + overdue_bonus
+            
+            # Create enhanced task response with calculated fields
+            task_response_data = {
+                **task_doc,
+                "current_score": current_score,
+                "area_importance": 3,  # Default value
+                "project_importance": 3,  # Default value
+                "is_overdue": is_overdue
+            }
+            
+            task_response = TaskResponse(**task_response_data)
             prioritized_tasks.append(task_response)
-            total_score += task_response.current_score
+            total_score += current_score
         
         # 🚀 SINGLE QUERY: Get user stats for dashboard context
         user_stats = await find_document("user_stats", {"user_id": user_id}) or {}
