@@ -68,51 +68,8 @@ async def test_fast_endpoint():
     return {"status": "fast", "message": "Optimizations working", "timestamp": datetime.utcnow().isoformat()}
 
 # Authentication endpoints
-@api_router.post("/auth/register", response_model=UserResponse)
-async def register_user(user_data: UserCreate):
-    """Register a new user"""
-    try:
-        user = await UserService.create_user(user_data)
-        return UserResponse(
-            id=user.id,
-            username=user.username,
-            email=user.email,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            is_active=user.is_active,
-            level=user.level,
-            total_points=user.total_points,
-            current_streak=user.current_streak,
-            created_at=user.created_at
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error registering user: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.post("/auth/login", response_model=Token)
-async def login_user(user_credentials: UserLogin):
-    """Login user and return access token"""
-    try:
-        user = await UserService.authenticate_user(user_credentials.email, user_credentials.password)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or password",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"sub": user.id}, expires_delta=access_token_expires
-        )
-        return {"access_token": access_token, "token_type": "bearer"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error during login: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+# Supabase Auth endpoints are now handled by auth_router
+# Legacy endpoints removed to prevent conflicts
 
 @api_router.post("/auth/google", response_model=GoogleAuthResponse)
 async def google_auth(auth_request: GoogleAuthRequest):
