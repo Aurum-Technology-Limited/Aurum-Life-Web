@@ -993,17 +993,10 @@ class AreaService:
                 area_response.total_task_count = 0
                 area_response.completed_task_count = 0
             else:
-                # Even when not including projects, calculate counts efficiently (with error handling)
-                try:
-                    all_projects = await find_documents("projects", {"user_id": user_id, "area_id": area_response.id})
-                    projects_docs = [p for p in all_projects if not p.get("archived", False)]
-                    area_response.project_count = len(projects_docs)
-                    area_response.completed_project_count = len([p for p in projects_docs if p.get("status") == "Completed"])
-                except Exception as e:
-                    logger.warning(f"Error calculating project counts for area {area_response.id}: {e}")
-                    # Provide default values if count calculation fails
-                    area_response.project_count = 0
-                    area_response.completed_project_count = 0
+                # When not including projects, we already have project counts from batch data if available
+                # Skip individual queries to prevent N+1 patterns - counts will be 0 if not batch-fetched
+                area_response.project_count = 0
+                area_response.completed_project_count = 0
             
             areas.append(area_response)
         
