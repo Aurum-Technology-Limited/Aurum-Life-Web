@@ -53,6 +53,83 @@ DEFAULT_USER_ID = "demo-user-123"
 # Use Supabase Auth system for production
 # get_current_active_user and verify_token are now imported from supabase_auth
 
+# Hybrid authentication dependency for API endpoints
+async def get_current_active_user_hybrid(request: Request) -> User:
+    """Get current active user using hybrid authentication (Supabase + Legacy JWT)"""
+    try:
+        # Get authorization header
+        authorization = request.headers.get("Authorization")
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="No authorization token provided")
+        
+        token = authorization.split(" ")[1]
+        current_user = None
+        user_id = None
+        
+        # Try Supabase token verification first
+        try:
+            current_user = await verify_token(token)
+            user_id = current_user.id
+            logger.info("✅ Verified Supabase token for API endpoint")
+        except Exception as supabase_error:
+            logger.info(f"Supabase token verification failed: {supabase_error}")
+            
+            # Try legacy JWT token verification
+            try:
+                from auth import jwt, SECRET_KEY, ALGORITHM
+                
+                # Decode JWT token directly
+                payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+                user_id = payload.get("sub")
+                if user_id is None:
+                    raise HTTPException(status_code=401, detail="Could not validate credentials")
+                
+                logger.info("✅ Verified legacy JWT token for API endpoint")
+            except Exception as legacy_error:
+                logger.info(f"Legacy token verification failed: {legacy_error}")
+                raise HTTPException(status_code=401, detail="Could not validate credentials")
+        
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+        
+        # Get user data from legacy users table
+        try:
+            legacy_user = await supabase_manager.find_document("users", {"id": user_id})
+            
+            if legacy_user:
+                # Convert to User model
+                from models import User
+                return User(
+                    id=legacy_user['id'],
+                    username=legacy_user.get('username', ''),
+                    email=legacy_user.get('email', ''),
+                    first_name=legacy_user.get('first_name', ''),
+                    last_name=legacy_user.get('last_name', ''),
+                    password_hash=legacy_user.get('password_hash'),
+                    google_id=legacy_user.get('google_id'),
+                    profile_picture=legacy_user.get('profile_picture'),
+                    is_active=legacy_user.get('is_active', True),
+                    level=legacy_user.get('level', 1),
+                    total_points=legacy_user.get('total_points', 0),
+                    current_streak=legacy_user.get('current_streak', 0),
+                    created_at=legacy_user.get('created_at'),
+                    updated_at=legacy_user.get('updated_at')
+                )
+        except Exception as lookup_error:
+            logger.error(f"User lookup failed: {lookup_error}")
+        
+        # User not found
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Hybrid authentication error: {e}")
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+# Use hybrid authentication for all endpoints
+get_current_active_user = get_current_active_user_hybrid
+
 # Health check endpoints
 @api_router.get("/")
 async def root():
