@@ -101,7 +101,10 @@ export const useTasksQuery = (projectId = null) => {
 export const useInsightsQuery = (dateRange = 'all_time', areaId = null) => {
   return useQuery({
     queryKey: queryKeys.insights(dateRange, areaId),
-    queryFn: () => insightsAPI.getInsights(dateRange, areaId),
+    queryFn: async () => {
+      const response = await insightsAPI.getInsights(dateRange, areaId);
+      return response.data; // Extract data from axios response
+    },
     staleTime: 10 * 60 * 1000, // 10 minutes - insights are computational
     gcTime: 30 * 60 * 1000, // 30 minutes cache
     meta: {
