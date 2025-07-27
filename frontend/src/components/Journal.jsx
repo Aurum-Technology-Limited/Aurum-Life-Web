@@ -892,11 +892,44 @@ const Journal = () => {
           <AlertCircle size={20} className="text-red-400" />
           <span className="text-red-400">{error}</span>
           <button
-            onClick={fetchEntriesWithFallback}
+            onClick={() => {
+              setError(null);
+              const loadJournalData = async () => {
+                setLoading(true);
+                try {
+                  await Promise.race([
+                    Promise.all([
+                      fetchEntriesWithFallback(),
+                      fetchTemplatesWithFallback(),
+                      fetchInsightsWithFallback()
+                    ]),
+                    new Promise((_, reject) => 
+                      setTimeout(() => reject(new Error('Loading timeout')), 8000)
+                    )
+                  ]);
+                } catch (err) {
+                  console.error('Journal data loading failed:', err);
+                  setError('Unable to load journal data. Some features may not be available.');
+                } finally {
+                  setLoading(false);
+                }
+              };
+              loadJournalData();
+            }}
             className="ml-auto px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
           >
             Retry
           </button>
+        </div>
+      )}
+
+      {/* Informational message when journal backend is not fully available */}
+      {entries.length === 0 && templates.length > 0 && !loading && !error && (
+        <div className="p-4 rounded-lg bg-blue-900/20 border border-blue-500/30 flex items-center space-x-2">
+          <AlertCircle size={20} className="text-blue-400" />
+          <span className="text-blue-400">
+            Journal backend endpoints are being set up. You can use the templates and create entries locally for now.
+          </span>
         </div>
       )}
 
