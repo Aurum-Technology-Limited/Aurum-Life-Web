@@ -67,15 +67,16 @@ const Dashboard = ({ onSectionChange }) => {
     return dashboardData.recent_courses.filter(course => course.progress_percentage < 100).length;
   };
 
-  if (error) {
+  // Handle error state with retry functionality
+  if (isError) {
     return (
       <div className="space-y-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-4">Welcome to Your Growth Journey</h1>
           <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30">
-            <p className="text-red-400">Error loading dashboard: {error}</p>
+            <p className="text-red-400">Error loading dashboard: {error?.message || 'Unknown error'}</p>
             <button
-              onClick={fetchDashboardData}
+              onClick={() => refetchDashboard()}
               className="mt-4 px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors"
             >
               Try Again
