@@ -44,10 +44,21 @@ const Dashboard = ({ onSectionChange }) => {
   // Prefetch related data for faster navigation
   const { prefetchAreas, prefetchProjects, prefetchInsights } = usePrefetchQueries();
   
+  // Performance logging for TanStack Query
+  useEffect(() => {
+    if (loading) {
+      console.log('🏠 Dashboard: TanStack Query - Loading dashboard data...');
+    } else if (dashboardData) {
+      console.log('🏠 Dashboard: TanStack Query - Data loaded from cache/network');
+      console.log('🏠 Dashboard: Data source:', dashboardData ? 'Available' : 'Not available');
+    }
+  }, [loading, dashboardData]);
+  
   // Prefetch commonly accessed routes on dashboard load
   useEffect(() => {
     // Prefetch with a small delay to prioritize dashboard loading first
     const timer = setTimeout(() => {
+      console.log('🚀 Dashboard: Prefetching Areas, Insights, and Projects for faster navigation');
       prefetchAreas();
       prefetchInsights();
       prefetchProjects();
