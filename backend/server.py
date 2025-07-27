@@ -976,7 +976,7 @@ async def get_available_tasks_optimized(current_user: User = Depends(get_current
     BEFORE: 3-5 second response times with individual task processing
     AFTER: <100ms response times with batch pre-calculated scores
     """
-    user_id = current_user["id"]
+    user_id = current_user.id
     
     try:
         logger.info(f"📋 Optimized Available Tasks requested for user: {user_id}")
