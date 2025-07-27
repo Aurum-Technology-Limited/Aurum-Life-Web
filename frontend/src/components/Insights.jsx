@@ -343,6 +343,19 @@ const Insights = () => {
           </div>
         </div>
 
+        {/* Demo Data Information Banner */}
+        <div className="mb-6 p-4 rounded-lg bg-blue-900/20 border border-blue-500/30 flex items-center space-x-3">
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink">
+            <BarChart3 size={16} className="text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="text-blue-400 text-sm">
+              <strong>Demo Insights:</strong> This dashboard shows sample analytics data. 
+              Real insights will be generated from your actual tasks, projects, and productivity patterns.
+            </p>
+          </div>
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
