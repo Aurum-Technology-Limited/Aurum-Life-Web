@@ -1644,6 +1644,13 @@ class TaskService:
         task_dict = task.dict()
         await create_document("tasks", task_dict)
         
+        # 🚀 THE ARCHITECT'S EVENT TRIGGER: Calculate initial score for new task
+        try:
+            recalculate_task_score.delay(task.id)
+            logger.info(f"✅ Score calculation triggered for new task: {task.id}")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to trigger score calculation for new task {task.id}: {e}")
+        
         # Schedule reminders if task has due date
         if task.due_date and not task.completed:
             try:
