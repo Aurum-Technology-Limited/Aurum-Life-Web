@@ -47,9 +47,15 @@ class ForeignKeyConstraintTestSuite:
                 "password": self.test_user_password
             }
             
+            user_created = False
             async with self.session.post(f"{API_BASE}/auth/register", json=register_data) as response:
-                if response.status in [200, 400]:  # 400 if user already exists
-                    pass
+                if response.status == 200:
+                    user_created = True
+                    print("✅ New user registered successfully")
+                elif response.status == 400:
+                    print("ℹ️ User already exists")
+                else:
+                    print(f"⚠️ Registration response: {response.status}")
                     
             # Login to get token
             login_data = {
@@ -61,6 +67,24 @@ class ForeignKeyConstraintTestSuite:
                 if response.status == 200:
                     data = await response.json()
                     self.auth_token = data["access_token"]
+                    
+                    # Get user ID from /auth/me
+                    async with self.session.get(f"{API_BASE}/auth/me", headers={"Authorization": f"Bearer {self.auth_token}"}) as me_response:
+                        if me_response.status == 200:
+                            user_data = await me_response.json()
+                            user_id = user_data.get('id')
+                            
+                            # If user was just created, sync them to legacy users table
+                            if user_created and user_id:
+                                print(f"🔄 Syncing new user {user_id} to legacy users table...")
+                                import subprocess
+                                result = subprocess.run(['python', '/app/sync_user.py', user_id], 
+                                                      capture_output=True, text=True, cwd='/app')
+                                if result.returncode == 0:
+                                    print("✅ User synchronized successfully")
+                                else:
+                                    print(f"⚠️ User sync warning: {result.stderr}")
+                    
                     return True
                 else:
                     print(f"❌ Authentication failed: {response.status}")
