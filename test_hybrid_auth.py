@@ -95,7 +95,7 @@ async def create_test_user_and_verify_auth():
         }
         
         try:
-            await supabase.table('user_stats').insert(stats_data).execute()
+            result = supabase.table('user_stats').insert(stats_data).execute()
             print(f"✅ User stats created: {test_email}")
         except Exception as e:
             print(f"⚠️ Stats creation failed (might already exist): {e}")
