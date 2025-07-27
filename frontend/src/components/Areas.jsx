@@ -109,7 +109,7 @@ const Areas = ({ onSectionChange }) => {
       refetchAreas();
     } catch (err) {
       console.error('Error archiving/unarchiving area:', err);
-      setError(`Failed to ${isArchived ? 'unarchive' : 'archive'} area`);
+      // Error handling is now managed by TanStack Query
     }
   };
 
