@@ -2636,15 +2636,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Epic 2 Phase 3: Smart Recurring Tasks Backend System"
-    - "Epic 2 Phase 3: Recurring Task Models and Enums"
-    - "Epic 2 Phase 3: RecurringTaskService Implementation"
-    - "Epic 2 Phase 3: Recurring Tasks API Endpoints"
-    - "Epic 2 Phase 3: Task Scheduling System"
-    - "RecurringTasks.jsx Component Implementation"
-  stuck_tasks: []
+    - "Sidebar Navigation Improvements - Fixed Position and Smooth Experience"
+  stuck_tasks:
+    - "Sidebar Navigation Improvements - Fixed Position and Smooth Experience"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
 agent_communication:
     - agent: "testing"
