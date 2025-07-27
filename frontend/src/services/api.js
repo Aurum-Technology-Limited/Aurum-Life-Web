@@ -43,6 +43,8 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    const config = error.config;
+    
     // Handle 401 Unauthorized errors
     if (error.response?.status === 401) {
       console.warn('Authentication failed - clearing token and redirecting to login');
@@ -59,10 +61,41 @@ apiClient.interceptors.response.use(
       return Promise.reject(new Error('Authentication failed. Please log in again.'));
     }
     
-    // Handle timeout errors specifically
+    // Implement automatic retry logic for certain types of errors
+    const shouldRetry = (
+      (error.code === 'ECONNABORTED' || error.message.includes('timeout')) ||
+      (error.response?.status >= 500) ||
+      (error.code === 'NETWORK_ERROR')
+    );
+    
+    // Initialize retry count if not present
+    config._retryCount = config._retryCount || 0;
+    const maxRetries = config.maxRetries || 2;
+    const retryDelay = config.retryDelay || 1000;
+    
+    if (shouldRetry && config._retryCount < maxRetries) {
+      config._retryCount += 1;
+      
+      console.warn(`🔄 Retrying request (${config._retryCount}/${maxRetries}): ${config.url}`);
+      
+      // Return a promise that retries the request after delay
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(apiClient(config));
+        }, retryDelay * config._retryCount); // Exponential backoff
+      });
+    }
+    
+    // Handle timeout errors specifically after retries exhausted
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      console.error('Request timed out:', error);
-      return Promise.reject(new Error('Request timed out. Please try again.'));
+      console.error('Request timed out after retries:', error.config?.url);
+      return Promise.reject(new Error('Request timed out. Please check your connection and try again.'));
+    }
+    
+    // Handle server errors
+    if (error.response?.status >= 500) {
+      console.error('Server error after retries:', error.response?.status, error.config?.url);
+      return Promise.reject(new Error('Server temporarily unavailable. Please try again later.'));
     }
     
     console.error('API Error:', error.response?.data || error.message);
