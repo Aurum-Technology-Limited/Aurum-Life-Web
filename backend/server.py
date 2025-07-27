@@ -19,7 +19,7 @@ from optimized_services import (
 )
 from performance_monitor import perf_monitor
 from services import (
-    UserService, TaskService, JournalService, JournalTemplateService, 
+    UserService, TaskService, JournalService, 
     GoalService, HabitService, CourseService, BadgeService, 
     NotificationService, RecurringTaskService, InsightsService, 
     TodayService, ResourceService
