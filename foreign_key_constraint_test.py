@@ -40,7 +40,7 @@ class ForeignKeyConstraintTestSuite:
         try:
             # Try to register user first (in case they don't exist)
             register_data = {
-                "username": "testdragdrop",
+                "username": "testuser",
                 "email": self.test_user_email,
                 "first_name": "Test",
                 "last_name": "User",
