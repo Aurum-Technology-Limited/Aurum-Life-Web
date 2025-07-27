@@ -383,9 +383,32 @@ const Journal = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    fetchEntries();
-    fetchTemplates();
-    fetchInsights();
+    // Load data with proper error handling and timeout protection
+    const loadJournalData = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Use Promise.race to implement timeout protection
+        await Promise.race([
+          Promise.all([
+            fetchEntriesWithFallback(),
+            fetchTemplatesWithFallback(),
+            fetchInsightsWithFallback()
+          ]),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Loading timeout')), 8000)
+          )
+        ]);
+      } catch (err) {
+        console.error('Journal data loading failed:', err);
+        setError('Unable to load journal data. Some features may not be available.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadJournalData();
   }, []);
 
   useEffect(() => {
