@@ -13,23 +13,26 @@ const UserMenu = ({ user, onClose, onNavigate, onLogout, isCollapsed = false }) 
   };
 
   return (
-    <div className="absolute right-0 bottom-full mb-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+    <div className={`
+      absolute bottom-full mb-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-in slide-in-from-bottom-2 duration-200
+      ${isCollapsed ? 'right-0 w-64' : 'right-0 w-64'}
+    `}>
       {/* User Info */}
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
             <span className="text-gray-900 font-semibold">
               {user?.first_name?.[0] || user?.username?.[0] || user?.email?.[0] || 'U'}
             </span>
           </div>
-          <div>
-            <div className="text-white font-medium">
+          <div className="flex-1">
+            <div className="text-white font-medium truncate">
               {user?.first_name && user?.last_name 
                 ? `${user.first_name} ${user.last_name}`
                 : user?.username || user?.email || 'User'
               }
             </div>
-            <div className="text-gray-400 text-sm">{user?.email}</div>
+            <div className="text-gray-400 text-sm truncate">{user?.email}</div>
           </div>
         </div>
         
