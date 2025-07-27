@@ -1936,7 +1936,34 @@ class TaskService:
 
     @staticmethod
     async def _build_task_response(task_doc: dict, include_subtasks: bool = True) -> TaskResponse:
-        task_response = TaskResponse(**task_doc)
+        # Add safe defaults for required fields
+        safe_task_doc = dict(task_doc)
+        
+        # Ensure required fields have defaults
+        if 'title' not in safe_task_doc or not safe_task_doc['title']:
+            safe_task_doc['title'] = 'Untitled Task'
+        if 'user_id' not in safe_task_doc:
+            safe_task_doc['user_id'] = ''
+        if 'id' not in safe_task_doc:
+            safe_task_doc['id'] = str(uuid.uuid4())
+            
+        # Add safe defaults for new scoring fields if missing
+        if 'current_score' not in safe_task_doc:
+            safe_task_doc['current_score'] = 50.0
+        if 'area_importance' not in safe_task_doc:
+            safe_task_doc['area_importance'] = 3
+        if 'project_importance' not in safe_task_doc:
+            safe_task_doc['project_importance'] = 3
+        if 'pillar_weight' not in safe_task_doc:
+            safe_task_doc['pillar_weight'] = 1.0
+        if 'dependencies_met' not in safe_task_doc:
+            safe_task_doc['dependencies_met'] = True
+        if 'score_last_updated' not in safe_task_doc:
+            safe_task_doc['score_last_updated'] = datetime.utcnow()
+        if 'score_calculation_version' not in safe_task_doc:
+            safe_task_doc['score_calculation_version'] = 1
+        
+        task_response = TaskResponse(**safe_task_doc)
         
         # Map status to kanban column for consistent kanban view
         status_to_column = {
