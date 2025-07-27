@@ -2669,10 +2669,13 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Backend API Performance Optimization - N+1 Query Elimination"
-  completed_optimizations:
-    - "Projects API: 18x speed improvement (5173ms → 282ms)"
-    - "Areas API: Full batch fetching implementation"
+    - "Areas API Endpoint N+1 Query Optimization"
+  stuck_tasks:
+    - "Areas API Endpoint N+1 Query Optimization"
+  critical_issues:
+    - "N+1 Query Performance Regression - Lines 998-999 and 1049 in services.py"
+  test_all: false
+  test_priority: "critical_first"
     - "AI Coach API: Parallel query execution with asyncio"
     - "Dashboard API: Simplified MVP approach"  
     - "Insights API: Stats-based optimization"
