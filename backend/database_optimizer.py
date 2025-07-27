@@ -1,122 +1,226 @@
 """
-🚀 THE ARCHITECT'S DATABASE OPTIMIZATION - PHASE 5 IMPLEMENTATION
-Critical indexes for sub-200ms API response times
-Database migration and optimization utilities
+Database Optimization for Aurum Life MVP v1.1
+Adds indexes and optimizations for sub-150ms API response times
 """
 
 import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
 from datetime import datetime
-from database import database, find_documents, update_document
-from scoring_engine import initialize_all_task_scores
 import logging
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def create_scoring_indexes():
-    """
-    Create the critical compound indexes for The Architect's scoring system
-    These indexes are the foundation of our sub-200ms performance guarantee
-    """
-    try:
-        logger.info("🚀 Creating The Architect's scoring indexes...")
-        tasks_collection = database["tasks"]
+class DatabaseOptimizer:
+    def __init__(self):
+        self.client = None
+        self.db = None
         
-        # 🎯 PRIMARY INDEX: The Today View Compound Index
-        # This is the most critical index - optimizes the main Today view query
-        await tasks_collection.create_index([
-            ("user_id", 1),
-            ("completed", 1),
-            ("current_score", -1),  # Descending for highest scores first
-            ("due_date", 1)
-        ], name="user_active_tasks_by_score", background=True)
-        logger.info("✅ Created PRIMARY index: user_active_tasks_by_score")
+    async def connect(self):
+        """Connect to MongoDB"""
+        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        self.client = AsyncIOMotorClient(mongo_url)
+        self.db = self.client[os.environ.get('DB_NAME', 'aurum_life')]
+        logger.info("Connected to MongoDB")
         
-        # 🎯 SECONDARY INDEX: Available Tasks Query Optimization
-        await tasks_collection.create_index([
-            ("user_id", 1),
-            ("completed", 1),
-            ("current_score", -1),
-            ("scheduled_date", 1)
-        ], name="user_available_tasks_score", background=True)
-        logger.info("✅ Created SECONDARY index: user_available_tasks_score")
+    async def create_indexes(self):
+        """Create all indexes needed for MVP performance"""
         
-        # 🎯 DEPENDENCY INDEX: For efficient dependency lookups
-        await tasks_collection.create_index([
-            ("dependency_task_ids", 1),
-            ("completed", 1),
-            ("current_score", -1)
-        ], name="dependency_score_lookup", background=True)
-        logger.info("✅ Created DEPENDENCY index: dependency_score_lookup")
+        # Pillars indexes
+        pillars_indexes = [
+            [("user_id", 1), ("sort_order", 1)],
+            [("user_id", 1), ("archived", 1), ("sort_order", 1)],
+        ]
         
-        # 🎯 HIERARCHICAL INDEXES: For cascading score updates
-        await tasks_collection.create_index([
-            ("project_id", 1),
-            ("completed", 1),
-            ("current_score", -1)
-        ], name="project_tasks_score_update", background=True)
-        logger.info("✅ Created PROJECT index: project_tasks_score_update")
+        # Areas indexes
+        areas_indexes = [
+            [("user_id", 1), ("pillar_id", 1), ("sort_order", 1)],
+            [("user_id", 1), ("archived", 1), ("sort_order", 1)],
+            [("pillar_id", 1), ("archived", 1)],
+        ]
         
-        await tasks_collection.create_index([
-            ("area_id", 1),
-            ("completed", 1),
-            ("current_score", -1)
-        ], name="area_tasks_score_update", background=True)
-        logger.info("✅ Created AREA index: area_tasks_score_update")
+        # Projects indexes
+        projects_indexes = [
+            [("user_id", 1), ("area_id", 1), ("sort_order", 1)],
+            [("user_id", 1), ("status", 1), ("sort_order", 1)],
+            [("area_id", 1), ("archived", 1), ("status", 1)],
+            [("user_id", 1), ("archived", 1), ("deadline", 1)],
+        ]
         
-        # 🎯 SCORE MAINTENANCE INDEX: For batch operations and analytics
-        await tasks_collection.create_index([
-            ("score_last_updated", 1),
-            ("current_score", -1)
-        ], name="score_maintenance", background=True)
-        logger.info("✅ Created MAINTENANCE index: score_maintenance")
+        # Tasks indexes - Most critical for performance
+        tasks_indexes = [
+            [("user_id", 1), ("project_id", 1), ("current_score", -1)],
+            [("user_id", 1), ("due_date", 1), ("current_score", -1)],
+            [("user_id", 1), ("status", 1), ("current_score", -1)],
+            [("project_id", 1), ("completed", 1), ("sort_order", 1)],
+            [("user_id", 1), ("completed", 1), ("due_date", 1)],
+            # Compound index for Today view
+            [("user_id", 1), ("completed", 1), ("due_date", 1), ("current_score", -1)],
+        ]
         
-        # 🎯 USER PERFORMANCE INDEX: For user-specific queries
-        await tasks_collection.create_index([
-            ("user_id", 1),
-            ("score_last_updated", -1)
-        ], name="user_score_tracking", background=True)
-        logger.info("✅ Created USER TRACKING index: user_score_tracking")
+        # Users indexes
+        users_indexes = [
+            [("email", 1)],
+            [("username", 1)],
+            [("google_id", 1)],
+        ]
         
-        logger.info("🎉 All scoring indexes created successfully!")
-        return True
+        # Create all indexes
+        collections = {
+            "pillars": pillars_indexes,
+            "areas": areas_indexes,
+            "projects": projects_indexes,
+            "tasks": tasks_indexes,
+            "users": users_indexes,
+        }
         
-    except Exception as e:
-        logger.error(f"❌ Failed to create scoring indexes: {e}")
-        return False
-
-async def initialize_scoring_system():
-    """
-    Complete initialization of The Architect's scoring system
-    Creates indexes and triggers initial score calculations
-    """
-    try:
-        logger.info("🚀 INITIALIZING THE ARCHITECT'S SCORING SYSTEM")
+        for collection_name, indexes in collections.items():
+            collection = self.db[collection_name]
+            for index_spec in indexes:
+                try:
+                    index_name = await collection.create_index(index_spec)
+                    logger.info(f"Created index {index_name} on {collection_name}")
+                except Exception as e:
+                    logger.error(f"Failed to create index on {collection_name}: {e}")
+                    
+    async def add_scoring_fields(self):
+        """Ensure all tasks have current_score field"""
+        tasks_collection = self.db["tasks"]
         
-        # Step 1: Create critical database indexes
-        logger.info("📊 Step 1: Creating database indexes...")
-        if not await create_scoring_indexes():
-            logger.error("❌ Failed to create indexes - aborting initialization")
-            return False
+        # Add current_score field to tasks that don't have it
+        result = await tasks_collection.update_many(
+            {"current_score": {"$exists": False}},
+            {"$set": {"current_score": 50.0}}  # Default middle score
+        )
         
-        # Step 2: Trigger initial score calculations for all users
-        logger.info("🎯 Step 2: Triggering initial score calculations...")
+        logger.info(f"Updated {result.modified_count} tasks with current_score field")
+        
+    async def optimize_collections(self):
+        """Additional collection-level optimizations"""
+        
+        # Enable collection-level read preference for better performance
+        collections = ["pillars", "areas", "projects", "tasks"]
+        
+        for collection_name in collections:
+            try:
+                # Compact collections to defragment storage
+                result = await self.db.command("compact", collection_name)
+                logger.info(f"Compacted {collection_name}: {result}")
+            except Exception as e:
+                logger.warning(f"Could not compact {collection_name}: {e}")
+                
+    async def create_materialized_views(self):
+        """Create materialized views for complex queries"""
+        
+        # Create a view for today's tasks (pre-computed)
+        today_view_pipeline = [
+            {
+                "$match": {
+                    "completed": False,
+                    "$or": [
+                        {"due_date": {"$lte": datetime.utcnow()}},
+                        {"due_date": None}
+                    ]
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "projects",
+                    "localField": "project_id",
+                    "foreignField": "id",
+                    "as": "project"
+                }
+            },
+            {
+                "$unwind": "$project"
+            },
+            {
+                "$lookup": {
+                    "from": "areas",
+                    "localField": "project.area_id",
+                    "foreignField": "id",
+                    "as": "area"
+                }
+            },
+            {
+                "$unwind": "$area"
+            },
+            {
+                "$project": {
+                    "_id": 1,
+                    "id": 1,
+                    "name": 1,
+                    "description": 1,
+                    "due_date": 1,
+                    "priority": 1,
+                    "current_score": 1,
+                    "project_name": "$project.name",
+                    "area_name": "$area.name",
+                    "user_id": 1
+                }
+            }
+        ]
+        
         try:
-            # Use Celery to calculate scores asynchronously
-            result = initialize_all_task_scores.delay()
-            logger.info(f"✅ Initial score calculation triggered - Celery task ID: {result.id}")
+            # Drop existing view if it exists
+            await self.db.drop_collection("today_tasks_view")
+            
+            # Create the view
+            await self.db.create_collection(
+                "today_tasks_view",
+                viewOn="tasks",
+                pipeline=today_view_pipeline
+            )
+            logger.info("Created today_tasks_view materialized view")
         except Exception as e:
-            logger.warning(f"⚠️ Could not trigger Celery score calculation: {e}")
-            logger.info("💡 You can manually trigger score calculation later using: initialize_all_task_scores.delay()")
+            logger.error(f"Failed to create materialized view: {e}")
+            
+    async def analyze_performance(self):
+        """Analyze current query performance"""
         
-        logger.info("🎉 THE ARCHITECT'S SCORING SYSTEM INITIALIZATION COMPLETE!")
-        logger.info("⚡ Your API is now optimized for sub-200ms response times")
+        # Get index usage stats
+        collections = ["pillars", "areas", "projects", "tasks"]
         
-        return True
+        for collection_name in collections:
+            collection = self.db[collection_name]
+            
+            # Get index stats
+            index_stats = await collection.aggregate([
+                {"$indexStats": {}}
+            ]).to_list(None)
+            
+            logger.info(f"\n{collection_name} Index Usage:")
+            for stat in index_stats:
+                logger.info(f"  {stat['name']}: {stat.get('accesses', {}).get('ops', 0)} operations")
+                
+    async def run_optimization(self):
+        """Run all optimization tasks"""
+        await self.connect()
         
-    except Exception as e:
-        logger.error(f"❌ Scoring system initialization failed: {e}")
-        return False
+        logger.info("Starting database optimization...")
+        
+        # Create indexes
+        await self.create_indexes()
+        
+        # Add missing fields
+        await self.add_scoring_fields()
+        
+        # Optimize collections
+        await self.optimize_collections()
+        
+        # Create materialized views
+        await self.create_materialized_views()
+        
+        # Analyze performance
+        await self.analyze_performance()
+        
+        logger.info("Database optimization complete!")
+        
+        if self.client:
+            self.client.close()
 
+# Run optimization
 if __name__ == "__main__":
-    # Run initialization if called directly
-    asyncio.run(initialize_scoring_system())
+    optimizer = DatabaseOptimizer()
+    asyncio.run(optimizer.run_optimization())
