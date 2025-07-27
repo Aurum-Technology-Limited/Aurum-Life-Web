@@ -85,7 +85,10 @@ export const useProjectsQuery = (areaId = null, includeArchived = false) => {
 export const useTasksQuery = (projectId = null) => {
   return useQuery({
     queryKey: queryKeys.tasks(projectId),
-    queryFn: () => tasksAPI.getTasks(projectId),
+    queryFn: async () => {
+      const response = await tasksAPI.getTasks(projectId);
+      return response.data; // Extract data from axios response
+    },
     staleTime: 2 * 60 * 1000, // 2 minutes - tasks change frequently
     gcTime: 10 * 60 * 1000, // 10 minutes cache
     meta: {
