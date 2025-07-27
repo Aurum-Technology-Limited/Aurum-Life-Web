@@ -137,7 +137,10 @@ export const useDashboardMutation = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: () => dashboardAPI.getDashboard(),
+    mutationFn: async () => {
+      const response = await dashboardAPI.getDashboard();
+      return response.data; // Extract data from axios response
+    },
     onSuccess: (data) => {
       // Update the dashboard cache with fresh data
       queryClient.setQueryData(queryKeys.dashboard, data);
