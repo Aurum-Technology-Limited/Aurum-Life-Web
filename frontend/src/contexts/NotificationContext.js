@@ -49,6 +49,14 @@ export const NotificationProvider = ({ children }) => {
     clearAllNotifications
   };
 
+  // Make addNotification available globally for error handler
+  useEffect(() => {
+    window.showNotification = addNotification;
+    return () => {
+      window.showNotification = undefined;
+    };
+  }, []);
+
   return (
     <NotificationContext.Provider value={value}>
       {children}
