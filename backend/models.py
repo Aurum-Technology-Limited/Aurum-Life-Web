@@ -617,11 +617,63 @@ class ProjectTemplateResponse(BaseModel):
     updated_at: datetime
 
 # Response Models for Frontend
-class TaskResponse(Task):
-    is_overdue: Optional[bool] = None
-    can_start: Optional[bool] = None  # Based on dependencies
-    sub_tasks: Optional[List['TaskResponse']] = []
-    dependency_tasks: Optional[List['TaskResponse']] = []
+class TaskResponse(BaseModel):
+    id: str
+    user_id: str
+    title: str
+    description: Optional[str] = None
+    completed: bool = False
+    
+    # Priority and scheduling
+    priority: Optional[PriorityEnum] = PriorityEnum.medium
+    due_date: Optional[datetime] = None
+    scheduled_date: Optional[date] = None
+    
+    # Hierarchy relationships
+    project_id: Optional[str] = None
+    area_id: Optional[str] = None
+    pillar_id: Optional[str] = None
+    
+    # Task relationships
+    parent_task_id: Optional[str] = None
+    dependency_task_ids: List[str] = []
+    sub_tasks: List['TaskResponse'] = []
+    dependency_tasks: List['TaskResponse'] = []
+    
+    # Progress tracking
+    progress_percentage: int = 0
+    time_logged: int = 0  # in minutes
+    estimated_time: Optional[int] = None  # in minutes
+    
+    # Kanban and organization
+    kanban_column: Optional[str] = "to_do"
+    sort_order: int = 0
+    status: Optional[TaskStatusEnum] = TaskStatusEnum.todo
+    
+    # Behavioral flags
+    is_recurring: bool = False
+    recurring_pattern: Optional[str] = None
+    is_overdue: bool = False
+    can_start: bool = True
+    
+    # Attachments and notes
+    attachments: List[dict] = []
+    notes: Optional[str] = None
+    
+    # Metadata
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # 🚀 THE ARCHITECT'S SCORING SYSTEM - PHASE 2 IMPLEMENTATION
+    current_score: float = 0.0  # The pre-calculated priority score (0-100)
+    score_last_updated: datetime = Field(default_factory=datetime.utcnow)
+    score_calculation_version: int = 1  # For future algorithm updates
+    
+    # 🚀 DENORMALIZED HIERARCHY DATA - Eliminates real-time lookups
+    area_importance: int = 3  # Cached from parent area (1-5 scale)
+    project_importance: int = 3  # Cached from parent project (1-5 scale) 
+    pillar_weight: float = 1.0  # Cached from root pillar (0.1-2.0 scale)
+    dependencies_met: bool = True  # Pre-calculated dependency status
 
 class ProjectResponse(Project):
     task_count: Optional[int] = None
