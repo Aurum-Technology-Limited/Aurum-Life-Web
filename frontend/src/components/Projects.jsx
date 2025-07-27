@@ -365,7 +365,7 @@ const Projects = ({ onSectionChange }) => {
       }
       
       await loadProjects();
-      await refreshAreas();
+      await loadAreas();
       
     } catch (err) {
       console.error('Error archiving project:', err);
