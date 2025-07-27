@@ -68,7 +68,10 @@ export const usePillarsQuery = (includeSubPillars = true, includeAreas = false, 
 export const useProjectsQuery = (areaId = null, includeArchived = false) => {
   return useQuery({
     queryKey: queryKeys.projects(areaId, includeArchived),
-    queryFn: () => projectsAPI.getProjects(areaId, includeArchived),
+    queryFn: async () => {
+      const response = await projectsAPI.getProjects(areaId, includeArchived);
+      return response.data; // Extract data from axios response
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes cache
     enabled: true, // Always enabled, but can be conditional if needed
