@@ -4,6 +4,7 @@ import asyncio
 import aiohttp
 import json
 import os
+import uuid
 from datetime import datetime
 from typing import Dict, Any, List
 
@@ -14,10 +15,14 @@ API_BASE = f"{BACKEND_URL}/api"
 class ForeignKeyConstraintTestSuite:
     def __init__(self):
         self.session = None
-        self.auth_token = None
-        self.test_user_email = "fk.test.final@aurumlife.com"
-        self.test_user_password = "TestPass123!"
         self.test_results = []
+        self.test_users = []
+        self.created_resources = {
+            'pillars': [],
+            'areas': [],
+            'projects': [],
+            'tasks': []
+        }
         self.created_resources = {
             'users': [],
             'pillars': [],
