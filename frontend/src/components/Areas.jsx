@@ -72,59 +72,8 @@ const Areas = ({ onSectionChange }) => {
     '#F59E0B', '#06B6D4', '#84CC16', '#F97316', '#EC4899'
   ];
 
-  const loadAreas = async (retryCount = 0) => {
-    try {
-      console.log('🗂️ Areas: Starting loadAreas, retry count:', retryCount);
-      setLoading(true);
-      setError(null);
-      console.log('🗂️ Areas: Calling areasAPI.getAreas with showArchived:', showArchived);
-      const response = await areasAPI.getAreas(true, showArchived); // Include projects and optionally archived
-      console.log('🗂️ Areas: API response received, data length:', response.data?.length);
-      setAreas(response.data);
-      setError(null);
-    } catch (err) {
-      console.error('🗂️ Areas: Error loading areas:', err);
-      
-      // If it's an authentication error, don't retry
-      if (err.response?.status === 401) {
-        console.error('🗂️ Areas: Authentication error, not retrying');
-        setError('Authentication failed. Please log in again.');
-        return;
-      }
-      
-      // Retry logic for network errors
-      if (retryCount < 2 && (err.code === 'ECONNABORTED' || err.message.includes('timeout'))) {
-        console.log(`🗂️ Areas: Retrying areas load (attempt ${retryCount + 1})`);
-        setTimeout(() => loadAreas(retryCount + 1), 1000);
-        return;
-      }
-      
-      setError('Failed to load areas');
-    } finally {
-      setLoading(false);
-      console.log('🗂️ Areas: loadAreas completed, setting loading to false');
-    }
-  };
-
-  const loadPillars = async () => {
-    try {
-      const response = await api.get('/pillars', {
-        params: {
-          include_sub_pillars: false,
-          include_areas: false,
-          include_archived: false
-        }
-      });
-      setPillars(response.data);
-    } catch (err) {
-      console.error('Error loading pillars:', err);
-    }
-  };
-
-  useEffect(() => {
-    loadAreas();
-    loadPillars();
-  }, [showArchived]); // Reload when showArchived changes
+  // Old manual data loading functions removed - TanStack Query handles this automatically
+  // Data is now fetched via useAreasQuery and usePillarsQuery hooks above
 
   const handleSubmit = async (e) => {
     e.preventDefault();
