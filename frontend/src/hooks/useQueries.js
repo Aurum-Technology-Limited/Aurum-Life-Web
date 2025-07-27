@@ -117,7 +117,10 @@ export const useInsightsQuery = (dateRange = 'all_time', areaId = null) => {
 export const useAiCoachQuery = () => {
   return useQuery({
     queryKey: queryKeys.aiCoach,
-    queryFn: () => aiCoachAPI.getTodaysPriorities(),
+    queryFn: async () => {
+      const response = await aiCoachAPI.getTodaysPriorities();
+      return response.data; // Extract data from axios response
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes cache
     retry: 1, // AI coach can fail more gracefully
