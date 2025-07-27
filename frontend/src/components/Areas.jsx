@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { areasAPI, api } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
+import { useAreasQuery, usePillarsQuery } from '../hooks/useQueries';
 import DonutChart from './ui/DonutChart';
 import IconPicker from './ui/IconPicker';
 import { 
