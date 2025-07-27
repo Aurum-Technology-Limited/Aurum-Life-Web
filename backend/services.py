@@ -1023,7 +1023,28 @@ class AreaService:
         
         update_data = {k: v for k, v in area_data.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
-        return await update_document("areas", {"id": area_id, "user_id": user_id}, update_data)
+        
+        # 🚀 THE ARCHITECT'S EVENT TRIGGER: Check if importance is changing
+        old_importance = None
+        new_importance = update_data.get("importance")
+        
+        if new_importance is not None:
+            # Get current area to compare importance
+            current_area = await find_document("areas", {"id": area_id, "user_id": user_id})
+            if current_area:
+                old_importance = current_area.get("importance")
+        
+        success = await update_document("areas", {"id": area_id, "user_id": user_id}, update_data)
+        
+        # 🚀 THE ARCHITECT'S EVENT TRIGGER: Recalculate all area task scores if importance changed
+        if success and new_importance is not None and old_importance != new_importance:
+            try:
+                recalculate_area_tasks.delay(area_id, new_importance)
+                logger.info(f"✅ Area task score recalculation triggered for area {area_id}, importance: {old_importance} → {new_importance}")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to trigger area task recalculation for area {area_id}: {e}")
+        
+        return success
 
     @staticmethod
     async def archive_area(user_id: str, area_id: str) -> bool:
