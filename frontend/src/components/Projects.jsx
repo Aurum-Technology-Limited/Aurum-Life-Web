@@ -90,10 +90,22 @@ const Projects = ({ onSectionChange }) => {
     completed: []
   });
 
+  // Load areas data
+  const loadAreas = async () => {
+    try {
+      const response = await areasAPI.getAreas(false, false); // Don't include projects, don't include archived
+      setAreas(response.data || []);
+    } catch (err) {
+      console.error('Error loading areas:', err);
+      setAreas([]); // Fallback to empty array
+    }
+  };
+
   // Load projects on component mount
   useEffect(() => {
     loadProjects();
     loadTemplates();
+    loadAreas(); // Add areas loading
   }, []);
 
   // Filter and sort projects when dependencies change
