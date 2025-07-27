@@ -306,7 +306,7 @@ const Projects = ({ onSectionChange }) => {
       });
       
       await loadProjects();
-      await refreshAreas();
+      await loadAreas();
       resetForm();
       setShowEditModal(false);
       setSelectedProject(null);
