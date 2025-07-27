@@ -15,6 +15,9 @@ import logging
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
+# 🚀 THE ARCHITECT'S EVENT-DRIVEN SCORING SYSTEM
+from scoring_engine import recalculate_task_score, recalculate_dependent_tasks, recalculate_area_tasks, recalculate_project_tasks
+
 logger = logging.getLogger(__name__)
 
 def safe_datetime_compare(dt, compare_date):
