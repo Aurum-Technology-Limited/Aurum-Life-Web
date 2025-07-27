@@ -176,26 +176,32 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
-        <AuthProvider>
-          <DataProvider>
-            <NotificationProvider>
-              <DndProvider backend={HTML5Backend}>
-                <div className="App">
-                <ProtectedRoute>
-                  <Layout 
-                    activeSection={activeSection} 
-                    onSectionChange={handleSectionChange}
-                  >
-                    {renderActiveSection()}
-                  </Layout>
-                </ProtectedRoute>
-                </div>
-              </DndProvider>
-            </NotificationProvider>
-          </DataProvider>
-        </AuthProvider>
-      </GoogleOAuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
+          <AuthProvider>
+            <DataProvider>
+              <NotificationProvider>
+                <DndProvider backend={HTML5Backend}>
+                  <div className="App">
+                  <ProtectedRoute>
+                    <Layout 
+                      activeSection={activeSection} 
+                      onSectionChange={handleSectionChange}
+                    >
+                      {renderActiveSection()}
+                    </Layout>
+                  </ProtectedRoute>
+                  </div>
+                </DndProvider>
+              </NotificationProvider>
+            </DataProvider>
+          </AuthProvider>
+        </GoogleOAuthProvider>
+        {/* TanStack Query DevTools - only in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <ReactQueryDevtools initialIsOpen={false} />
+        )}
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }
