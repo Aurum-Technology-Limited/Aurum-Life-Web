@@ -10,7 +10,7 @@
 ### 2. **Environment Configuration** ✅
 - Created backend `.env` file with all required variables:
   - JWT authentication settings
-  - Google OAuth credentials (Client ID: 514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com)
+  - Google OAuth credentials (Client ID: YOUR_GOOGLE_CLIENT_ID)
   - Supabase configuration placeholders
   - SendGrid email service settings
   - Redis and Celery configuration
