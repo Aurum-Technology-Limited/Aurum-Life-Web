@@ -6,6 +6,10 @@ Test script to reproduce the foreign key constraint issue
 import asyncio
 import sys
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv('/app/backend/.env')
 sys.path.append('/app/backend')
 
 from supabase_client import get_supabase_client
