@@ -64,6 +64,105 @@ class N1QueryPerformanceTestSuite:
             print(f"❌ Authentication error: {e}")
             return False
             
+    async def create_test_data(self):
+        """Create comprehensive test data to verify N+1 query optimization"""
+        print("\n🏗️ Creating test data for N+1 query verification...")
+        
+        try:
+            # Create 3 pillars
+            pillars = []
+            for i in range(3):
+                pillar_data = {
+                    "name": f"Test Pillar {i+1}",
+                    "description": f"Pillar {i+1} for N+1 testing",
+                    "icon": "🏛️",
+                    "color": f"#FF{i*2}0{i*2}0"
+                }
+                
+                async with self.session.post(f"{API_BASE}/pillars", json=pillar_data, headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        pillar = await response.json()
+                        pillars.append(pillar)
+                        print(f"  ✅ Created pillar: {pillar['name']}")
+                    else:
+                        print(f"  ❌ Failed to create pillar {i+1}: {response.status}")
+                        
+            # Create 5 areas (some with pillars, some without)
+            areas = []
+            for i in range(5):
+                area_data = {
+                    "name": f"Test Area {i+1}",
+                    "description": f"Area {i+1} for N+1 testing",
+                    "icon": "📁",
+                    "color": f"#00{i*3}0FF"
+                }
+                
+                # Assign pillar to some areas
+                if i < len(pillars):
+                    area_data["pillar_id"] = pillars[i]["id"]
+                    
+                async with self.session.post(f"{API_BASE}/areas", json=area_data, headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        area = await response.json()
+                        areas.append(area)
+                        pillar_info = f" (pillar: {pillars[i]['name']})" if i < len(pillars) else " (no pillar)"
+                        print(f"  ✅ Created area: {area['name']}{pillar_info}")
+                    else:
+                        print(f"  ❌ Failed to create area {i+1}: {response.status}")
+                        
+            # Create 10 projects across areas
+            projects = []
+            for i in range(10):
+                area_index = i % len(areas)
+                project_data = {
+                    "area_id": areas[area_index]["id"],
+                    "name": f"Test Project {i+1}",
+                    "description": f"Project {i+1} for N+1 testing",
+                    "icon": "🚀"
+                }
+                
+                async with self.session.post(f"{API_BASE}/projects", json=project_data, headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        project = await response.json()
+                        projects.append(project)
+                        print(f"  ✅ Created project: {project['name']} (area: {areas[area_index]['name']})")
+                    else:
+                        print(f"  ❌ Failed to create project {i+1}: {response.status}")
+                        
+            # Create 25 tasks across projects
+            tasks = []
+            task_statuses = ["todo", "in_progress", "review", "completed"]
+            for i in range(25):
+                project_index = i % len(projects)
+                task_data = {
+                    "project_id": projects[project_index]["id"],
+                    "name": f"Test Task {i+1}",
+                    "description": f"Task {i+1} for N+1 testing",
+                    "priority": "medium",
+                    "status": task_statuses[i % len(task_statuses)]
+                }
+                
+                async with self.session.post(f"{API_BASE}/tasks", json=task_data, headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        task = await response.json()
+                        tasks.append(task)
+                        if i < 5:  # Only print first 5 to avoid spam
+                            print(f"  ✅ Created task: {task['name']} (project: {projects[project_index]['name']})")
+                    else:
+                        print(f"  ❌ Failed to create task {i+1}: {response.status}")
+                        
+            print(f"\n📊 Test data created:")
+            print(f"  Pillars: {len(pillars)}")
+            print(f"  Areas: {len(areas)}")
+            print(f"  Projects: {len(projects)}")
+            print(f"  Tasks: {len(tasks)}")
+            
+            return len(areas) > 0 and len(projects) > 0 and len(tasks) > 0
+            
+        except Exception as e:
+            print(f"❌ Error creating test data: {e}")
+            return False
+            
     def get_auth_headers(self):
         """Get authorization headers"""
         return {"Authorization": f"Bearer {self.auth_token}"}
