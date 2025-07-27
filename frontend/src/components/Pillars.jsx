@@ -38,7 +38,7 @@ const Pillars = () => {
       setLoading(true);
       const response = await api.get('/pillars', {
         params: {
-          include_areas: false,
+          include_areas: true,  // FIXED: Enable to get accurate counts
           include_archived: false
         }
       });
