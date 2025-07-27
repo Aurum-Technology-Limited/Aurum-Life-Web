@@ -18,6 +18,7 @@ import Journal from './components/Journal';
 import Tasks from './components/Tasks';
 import Feedback from './components/Feedback';
 import AICoach from './components/AICoach';
+import globalErrorHandler from './utils/globalErrorHandler'; // Import global error handler
 import Achievements from './components/Achievements';
 import Profile from './components/Profile';
 import Insights from './components/Insights';
