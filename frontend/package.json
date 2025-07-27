@@ -33,6 +33,8 @@
     "@radix-ui/react-tooltip": "^1.2.4",
     "@react-oauth/google": "^0.12.2",
     "@supabase/supabase-js": "^2.52.1",
+    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-query-devtools": "^5.83.0",
     "axios": "^1.8.4",
     "chart.js": "^4.5.0",
     "chartjs-adapter-date-fns": "^3.0.0",
