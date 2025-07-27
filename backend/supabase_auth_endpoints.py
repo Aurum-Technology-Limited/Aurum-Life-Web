@@ -176,72 +176,94 @@ async def login_user(user_credentials: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
 @auth_router.get("/me", response_model=UserResponse)
-async def get_current_user_profile(current_user=Depends(verify_token)):
-    """Get current user profile with automatic legacy user sync"""
+async def get_current_user_profile(request: Request):
+    """Get current user profile with hybrid token verification"""
     try:
+        # Get authorization header
+        authorization = request.headers.get("Authorization")
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="No authorization token provided")
+        
+        token = authorization.split(" ")[1]
+        current_user = None
+        
+        # Try Supabase token verification first
+        try:
+            from supabase_auth import verify_token
+            current_user = await verify_token(token)
+            logger.info("✅ Verified Supabase token")
+        except Exception as supabase_error:
+            logger.info(f"Supabase token verification failed: {supabase_error}")
+            
+            # Try legacy JWT token verification
+            try:
+                from auth import verify_token as legacy_verify_token
+                current_user = await legacy_verify_token(token)
+                logger.info("✅ Verified legacy JWT token")
+            except Exception as legacy_error:
+                logger.info(f"Legacy token verification failed: {legacy_error}")
+                raise HTTPException(status_code=401, detail="Could not validate credentials")
+        
+        if not current_user:
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+        
+        # Get user data based on verification method
         supabase = supabase_manager.get_client()
         
-        # Get user profile
-        profile = await supabase_manager.find_document("user_profiles", {"id": current_user.id})
+        # Check if we have user_id or need to extract from current_user
+        user_id = getattr(current_user, 'id', current_user) if hasattr(current_user, 'id') else current_user
+        if isinstance(current_user, dict):
+            user_id = current_user.get('id', current_user.get('sub'))
         
-        if not profile:
-            # Create profile if doesn't exist
-            user_metadata = getattr(current_user, 'user_metadata', {}) or {}
-            profile_data = {
-                "id": current_user.id,
-                "username": current_user.email.split('@')[0],
-                "first_name": user_metadata.get('first_name', ''),
-                "last_name": user_metadata.get('last_name', ''),
-                "is_active": True,
-                "level": 1,
-                "total_points": 0,
-                "current_streak": 0
-            }
-            
-            await supabase_manager.create_document("user_profiles", profile_data)
-            profile = profile_data
+        logger.info(f"Looking up user: {user_id}")
         
-        # CRITICAL FIX: Check if user exists in legacy users table and create if missing
+        # First try to get user from legacy users table
         try:
-            legacy_user = await supabase_manager.find_document("users", {"id": current_user.id})
+            legacy_user = await supabase_manager.find_document("users", {"id": user_id})
             
-            if not legacy_user:
-                logger.info(f"🔄 Synchronizing user {current_user.id} to legacy users table")
-                legacy_user_data = {
-                    "id": current_user.id,
-                    "username": profile.get('username', current_user.email.split('@')[0]),
-                    "email": current_user.email,
-                    "first_name": profile.get('first_name', ''),
-                    "last_name": profile.get('last_name', ''),
-                    "password_hash": None,  # Supabase Auth handles password
-                    "google_id": profile.get('google_id'),
-                    "profile_picture": profile.get('profile_picture'),
-                    "is_active": profile.get('is_active', True),
-                    "level": profile.get('level', 1),
-                    "total_points": profile.get('total_points', 0),
-                    "current_streak": profile.get('current_streak', 0)
-                }
-                
-                await supabase_manager.create_document("users", legacy_user_data)
-                logger.info(f"✅ User {current_user.id} synchronized to legacy users table")
-                
-        except Exception as sync_error:
-            logger.error(f"⚠️ Failed to sync user to legacy table: {sync_error}")
-            # Don't fail the request if sync fails
+            if legacy_user:
+                logger.info("✅ Found user in legacy users table")
+                return UserResponse(
+                    id=legacy_user['id'],
+                    username=legacy_user.get('username', ''),
+                    email=legacy_user.get('email', ''),
+                    first_name=legacy_user.get('first_name', ''),
+                    last_name=legacy_user.get('last_name', ''),
+                    is_active=legacy_user.get('is_active', True),
+                    level=legacy_user.get('level', 1),
+                    total_points=legacy_user.get('total_points', 0),
+                    current_streak=legacy_user.get('current_streak', 0),
+                    created_at=legacy_user.get('created_at')
+                )
+        except Exception as legacy_lookup_error:
+            logger.info(f"Legacy user lookup failed: {legacy_lookup_error}")
         
-        return UserResponse(
-            id=profile['id'],
-            username=profile.get('username', ''),
-            email=current_user.email,
-            first_name=profile.get('first_name', ''),
-            last_name=profile.get('last_name', ''),
-            is_active=profile.get('is_active', True),
-            level=profile.get('level', 1),
-            total_points=profile.get('total_points', 0),
-            current_streak=profile.get('current_streak', 0),
-            created_at=profile.get('created_at')
-        )
+        # Fallback to user_profiles table
+        try:
+            profile = await supabase_manager.find_document("user_profiles", {"id": user_id})
+            
+            if profile:
+                logger.info("✅ Found user in user_profiles table")
+                return UserResponse(
+                    id=profile['id'],
+                    username=profile.get('username', ''),
+                    email=getattr(current_user, 'email', ''),
+                    first_name=profile.get('first_name', ''),
+                    last_name=profile.get('last_name', ''),
+                    is_active=profile.get('is_active', True),
+                    level=profile.get('level', 1),
+                    total_points=profile.get('total_points', 0),
+                    current_streak=profile.get('current_streak', 0),
+                    created_at=profile.get('created_at')
+                )
+        except Exception as profile_lookup_error:
+            logger.info(f"Profile lookup failed: {profile_lookup_error}")
         
+        # If no user found, return error
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Get user profile error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get user profile")
