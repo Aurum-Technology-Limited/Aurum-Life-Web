@@ -146,7 +146,7 @@ async def login_user(user_credentials: UserLogin):
 
 @auth_router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(current_user=Depends(verify_token)):
-    """Get current user profile"""
+    """Get current user profile with automatic legacy user sync"""
     try:
         supabase = supabase_manager.get_client()
         
@@ -169,6 +169,34 @@ async def get_current_user_profile(current_user=Depends(verify_token)):
             
             await supabase_manager.create_document("user_profiles", profile_data)
             profile = profile_data
+        
+        # CRITICAL FIX: Check if user exists in legacy users table and create if missing
+        try:
+            legacy_user = await supabase_manager.find_document("users", {"id": current_user.id})
+            
+            if not legacy_user:
+                logger.info(f"🔄 Synchronizing user {current_user.id} to legacy users table")
+                legacy_user_data = {
+                    "id": current_user.id,
+                    "username": profile.get('username', current_user.email.split('@')[0]),
+                    "email": current_user.email,
+                    "first_name": profile.get('first_name', ''),
+                    "last_name": profile.get('last_name', ''),
+                    "password_hash": None,  # Supabase Auth handles password
+                    "google_id": profile.get('google_id'),
+                    "profile_picture": profile.get('profile_picture'),
+                    "is_active": profile.get('is_active', True),
+                    "level": profile.get('level', 1),
+                    "total_points": profile.get('total_points', 0),
+                    "current_streak": profile.get('current_streak', 0)
+                }
+                
+                await supabase_manager.create_document("users", legacy_user_data)
+                logger.info(f"✅ User {current_user.id} synchronized to legacy users table")
+                
+        except Exception as sync_error:
+            logger.error(f"⚠️ Failed to sync user to legacy table: {sync_error}")
+            # Don't fail the request if sync fails
         
         return UserResponse(
             id=profile['id'],
