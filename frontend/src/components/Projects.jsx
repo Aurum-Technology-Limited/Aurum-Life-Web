@@ -867,7 +867,7 @@ const Projects = ({ onSectionChange }) => {
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 >
                   <option value="">Select an area</option>
-                  {areas.map((area) => (
+                  {areas && areas.map((area) => (
                     <option key={area.id} value={area.id}>{area.name}</option>
                   ))}
                 </select>
