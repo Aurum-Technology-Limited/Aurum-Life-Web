@@ -879,7 +879,7 @@ const Journal = () => {
           <AlertCircle size={20} className="text-red-400" />
           <span className="text-red-400">{error}</span>
           <button
-            onClick={fetchEntries}
+            onClick={fetchEntriesWithFallback}
             className="ml-auto px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
           >
             Retry
