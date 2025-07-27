@@ -693,15 +693,16 @@ async def use_project_template(template_id: str, project_data: ProjectCreate, cu
 
 # Pillar endpoints
 @api_router.post("/pillars", response_model=Pillar)
-async def create_pillar(pillar_data: PillarCreate, current_user: User = Depends(get_current_active_user)):
+async def create_pillar(pillar_data: PillarCreate, request: Request):
     """Create a new pillar"""
     try:
+        current_user = await get_current_active_user_hybrid(request)
         return await PillarService.create_pillar(current_user.id, pillar_data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error creating pillar: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error creating pillar: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.get("/pillars", response_model=List[PillarResponse])
 async def get_pillars(
