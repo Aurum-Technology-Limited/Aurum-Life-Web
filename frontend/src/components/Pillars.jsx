@@ -81,8 +81,9 @@ const Pillars = () => {
     if (window.confirm(`Are you sure you want to delete "${pillarName}"? This will unlink all associated areas.`)) {
       try {
         await api.delete(`/pillars/${pillarId}`);
-        await fetchPillars();
-        onDataMutation?.();
+        // Trigger data refresh and invalidate cache
+        onDataMutation('pillar', 'delete', { id: pillarId, name: pillarName });
+        invalidatePillars(); // Refresh TanStack Query cache
       } catch (error) {
         console.error('Error deleting pillar:', error);
         alert(error.response?.data?.detail || 'Error deleting pillar');
