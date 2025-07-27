@@ -56,7 +56,7 @@ async def create_test_user_and_verify_auth():
         }
         
         try:
-            await supabase.table('users').insert(legacy_user_data).execute()
+            result = supabase.table('users').insert(legacy_user_data).execute()
             print(f"✅ Legacy user created: {test_email}")
         except Exception as e:
             print(f"❌ Failed to create legacy user: {e}")
