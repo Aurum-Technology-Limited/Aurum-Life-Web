@@ -45,7 +45,7 @@ app.conf.update(
 )
 
 # Import tasks to register them
-from . import scoring_engine  # noqa
+# Note: Import removed to avoid circular import - tasks will be discovered by Celery autodiscovery
 
 if __name__ == '__main__':
     app.start()
