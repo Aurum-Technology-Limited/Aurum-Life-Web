@@ -13,7 +13,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://5f4ced33-49f3-4c45-bbf9-6ee707327c0f.preview.emergentagent.com/api"
+BACKEND_URL = "https://38853866-8c42-43b3-ba54-ac4df0ec8d87.preview.emergentagent.com/api"
 
 class UnifiedProjectViewsTester:
     def __init__(self):
