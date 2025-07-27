@@ -29,6 +29,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
   const { notifications } = useNotification();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Navigation items
   const navigationItems = [
@@ -74,6 +75,20 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showUserMenu]);
+
+  // Close mobile sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarOpen && !event.target.closest('.sidebar-container') && !event.target.closest('.mobile-menu-button')) {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [sidebarOpen]);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D14' }}>
