@@ -35,16 +35,23 @@ class TanStackQueryBackendTestSuite:
         try:
             # Try to register user first (in case they don't exist)
             register_data = {
-                "username": "finaltest",
+                "username": "tanstacktest",
                 "email": self.test_user_email,
-                "first_name": "Final",
+                "first_name": "TanStack",
                 "last_name": "Test",
                 "password": self.test_user_password
             }
             
+            print(f"🔄 Attempting to register test user: {self.test_user_email}")
             async with self.session.post(f"{API_BASE}/auth/register", json=register_data) as response:
-                if response.status in [200, 400]:  # 400 if user already exists
-                    pass
+                if response.status == 200:
+                    print("✅ Test user registered successfully")
+                elif response.status == 400:
+                    print("ℹ️ Test user already exists")
+                else:
+                    print(f"⚠️ User registration returned: {response.status}")
+                    error_text = await response.text()
+                    print(f"Registration error: {error_text}")
                     
             # Login to get token
             login_data = {
