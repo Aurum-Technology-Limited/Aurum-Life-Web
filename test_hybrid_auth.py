@@ -31,7 +31,7 @@ async def create_test_user_and_verify_auth():
     print("🔐 Testing Hybrid Authentication System...")
     
     try:
-        supabase = get_supabase_client()
+        supabase = await get_supabase_client()
         
         # Step 1: Create a test user directly in the legacy system
         print("\n1️⃣ Creating test user in legacy system...")
