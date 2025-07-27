@@ -41,9 +41,10 @@ import FileAttachment from './FileAttachment';
 
 const Projects = ({ onSectionChange }) => {
   const { user } = useAuth();
-  const { areas, refreshAreas } = useDataContext();
+  const { refreshTrigger, onDataMutation } = useDataContext(); // Remove areas from destructuring
   const { addNotification } = useNotification();
   
+  const [areas, setAreas] = useState([]); // Add local areas state
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
