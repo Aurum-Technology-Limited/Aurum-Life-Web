@@ -489,9 +489,9 @@ async def get_pillars(
     include_archived: bool = Query(False, description="Include archived pillars"),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all pillars for user"""
+    """Get all pillars for user with optimized batch fetching - NO N+1 queries"""
     try:
-        return await PillarService.get_user_pillars(current_user.id, include_areas, include_archived)
+        return await OptimizedPillarService.get_user_pillars(current_user.id, include_areas, include_archived)
     except Exception as e:
         logger.error(f"Error getting pillars: {e}")
         raise HTTPException(status_code=500, detail=str(e))
