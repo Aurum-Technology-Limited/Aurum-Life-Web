@@ -100,21 +100,7 @@ async def google_auth(auth_request: GoogleAuthRequest):
         logger.error(f"Google auth error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@api_router.get("/auth/me", response_model=UserResponse)
-async def get_current_user_info(current_user: User = Depends(get_current_active_user)):
-    """Get current user information"""
-    return UserResponse(
-        id=current_user.id,
-        username=current_user.username,
-        email=current_user.email,
-        first_name=current_user.first_name,
-        last_name=current_user.last_name,
-        is_active=current_user.is_active,
-        level=current_user.level,
-        total_points=current_user.total_points,
-        current_streak=current_user.current_streak,
-        created_at=current_user.created_at
-    )
+# auth/me endpoint is now handled by auth_router to prevent conflicts
 
 @api_router.post("/auth/forgot-password", response_model=PasswordResetResponse)
 async def request_password_reset(reset_request: PasswordResetRequest):
