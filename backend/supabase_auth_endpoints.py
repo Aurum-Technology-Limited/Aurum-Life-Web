@@ -197,8 +197,16 @@ async def get_current_user_profile(request: Request):
             
             # Try legacy JWT token verification
             try:
-                from auth import verify_token as legacy_verify_token
-                current_user = await legacy_verify_token(token)
+                from auth import jwt, SECRET_KEY, ALGORITHM
+                from models import TokenData
+                
+                # Decode JWT token directly
+                payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+                user_id: str = payload.get("sub")
+                if user_id is None:
+                    raise HTTPException(status_code=401, detail="Could not validate credentials")
+                
+                current_user = user_id  # For legacy tokens, current_user is just the user_id
                 logger.info("✅ Verified legacy JWT token")
             except Exception as legacy_error:
                 logger.info(f"Legacy token verification failed: {legacy_error}")
