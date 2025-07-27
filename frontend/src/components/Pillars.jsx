@@ -39,26 +39,7 @@ const Pillars = () => {
   // Icon options for pillars - now handled by IconPicker component
   const colorOptions = ['#F4B400', '#4CAF50', '#2196F3', '#FF5722', '#9C27B0', '#FF9800', '#795548', '#607D8B'];
 
-  useEffect(() => {
-    fetchPillars();
-  }, []);
-
-  const fetchPillars = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/pillars', {
-        params: {
-          include_areas: true,  // FIXED: Enable to get accurate counts
-          include_archived: false
-        }
-      });
-      setPillars(response.data);
-    } catch (error) {
-      console.error('Error fetching pillars:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Remove old useEffect and fetchPillars - now handled by TanStack Query
 
   const handleSubmit = async (e) => {
     e.preventDefault();
