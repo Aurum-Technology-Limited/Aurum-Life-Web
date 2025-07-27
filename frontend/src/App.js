@@ -32,6 +32,23 @@ import ErrorBoundary from './components/ErrorBoundary';
 // Import performance test for debugging
 import './services/performanceTest';
 
+// Create TanStack Query client with optimized configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache time (renamed from cacheTime in v5)
+      retry: 1, // Only retry once on failure
+      refetchOnWindowFocus: false, // Don't refetch when window regains focus
+      refetchOnMount: true, // Refetch when component mounts
+      refetchOnReconnect: true, // Refetch when reconnecting to internet
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
+
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
