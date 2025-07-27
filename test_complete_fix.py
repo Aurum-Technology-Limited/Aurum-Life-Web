@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://f3436837-b2f7-41f6-8f79-d2f18535f691.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://96d1e46a-104c-40b9-ad66-9b32b08eac81.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def test_complete_fix():

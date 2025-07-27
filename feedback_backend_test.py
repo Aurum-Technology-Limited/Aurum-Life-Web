@@ -36,7 +36,7 @@ import time
 import re
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://f3436837-b2f7-41f6-8f79-d2f18535f691.preview.emergentagent.com/api"
+BACKEND_URL = "https://96d1e46a-104c-40b9-ad66-9b32b08eac81.preview.emergentagent.com/api"
 
 class FeedbackAPITester:
     def __init__(self):
