@@ -627,9 +627,9 @@ async def get_projects(
     include_archived: bool = Query(False, description="Include archived projects"),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all projects for user, optionally filtered by area"""
+    """Get all projects for user with optimized batch fetching - NO N+1 queries"""
     try:
-        return await ProjectService.get_user_projects(current_user.id, area_id, include_archived)
+        return await OptimizedProjectService.get_user_projects(current_user.id, area_id, include_archived)
     except Exception as e:
         logger.error(f"Error getting projects: {e}")
         raise HTTPException(status_code=500, detail=str(e))
