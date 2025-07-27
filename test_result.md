@@ -119,7 +119,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "FRONTEND NAVIGATION PERFORMANCE OPTIMIZATION - TanStack Query Implementation: Implement TanStack Query to resolve sluggish navigation caused by excessive data re-fetching and lack of caching strategy. Every screen transition currently triggers fresh API calls with no client-side caching, causing 2-5 second delays. Goal: Achieve <500ms navigation transitions with intelligent caching, request deduplication, and background refetching."
+user_problem_statement: "CRITICAL FOREIGN KEY CONSTRAINT ISSUE RESOLUTION: Resolve the foreign key constraint mismatch preventing users from creating new data (pillars, areas, projects, tasks). The issue stems from database tables referencing the legacy 'users' table while new users authenticate via Supabase Auth system. Goal: Enable all authenticated users to create and manage their data without foreign key constraint violations."
 
 backend:
   - task: "Comprehensive Final Verification - All Systems Must Work Perfectly"
