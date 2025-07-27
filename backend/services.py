@@ -1767,31 +1767,61 @@ class TaskService:
 
     @staticmethod
     async def get_available_tasks_for_today(user_id: str) -> List[TaskResponse]:
-        """Get tasks that can be added to today's view (simplified without daily_tasks table)"""
+        """Get tasks available to work on today (not scheduled, not completed, can start) - OPTIMIZED VERSION"""
         try:
-            # Get all tasks for the user
-            all_tasks = await find_documents("tasks", {"user_id": user_id})
+            current_date = datetime.utcnow().date()
             
-            if not all_tasks:
+            # Get all incomplete tasks for the user
+            incomplete_tasks = await find_documents("tasks", {
+                "user_id": user_id,
+                "completed": False,
+                "$or": [
+                    {"scheduled_date": None},
+                    {"scheduled_date": {"$lte": current_date}}
+                ]
+            })
+            
+            if not incomplete_tasks:
                 return []
             
-            # Filter incomplete tasks on the client side
-            incomplete_tasks = []
-            for task in all_tasks:
-                is_completed = task.get("completed", False)
-                if not is_completed:
-                    incomplete_tasks.append(task)
+            # OPTIMIZATION 1: Batch fetch all dependency tasks in one query
+            all_dependency_ids = set()
+            task_dependency_map = {}
             
-            # Sort by priority and due date
-            incomplete_tasks.sort(key=lambda x: (
-                0 if x.get("priority") == "high" else 1 if x.get("priority") == "medium" else 2,
-                x.get("due_date") or datetime.max.isoformat()
-            ))
+            for task in incomplete_tasks[:20]:  # Limit to 20 for performance
+                deps = task.get("dependency_task_ids", [])
+                if deps:
+                    all_dependency_ids.update(deps)
+                    task_dependency_map[task["id"]] = deps
             
-            # Build task responses (limit to 20)
+            # Batch fetch all dependencies in a single query
+            dependency_docs = {}
+            if all_dependency_ids:
+                dep_results = await find_documents("tasks", {"id": {"$in": list(all_dependency_ids)}})
+                dependency_docs = {doc["id"]: doc for doc in dep_results}
+            
+            # OPTIMIZATION 2: Batch fetch all subtasks in one query  
+            all_task_ids = [task["id"] for task in incomplete_tasks[:20]]
+            subtask_results = await find_documents("tasks", {"parent_task_id": {"$in": all_task_ids}})
+            
+            # Group subtasks by parent_task_id
+            subtasks_by_parent = {}
+            for subtask in subtask_results:
+                parent_id = subtask["parent_task_id"]
+                if parent_id not in subtasks_by_parent:
+                    subtasks_by_parent[parent_id] = []
+                subtasks_by_parent[parent_id].append(subtask)
+            
+            # Build task responses efficiently (limit to 20)
             tasks = []
             for doc in incomplete_tasks[:20]:
-                task = await TaskService._build_task_response(doc, include_subtasks=False)
+                task = await TaskService._build_task_response_optimized(
+                    doc, 
+                    dependency_docs=dependency_docs,
+                    subtasks_map=subtasks_by_parent,
+                    task_dependency_map=task_dependency_map,
+                    include_subtasks=False
+                )
                 tasks.append(task)
             
             return tasks
