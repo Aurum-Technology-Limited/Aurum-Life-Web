@@ -278,7 +278,7 @@ const Projects = ({ onSectionChange }) => {
       }
       
       await loadProjects();
-      await refreshAreas();
+      await loadAreas();
       resetForm();
       setShowCreateModal(false);
       setShowTemplateModal(false);
