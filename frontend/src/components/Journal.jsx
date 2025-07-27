@@ -434,35 +434,50 @@ const Journal = () => {
     setFilteredEntries(filtered);
   }, [entries, searchTerm, selectedMoodFilter, selectedTagFilter]);
 
-  const fetchEntries = async () => {
+  const fetchEntriesWithFallback = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
       const response = await journalAPI.getEntries();
-      setEntries(response.data);
+      setEntries(response.data || []);
+      console.log('✅ Journal entries loaded successfully');
     } catch (err) {
-      setError(handleApiError(err, 'Failed to load journal entries'));
-    } finally {
-      setLoading(false);
+      console.warn('⚠️ Journal entries endpoint not available:', err.message);
+      // Fallback to empty state
+      setEntries([]);
     }
   };
 
-  const fetchTemplates = async () => {
+  const fetchTemplatesWithFallback = async () => {
     try {
       const response = await journalAPI.getTemplates();
-      setTemplates(response.data);
+      setTemplates(response.data || []);
+      console.log('✅ Journal templates loaded successfully');
     } catch (err) {
-      console.error('Failed to load templates:', err);
+      console.warn('⚠️ Journal templates endpoint not available:', err.message);
+      // Fallback to default templates
+      setTemplates([
+        {
+          id: 'default-daily',
+          name: 'Daily Reflection',
+          prompts: ['How did today go?', 'What am I grateful for?', 'What could I improve tomorrow?']
+        },
+        {
+          id: 'default-weekly',
+          name: 'Weekly Review',
+          prompts: ['What were my biggest wins this week?', 'What challenges did I face?', 'What are my priorities for next week?']
+        }
+      ]);
     }
   };
 
-  const fetchInsights = async () => {
+  const fetchInsightsWithFallback = async () => {
     try {
       const response = await journalAPI.getInsights();
-      setInsights(response.data);
+      setInsights(response.data || null);
+      console.log('✅ Journal insights loaded successfully');
     } catch (err) {
-      console.error('Failed to load insights:', err);
+      console.warn('⚠️ Journal insights endpoint not available:', err.message);
+      // Fallback to null (insights section will be hidden)
+      setInsights(null);
     }
   };
 
