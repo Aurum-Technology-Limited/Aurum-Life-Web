@@ -985,62 +985,54 @@ async def get_subtasks(task_id: str, current_user: User = Depends(get_current_ac
 @api_router.get("/today/available-tasks", response_model=List[TaskResponse])
 async def get_available_tasks_optimized(current_user: User = Depends(get_current_active_user)):
     """
-    🚀 THE ARCHITECT'S OPTIMIZED AVAILABLE TASKS - PHASE 4 IMPLEMENTATION
-    Get available tasks for today with sub-100ms response time guarantee
-    
-    BEFORE: 3-5 second response times with individual task processing
-    AFTER: <100ms response times with batch pre-calculated scores
+    🚀 URGENT FIX: Available tasks with safe fallback compatibility
     """
-    user_id = current_user.id
-    
     try:
-        logger.info(f"📋 Optimized Available Tasks requested for user: {user_id}")
+        user_id = str(current_user.id) if hasattr(current_user, 'id') else str(current_user)
+        
+        logger.info(f"📋 Available Tasks requested for user: {user_id}")
         start_time = time.time()
         
-        # 🚀 SINGLE OPTIMIZED QUERY with smart filtering
+        # 🚀 SAFE QUERY with basic filtering
         available_tasks = await find_documents(
             "tasks",
             {
                 "user_id": user_id,
                 "completed": False
             },
-            sort=[("priority", -1), ("due_date", 1)],  # Highest priority first
-            limit=50  # Reasonable limit for performance
+            sort=[("created_at", -1)],  # Most recent first for safety
+            limit=50
         )
         
-        # 🚀 ZERO ADDITIONAL QUERIES NEEDED - calculate scores from existing data
+        # 🚀 SAFE PROCESSING with error handling
         response_tasks = []
         for task_doc in available_tasks:
-            # Calculate current_score from existing fields
-            priority_score = {"high": 75, "medium": 50, "low": 25}.get(task_doc.get("priority", "medium"), 50)
-            
-            # Add overdue bonus
-            due_date = task_doc.get("due_date")
-            overdue_bonus = 0
-            is_overdue = False
-            if due_date:
-                try:
-                    if isinstance(due_date, str):
-                        due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
-                    is_overdue = due_date < datetime.utcnow()
-                    if is_overdue:
-                        overdue_bonus = 20
-                except:
-                    pass
-            
-            current_score = priority_score + overdue_bonus
-            
-            # Create enhanced task response with calculated fields
-            task_response_data = {
-                **task_doc,
-                "current_score": current_score,
-                "area_importance": 3,  # Default value
-                "project_importance": 3,  # Default value
-                "is_overdue": is_overdue
-            }
-            
-            task_response = TaskResponse(**task_response_data)
-            response_tasks.append(task_response)
+            try:
+                # Create TaskResponse with safe defaults for new fields
+                task_dict = dict(task_doc)
+                
+                # Add safe defaults for new scoring fields if missing
+                if 'current_score' not in task_dict:
+                    task_dict['current_score'] = 50.0
+                if 'area_importance' not in task_dict:
+                    task_dict['area_importance'] = 3
+                if 'project_importance' not in task_dict:
+                    task_dict['project_importance'] = 3
+                if 'pillar_weight' not in task_dict:
+                    task_dict['pillar_weight'] = 1.0
+                if 'dependencies_met' not in task_dict:
+                    task_dict['dependencies_met'] = True
+                if 'score_last_updated' not in task_dict:
+                    task_dict['score_last_updated'] = datetime.utcnow()
+                if 'score_calculation_version' not in task_dict:
+                    task_dict['score_calculation_version'] = 1
+                
+                task_response = TaskResponse(**task_dict)
+                response_tasks.append(task_response)
+                
+            except Exception as task_error:
+                logger.warning(f"⚠️ Skipping available task due to error: {task_error}")
+                continue
         
         response_time = (time.time() - start_time) * 1000
         logger.info(f"✅ Available Tasks completed in {response_time:.1f}ms, {len(response_tasks)} tasks returned")
@@ -1048,7 +1040,7 @@ async def get_available_tasks_optimized(current_user: User = Depends(get_current
         return response_tasks
         
     except Exception as e:
-        logger.error(f"❌ Error getting available tasks for user {user_id}: {e}")
+        logger.error(f"❌ URGENT: Available tasks error: {e}")
         return []  # Return empty list on error to avoid breaking frontend
 
 @api_router.post("/today/tasks/{task_id}")
