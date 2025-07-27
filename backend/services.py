@@ -1289,7 +1289,25 @@ class ProjectService:
         update_data = {k: v for k, v in project_data.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
         
+        # 🚀 THE ARCHITECT'S EVENT TRIGGER: Check if importance is changing
+        old_importance = None
+        new_importance = update_data.get("importance")
+        
+        if new_importance is not None:
+            # Get current project to compare importance
+            current_project = await find_document("projects", {"id": project_id, "user_id": user_id})
+            if current_project:
+                old_importance = current_project.get("importance")
+        
         success = await update_document("projects", {"id": project_id, "user_id": user_id}, update_data)
+        
+        # 🚀 THE ARCHITECT'S EVENT TRIGGER: Recalculate all project task scores if importance changed
+        if success and new_importance is not None and old_importance != new_importance:
+            try:
+                recalculate_project_tasks.delay(project_id, new_importance)
+                logger.info(f"✅ Project task score recalculation triggered for project {project_id}, importance: {old_importance} → {new_importance}")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to trigger project task recalculation for project {project_id}: {e}")
         
         # Check if project was marked as completed and trigger achievement check
         if success and "status" in update_data:
