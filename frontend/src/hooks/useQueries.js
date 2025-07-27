@@ -52,7 +52,10 @@ export const useAreasQuery = (includeProjects = false, includeArchived = false) 
 export const usePillarsQuery = (includeSubPillars = true, includeAreas = false, includeArchived = false) => {
   return useQuery({
     queryKey: queryKeys.pillars(includeSubPillars, includeAreas, includeArchived),
-    queryFn: () => pillarsAPI.getPillars(includeSubPillars, includeAreas, includeArchived),
+    queryFn: async () => {
+      const response = await pillarsAPI.getPillars(includeSubPillars, includeAreas, includeArchived);
+      return response.data; // Extract data from axios response
+    },
     staleTime: 10 * 60 * 1000, // 10 minutes - pillars change infrequently
     gcTime: 20 * 60 * 1000, // 20 minutes cache
     meta: {
