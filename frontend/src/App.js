@@ -201,10 +201,10 @@ function App() {
             </DataProvider>
           </AuthProvider>
         </GoogleOAuthProvider>
-        {/* TanStack Query DevTools - only in development */}
-        {process.env.NODE_ENV === 'development' && (
+        {/* TanStack Query DevTools - temporarily disabled due to locale issue */}
+        {/* process.env.NODE_ENV === 'development' && (
           <ReactQueryDevtools initialIsOpen={false} />
-        )}
+        ) */}
       </QueryClientProvider>
     </ErrorBoundary>
   );
