@@ -2180,6 +2180,25 @@ class TaskService:
         success = await update_document("tasks", {"id": task_id, "user_id": user_id}, update_data)
         
         if success:
+            # 🚀 THE ARCHITECT'S EVENT TRIGGERS: Recalculate scores when scoring fields change
+            scoring_fields = {"priority", "due_date", "completed", "dependency_task_ids", "progress_percentage", "status"}
+            task_data_dict = task_data.dict() if hasattr(task_data, 'dict') else task_data
+            
+            if any(field in update_data for field in scoring_fields):
+                try:
+                    recalculate_task_score.delay(task_id)
+                    logger.info(f"✅ Score recalculation triggered for updated task: {task_id}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to trigger score recalculation for task {task_id}: {e}")
+                
+                # If task was completed, recalculate dependent tasks (they may be unblocked)
+                if update_data.get("completed") == True:
+                    try:
+                        recalculate_dependent_tasks.delay(task_id)
+                        logger.info(f"✅ Dependent task recalculation triggered for completed task: {task_id}")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Failed to trigger dependent task recalculation: {e}")
+            
             # Get the updated task to check for parent task completion logic
             updated_task = await find_document("tasks", {"id": task_id, "user_id": user_id})
             if updated_task:
