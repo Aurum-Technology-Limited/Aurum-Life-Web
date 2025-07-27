@@ -278,12 +278,12 @@ async def update_user(user_data: UserUpdate, current_user: User = Depends(get_cu
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "message": "User updated successfully"}
 
-# Dashboard endpoint
+# Dashboard endpoint - OPTIMIZED with Repository Pattern
 @api_router.get("/dashboard", response_model=UserDashboard)
 async def get_dashboard(current_user: User = Depends(get_current_active_user)):
-    """Get dashboard data for user"""
+    """Get dashboard data with optimized single batch operation - NO N+1 queries"""
     try:
-        return await StatsService.get_dashboard_data(current_user.id)
+        return await OptimizedStatsService.get_dashboard_data(current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
