@@ -31,13 +31,32 @@ import {
 
 const Areas = ({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
-  const [areas, setAreas] = useState([]);
-  const [pillars, setPillars] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editingArea, setEditingArea] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
+  
+  // Use TanStack Query for areas and pillars data
+  const { 
+    data: areas = [], 
+    isLoading: loading, 
+    error, 
+    isError,
+    refetch: refetchAreas 
+  } = useAreasQuery(true, showArchived); // Include projects, respect archived filter
+  
+  const { 
+    data: pillars = [], 
+    isLoading: pillarsLoading 
+  } = usePillarsQuery(false, false, false); // Don't include sub-pillars or areas
+  
+  // Performance logging
+  useEffect(() => {
+    if (loading) {
+      console.log('🗂️ Areas: TanStack Query - Loading areas data...');
+    } else if (areas.length >= 0) {
+      console.log(`🗂️ Areas: TanStack Query - ${areas.length} areas loaded from cache/network`);
+    }
+  }, [loading, areas.length]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
