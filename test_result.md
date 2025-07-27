@@ -2751,10 +2751,11 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Areas API Endpoint N+1 Query Optimization"
-  stuck_tasks:
-    - "Areas API Endpoint N+1 Query Optimization"
-  critical_issues:
+    - "Achievements Section 500 Error Fix"
+  stuck_tasks: []
+  critical_issues: []
+  test_all: false
+  test_priority: "high_first"
     - "N+1 Query Performance Regression - Lines 998-999 and 1049 in services.py"
   test_all: false
   test_priority: "critical_first"
