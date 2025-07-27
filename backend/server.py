@@ -981,14 +981,7 @@ async def get_available_tasks_optimized(current_user: User = Depends(get_current
             "tasks",
             {
                 "user_id": user_id,
-                "completed": False,
-                "current_score": {"$gte": 10},  # Only meaningful tasks (filter out low-value)
-                # Include tasks that are ready to work on
-                "$or": [
-                    {"scheduled_date": None},  # Not scheduled (can work anytime)
-                    {"scheduled_date": {"$lte": datetime.utcnow().date()}},  # Scheduled for today or past
-                    {"dependencies_met": True}  # Dependencies are cleared
-                ]
+                "completed": False
             },
             sort=[("current_score", -1), ("due_date", 1)],  # Highest priority first
             limit=50  # Reasonable limit for performance
