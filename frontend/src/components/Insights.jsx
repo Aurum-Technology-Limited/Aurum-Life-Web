@@ -70,10 +70,17 @@ const Insights = () => {
       try {
         const response = await insightsAPI.getInsights(selectedDateRange, selectedAreaId);
         console.log('📊 Insights: API response received:', response.data);
+        
+        // Check if this is a development status response
+        if (response.data && response.data.status === 'developing') {
+          console.log('📊 Insights: API is in development mode, using mock data');
+          throw new Error('Development mode - using mock data');
+        }
+        
         setInsightsData(response.data);
         console.log('📊 Insights data loaded successfully from API');
       } catch (apiError) {
-        console.warn('📊 Insights: API endpoint not available, generating mock insights data');
+        console.warn('📊 Insights: API endpoint not ready, generating comprehensive mock data');
         
         // Generate realistic mock data for demonstration
         const mockInsightsData = {
