@@ -13,10 +13,7 @@ const UserMenu = ({ user, onClose, onNavigate, onLogout }) => {
   };
 
   return (
-    <div className={`
-      absolute bottom-full mb-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-in slide-in-from-bottom-2 duration-200
-      ${isCollapsed ? 'right-0 w-64' : 'right-0 w-64'}
-    `}>
+    <div className="absolute bottom-full mb-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-in slide-in-from-bottom-2 duration-200 right-0 w-64">
       {/* User Info */}
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center gap-3">
