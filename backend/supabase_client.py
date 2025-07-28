@@ -142,10 +142,14 @@ class SupabaseManager:
         """Delete a document"""
         try:
             result = self.client.table(table_name).delete().eq('id', document_id).execute()
-            return len(result.data) > 0
+            # Supabase delete returns empty data on success, so we check if no error occurred
+            return True  # If no exception was raised, deletion was successful
         except Exception as e:
             logger.error(f"Delete failed for table {table_name}: {e}")
-            raise
+            # Check if it's a "not found" error vs actual failure
+            if "PGRST116" in str(e) or "no rows" in str(e).lower():
+                return False  # Document not found
+            raise  # Re-raise other exceptions
     
     async def count_documents(self, table_name: str, query: Dict[str, Any] = None) -> int:
         """Count documents matching query"""
