@@ -267,7 +267,28 @@ async def get_current_user_profile(request: Request):
         
         logger.info(f"Looking up user: {user_id}")
         
-        # First try to get user from legacy users table
+        # First try to get user from user_profiles table (which uses auth user IDs)
+        try:
+            user_profile = await supabase_manager.find_document("user_profiles", {"id": user_id})
+            
+            if user_profile:
+                logger.info("✅ Found user in user_profiles table")
+                return UserResponse(
+                    id=user_profile['id'],
+                    username=user_profile.get('username', ''),
+                    email='',  # We'll need to get this from auth or legacy table
+                    first_name=user_profile.get('first_name', ''),
+                    last_name=user_profile.get('last_name', ''),
+                    is_active=user_profile.get('is_active', True),
+                    level=user_profile.get('level', 1),
+                    total_points=user_profile.get('total_points', 0),
+                    current_streak=user_profile.get('current_streak', 0),
+                    created_at=user_profile.get('created_at', '2025-01-01T00:00:00')
+                )
+        except Exception as e:
+            logger.info(f"User_profiles lookup failed: {e}")
+        
+        # Fallback: try to get user from legacy users table  
         try:
             legacy_user = await supabase_manager.find_document("users", {"id": user_id})
             
