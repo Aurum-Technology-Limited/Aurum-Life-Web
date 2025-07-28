@@ -1132,7 +1132,7 @@ async def get_tasks(
         if project_id:
             query["project_id"] = project_id
             
-        tasks_docs = await find_documents("tasks", query, limit=50)
+        tasks_docs = await find_documents("tasks", query, limit=25)  # Reduced limit for speed
         
         # 🚀 STREAMLINED PROCESSING
         task_responses = []
