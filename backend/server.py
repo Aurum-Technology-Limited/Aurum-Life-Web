@@ -848,12 +848,19 @@ async def unarchive_pillar(pillar_id: str, current_user: User = Depends(get_curr
     return {"message": "Pillar unarchived successfully"}
 
 @api_router.delete("/pillars/{pillar_id}", response_model=dict)
-async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user)):
+async def delete_pillar(pillar_id: str, request: Request):
     """Delete a pillar and unlink associated areas"""
-    success = await PillarService.delete_pillar(current_user.id, pillar_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Pillar not found")
-    return {"success": True, "message": "Pillar deleted successfully"}
+    try:
+        current_user = await get_current_active_user_hybrid(request)
+        success = await PillarService.delete_pillar(current_user.id, pillar_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Pillar not found")
+        return {"success": True, "message": "Pillar deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting pillar: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Area endpoints
 @api_router.post("/areas", response_model=Area)
