@@ -193,7 +193,7 @@ function App() {
                       onSectionChange={handleSectionChange}
                     >
                       {renderActiveSection()}
-                    </Layout>
+                    </SimpleLayout>
                   </ProtectedRoute>
                   </div>
                 </DndProvider>
