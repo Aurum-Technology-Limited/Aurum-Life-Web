@@ -93,7 +93,33 @@ async def get_current_active_user_hybrid(request: Request) -> User:
         if not user_id:
             raise HTTPException(status_code=401, detail="Could not validate credentials")
         
-        # Get user data from legacy users table
+        # Get user data from user_profiles table (which uses auth user IDs)
+        try:
+            user_profile = await supabase_manager.find_document("user_profiles", {"id": user_id})
+            
+            if user_profile:
+                # Convert to User model using profile data
+                from models import User
+                return User(
+                    id=user_profile['id'],
+                    username=user_profile.get('username', ''),
+                    email='',  # Email not stored in user_profiles
+                    first_name=user_profile.get('first_name', ''),
+                    last_name=user_profile.get('last_name', ''),
+                    password_hash='',  # Not needed for auth user
+                    google_id='',
+                    profile_picture='',
+                    is_active=user_profile.get('is_active', True),
+                    level=user_profile.get('level', 1),
+                    total_points=user_profile.get('total_points', 0),
+                    current_streak=user_profile.get('current_streak', 0),
+                    created_at=user_profile.get('created_at'),
+                    updated_at=user_profile.get('updated_at')
+                )
+        except Exception as profile_lookup_error:
+            logger.info(f"User_profiles lookup failed: {profile_lookup_error}")
+            
+        # Fallback: try legacy users table
         try:
             legacy_user = await supabase_manager.find_document("users", {"id": user_id})
             
@@ -117,7 +143,7 @@ async def get_current_active_user_hybrid(request: Request) -> User:
                     updated_at=legacy_user.get('updated_at')
                 )
         except Exception as lookup_error:
-            logger.error(f"User lookup failed: {lookup_error}")
+            logger.error(f"Legacy user lookup failed: {lookup_error}")
         
         # User not found
         raise HTTPException(status_code=404, detail="User not found")
