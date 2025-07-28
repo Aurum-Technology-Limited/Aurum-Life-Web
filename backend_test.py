@@ -12,6 +12,544 @@ from typing import Dict, Any, List
 BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://19eedb9d-8356-46da-a868-07e1ec72a1d8.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
+class SupabaseCRUDTestSuite:
+    """Comprehensive CRUD testing for Supabase-only architecture with schema mapping fixes"""
+    
+    def __init__(self):
+        self.session = None
+        self.auth_token = None
+        self.test_user_email = "nav.test@aurumlife.com"
+        self.test_user_password = "testpassword"
+        self.test_results = []
+        self.created_resources = {
+            'pillars': [],
+            'areas': [],
+            'projects': [],
+            'tasks': []
+        }
+        
+    async def setup_session(self):
+        """Initialize HTTP session"""
+        self.session = aiohttp.ClientSession()
+        
+    async def cleanup_session(self):
+        """Clean up HTTP session"""
+        if self.session:
+            await self.session.close()
+            
+    async def authenticate(self):
+        """Authenticate with test credentials"""
+        try:
+            login_data = {
+                "email": self.test_user_email,
+                "password": self.test_user_password
+            }
+            
+            async with self.session.post(f"{API_BASE}/auth/login", json=login_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.auth_token = data["access_token"]
+                    print(f"✅ Authentication successful for {self.test_user_email}")
+                    return True
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Authentication failed: {response.status} - {error_text}")
+                    return False
+                    
+        except Exception as e:
+            print(f"❌ Authentication error: {e}")
+            return False
+            
+    def get_auth_headers(self):
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.auth_token}"}
+        
+    async def test_pillar_crud(self):
+        """Test 1: Pillar CRUD operations with schema mapping"""
+        print("\n🧪 Test 1: Pillar CRUD Operations with Schema Mapping")
+        
+        try:
+            # CREATE Pillar - Test field mapping (is_active → archived, time_allocation → time_allocation_percentage)
+            pillar_data = {
+                "name": "Health & Wellness",
+                "description": "Physical and mental health pillar",
+                "icon": "💪",
+                "color": "#10B981",
+                "time_allocation": 30.0  # Should map to time_allocation_percentage
+            }
+            
+            async with self.session.post(f"{API_BASE}/pillars", json=pillar_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    pillar = await response.json()
+                    self.created_resources['pillars'].append(pillar['id'])
+                    
+                    # Verify field mapping
+                    if pillar.get('time_allocation_percentage') == 30.0:
+                        print("✅ Pillar created successfully with proper field mapping")
+                        self.test_results.append({"test": "Pillar Creation", "status": "PASSED", "details": "Field mapping working correctly"})
+                    else:
+                        print("❌ Pillar field mapping failed")
+                        self.test_results.append({"test": "Pillar Creation", "status": "FAILED", "reason": "Field mapping incorrect"})
+                        return False
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Pillar creation failed: {response.status} - {error_text}")
+                    self.test_results.append({"test": "Pillar Creation", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+            # READ Pillars - Test data retrieval
+            async with self.session.get(f"{API_BASE}/pillars", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    pillars = await response.json()
+                    if len(pillars) > 0 and any(p['id'] == self.created_resources['pillars'][0] for p in pillars):
+                        print("✅ Pillar retrieval successful")
+                        return pillar['id']  # Return pillar ID for area creation
+                    else:
+                        print("❌ Created pillar not found in retrieval")
+                        self.test_results.append({"test": "Pillar Retrieval", "status": "FAILED", "reason": "Created pillar not found"})
+                        return False
+                else:
+                    print(f"❌ Pillar retrieval failed: {response.status}")
+                    self.test_results.append({"test": "Pillar Retrieval", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+        except Exception as e:
+            print(f"❌ Pillar CRUD test failed: {e}")
+            self.test_results.append({"test": "Pillar CRUD", "status": "FAILED", "reason": str(e)})
+            return False
+            
+    async def test_area_crud(self, pillar_id: str):
+        """Test 2: Area CRUD operations with schema mapping"""
+        print("\n🧪 Test 2: Area CRUD Operations with Schema Mapping")
+        
+        try:
+            # CREATE Area - Test field mapping (is_active → archived, importance field)
+            area_data = {
+                "pillar_id": pillar_id,
+                "name": "Fitness & Exercise",
+                "description": "Physical fitness and exercise routines",
+                "icon": "🏃",
+                "color": "#F59E0B",
+                "importance": 4  # Should map to existing importance field
+            }
+            
+            async with self.session.post(f"{API_BASE}/areas", json=area_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    area = await response.json()
+                    self.created_resources['areas'].append(area['id'])
+                    
+                    # Verify field mapping
+                    if area.get('importance') == 4 and area.get('pillar_id') == pillar_id:
+                        print("✅ Area created successfully with proper field mapping")
+                        self.test_results.append({"test": "Area Creation", "status": "PASSED", "details": "Field mapping and pillar linking working"})
+                    else:
+                        print("❌ Area field mapping or pillar linking failed")
+                        self.test_results.append({"test": "Area Creation", "status": "FAILED", "reason": "Field mapping or linking incorrect"})
+                        return False
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Area creation failed: {response.status} - {error_text}")
+                    self.test_results.append({"test": "Area Creation", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+            # READ Areas - Test data retrieval with pillar relationship
+            async with self.session.get(f"{API_BASE}/areas?include_projects=true", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    areas = await response.json()
+                    created_area = next((a for a in areas if a['id'] == self.created_resources['areas'][0]), None)
+                    if created_area and created_area.get('pillar_id') == pillar_id:
+                        print("✅ Area retrieval successful with pillar relationship")
+                        return area['id']  # Return area ID for project creation
+                    else:
+                        print("❌ Created area not found or pillar relationship missing")
+                        self.test_results.append({"test": "Area Retrieval", "status": "FAILED", "reason": "Area not found or relationship missing"})
+                        return False
+                else:
+                    print(f"❌ Area retrieval failed: {response.status}")
+                    self.test_results.append({"test": "Area Retrieval", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+        except Exception as e:
+            print(f"❌ Area CRUD test failed: {e}")
+            self.test_results.append({"test": "Area CRUD", "status": "FAILED", "reason": str(e)})
+            return False
+            
+    async def test_project_crud(self, area_id: str):
+        """Test 3: Project CRUD operations with enum mapping"""
+        print("\n🧪 Test 3: Project CRUD Operations with Enum Mapping")
+        
+        try:
+            # CREATE Project - Test enum mapping (backend: not_started → database: Not Started)
+            project_data = {
+                "area_id": area_id,
+                "name": "Morning Workout Routine",
+                "description": "Daily morning exercise routine",
+                "icon": "🏋️",
+                "status": "not_started",  # Should map to "Not Started"
+                "priority": "high",       # Should map to "High"
+                "due_date": "2025-02-15T10:00:00Z"  # Should map to deadline
+            }
+            
+            async with self.session.post(f"{API_BASE}/projects", json=project_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    project = await response.json()
+                    self.created_resources['projects'].append(project['id'])
+                    
+                    # Verify enum mapping
+                    if (project.get('status') == 'not_started' and 
+                        project.get('priority') == 'high' and 
+                        project.get('area_id') == area_id):
+                        print("✅ Project created successfully with proper enum mapping")
+                        self.test_results.append({"test": "Project Creation", "status": "PASSED", "details": "Enum mapping and area linking working"})
+                    else:
+                        print("❌ Project enum mapping or area linking failed")
+                        print(f"Status: {project.get('status')}, Priority: {project.get('priority')}, Area ID: {project.get('area_id')}")
+                        self.test_results.append({"test": "Project Creation", "status": "FAILED", "reason": "Enum mapping or linking incorrect"})
+                        return False
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Project creation failed: {response.status} - {error_text}")
+                    self.test_results.append({"test": "Project Creation", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+            # READ Projects - Test data retrieval with area relationship
+            async with self.session.get(f"{API_BASE}/projects?include_tasks=true", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    projects = await response.json()
+                    created_project = next((p for p in projects if p['id'] == self.created_resources['projects'][0]), None)
+                    if created_project and created_project.get('area_id') == area_id:
+                        print("✅ Project retrieval successful with area relationship")
+                        return project['id']  # Return project ID for task creation
+                    else:
+                        print("❌ Created project not found or area relationship missing")
+                        self.test_results.append({"test": "Project Retrieval", "status": "FAILED", "reason": "Project not found or relationship missing"})
+                        return False
+                else:
+                    print(f"❌ Project retrieval failed: {response.status}")
+                    self.test_results.append({"test": "Project Retrieval", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+        except Exception as e:
+            print(f"❌ Project CRUD test failed: {e}")
+            self.test_results.append({"test": "Project CRUD", "status": "FAILED", "reason": str(e)})
+            return False
+            
+    async def test_task_crud(self, project_id: str):
+        """Test 4: Task CRUD operations with status/priority mapping"""
+        print("\n🧪 Test 4: Task CRUD Operations with Status/Priority Mapping")
+        
+        try:
+            # CREATE Task - Test status/priority mapping (backend: pending → database: todo, medium → Medium)
+            task_data = {
+                "project_id": project_id,
+                "name": "30-minute cardio session",
+                "description": "High-intensity cardio workout",
+                "status": "pending",    # Should map to "todo"
+                "priority": "medium",   # Should map to "Medium"
+                "due_date": "2025-01-30T07:00:00Z"
+            }
+            
+            async with self.session.post(f"{API_BASE}/tasks", json=task_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    task = await response.json()
+                    self.created_resources['tasks'].append(task['id'])
+                    
+                    # Verify status/priority mapping
+                    if (task.get('status') == 'pending' and 
+                        task.get('priority') == 'medium' and 
+                        task.get('project_id') == project_id):
+                        print("✅ Task created successfully with proper status/priority mapping")
+                        self.test_results.append({"test": "Task Creation", "status": "PASSED", "details": "Status/priority mapping and project linking working"})
+                    else:
+                        print("❌ Task status/priority mapping or project linking failed")
+                        print(f"Status: {task.get('status')}, Priority: {task.get('priority')}, Project ID: {task.get('project_id')}")
+                        self.test_results.append({"test": "Task Creation", "status": "FAILED", "reason": "Status/priority mapping or linking incorrect"})
+                        return False
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Task creation failed: {response.status} - {error_text}")
+                    self.test_results.append({"test": "Task Creation", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+            # READ Tasks - Test data retrieval with project relationship
+            async with self.session.get(f"{API_BASE}/tasks?project_id={project_id}", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    tasks = await response.json()
+                    created_task = next((t for t in tasks if t['id'] == self.created_resources['tasks'][0]), None)
+                    if created_task and created_task.get('project_id') == project_id:
+                        print("✅ Task retrieval successful with project relationship")
+                        return True
+                    else:
+                        print("❌ Created task not found or project relationship missing")
+                        self.test_results.append({"test": "Task Retrieval", "status": "FAILED", "reason": "Task not found or relationship missing"})
+                        return False
+                else:
+                    print(f"❌ Task retrieval failed: {response.status}")
+                    self.test_results.append({"test": "Task Retrieval", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+        except Exception as e:
+            print(f"❌ Task CRUD test failed: {e}")
+            self.test_results.append({"test": "Task CRUD", "status": "FAILED", "reason": str(e)})
+            return False
+            
+    async def test_update_operations(self):
+        """Test 5: Update operations across all entities"""
+        print("\n🧪 Test 5: Update Operations")
+        
+        try:
+            success_count = 0
+            
+            # Update Pillar
+            if self.created_resources['pillars']:
+                pillar_id = self.created_resources['pillars'][0]
+                update_data = {"name": "Health & Wellness (Updated)", "time_allocation": 35.0}
+                
+                async with self.session.put(f"{API_BASE}/pillars/{pillar_id}", json=update_data, headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print("✅ Pillar update successful")
+                        success_count += 1
+                    else:
+                        print(f"❌ Pillar update failed: {response.status}")
+                        
+            # Update Area
+            if self.created_resources['areas']:
+                area_id = self.created_resources['areas'][0]
+                update_data = {"name": "Fitness & Exercise (Updated)", "importance": 5}
+                
+                async with self.session.put(f"{API_BASE}/areas/{area_id}", json=update_data, headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print("✅ Area update successful")
+                        success_count += 1
+                    else:
+                        print(f"❌ Area update failed: {response.status}")
+                        
+            # Update Project
+            if self.created_resources['projects']:
+                project_id = self.created_resources['projects'][0]
+                update_data = {"name": "Morning Workout Routine (Updated)", "status": "in_progress"}
+                
+                async with self.session.put(f"{API_BASE}/projects/{project_id}", json=update_data, headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print("✅ Project update successful")
+                        success_count += 1
+                    else:
+                        print(f"❌ Project update failed: {response.status}")
+                        
+            # Update Task
+            if self.created_resources['tasks']:
+                task_id = self.created_resources['tasks'][0]
+                update_data = {"name": "30-minute cardio session (Updated)", "status": "in_progress"}
+                
+                async with self.session.put(f"{API_BASE}/tasks/{task_id}", json=update_data, headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print("✅ Task update successful")
+                        success_count += 1
+                    else:
+                        print(f"❌ Task update failed: {response.status}")
+                        
+            if success_count == 4:
+                self.test_results.append({"test": "Update Operations", "status": "PASSED", "details": "All entity updates successful"})
+                return True
+            else:
+                self.test_results.append({"test": "Update Operations", "status": "FAILED", "reason": f"Only {success_count}/4 updates successful"})
+                return False
+                
+        except Exception as e:
+            print(f"❌ Update operations test failed: {e}")
+            self.test_results.append({"test": "Update Operations", "status": "FAILED", "reason": str(e)})
+            return False
+            
+    async def test_dashboard_endpoint(self):
+        """Test 6: Dashboard endpoint functionality"""
+        print("\n🧪 Test 6: Dashboard Endpoint")
+        
+        try:
+            async with self.session.get(f"{API_BASE}/dashboard", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    dashboard_data = await response.json()
+                    
+                    # Verify dashboard structure
+                    required_fields = ['user', 'stats', 'recent_tasks']
+                    if all(field in dashboard_data for field in required_fields):
+                        print("✅ Dashboard endpoint successful with proper structure")
+                        self.test_results.append({"test": "Dashboard Endpoint", "status": "PASSED", "details": "Dashboard data structure correct"})
+                        return True
+                    else:
+                        print("❌ Dashboard data structure incomplete")
+                        self.test_results.append({"test": "Dashboard Endpoint", "status": "FAILED", "reason": "Missing required fields"})
+                        return False
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Dashboard endpoint failed: {response.status} - {error_text}")
+                    self.test_results.append({"test": "Dashboard Endpoint", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+        except Exception as e:
+            print(f"❌ Dashboard endpoint test failed: {e}")
+            self.test_results.append({"test": "Dashboard Endpoint", "status": "FAILED", "reason": str(e)})
+            return False
+            
+    async def test_today_view_endpoint(self):
+        """Test 7: Today view endpoint functionality"""
+        print("\n🧪 Test 7: Today View Endpoint")
+        
+        try:
+            async with self.session.get(f"{API_BASE}/today", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    today_data = await response.json()
+                    
+                    # Verify today view structure
+                    required_fields = ['tasks', 'priorities', 'recommendations']
+                    if all(field in today_data for field in required_fields):
+                        print("✅ Today view endpoint successful with proper structure")
+                        self.test_results.append({"test": "Today View Endpoint", "status": "PASSED", "details": "Today view data structure correct"})
+                        return True
+                    else:
+                        print("❌ Today view data structure incomplete")
+                        self.test_results.append({"test": "Today View Endpoint", "status": "FAILED", "reason": "Missing required fields"})
+                        return False
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Today view endpoint failed: {response.status} - {error_text}")
+                    self.test_results.append({"test": "Today View Endpoint", "status": "FAILED", "reason": f"HTTP {response.status}"})
+                    return False
+                    
+        except Exception as e:
+            print(f"❌ Today view endpoint test failed: {e}")
+            self.test_results.append({"test": "Today View Endpoint", "status": "FAILED", "reason": str(e)})
+            return False
+            
+    async def cleanup_test_data(self):
+        """Clean up created test data"""
+        print("\n🧹 Cleaning up test data...")
+        
+        try:
+            # Delete in reverse order (tasks → projects → areas → pillars)
+            for task_id in self.created_resources['tasks']:
+                async with self.session.delete(f"{API_BASE}/tasks/{task_id}", headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print(f"✅ Deleted task {task_id}")
+                    else:
+                        print(f"⚠️ Failed to delete task {task_id}: {response.status}")
+                        
+            for project_id in self.created_resources['projects']:
+                async with self.session.delete(f"{API_BASE}/projects/{project_id}", headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print(f"✅ Deleted project {project_id}")
+                    else:
+                        print(f"⚠️ Failed to delete project {project_id}: {response.status}")
+                        
+            for area_id in self.created_resources['areas']:
+                async with self.session.delete(f"{API_BASE}/areas/{area_id}", headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print(f"✅ Deleted area {area_id}")
+                    else:
+                        print(f"⚠️ Failed to delete area {area_id}: {response.status}")
+                        
+            for pillar_id in self.created_resources['pillars']:
+                async with self.session.delete(f"{API_BASE}/pillars/{pillar_id}", headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print(f"✅ Deleted pillar {pillar_id}")
+                    else:
+                        print(f"⚠️ Failed to delete pillar {pillar_id}: {response.status}")
+                        
+        except Exception as e:
+            print(f"⚠️ Cleanup error: {e}")
+            
+    def print_test_summary(self):
+        """Print comprehensive test summary"""
+        print("\n" + "="*80)
+        print("🎯 SUPABASE-ONLY CRUD OPERATIONS - SCHEMA MAPPING TEST SUMMARY")
+        print("="*80)
+        
+        passed = len([t for t in self.test_results if t["status"] == "PASSED"])
+        failed = len([t for t in self.test_results if t["status"] == "FAILED"])
+        total = len(self.test_results)
+        
+        print(f"📊 OVERALL RESULTS: {passed}/{total} tests passed")
+        print(f"✅ Passed: {passed}")
+        print(f"❌ Failed: {failed}")
+        
+        success_rate = (passed / total * 100) if total > 0 else 0
+        print(f"🎯 Success Rate: {success_rate:.1f}%")
+        
+        print("\n📋 DETAILED RESULTS:")
+        for i, result in enumerate(self.test_results, 1):
+            status_icon = {"PASSED": "✅", "FAILED": "❌"}
+            icon = status_icon.get(result["status"], "❓")
+            print(f"{i:2d}. {icon} {result['test']}: {result['status']}")
+            
+            if "details" in result:
+                print(f"    📝 {result['details']}")
+            if "reason" in result:
+                print(f"    💬 {result['reason']}")
+                
+        print("\n" + "="*80)
+        
+        # Determine overall system status
+        if success_rate == 100:
+            print("🎉 SUPABASE-ONLY ARCHITECTURE IS PRODUCTION-READY!")
+            print("✅ All schema mapping fixes working correctly")
+            print("✅ Complete CRUD hierarchy functional")
+        elif success_rate >= 85:
+            print("⚠️ SUPABASE-ONLY ARCHITECTURE IS MOSTLY FUNCTIONAL - MINOR ISSUES DETECTED")
+        else:
+            print("❌ SUPABASE-ONLY ARCHITECTURE HAS SIGNIFICANT ISSUES - NEEDS ATTENTION")
+            
+        print("="*80)
+        
+    async def run_comprehensive_crud_test(self):
+        """Run comprehensive CRUD test suite"""
+        print("🚀 Starting Supabase-Only CRUD Operations Testing...")
+        print(f"🔗 Backend URL: {BACKEND_URL}")
+        print("📋 Testing complete hierarchy: Pillar → Area → Project → Task")
+        
+        await self.setup_session()
+        
+        try:
+            # Authentication
+            if not await self.authenticate():
+                print("❌ Authentication failed - cannot proceed with tests")
+                return
+                
+            # Test complete CRUD hierarchy
+            pillar_id = await self.test_pillar_crud()
+            if not pillar_id:
+                print("❌ Pillar CRUD failed - stopping hierarchy test")
+                return
+                
+            area_id = await self.test_area_crud(pillar_id)
+            if not area_id:
+                print("❌ Area CRUD failed - stopping hierarchy test")
+                return
+                
+            project_id = await self.test_project_crud(area_id)
+            if not project_id:
+                print("❌ Project CRUD failed - stopping hierarchy test")
+                return
+                
+            task_success = await self.test_task_crud(project_id)
+            if not task_success:
+                print("❌ Task CRUD failed")
+                return
+                
+            # Test update operations
+            await self.test_update_operations()
+            
+            # Test additional endpoints
+            await self.test_dashboard_endpoint()
+            await self.test_today_view_endpoint()
+            
+            # Cleanup
+            await self.cleanup_test_data()
+            
+        finally:
+            await self.cleanup_session()
+            
+        # Print summary
+        self.print_test_summary()
+
 class ContextualFileAttachmentsTestSuite:
     def __init__(self):
         self.session = None
