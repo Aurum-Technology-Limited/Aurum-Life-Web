@@ -440,8 +440,6 @@ class SupabaseProjectService:
                 update_dict['name'] = project_data.name
             if project_data.description is not None:
                 update_dict['description'] = project_data.description
-            if project_data.area_id is not None:
-                update_dict['area_id'] = project_data.area_id
             if project_data.status is not None:
                 # Map backend status to database status
                 status_mapping = {
@@ -454,14 +452,12 @@ class SupabaseProjectService:
             if project_data.priority is not None:
                 # Keep priority as is (database uses lowercase)
                 update_dict['priority'] = project_data.priority
-            if project_data.color is not None:
+            if hasattr(project_data, 'color') and project_data.color is not None:
                 update_dict['color'] = project_data.color
             if project_data.icon is not None:
                 update_dict['icon'] = project_data.icon
-            if getattr(project_data, 'due_date', None) is not None:
-                update_dict['deadline'] = project_data.due_date.isoformat() if project_data.due_date else None
-            if getattr(project_data, 'is_active', None) is not None:
-                update_dict['archived'] = not project_data.is_active  # Map is_active to archived (inverted)
+            if project_data.deadline is not None:
+                update_dict['deadline'] = project_data.deadline.isoformat() if project_data.deadline else None
                 
             response = supabase.table('projects').update(update_dict).eq('id', project_id).eq('user_id', user_id).execute()
             
