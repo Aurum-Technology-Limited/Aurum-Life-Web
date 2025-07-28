@@ -173,15 +173,11 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
                       ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-medium shadow-lg transform scale-105' 
                       : 'text-gray-400 hover:text-white hover:bg-gray-800/50 hover:transform hover:scale-102'
                     }
-                    ${sidebarCollapsed ? 'justify-center' : ''}
                   `}
-                  title={sidebarCollapsed ? item.label : ''}
                 >
                   <Icon className={`h-5 w-5 ${isActive ? 'text-gray-900' : 'text-gray-400 group-hover:text-white'} transition-colors`} />
-                  {!sidebarCollapsed && (
-                    <span className="truncate">{item.label}</span>
-                  )}
-                  {isActive && !sidebarCollapsed && (
+                  <span className="truncate">{item.label}</span>
+                  {isActive && (
                     <div className="ml-auto w-2 h-2 bg-gray-900 rounded-full"></div>
                   )}
                 </button>
