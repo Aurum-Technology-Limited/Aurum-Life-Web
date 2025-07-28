@@ -474,10 +474,10 @@ class SupabaseTaskService:
         try:
             # Map backend status to database status  
             status_mapping = {
-                'pending': 'todo',
+                'todo': 'todo',
                 'in_progress': 'in_progress',
                 'completed': 'completed',
-                'cancelled': 'cancelled'
+                'review': 'review'
             }
             
             priority_mapping = {
