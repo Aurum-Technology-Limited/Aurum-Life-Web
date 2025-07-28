@@ -2821,9 +2821,12 @@ class PillarService:
             raise ValueError("User ID cannot be empty")
             
         try:
-            # First, unlink all areas from this pillar
+            # First, unlink all areas from this pillar using bulk update
             logger.info(f"🔗 Unlinking areas for pillar {pillar_id}")
-            await update_document("areas", {"pillar_id": pillar_id, "user_id": user_id}, {"pillar_id": None})
+            from supabase_client import bulk_update_documents
+            
+            # Use bulk update to unlink areas - this will update all areas with this pillar_id
+            await bulk_update_documents("areas", {"pillar_id": pillar_id, "user_id": user_id}, {"pillar_id": None})
             
             # Delete the pillar itself
             logger.info(f"🗑️ Deleting pillar document: {pillar_id}")
