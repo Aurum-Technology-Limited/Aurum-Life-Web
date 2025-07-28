@@ -116,6 +116,26 @@ async def register_user(user_data: UserCreate):
         logger.error(f"Registration error: {e}")
         raise HTTPException(status_code=400, detail="Registration failed")
 
+async def get_supabase_auth_user_id(email: str) -> Optional[str]:
+    """Get Supabase Auth user ID by email"""
+    try:
+        from supabase_client import supabase_manager
+        supabase = supabase_manager.get_client()
+        
+        # List all auth users and find by email
+        auth_users = supabase.auth.admin.list_users()
+        for user in auth_users:
+            if hasattr(user, 'email') and user.email == email:
+                logger.info(f"Found Supabase Auth user ID for {email}: {user.id}")
+                return user.id
+        
+        logger.warning(f"No Supabase Auth user found for email: {email}")
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error getting Supabase Auth user ID: {e}")
+        return None
+
 @auth_router.post("/login")
 async def login_user(user_credentials: UserLogin):
     """Login user - hybrid approach for development"""
