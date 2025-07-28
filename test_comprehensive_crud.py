@@ -209,7 +209,7 @@ class ComprehensiveCRUDTest:
         # CREATE Task
         print("1️⃣ Testing Task Creation...")
         task_data = {
-            "name": "CRUD Test Task",
+            "title": "CRUD Test Task",
             "description": "Testing task CRUD operations",
             "project_id": self.test_data['project_id'],
             "priority": "medium",
