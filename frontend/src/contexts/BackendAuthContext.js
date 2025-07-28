@@ -167,7 +167,7 @@ export const AuthProvider = ({ children }) => {
       // Optional: Call backend logout endpoint if it exists
       if (token) {
         try {
-          await fetch(`${BACKEND_URL}/auth/logout`, {
+          await fetch(`${BACKEND_URL}/api/auth/logout`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,
