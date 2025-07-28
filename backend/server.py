@@ -2337,15 +2337,6 @@ This feedback was submitted through the Aurum Life application.
 app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Startup and shutdown events
 @app.on_event("startup")
 async def startup_db_client():
