@@ -297,7 +297,7 @@ async def update_task(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.delete("/tasks/{task_id}")
-async def delete_task(task_id: str, current_user: User = Depends(get_current_active_user)):
+async def delete_task(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     """Delete a task"""
     try:
         success = await SupabaseTaskService.delete_task(task_id, str(current_user.id))
