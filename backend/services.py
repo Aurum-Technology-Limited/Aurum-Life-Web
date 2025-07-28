@@ -1682,9 +1682,8 @@ class TaskService:
             task.kanban_column = "to_do"
         
         task_dict = task.dict()
-        # Fix None values for UUID fields - convert to None instead of string "None"
-        if task_dict.get("parent_task_id") == "None" or task_dict.get("parent_task_id") is None:
-            task_dict["parent_task_id"] = None
+        # Fix None values for UUID fields - remove None values to let database handle defaults
+        task_dict = {k: v for k, v in task_dict.items() if v is not None and v != "None"}
         await create_document("tasks", task_dict)
         
         # 🚀 THE ARCHITECT'S EVENT TRIGGER: Calculate initial score for new task
