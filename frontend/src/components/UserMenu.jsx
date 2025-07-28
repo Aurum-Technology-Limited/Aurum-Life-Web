@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/BackendAuthContext';
 import { UserIcon, CogIcon, LogoutIcon } from '@heroicons/react/outline';
 
 const UserMenu = () => {
