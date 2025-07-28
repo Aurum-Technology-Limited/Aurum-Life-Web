@@ -736,9 +736,14 @@ async def get_pillars(
         # 🚀 SIMPLE FAST QUERY: Get pillars only
         query = {"user_id": user_id}
         if not include_archived:
-            query["archived"] = {"$ne": True}
+            # Use proper Supabase query - get all pillars and filter archived in Python
+            pass  # We'll filter archived pillars after fetching
             
         pillars_docs = await find_documents("pillars", query, limit=20)  # Further reduced
+        
+        # Filter archived pillars if needed
+        if not include_archived:
+            pillars_docs = [pillar for pillar in pillars_docs if not pillar.get('archived', False)]
         
         # 🚀 STREAMLINED PROCESSING
         pillar_responses = []
