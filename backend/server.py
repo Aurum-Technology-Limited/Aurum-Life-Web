@@ -1282,9 +1282,10 @@ async def get_task(task_id: str, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/tasks/{task_id}", response_model=dict)
-async def update_task(task_id: str, task_data: TaskUpdate, current_user: User = Depends(get_current_active_user)):
+async def update_task(task_id: str, task_data: TaskUpdate, request: Request):
     """Update a task"""
     try:
+        current_user = await get_current_active_user_hybrid(request)
         success = await TaskService.update_task(current_user.id, task_id, task_data)
         if not success:
             raise HTTPException(status_code=404, detail="Task not found")
@@ -1294,7 +1295,7 @@ async def update_task(task_id: str, task_data: TaskUpdate, current_user: User = 
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error updating task {task_id}: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/tasks/{task_id}", response_model=dict)
 async def delete_task(task_id: str, request: Request):
