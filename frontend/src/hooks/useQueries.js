@@ -56,8 +56,8 @@ export const usePillarsQuery = (includeSubPillars = true, includeAreas = false, 
       const response = await pillarsAPI.getPillars(includeSubPillars, includeAreas, includeArchived);
       return response.data; // Extract data from axios response
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes - pillars change infrequently
-    gcTime: 20 * 60 * 1000, // 20 minutes cache
+    staleTime: 30 * 1000, // 30 seconds - more responsive updates
+    gcTime: 5 * 60 * 1000, // 5 minutes cache
     meta: {
       description: `Pillars data - includeSubPillars: ${includeSubPillars}, includeAreas: ${includeAreas}`
     }
