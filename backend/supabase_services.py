@@ -308,28 +308,14 @@ class SupabaseProjectService:
     async def create_project(user_id: str, project_data: ProjectCreate) -> Dict[str, Any]:
         """Create a new project"""
         try:
-            # Map backend status to database status
-            status_mapping = {
-                'not_started': 'Not Started',
-                'in_progress': 'In Progress', 
-                'completed': 'Completed',
-                'on_hold': 'On Hold'
-            }
-            
-            priority_mapping = {
-                'low': 'Low',
-                'medium': 'Medium',
-                'high': 'High'
-            }
-            
             project_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
                 'area_id': project_data.area_id,
                 'name': project_data.name,
                 'description': project_data.description or '',
-                'status': status_mapping.get(project_data.status or 'not_started', 'Not Started'),
-                'priority': priority_mapping.get(project_data.priority or 'medium', 'Medium'),
+                'status': project_data.status or 'Not Started',  # Use enum value directly
+                'priority': project_data.priority or 'medium',   # Use enum value directly
                 'color': project_data.color or '#F59E0B',
                 'icon': project_data.icon or 'FolderOpen',
                 'deadline': project_data.deadline.isoformat() if project_data.deadline else None,
