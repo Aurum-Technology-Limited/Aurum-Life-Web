@@ -158,7 +158,7 @@ export const useInvalidateQueries = () => {
   return {
     invalidateDashboard: () => queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }),
     invalidateAreas: () => queryClient.invalidateQueries({ queryKey: ['areas'] }),
-    invalidatePillars: () => queryClient.invalidateQueries({ queryKey: ['pillars'] }),
+    invalidatePillars: () => queryClient.invalidateQueries({ queryKey: ['pillars'] }), // This will match all pillar queries
     invalidateProjects: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
     invalidateTasks: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
     invalidateInsights: () => queryClient.invalidateQueries({ queryKey: ['insights'] }),
