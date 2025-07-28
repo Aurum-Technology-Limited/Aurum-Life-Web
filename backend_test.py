@@ -304,7 +304,7 @@ class SupabaseCRUDTestSuite:
             # Update Pillar
             if self.created_resources['pillars']:
                 pillar_id = self.created_resources['pillars'][0]
-                update_data = {"name": "Health & Wellness (Updated)", "time_allocation": 35.0}
+                update_data = {"name": "Health & Wellness (Updated)", "time_allocation_percentage": 35.0}
                 
                 async with self.session.put(f"{API_BASE}/pillars/{pillar_id}", json=update_data, headers=self.get_auth_headers()) as response:
                     if response.status == 200:
