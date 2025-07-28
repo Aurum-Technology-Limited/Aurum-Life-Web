@@ -472,6 +472,20 @@ class SupabaseTaskService:
     async def create_task(user_id: str, task_data: TaskCreate) -> Dict[str, Any]:
         """Create a new task"""
         try:
+            # Map backend status to database status  
+            status_mapping = {
+                'pending': 'todo',
+                'in_progress': 'in_progress',
+                'completed': 'completed',
+                'cancelled': 'cancelled'
+            }
+            
+            priority_mapping = {
+                'low': 'Low',
+                'medium': 'Medium',
+                'high': 'High'
+            }
+            
             task_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
@@ -479,16 +493,16 @@ class SupabaseTaskService:
                 'parent_task_id': task_data.parent_task_id,
                 'name': task_data.name,
                 'description': task_data.description or '',
-                'status': task_data.status or 'pending',
-                'priority': task_data.priority or 'medium',
+                'status': status_mapping.get(task_data.status or 'pending', 'todo'),
+                'priority': priority_mapping.get(task_data.priority or 'medium', 'Medium'),
                 'kanban_column': task_data.kanban_column or 'todo',
                 'due_date': task_data.due_date.isoformat() if task_data.due_date else None,
                 'completed': task_data.completed or False,
                 'completed_at': None,
-                'sort_order': 0,  # Can be calculated based on existing tasks
-                'is_active': True,
+                'sort_order': 0,
                 'created_at': datetime.utcnow().isoformat(),
-                'updated_at': datetime.utcnow().isoformat()
+                'updated_at': datetime.utcnow().isoformat(),
+                'date_created': datetime.utcnow().isoformat()
             }
             
             response = supabase.table('tasks').insert(task_dict).execute()
@@ -497,7 +511,26 @@ class SupabaseTaskService:
                 raise Exception("Failed to create task")
                 
             logger.info(f"✅ Created task: {task_data.name} for user: {user_id}")
-            return response.data[0]
+            result = response.data[0]
+            
+            # Transform back to expected format
+            status_reverse_mapping = {
+                'todo': 'pending',
+                'in_progress': 'in_progress', 
+                'completed': 'completed',
+                'cancelled': 'cancelled'
+            }
+            
+            priority_reverse_mapping = {
+                'Low': 'low',
+                'Medium': 'medium',
+                'High': 'high'
+            }
+            
+            result['status'] = status_reverse_mapping.get(result.get('status'), 'pending')
+            result['priority'] = priority_reverse_mapping.get(result.get('priority'), 'medium')
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error creating task: {e}")
