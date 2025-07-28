@@ -1345,11 +1345,32 @@ class ProjectService:
 
     @staticmethod
     async def delete_project(user_id: str, project_id: str) -> bool:
-        # First delete all tasks in this project
-        await delete_document("tasks", {"project_id": project_id, "user_id": user_id})
-        
-        # Then delete the project
-        return await delete_document("projects", {"id": project_id, "user_id": user_id})
+        """Delete a project and all its tasks"""
+        try:
+            logger.info(f"🗑️ Deleting project: user_id={user_id}, project_id={project_id}")
+            
+            if not project_id:
+                logger.error("❌ Project ID is None or empty")
+                raise ValueError("Project ID cannot be empty")
+                
+            if not user_id:
+                logger.error("❌ User ID is None or empty")
+                raise ValueError("User ID cannot be empty")
+            
+            # First delete all tasks in this project using bulk delete
+            logger.info(f"🔗 Deleting tasks for project {project_id}")
+            from supabase_client import bulk_delete_documents
+            await bulk_delete_documents("tasks", {"project_id": project_id, "user_id": user_id})
+            
+            # Then delete the project itself
+            logger.info(f"🗑️ Deleting project document: {project_id}")
+            result = await delete_document("projects", {"id": project_id, "user_id": user_id})
+            logger.info(f"✅ Project deletion result: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error deleting project {project_id}: {e}")
+            raise
 
 class RecurringTaskService:
     @staticmethod
