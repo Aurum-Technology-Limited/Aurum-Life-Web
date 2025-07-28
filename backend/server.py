@@ -307,38 +307,40 @@ async def update_user(user_data: UserUpdate, current_user: User = Depends(get_cu
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "message": "User updated successfully"}
 
-# Dashboard endpoint - OPTIMIZED with Repository Pattern
+# Dashboard endpoint - HYPER-OPTIMIZED with Concurrent Queries
 @api_router.get("/dashboard", response_model=UserDashboard)
 async def get_dashboard(current_user: User = Depends(get_current_active_user)):
-    """URGENT FIX: Dashboard endpoint with safe fallback"""
+    """🚀 HYPER-OPTIMIZED Dashboard endpoint with concurrent queries"""
     try:
         user_id = str(current_user.id)
         logger.info(f"🏠 Dashboard endpoint requested for user: {user_id}")
+        start_time = time.time()
         
-        # Safe query for user data
-        try:
-            user_data = await find_document("users", {"id": user_id})
-            if not user_data:
-                # Create basic user from current_user
-                user_data = {
-                    "id": user_id,
-                    "username": getattr(current_user, 'username', 'user'),
-                    "email": getattr(current_user, 'email', 'user@example.com'),
-                    "first_name": getattr(current_user, 'first_name', 'User'),
-                    "last_name": getattr(current_user, 'last_name', ''),
-                    "is_active": True,
-                    "level": 1,
-                    "total_points": 0,
-                    "current_streak": 0,
-                    "created_at": datetime.utcnow()
-                }
-        except:
+        # 🚀 CONCURRENT QUERIES: Execute all database queries simultaneously
+        user_data_task = asyncio.create_task(find_document("users", {"id": user_id}))
+        recent_tasks_task = asyncio.create_task(find_documents("tasks", {
+            "user_id": user_id,
+            "completed": False
+        }, limit=5))  # Reduced from 10 to 5 for speed
+        areas_task = asyncio.create_task(find_documents("areas", {
+            "user_id": user_id,
+            "archived": {"$ne": True}
+        }, limit=5))  # Reduced from 10 to 5 for speed
+        
+        # Wait for all queries to complete concurrently
+        user_data, recent_tasks, areas = await asyncio.gather(
+            user_data_task, recent_tasks_task, areas_task, 
+            return_exceptions=True
+        )
+        
+        # Handle user data with fallback
+        if isinstance(user_data, Exception) or not user_data:
             user_data = {
                 "id": user_id,
-                "username": "user",
-                "email": "user@example.com", 
-                "first_name": "User",
-                "last_name": "",
+                "username": getattr(current_user, 'username', 'user'),
+                "email": getattr(current_user, 'email', 'user@example.com'),
+                "first_name": getattr(current_user, 'first_name', 'User'),
+                "last_name": getattr(current_user, 'last_name', ''),
                 "is_active": True,
                 "level": 1,
                 "total_points": 0,
@@ -346,22 +348,12 @@ async def get_dashboard(current_user: User = Depends(get_current_active_user)):
                 "created_at": datetime.utcnow()
             }
         
-        # Safe query for tasks
-        try:
-            recent_tasks = await find_documents("tasks", {
-                "user_id": user_id,
-                "completed": False
-            }, limit=10)
-        except:
+        # Handle tasks with fallback
+        if isinstance(recent_tasks, Exception):
             recent_tasks = []
         
-        # Safe query for areas
-        try:
-            areas = await find_documents("areas", {
-                "user_id": user_id,
-                "archived": {"$ne": True}
-            }, limit=10)
-        except:
+        # Handle areas with fallback
+        if isinstance(areas, Exception):
             areas = []
         
         # Process tasks safely
