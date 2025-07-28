@@ -2395,8 +2395,15 @@ class TaskService:
             if not task_doc:
                 return None
                 
-            # Add safe defaults for missing fields
+            # Add safe defaults for missing fields and handle field mapping
             task_dict = dict(task_doc)
+            
+            # Handle field name mapping
+            if 'name' in task_dict and 'title' not in task_dict:
+                task_dict['title'] = task_dict['name']  # Map 'name' to 'title'
+            
+            # Add safe defaults for missing fields
+            task_dict.setdefault('title', task_dict.get('name', 'Untitled Task'))
             task_dict.setdefault('current_score', 50.0)
             task_dict.setdefault('area_importance', 3)
             task_dict.setdefault('project_importance', 3)
