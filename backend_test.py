@@ -1170,8 +1170,9 @@ class ContextualFileAttachmentsTestSuite:
 
 async def main():
     """Main test execution"""
-    test_suite = ContextualFileAttachmentsTestSuite()
-    await test_suite.run_all_tests()
+    # Run the comprehensive CRUD test for schema mapping fixes
+    crud_test_suite = SupabaseCRUDTestSuite()
+    await crud_test_suite.run_comprehensive_crud_test()
 
 if __name__ == "__main__":
     asyncio.run(main())
