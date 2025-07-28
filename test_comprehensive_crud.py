@@ -231,7 +231,7 @@ class ComprehensiveCRUDTest:
         async with self.session.get(f"{self.base_url}/tasks/{self.test_data['task_id']}", headers=headers) as response:
             if response.status == 200:
                 task = await response.json()
-                print(f"✅ Task read: {task['name']}")
+                print(f"✅ Task read: {task['title']}")
             else:
                 print(f"❌ Task read failed: {response.status}")
                 return False
