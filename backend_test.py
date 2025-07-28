@@ -328,7 +328,7 @@ class SupabaseCRUDTestSuite:
             # Update Project
             if self.created_resources['projects']:
                 project_id = self.created_resources['projects'][0]
-                update_data = {"name": "Morning Workout Routine (Updated)", "status": "in_progress"}
+                update_data = {"name": "Morning Workout Routine (Updated)", "status": "In Progress"}
                 
                 async with self.session.put(f"{API_BASE}/projects/{project_id}", json=update_data, headers=self.get_auth_headers()) as response:
                     if response.status == 200:
