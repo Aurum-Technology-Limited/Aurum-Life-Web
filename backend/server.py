@@ -98,7 +98,7 @@ async def get_pillars(
 async def update_pillar(
     pillar_id: str, 
     pillar_data: PillarUpdate, 
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Update a pillar"""
     try:
