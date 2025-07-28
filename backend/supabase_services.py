@@ -435,7 +435,7 @@ class SupabaseProjectService:
                 'updated_at': datetime.utcnow().isoformat()
             }
             
-            # Only include fields that are provided
+            # Only include fields that are provided and map to correct database fields
             if project_data.name is not None:
                 update_dict['name'] = project_data.name
             if project_data.description is not None:
@@ -443,17 +443,25 @@ class SupabaseProjectService:
             if project_data.area_id is not None:
                 update_dict['area_id'] = project_data.area_id
             if project_data.status is not None:
-                update_dict['status'] = project_data.status
+                # Map backend status to database status
+                status_mapping = {
+                    'not_started': 'Not Started',
+                    'in_progress': 'In Progress',
+                    'completed': 'Completed',
+                    'on_hold': 'On Hold'
+                }
+                update_dict['status'] = status_mapping.get(project_data.status, project_data.status)
             if project_data.priority is not None:
+                # Keep priority as is (database uses lowercase)
                 update_dict['priority'] = project_data.priority
             if project_data.color is not None:
                 update_dict['color'] = project_data.color
             if project_data.icon is not None:
                 update_dict['icon'] = project_data.icon
-            if project_data.deadline is not None:
-                update_dict['deadline'] = project_data.deadline.isoformat() if project_data.deadline else None
-            if project_data.is_active is not None:
-                update_dict['is_active'] = project_data.is_active
+            if getattr(project_data, 'due_date', None) is not None:
+                update_dict['deadline'] = project_data.due_date.isoformat() if project_data.due_date else None
+            if getattr(project_data, 'is_active', None) is not None:
+                update_dict['archived'] = not project_data.is_active  # Map is_active to archived (inverted)
                 
             response = supabase.table('projects').update(update_dict).eq('id', project_id).eq('user_id', user_id).execute()
             
@@ -461,7 +469,22 @@ class SupabaseProjectService:
                 raise Exception("Project not found or no changes made")
                 
             logger.info(f"✅ Updated project: {project_id} for user: {user_id}")
-            return response.data[0]
+            result = response.data[0]
+            
+            # Transform back to expected format
+            result['is_active'] = not result.get('archived', False)  # Transform archived to is_active
+            result['due_date'] = result.get('deadline')  # Map deadline back to due_date
+            
+            # Map status back to backend format
+            status_reverse_mapping = {
+                'Not Started': 'not_started',
+                'In Progress': 'in_progress',
+                'Completed': 'completed',
+                'On Hold': 'on_hold'
+            }
+            result['status'] = status_reverse_mapping.get(result.get('status'), result.get('status'))
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error updating project: {e}")
