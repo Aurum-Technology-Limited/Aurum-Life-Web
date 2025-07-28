@@ -173,7 +173,7 @@ async def update_area(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.delete("/areas/{area_id}")
-async def delete_area(area_id: str, current_user: User = Depends(get_current_active_user)):
+async def delete_area(area_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     """Delete an area"""
     try:
         success = await SupabaseAreaService.delete_area(area_id, str(current_user.id))
