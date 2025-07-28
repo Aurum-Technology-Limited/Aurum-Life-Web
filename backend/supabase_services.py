@@ -515,10 +515,10 @@ class SupabaseTaskService:
             
             # Transform back to expected format
             status_reverse_mapping = {
-                'todo': 'pending',
+                'todo': 'todo',
                 'in_progress': 'in_progress', 
                 'completed': 'completed',
-                'cancelled': 'cancelled'
+                'review': 'review'
             }
             
             priority_reverse_mapping = {
