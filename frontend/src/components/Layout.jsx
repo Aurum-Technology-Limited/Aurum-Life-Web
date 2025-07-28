@@ -29,7 +29,6 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
   const { notifications } = useNotification();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Navigation items
   const navigationItems = [
