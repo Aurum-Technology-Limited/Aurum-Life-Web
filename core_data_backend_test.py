@@ -115,11 +115,11 @@ class CoreDataTestSuite:
         
         try:
             pillar_data = {
-                "title": "Test Pillar",
+                "name": "Test Pillar",
                 "description": "Test Description",
                 "icon": "🎯",
                 "color": "#FF5722",
-                "time_allocation": 25
+                "time_allocation_percentage": 25.0
             }
             
             async with self.session.post(f"{API_BASE}/pillars", json=pillar_data, headers=self.get_auth_headers()) as response:
