@@ -343,7 +343,7 @@ class SupabaseProjectService:
                 'priority': project_data.priority or 'medium',   # Database uses lowercase
                 'color': getattr(project_data, 'color', '#F59E0B'),  # Use default if not provided
                 'icon': project_data.icon or 'FolderOpen',
-                'deadline': project_data.due_date.isoformat() if getattr(project_data, 'due_date', None) else None,
+                'deadline': project_data.deadline.isoformat() if project_data.deadline else None,
                 'importance': 3,  # Default importance as integer
                 'archived': False,  # Map is_active to archived (inverted)
                 'sort_order': 0,
