@@ -154,17 +154,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
             <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-gray-900 font-bold text-sm">AL</span>
             </div>
-            {!sidebarCollapsed && (
-              <h1 className="text-xl font-bold text-white">Aurum Life</h1>
-            )}
-            
-            {/* Desktop collapse button */}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden lg:block ml-auto text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-gray-800"
-            >
-              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${sidebarCollapsed ? 'rotate-90' : '-rotate-90'}`} />
-            </button>
+            <h1 className="text-xl font-bold text-white">Aurum Life</h1>
           </div>
 
           {/* Navigation */}
