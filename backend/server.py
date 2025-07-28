@@ -52,9 +52,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Include authentication routes
-app.include_router(auth_router)
-
 # Root endpoint
 @app.get("/")
 async def root():
