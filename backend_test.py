@@ -256,7 +256,7 @@ class SupabaseCRUDTestSuite:
                     self.created_resources['tasks'].append(task['id'])
                     
                     # Verify status/priority mapping
-                    if (task.get('status') == 'pending' and 
+                    if (task.get('status') == 'todo' and 
                         task.get('priority') == 'medium' and 
                         task.get('project_id') == project_id):
                         print("✅ Task created successfully with proper status/priority mapping")
