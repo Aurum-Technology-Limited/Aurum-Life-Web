@@ -308,12 +308,26 @@ async def update_user(user_data: UserUpdate, current_user: User = Depends(get_cu
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "message": "User updated successfully"}
 
+# Simple in-memory cache for dashboard data (5 second TTL)
+_dashboard_cache = {}
+_dashboard_cache_ttl = 5  # seconds
+
 # Dashboard endpoint - HYPER-OPTIMIZED with Concurrent Queries
 @api_router.get("/dashboard", response_model=UserDashboard)
 async def get_dashboard(current_user: User = Depends(get_current_active_user)):
-    """🚀 HYPER-OPTIMIZED Dashboard endpoint with concurrent queries"""
+    """🚀 HYPER-OPTIMIZED Dashboard endpoint with concurrent queries + caching"""
     try:
         user_id = str(current_user.id)
+        cache_key = f"dashboard_{user_id}"
+        current_time = time.time()
+        
+        # 🚀 CHECK CACHE FIRST
+        if cache_key in _dashboard_cache:
+            cached_data, cache_time = _dashboard_cache[cache_key]
+            if current_time - cache_time < _dashboard_cache_ttl:
+                logger.info(f"🚀 Dashboard cache hit for user: {user_id}")
+                return cached_data
+        
         logger.info(f"🏠 Dashboard endpoint requested for user: {user_id}")
         start_time = time.time()
         
