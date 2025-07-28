@@ -182,6 +182,13 @@ class SupabaseAreaService:
     async def create_area(user_id: str, area_data: AreaCreate) -> Dict[str, Any]:
         """Create a new area"""
         try:
+            # Map importance string to integer
+            importance_mapping = {
+                'low': 1,
+                'medium': 3,
+                'high': 5
+            }
+            
             area_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
@@ -190,7 +197,7 @@ class SupabaseAreaService:
                 'description': area_data.description or '',
                 'color': area_data.color or '#10B981',
                 'icon': area_data.icon or 'Circle',
-                'importance': area_data.importance or 'medium',
+                'importance': importance_mapping.get(area_data.importance or 'medium', 3),  # Map to integer
                 'archived': False,  # Map is_active to archived (inverted)
                 'sort_order': 0,
                 'created_at': datetime.utcnow().isoformat(),
