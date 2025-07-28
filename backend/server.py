@@ -284,7 +284,7 @@ async def get_tasks(
 async def update_task(
     task_id: str, 
     task_data: TaskUpdate, 
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Update a task"""
     try:
