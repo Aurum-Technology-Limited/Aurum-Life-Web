@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
         setToken(authToken);
 
         // Get user profile
-        const userResponse = await fetch(`${BACKEND_URL}/auth/me`, {
+        const userResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
           headers: {
             'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json'
