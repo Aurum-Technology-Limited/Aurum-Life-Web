@@ -65,7 +65,7 @@ async def root():
 # ================================
 
 @api_router.post("/pillars", response_model=dict)
-async def create_pillar(pillar_data: PillarCreate, current_user: User = Depends(get_current_active_user)):
+async def create_pillar(pillar_data: PillarCreate, current_user: User = Depends(get_current_active_user_hybrid)):
     """Create a new pillar"""
     try:
         result = await SupabasePillarService.create_pillar(str(current_user.id), pillar_data)
