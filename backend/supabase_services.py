@@ -565,7 +565,7 @@ class SupabaseTaskService:
             }
             
             for task in tasks:
-                task['status'] = status_reverse_mapping.get(task.get('status'), 'pending')
+                task['status'] = status_reverse_mapping.get(task.get('status'), 'todo')
                 task['priority'] = priority_reverse_mapping.get(task.get('priority'), 'medium')
             
             logger.info(f"✅ Retrieved {len(tasks)} tasks for user: {user_id}")
