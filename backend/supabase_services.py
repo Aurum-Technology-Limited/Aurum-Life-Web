@@ -182,12 +182,21 @@ class SupabaseAreaService:
     async def create_area(user_id: str, area_data: AreaCreate) -> Dict[str, Any]:
         """Create a new area"""
         try:
-            # Map importance string to integer
-            importance_mapping = {
-                'low': 1,
-                'medium': 3,
-                'high': 5
-            }
+            # Handle importance as integer (schema fix applied)
+            importance_value = area_data.importance
+            if isinstance(importance_value, str):
+                # Legacy string mapping for backward compatibility
+                importance_mapping = {
+                    'low': 1,
+                    'medium': 3,
+                    'high': 5
+                }
+                importance_value = importance_mapping.get(importance_value, 3)
+            elif isinstance(importance_value, int):
+                # Direct integer value (new schema)
+                importance_value = importance_value
+            else:
+                importance_value = 3  # Default
             
             area_dict = {
                 'id': str(uuid.uuid4()),
@@ -197,7 +206,7 @@ class SupabaseAreaService:
                 'description': area_data.description or '',
                 'color': area_data.color or '#10B981',
                 'icon': area_data.icon or 'Circle',
-                'importance': importance_mapping.get(area_data.importance or 'medium', 3),  # Map to integer
+                'importance': importance_value,  # Use processed importance value
                 'archived': False,  # Map is_active to archived (inverted)
                 'sort_order': 0,
                 'created_at': datetime.utcnow().isoformat(),
