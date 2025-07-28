@@ -130,7 +130,7 @@ class CoreDataTestSuite:
                     self.test_results.append({
                         "test": "Pillar Creation", 
                         "status": "PASSED", 
-                        "details": f"Created pillar: {pillar['title']}"
+                        "details": f"Created pillar: {pillar['name']}"
                     })
                     return pillar["id"]
                 else:
