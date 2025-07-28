@@ -190,7 +190,7 @@ function App() {
                   <ProtectedRoute>
                     <SimpleLayout 
                       activeSection={activeSection} 
-                      onSectionChange={handleSectionChange}
+                      setActiveSection={setActiveSection}
                     >
                       {renderActiveSection()}
                     </SimpleLayout>
