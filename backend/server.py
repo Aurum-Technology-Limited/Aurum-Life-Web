@@ -971,7 +971,7 @@ async def get_today_view_optimized(current_user: User = Depends(get_current_acti
                 "completed": False
             },
             sort=[("created_at", -1)],
-            limit=10  # Reduced from 20 to 10 for speed
+            limit=5  # Reduced from 10 to 5 for maximum speed
         ))
         
         user_stats_task = asyncio.create_task(find_document("user_stats", {"user_id": user_id}))
