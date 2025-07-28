@@ -2345,31 +2345,37 @@ This feedback was submitted through the Aurum Life application.
 async def get_lifetime_stats(current_user: User = Depends(get_current_active_user)):
     """Get lifetime statistics for user"""
     try:
+        logger.info(f"Analytics: Got user for lifetime stats - ID: {current_user.id}")
         stats = await AnalyticsService.get_lifetime_stats(current_user.id)
+        logger.info(f"Analytics: Lifetime stats calculated - {stats}")
         return stats
     except Exception as e:
         logger.error(f"Error getting lifetime stats: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get lifetime statistics")
+        raise HTTPException(status_code=500, detail=f"Failed to get lifetime statistics: {str(e)}")
 
 @api_router.get("/analytics/pillar-alignment")
 async def get_pillar_alignment(current_user: User = Depends(get_current_active_user)):
     """Get pillar alignment distribution for user"""
     try:
+        logger.info(f"Analytics: Got user for pillar alignment - ID: {current_user.id}")
         alignment = await AnalyticsService.get_pillar_alignment_distribution(current_user.id)
+        logger.info(f"Analytics: Pillar alignment calculated - {len(alignment)} pillars")
         return alignment
     except Exception as e:
         logger.error(f"Error getting pillar alignment: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get pillar alignment")
+        raise HTTPException(status_code=500, detail=f"Failed to get pillar alignment: {str(e)}")
 
 @api_router.get("/analytics/alignment-snapshot")
 async def get_alignment_snapshot(current_user: User = Depends(get_current_active_user)):
     """Get complete alignment snapshot - MVP v1.2 Insights feature"""
     try:
+        logger.info(f"Analytics: Got user for alignment snapshot - ID: {current_user.id}")
         snapshot = await AnalyticsService.get_alignment_snapshot(current_user.id)
+        logger.info(f"Analytics: Alignment snapshot generated")
         return snapshot
     except Exception as e:
         logger.error(f"Error getting alignment snapshot: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get alignment snapshot")
+        raise HTTPException(status_code=500, detail=f"Failed to get alignment snapshot: {str(e)}")
 
 # Include the routers in the main app
 app.include_router(api_router)
