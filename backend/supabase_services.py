@@ -330,7 +330,7 @@ class SupabaseProjectService:
                 'priority': priority_mapping.get(project_data.priority or 'medium', 'Medium'),
                 'color': project_data.color or '#F59E0B',
                 'icon': project_data.icon or 'FolderOpen',
-                'deadline': project_data.due_date.isoformat() if project_data.due_date else None,
+                'deadline': project_data.deadline.isoformat() if project_data.deadline else None,
                 'archived': False,  # Map is_active to archived (inverted)
                 'sort_order': 0,
                 'completion_percentage': 0,
