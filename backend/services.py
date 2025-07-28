@@ -1686,8 +1686,8 @@ class TaskService:
         
         # 🚀 THE ARCHITECT'S EVENT TRIGGER: Calculate initial score for new task
         try:
-            recalculate_task_score.delay(task.id)
-            logger.info(f"✅ Score calculation triggered for new task: {task.id}")
+            # recalculate_task_score.delay(task.id)  # Commented out - Celery not configured
+            logger.info(f"✅ Task created successfully: {task.id}")
         except Exception as e:
             logger.warning(f"⚠️ Failed to trigger score calculation for new task {task.id}: {e}")
         
