@@ -215,10 +215,14 @@ class SupabaseAreaService:
             query = supabase.table('areas').select('*').eq('user_id', user_id)
             
             if not include_archived:
-                query = query.eq('is_active', True)
+                query = query.eq('archived', False)  # Use archived instead of is_active
                 
             response = query.execute()
             areas = response.data or []
+            
+            # Transform data to match expected format
+            for area in areas:
+                area['is_active'] = not area.get('archived', False)  # Transform archived to is_active
             
             # If include_projects is True, fetch projects for each area
             if include_projects and areas:
