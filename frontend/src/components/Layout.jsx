@@ -232,10 +232,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
         )}
 
         {/* Main Content */}
-        <div className={`
-          flex-1 min-h-screen transition-all duration-300 ease-in-out
-          ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}
-        `}>
+        <div className="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-64">
           <main className="h-full">
             {children}
           </main>
