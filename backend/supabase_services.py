@@ -341,7 +341,6 @@ class SupabaseProjectService:
                 'description': project_data.description or '',
                 'status': project_data.status or 'Not Started',  # Database uses display names
                 'priority': project_data.priority or 'medium',   # Database uses lowercase
-                'color': getattr(project_data, 'color', '#F59E0B'),  # Use default if not provided
                 'icon': project_data.icon or 'FolderOpen',
                 'deadline': project_data.deadline.isoformat() if project_data.deadline else None,
                 'importance': 3,  # Default importance as integer
