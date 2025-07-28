@@ -9,7 +9,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout';
+import SimpleLayout from './components/SimpleLayout';
 import OptimizedDashboard from './components/OptimizedDashboard';
 import Today from './components/Today';
 import Pillars from './components/Pillars';
