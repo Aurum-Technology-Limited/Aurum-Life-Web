@@ -123,9 +123,10 @@ class APIPerformanceTester:
             self.results.append({
                 "endpoint": result[0],
                 "duration_ms": result[1],
-                "success": result[2],
+                "under_target": result[2],
                 "status_code": result[3],
-                "description": description
+                "description": description,
+                "success": result[3] < 400
             })
             
             # Brief pause between requests
