@@ -188,7 +188,7 @@ class SupabaseCRUDTestSuite:
                 "icon": "🏋️",
                 "status": "not_started",  # Should map to "Not Started"
                 "priority": "high",       # Should map to "High"
-                "due_date": "2025-02-15T10:00:00Z"  # Should map to deadline
+                "deadline": "2025-02-15T10:00:00Z"  # Correct field name
             }
             
             async with self.session.post(f"{API_BASE}/projects", json=project_data, headers=self.get_auth_headers()) as response:
