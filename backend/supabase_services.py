@@ -479,9 +479,9 @@ class SupabaseTaskService:
             }
             
             priority_mapping = {
-                'low': 'Low',
-                'medium': 'Medium',
-                'high': 'High'
+                'low': 'low',
+                'medium': 'medium',
+                'high': 'high'
             }
             
             task_dict = {
