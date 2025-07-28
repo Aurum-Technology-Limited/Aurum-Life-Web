@@ -180,13 +180,13 @@ class SupabaseCRUDTestSuite:
         print("\n🧪 Test 3: Project CRUD Operations with Enum Mapping")
         
         try:
-            # CREATE Project - Test enum mapping (backend: not_started → database: Not Started)
+            # CREATE Project - Test enum mapping (backend: Not Started → database: Not Started)
             project_data = {
                 "area_id": area_id,
                 "name": "Morning Workout Routine",
                 "description": "Daily morning exercise routine",
                 "icon": "🏋️",
-                "status": "not_started",  # Should map to "Not Started"
+                "status": "Not Started",  # Correct enum value
                 "priority": "high",       # Should map to "High"
                 "deadline": "2025-02-15T10:00:00Z"  # Correct field name
             }
