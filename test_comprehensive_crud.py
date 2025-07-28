@@ -239,7 +239,7 @@ class ComprehensiveCRUDTest:
         # UPDATE Task
         print("3️⃣ Testing Task Update...")
         update_data = {
-            "title": "CRUD Test Task (Updated)",
+            "name": "CRUD Test Task (Updated)",
             "completed": True
         }
         
