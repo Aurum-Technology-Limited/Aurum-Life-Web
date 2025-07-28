@@ -235,7 +235,7 @@ async def update_project(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.delete("/projects/{project_id}")
-async def delete_project(project_id: str, current_user: User = Depends(get_current_active_user)):
+async def delete_project(project_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     """Delete a project"""
     try:
         success = await SupabaseProjectService.delete_project(project_id, str(current_user.id))
