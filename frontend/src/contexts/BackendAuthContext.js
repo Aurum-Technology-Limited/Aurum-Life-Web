@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           // Verify token with backend
-          const response = await fetch(`${BACKEND_URL}/auth/me`, {
+          const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
             headers: {
               'Authorization': `Bearer ${storedToken}`,
               'Content-Type': 'application/json'
