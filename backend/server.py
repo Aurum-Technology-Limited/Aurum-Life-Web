@@ -1268,6 +1268,19 @@ async def get_tasks(
         logger.error(f"Error getting tasks: {e}")
         return []  # Return empty list to avoid breaking frontend
 
+@api_router.get("/tasks/{task_id}", response_model=TaskResponse)
+async def get_task(task_id: str, request: Request):
+    """Get task by ID"""
+    try:
+        current_user = await get_current_active_user_hybrid(request)
+        task = await TaskService.get_task(current_user.id, task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return task
+    except Exception as e:
+        logger.error(f"Error getting task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.put("/tasks/{task_id}", response_model=dict)
 async def update_task(task_id: str, task_data: TaskUpdate, current_user: User = Depends(get_current_active_user)):
     """Update a task"""
