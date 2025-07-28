@@ -426,6 +426,10 @@ async def get_dashboard(current_user: User = Depends(get_current_active_user)):
         
         response_time = (time.time() - start_time) * 1000
         logger.info(f"✅ HYPER-OPTIMIZED Dashboard completed in {response_time:.1f}ms for user: {user_id}")
+        
+        # 🚀 CACHE THE RESULT
+        _dashboard_cache[cache_key] = (dashboard_response, current_time)
+        
         return dashboard_response
         
     except Exception as e:
