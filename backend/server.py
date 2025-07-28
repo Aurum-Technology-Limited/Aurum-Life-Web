@@ -142,7 +142,7 @@ async def create_area(area_data: AreaCreate, current_user: User = Depends(get_cu
 async def get_areas(
     include_projects: bool = Query(False, description="Include linked projects"),
     include_archived: bool = Query(False, description="Include archived areas"),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Get user's areas"""
     try:
