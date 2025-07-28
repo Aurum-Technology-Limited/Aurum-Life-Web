@@ -157,11 +157,11 @@ export const useInvalidateQueries = () => {
   
   return {
     invalidateDashboard: () => queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }),
-    invalidateAreas: () => queryClient.invalidateQueries({ queryKey: ['areas'] }),
-    invalidatePillars: () => queryClient.invalidateQueries({ queryKey: ['pillars'] }), // This will match all pillar queries
-    invalidateProjects: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
-    invalidateTasks: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-    invalidateInsights: () => queryClient.invalidateQueries({ queryKey: ['insights'] }),
+    invalidateAreas: () => queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'areas' }),
+    invalidatePillars: () => queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'pillars' }),
+    invalidateProjects: () => queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'projects' }),
+    invalidateTasks: () => queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'tasks' }),
+    invalidateInsights: () => queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === 'insights' }),
     invalidateAiCoach: () => queryClient.invalidateQueries({ queryKey: queryKeys.aiCoach }),
     invalidateAll: () => queryClient.invalidateQueries(),
   };
