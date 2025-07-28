@@ -2388,6 +2388,30 @@ class TaskService:
         return await TaskService.create_task(user_id, subtask_data)
 
     @staticmethod
+    async def get_task(user_id: str, task_id: str) -> Optional[TaskResponse]:
+        """Get a task by ID"""
+        try:
+            task_doc = await find_document("tasks", {"id": task_id, "user_id": user_id})
+            if not task_doc:
+                return None
+                
+            # Add safe defaults for missing fields
+            task_dict = dict(task_doc)
+            task_dict.setdefault('current_score', 50.0)
+            task_dict.setdefault('area_importance', 3)
+            task_dict.setdefault('project_importance', 3)
+            task_dict.setdefault('pillar_weight', 1.0)
+            task_dict.setdefault('dependencies_met', True)
+            task_dict.setdefault('score_last_updated', datetime.utcnow())
+            task_dict.setdefault('score_calculation_version', 1)
+            
+            return TaskResponse(**task_dict)
+            
+        except Exception as e:
+            logger.error(f"Error getting task {task_id}: {e}")
+            return None
+
+    @staticmethod
     async def delete_task(user_id: str, task_id: str) -> bool:
         # First delete all subtasks
         await delete_document("tasks", {"parent_task_id": task_id, "user_id": user_id})
