@@ -944,9 +944,14 @@ async def get_projects(
         if area_id:
             query["area_id"] = area_id
         if not include_archived:
-            query["archived"] = {"$ne": True}
+            # Use proper Supabase query - get all projects and filter archived in Python
+            pass  # We'll filter archived projects after fetching
             
         projects_docs = await find_documents("projects", query, limit=25)  # Reduced limit for speed
+        
+        # Filter archived projects if needed
+        if not include_archived:
+            projects_docs = [project for project in projects_docs if not project.get('archived', False)]
         
         # 🚀 STREAMLINED PROCESSING
         project_responses = []
