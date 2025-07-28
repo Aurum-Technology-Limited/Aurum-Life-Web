@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/BackendAuthContext';
 import { UserIcon, SaveIcon } from '@heroicons/react/outline';
 
 const Profile = () => {
