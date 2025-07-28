@@ -710,7 +710,7 @@ async def get_pillars(
         if not include_archived:
             query["archived"] = {"$ne": True}
             
-        pillars_docs = await find_documents("pillars", query, limit=50)
+        pillars_docs = await find_documents("pillars", query, limit=25)  # Reduced limit for speed
         
         # 🚀 STREAMLINED PROCESSING
         pillar_responses = []
