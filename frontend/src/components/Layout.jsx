@@ -217,7 +217,6 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
                   onClose={() => setShowUserMenu(false)}
                   onNavigate={handleNavigation}
                   onLogout={handleLogout}
-                  isCollapsed={sidebarCollapsed}
                 />
               )}
             </div>
