@@ -46,29 +46,44 @@ class AnalyticsService:
     async def get_pillar_alignment_distribution(user_id: str) -> List[Dict[str, any]]:
         """
         Get distribution of completed tasks across user's pillars
+        OPTIMIZED: Uses concurrent queries for better performance
         Returns: [{"pillar_name": str, "pillar_id": str, "task_count": int, "percentage": float}]
         """
         try:
-            # Get all user's pillars
-            pillars = await find_documents("pillars", {"user_id": user_id})
-            
-            if not pillars:
-                return []
-            
-            # Get all completed tasks for this user
-            completed_tasks = await find_documents("tasks", {
+            # 🚀 CONCURRENT QUERIES: Execute all queries simultaneously
+            pillars_task = asyncio.create_task(find_documents("pillars", {"user_id": user_id}))
+            completed_tasks_task = asyncio.create_task(find_documents("tasks", {
                 "user_id": user_id,
                 "completed": True
-            })
+            }))
+            areas_task = asyncio.create_task(find_documents("areas", {"user_id": user_id}))
+            projects_task = asyncio.create_task(find_documents("projects", {"user_id": user_id}))
             
-            if not completed_tasks:
+            # Wait for all queries to complete
+            pillars, completed_tasks, areas, projects = await asyncio.gather(
+                pillars_task, completed_tasks_task, areas_task, projects_task,
+                return_exceptions=True
+            )
+            
+            # Handle exceptions
+            if isinstance(pillars, Exception):
+                pillars = []
+            if isinstance(completed_tasks, Exception):
+                completed_tasks = []
+            if isinstance(areas, Exception):
+                areas = []
+            if isinstance(projects, Exception):
+                projects = []
+            
+            if not pillars or not completed_tasks:
                 return []
             
-            # Create pillar mapping (task -> pillar via project -> area -> pillar)
-            pillar_task_counts = {}
-            total_completed_tasks = len(completed_tasks)
+            # 🚀 CREATE LOOKUP MAPS for O(1) access instead of O(n) searches
+            area_to_pillar = {area['id']: area.get('pillar_id') for area in areas}
+            project_to_area = {project['id']: project.get('area_id') for project in projects}
             
             # Initialize pillar counts
+            pillar_task_counts = {}
             for pillar in pillars:
                 pillar_task_counts[pillar['id']] = {
                     "pillar_name": pillar['name'],
@@ -77,29 +92,19 @@ class AnalyticsService:
                     "percentage": 0.0
                 }
             
-            # Count tasks per pillar
+            # 🚀 FAST COUNTING: Use lookup maps instead of database queries
+            total_completed_tasks = len(completed_tasks)
             for task in completed_tasks:
                 project_id = task.get('project_id')
                 if not project_id:
                     continue
                     
-                # Get project to find area
-                projects = await find_documents("projects", {"id": project_id})
-                if not projects:
-                    continue
-                    
-                project = projects[0]
-                area_id = project.get('area_id')
+                # Use lookup maps for O(1) access
+                area_id = project_to_area.get(project_id)
                 if not area_id:
                     continue
-                
-                # Get area to find pillar
-                areas = await find_documents("areas", {"id": area_id})
-                if not areas:
-                    continue
                     
-                area = areas[0]
-                pillar_id = area.get('pillar_id')
+                pillar_id = area_to_pillar.get(area_id)
                 if pillar_id and pillar_id in pillar_task_counts:
                     pillar_task_counts[pillar_id]['task_count'] += 1
             
