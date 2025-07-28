@@ -364,10 +364,30 @@ class SupabaseProjectService:
             query = supabase.table('projects').select('*').eq('user_id', user_id)
             
             if not include_archived:
-                query = query.eq('is_active', True)
+                query = query.eq('archived', False)  # Use archived instead of is_active
                 
             response = query.execute()
             projects = response.data or []
+            
+            # Transform data to match expected format
+            status_reverse_mapping = {
+                'Not Started': 'not_started',
+                'In Progress': 'in_progress',
+                'Completed': 'completed',
+                'On Hold': 'on_hold'
+            }
+            
+            priority_reverse_mapping = {
+                'Low': 'low',
+                'Medium': 'medium', 
+                'High': 'high'
+            }
+            
+            for project in projects:
+                project['is_active'] = not project.get('archived', False)  # Transform archived to is_active
+                project['due_date'] = project.get('deadline')  # Map deadline to due_date
+                project['status'] = status_reverse_mapping.get(project.get('status'), 'not_started')
+                project['priority'] = priority_reverse_mapping.get(project.get('priority'), 'medium')
             
             # If include_tasks is True, fetch tasks for each project
             if include_tasks and projects:
