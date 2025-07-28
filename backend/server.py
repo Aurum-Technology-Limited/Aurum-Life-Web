@@ -327,7 +327,7 @@ async def get_dashboard(current_user: User = Depends(get_current_active_user_hyb
 # ================================
 
 @api_router.get("/today", response_model=dict)
-async def get_today_view(current_user: User = Depends(get_current_active_user)):
+async def get_today_view(current_user: User = Depends(get_current_active_user_hybrid)):
     """Get today's tasks and priorities"""
     try:
         # Get today's incomplete tasks
