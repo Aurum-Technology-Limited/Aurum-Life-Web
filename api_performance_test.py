@@ -139,7 +139,8 @@ class APIPerformanceTester:
         
         successful_tests = [r for r in self.results if r["success"]]
         failed_tests = [r for r in self.results if not r["success"]]
-        under_target = [r for r in self.results if r["duration_ms"] < TARGET_RESPONSE_TIME and r["success"]]
+        under_target = [r for r in self.results if r["under_target"] and r["success"]]
+        over_target = [r for r in self.results if not r["under_target"] and r["success"]]
         
         total_tests = len(self.results)
         success_rate = (len(successful_tests) / total_tests) * 100 if total_tests > 0 else 0
@@ -150,6 +151,7 @@ class APIPerformanceTester:
         print(f"Total Tests: {total_tests}")
         print(f"Successful: {len(successful_tests)} ({success_rate:.1f}%)")
         print(f"Under {TARGET_RESPONSE_TIME}ms: {len(under_target)} ({performance_rate:.1f}%)")
+        print(f"Over {TARGET_RESPONSE_TIME}ms: {len(over_target)}")
         print(f"Failed: {len(failed_tests)}")
         
         if successful_tests:
@@ -163,7 +165,6 @@ class APIPerformanceTester:
             print(f"Slowest Endpoint: {slowest['description']} ({slowest['duration_ms']:.1f}ms)")
             
         # Show endpoints over target
-        over_target = [r for r in successful_tests if r["duration_ms"] >= TARGET_RESPONSE_TIME]
         if over_target:
             print(f"\n🐌 ENDPOINTS OVER {TARGET_RESPONSE_TIME}ms TARGET:")
             for result in over_target:
@@ -177,7 +178,7 @@ class APIPerformanceTester:
             for result in failed_tests:
                 print(f"  - {result['description']}: Status {result['status_code']}")
                 
-        return len(under_target) == len(successful_tests) and len(successful_tests) > 0
+        return len(over_target) == 0 and len(successful_tests) > 0
 
 async def main():
     """Main test execution"""
