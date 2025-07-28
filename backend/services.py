@@ -2810,11 +2810,33 @@ class PillarService:
     @staticmethod
     async def delete_pillar(user_id: str, pillar_id: str) -> bool:
         """Delete a pillar and unlink associated areas"""
-        # First, unlink all areas from this pillar
-        await update_document("areas", {"pillar_id": pillar_id, "user_id": user_id}, {"pillar_id": None})
+        logger.info(f"🗑️ Deleting pillar: user_id={user_id}, pillar_id={pillar_id}")
         
-        # Delete the pillar itself
-        return await delete_document("pillars", {"id": pillar_id, "user_id": user_id})
+        if not pillar_id:
+            logger.error("❌ Pillar ID is None or empty")
+            raise ValueError("Pillar ID cannot be empty")
+            
+        if not user_id:
+            logger.error("❌ User ID is None or empty")
+            raise ValueError("User ID cannot be empty")
+            
+        try:
+            # First, unlink all areas from this pillar
+            logger.info(f"🔗 Unlinking areas for pillar {pillar_id}")
+            await update_document("areas", {"pillar_id": pillar_id, "user_id": user_id}, {"pillar_id": None})
+            
+            # Delete the pillar itself
+            logger.info(f"🗑️ Deleting pillar document: {pillar_id}")
+            delete_query = {"id": pillar_id, "user_id": user_id}
+            logger.info(f"🔍 Delete query: {delete_query}")
+            
+            result = await delete_document("pillars", delete_query)
+            logger.info(f"✅ Pillar deletion result: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error in delete_pillar: {e}")
+            raise
     
     @staticmethod
     async def _build_pillar_response(pillar_doc: dict, include_areas: bool = False) -> PillarResponse:
