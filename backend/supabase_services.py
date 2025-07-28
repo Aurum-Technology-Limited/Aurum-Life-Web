@@ -68,10 +68,12 @@ class SupabasePillarService:
                 'description': pillar_data.description or '',
                 'color': pillar_data.color or '#3B82F6',
                 'icon': pillar_data.icon or 'Target',
-                'time_allocation': pillar_data.time_allocation or 0,
-                'is_active': True,
+                'time_allocation_percentage': pillar_data.time_allocation or 0,  # Map to existing column
+                'archived': False,  # Map is_active to archived (inverted)
+                'sort_order': 0,
                 'created_at': datetime.utcnow().isoformat(),
-                'updated_at': datetime.utcnow().isoformat()
+                'updated_at': datetime.utcnow().isoformat(),
+                'date_created': datetime.utcnow().isoformat()
             }
             
             response = supabase.table('pillars').insert(pillar_dict).execute()
