@@ -11,7 +11,7 @@ import {
   FolderOpenIcon,
   FolderIcon as FolderIconSolid
 } from '@heroicons/react/solid';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/BackendAuthContext';
 
 const Projects = () => {
   const { user } = useAuth();
