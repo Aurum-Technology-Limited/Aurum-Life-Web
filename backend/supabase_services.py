@@ -128,7 +128,7 @@ class SupabasePillarService:
                 'updated_at': datetime.utcnow().isoformat()
             }
             
-            # Only include fields that are provided
+            # Only include fields that are provided and map to correct database fields
             if pillar_data.name is not None:
                 update_dict['name'] = pillar_data.name
             if pillar_data.description is not None:
@@ -137,10 +137,10 @@ class SupabasePillarService:
                 update_dict['color'] = pillar_data.color
             if pillar_data.icon is not None:
                 update_dict['icon'] = pillar_data.icon
-            if pillar_data.time_allocation_percentage is not None:
-                update_dict['time_allocation_percentage'] = pillar_data.time_allocation_percentage
-            if pillar_data.is_active is not None:
-                update_dict['is_active'] = pillar_data.is_active
+            if getattr(pillar_data, 'time_allocation', None) is not None:
+                update_dict['time_allocation_percentage'] = pillar_data.time_allocation  # Map field name
+            if getattr(pillar_data, 'is_active', None) is not None:
+                update_dict['archived'] = not pillar_data.is_active  # Map is_active to archived (inverted)
                 
             response = supabase.table('pillars').update(update_dict).eq('id', pillar_id).eq('user_id', user_id).execute()
             
@@ -148,7 +148,13 @@ class SupabasePillarService:
                 raise Exception("Pillar not found or no changes made")
                 
             logger.info(f"✅ Updated pillar: {pillar_id} for user: {user_id}")
-            return response.data[0]
+            result = response.data[0]
+            
+            # Transform back to expected format
+            result['is_active'] = not result.get('archived', False)  # Transform archived to is_active
+            result['time_allocation'] = result.get('time_allocation_percentage', 0)  # Map field name back
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error updating pillar: {e}")
