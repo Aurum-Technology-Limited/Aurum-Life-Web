@@ -812,7 +812,7 @@ async def get_areas(
         if not include_archived:
             query["archived"] = {"$ne": True}
             
-        areas_docs = await find_documents("areas", query, limit=50)
+        areas_docs = await find_documents("areas", query, limit=25)  # Reduced limit for speed
         
         # 🚀 STREAMLINED PROCESSING: Minimal processing for speed
         area_responses = []
