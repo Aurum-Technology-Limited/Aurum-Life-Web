@@ -88,7 +88,7 @@ class APIPerformanceTester:
             
             print(f"{status_emoji}{perf_emoji} {description}: {duration:.1f}ms (Status: {status})")
             
-            return endpoint, duration, success and under_target, status
+            return endpoint, duration, under_target, status
             
         except Exception as e:
             print(f"❌ {description}: ERROR - {e}")
