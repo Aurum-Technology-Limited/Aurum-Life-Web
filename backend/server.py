@@ -331,20 +331,16 @@ async def get_dashboard(current_user: User = Depends(get_current_active_user)):
         logger.info(f"🏠 Dashboard endpoint requested for user: {user_id}")
         start_time = time.time()
         
-        # 🚀 CONCURRENT QUERIES: Execute all database queries simultaneously
+        # 🚀 MINIMAL CONCURRENT QUERIES: Only essential data for speed
         user_data_task = asyncio.create_task(find_document("users", {"id": user_id}))
         recent_tasks_task = asyncio.create_task(find_documents("tasks", {
             "user_id": user_id,
             "completed": False
-        }, limit=5))  # Reduced from 10 to 5 for speed
-        areas_task = asyncio.create_task(find_documents("areas", {
-            "user_id": user_id,
-            "archived": {"$ne": True}
-        }, limit=5))  # Reduced from 10 to 5 for speed
+        }, limit=3))  # Reduced to just 3 for maximum speed
         
-        # Wait for all queries to complete concurrently
-        user_data, recent_tasks, areas = await asyncio.gather(
-            user_data_task, recent_tasks_task, areas_task, 
+        # Wait for queries to complete concurrently
+        user_data, recent_tasks = await asyncio.gather(
+            user_data_task, recent_tasks_task, 
             return_exceptions=True
         )
         
