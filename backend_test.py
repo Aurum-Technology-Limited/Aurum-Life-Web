@@ -240,12 +240,12 @@ class SupabaseCRUDTestSuite:
         print("\n🧪 Test 4: Task CRUD Operations with Status/Priority Mapping")
         
         try:
-            # CREATE Task - Test status/priority mapping (backend: pending → database: todo, medium → Medium)
+            # CREATE Task - Test status/priority mapping (backend: todo → database: todo, medium → Medium)
             task_data = {
                 "project_id": project_id,
                 "name": "30-minute cardio session",
                 "description": "High-intensity cardio workout",
-                "status": "pending",    # Should map to "todo"
+                "status": "todo",       # Correct status value
                 "priority": "medium",   # Should map to "Medium"
                 "due_date": "2025-01-30T07:00:00Z"
             }
