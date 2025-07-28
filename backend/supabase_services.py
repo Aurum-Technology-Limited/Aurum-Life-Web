@@ -11,12 +11,22 @@ from datetime import datetime, timedelta
 from supabase import create_client, Client
 from models import *
 import bcrypt
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load environment variables
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
 
 logger = logging.getLogger(__name__)
 
 # Initialize Supabase client
 supabase_url = os.environ.get('SUPABASE_URL')
 supabase_anon_key = os.environ.get('SUPABASE_ANON_KEY')
+
+if not supabase_url or not supabase_anon_key:
+    raise ValueError(f"Missing Supabase configuration: URL={bool(supabase_url)}, KEY={bool(supabase_anon_key)}")
+
 supabase: Client = create_client(supabase_url, supabase_anon_key)
 
 
