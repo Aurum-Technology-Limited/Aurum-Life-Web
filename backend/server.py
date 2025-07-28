@@ -80,7 +80,7 @@ async def create_pillar(pillar_data: PillarCreate, current_user: User = Depends(
 async def get_pillars(
     include_areas: bool = Query(False, description="Include linked areas"),
     include_archived: bool = Query(False, description="Include archived pillars"),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Get user's pillars"""
     try:
