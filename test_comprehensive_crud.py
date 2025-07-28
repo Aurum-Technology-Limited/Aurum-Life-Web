@@ -158,7 +158,7 @@ class ComprehensiveCRUDTest:
             "name": "CRUD Test Project",
             "description": "Testing project CRUD operations",
             "area_id": self.test_data['area_id'],
-            "status": "Active"
+            "status": "Not Started"  # Use valid enum value
         }
         
         async with self.session.post(f"{self.base_url}/projects", json=project_data, headers=headers) as response:
