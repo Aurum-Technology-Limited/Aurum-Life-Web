@@ -2413,11 +2413,32 @@ class TaskService:
 
     @staticmethod
     async def delete_task(user_id: str, task_id: str) -> bool:
-        # First delete all subtasks
-        await delete_document("tasks", {"parent_task_id": task_id, "user_id": user_id})
-        
-        # Then delete the task
-        return await delete_document("tasks", {"id": task_id, "user_id": user_id})
+        """Delete a task and all its subtasks"""
+        try:
+            logger.info(f"🗑️ Deleting task: user_id={user_id}, task_id={task_id}")
+            
+            if not task_id:
+                logger.error("❌ Task ID is None or empty")
+                raise ValueError("Task ID cannot be empty")
+                
+            if not user_id:
+                logger.error("❌ User ID is None or empty")
+                raise ValueError("User ID cannot be empty")
+            
+            # First delete all subtasks using bulk delete
+            logger.info(f"🔗 Deleting subtasks for task {task_id}")
+            from supabase_client import bulk_delete_documents
+            await bulk_delete_documents("tasks", {"parent_task_id": task_id, "user_id": user_id})
+            
+            # Then delete the task itself
+            logger.info(f"🗑️ Deleting main task: {task_id}")
+            result = await delete_document("tasks", {"id": task_id, "user_id": user_id})
+            logger.info(f"✅ Task deletion result: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error deleting task {task_id}: {e}")
+            raise
 
     @staticmethod
     async def _check_and_notify_unblocked_tasks(user_id: str, completed_task_id: str):
