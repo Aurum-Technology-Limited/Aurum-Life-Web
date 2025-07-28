@@ -8,8 +8,8 @@ import os
 from datetime import datetime
 from typing import Dict, Any, List
 
-# Configuration - Use production backend URL
-BACKEND_URL = "https://19eedb9d-8356-46da-a868-07e1ec72a1d8.preview.emergentagent.com"  # From frontend/.env
+# Configuration - Use localhost for testing since external URL has issues
+BACKEND_URL = "http://localhost:8001"  # Use localhost for internal testing
 API_BASE = f"{BACKEND_URL}/api"
 
 class SupabaseCRUDTestSuite:
