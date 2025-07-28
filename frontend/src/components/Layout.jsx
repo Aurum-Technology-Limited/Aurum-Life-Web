@@ -145,8 +145,7 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
       <div className="flex min-h-screen">
         {/* Fixed Sidebar - Always positioned fixed for smooth experience */}
         <div className={`
-          sidebar-container fixed top-0 left-0 h-full bg-gray-900 border-r border-gray-700 transition-all duration-300 ease-in-out z-40
-          ${sidebarCollapsed ? 'w-16' : 'w-64'}
+          sidebar-container fixed top-0 left-0 h-full bg-gray-900 border-r border-gray-700 transition-all duration-300 ease-in-out z-40 w-64
           ${sidebarOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full'}
           shadow-xl
         `}>
