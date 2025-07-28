@@ -18,7 +18,7 @@ import {
   BellIcon
 } from '@heroicons/react/outline';
 import UserMenu from './UserMenu';
-import { useAuth } from '../contexts/SupabaseAuthContext';
+import { useAuth } from '../contexts/BackendAuthContext';
 
 const Layout = ({ children }) => {
   const location = useLocation();
