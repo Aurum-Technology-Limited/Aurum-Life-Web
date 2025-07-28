@@ -495,7 +495,7 @@ class SupabaseTaskService:
                 'priority': priority_mapping.get(task_data.priority or 'medium', 'Medium'),
                 'kanban_column': getattr(task_data, 'kanban_column', 'todo'),
                 'due_date': task_data.due_date.isoformat() if task_data.due_date else None,
-                'completed': task_data.completed or False,
+                'completed': getattr(task_data, 'completed', False),
                 'completed_at': None,
                 'sort_order': 0,
                 'created_at': datetime.utcnow().isoformat(),
