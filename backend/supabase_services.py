@@ -493,7 +493,7 @@ class SupabaseTaskService:
                 'parent_task_id': task_data.parent_task_id,
                 'name': task_data.name,
                 'description': task_data.description or '',
-                'status': status_mapping.get(task_data.status or 'pending', 'todo'),
+                'status': status_mapping.get(task_data.status or 'todo', 'todo'),
                 'priority': priority_mapping.get(task_data.priority or 'medium', 'Medium'),
                 'kanban_column': task_data.kanban_column or 'todo',
                 'due_date': task_data.due_date.isoformat() if task_data.due_date else None,
