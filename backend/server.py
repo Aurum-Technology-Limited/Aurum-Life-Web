@@ -313,7 +313,7 @@ async def delete_task(task_id: str, current_user: User = Depends(get_current_act
 # ================================
 
 @api_router.get("/dashboard", response_model=dict)
-async def get_dashboard(current_user: User = Depends(get_current_active_user)):
+async def get_dashboard(current_user: User = Depends(get_current_active_user_hybrid)):
     """Get dashboard data"""
     try:
         dashboard_data = await SupabaseDashboardService.get_dashboard_data(str(current_user.id))
