@@ -135,8 +135,8 @@ class SupabasePillarService:
                 update_dict['color'] = pillar_data.color
             if pillar_data.icon is not None:
                 update_dict['icon'] = pillar_data.icon
-            if pillar_data.time_allocation is not None:
-                update_dict['time_allocation'] = pillar_data.time_allocation
+            if pillar_data.time_allocation_percentage is not None:
+                update_dict['time_allocation_percentage'] = pillar_data.time_allocation_percentage
             if pillar_data.is_active is not None:
                 update_dict['is_active'] = pillar_data.is_active
                 
