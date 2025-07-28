@@ -266,7 +266,7 @@ async def create_task(task_data: TaskCreate, current_user: User = Depends(get_cu
 async def get_tasks(
     project_id: Optional[str] = Query(None, description="Filter by project ID"),
     completed: Optional[bool] = Query(None, description="Filter by completion status"),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Get user's tasks"""
     try:
