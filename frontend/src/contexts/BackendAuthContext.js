@@ -198,7 +198,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Not authenticated');
       }
       
-      const response = await fetch(`${BACKEND_URL}/auth/profile`, {
+      const response = await fetch(`${BACKEND_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
