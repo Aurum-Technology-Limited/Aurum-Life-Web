@@ -627,8 +627,6 @@ class SupabaseTaskService:
                 update_dict['name'] = task_data.name
             if task_data.description is not None:
                 update_dict['description'] = task_data.description
-            if task_data.project_id is not None:
-                update_dict['project_id'] = task_data.project_id
             if task_data.status is not None:
                 # Map backend status to database status
                 status_mapping = {
