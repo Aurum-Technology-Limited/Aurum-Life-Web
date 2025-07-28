@@ -168,6 +168,8 @@ test_plan:
 agent_communication:
     - agent: "main"
       message: "🎯 SUPABASE-ONLY MIGRATION COMPLETED! Completely removed MongoDB and hybrid authentication. Created clean Supabase-only architecture with dedicated services for all CRUD operations. Backend and frontend are running successfully. Ready for comprehensive CRUD testing to verify Pillars, Areas, Projects, and Tasks creation, reading, updating, and deletion work correctly without foreign key constraint issues."
+    - agent: "testing"
+      message: "🎯 SUPABASE-ONLY CRUD TESTING COMPLETED - CRITICAL DATABASE SCHEMA ISSUES IDENTIFIED! Comprehensive testing revealed that authentication and hybrid JWT system work perfectly (✅), Dashboard and Today View endpoints functional (✅), but ALL CRUD CREATE operations failing with 500 errors due to database schema mismatches. Root cause: Supabase tables missing required columns (e.g., 'is_active') and enum value mismatches (backend models expect 'Not Started' but database configured for 'not_started'). Success rate: 42.9% (3/7 tests passed). URGENT ACTION REQUIRED: 1) Update Supabase database schema to match backend models, 2) Fix enum value inconsistencies, 3) Add missing table columns, 4) Verify foreign key constraints. Authentication system working perfectly, but write operations completely blocked by schema issues."
     implemented: true
     working: true
     file: "backend/server.py, comprehensive_final_verification_test.py"
