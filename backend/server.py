@@ -308,6 +308,26 @@ async def update_user(user_data: UserUpdate, current_user: User = Depends(get_cu
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "message": "User updated successfully"}
 
+# Aggressive caching for all endpoints (30 second TTL)
+_endpoint_cache = {}
+_cache_ttl = 30  # seconds
+
+def get_cache_key(endpoint: str, user_id: str, params: str = "") -> str:
+    """Generate cache key for endpoint"""
+    return f"{endpoint}_{user_id}_{params}"
+
+def check_cache(cache_key: str):
+    """Check if data is in cache and still valid"""
+    if cache_key in _endpoint_cache:
+        cached_data, cache_time = _endpoint_cache[cache_key]
+        if time.time() - cache_time < _cache_ttl:
+            return cached_data
+    return None
+
+def set_cache(cache_key: str, data):
+    """Set data in cache"""
+    _endpoint_cache[cache_key] = (data, time.time())
+
 # Simple in-memory cache for dashboard data (5 second TTL)
 _dashboard_cache = {}
 _dashboard_cache_ttl = 5  # seconds
