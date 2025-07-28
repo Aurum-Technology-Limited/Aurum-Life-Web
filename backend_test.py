@@ -8,8 +8,13 @@ import os
 from datetime import datetime
 from typing import Dict, Any, List
 
-# Configuration - Use localhost for testing since external URL has issues
-BACKEND_URL = "http://localhost:8001"  # Use localhost for internal testing
+# Configuration - Use external URL from environment
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv('/app/frontend/.env')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://19eedb9d-8356-46da-a868-07e1ec72a1d8.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class SupabaseCRUDTestSuite:
