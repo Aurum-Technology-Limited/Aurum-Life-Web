@@ -493,7 +493,7 @@ class SupabaseTaskService:
                 'description': task_data.description or '',
                 'status': status_mapping.get(task_data.status or 'todo', 'todo'),
                 'priority': priority_mapping.get(task_data.priority or 'medium', 'Medium'),
-                'kanban_column': task_data.kanban_column or 'todo',
+                'kanban_column': getattr(task_data, 'kanban_column', 'todo'),
                 'due_date': task_data.due_date.isoformat() if task_data.due_date else None,
                 'completed': task_data.completed or False,
                 'completed_at': None,
