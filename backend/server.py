@@ -1297,12 +1297,27 @@ async def update_task(task_id: str, task_data: TaskUpdate, current_user: User = 
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.delete("/tasks/{task_id}", response_model=dict)
-async def delete_task(task_id: str, current_user: User = Depends(get_current_active_user)):
+async def delete_task(task_id: str, request: Request):
     """Delete a task"""
-    success = await TaskService.delete_task(current_user.id, task_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return {"success": True, "message": "Task deleted successfully"}
+    try:
+        if not task_id or task_id.strip() == "":
+            raise HTTPException(status_code=400, detail="Task ID is required")
+            
+        current_user = await get_current_active_user_hybrid(request)
+        logger.info(f"Deleting task {task_id} for user {current_user.id}")
+        
+        success = await TaskService.delete_task(current_user.id, task_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Task not found")
+            
+        logger.info(f"✅ Task {task_id} deleted successfully")
+        return {"success": True, "message": "Task deleted successfully"}
+    except ValueError as e:
+        logger.error(f"ValueError deleting task {task_id}: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting task {task_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Task Dependencies Endpoints (SR-1.1)
 @api_router.get("/tasks/{task_id}/dependencies", response_model=dict)
