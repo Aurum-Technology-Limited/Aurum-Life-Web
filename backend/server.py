@@ -2342,9 +2342,10 @@ This feedback was submitted through the Aurum Life application.
 
 # Analytics endpoints - MVP v1.2 "Alignment Snapshot"
 @api_router.get("/analytics/lifetime-stats")
-async def get_lifetime_stats(current_user: User = Depends(get_current_active_user)):
+async def get_lifetime_stats(request: Request):
     """Get lifetime statistics for user"""
     try:
+        current_user = await get_current_active_user_hybrid(request)
         logger.info(f"Analytics: Got user for lifetime stats - ID: {current_user.id}")
         stats = await AnalyticsService.get_lifetime_stats(current_user.id)
         logger.info(f"Analytics: Lifetime stats calculated - {stats}")
@@ -2354,9 +2355,10 @@ async def get_lifetime_stats(current_user: User = Depends(get_current_active_use
         raise HTTPException(status_code=500, detail=f"Failed to get lifetime statistics: {str(e)}")
 
 @api_router.get("/analytics/pillar-alignment")
-async def get_pillar_alignment(current_user: User = Depends(get_current_active_user)):
+async def get_pillar_alignment(request: Request):
     """Get pillar alignment distribution for user"""
     try:
+        current_user = await get_current_active_user_hybrid(request)
         logger.info(f"Analytics: Got user for pillar alignment - ID: {current_user.id}")
         alignment = await AnalyticsService.get_pillar_alignment_distribution(current_user.id)
         logger.info(f"Analytics: Pillar alignment calculated - {len(alignment)} pillars")
@@ -2366,9 +2368,10 @@ async def get_pillar_alignment(current_user: User = Depends(get_current_active_u
         raise HTTPException(status_code=500, detail=f"Failed to get pillar alignment: {str(e)}")
 
 @api_router.get("/analytics/alignment-snapshot")
-async def get_alignment_snapshot(current_user: User = Depends(get_current_active_user)):
+async def get_alignment_snapshot(request: Request):
     """Get complete alignment snapshot - MVP v1.2 Insights feature"""
     try:
+        current_user = await get_current_active_user_hybrid(request)
         logger.info(f"Analytics: Got user for alignment snapshot - ID: {current_user.id}")
         snapshot = await AnalyticsService.get_alignment_snapshot(current_user.id)
         logger.info(f"Analytics: Alignment snapshot generated")
