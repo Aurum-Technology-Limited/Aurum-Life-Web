@@ -527,7 +527,7 @@ class SupabaseTaskService:
                 'High': 'high'
             }
             
-            result['status'] = status_reverse_mapping.get(result.get('status'), 'pending')
+            result['status'] = status_reverse_mapping.get(result.get('status'), 'todo')
             result['priority'] = priority_reverse_mapping.get(result.get('priority'), 'medium')
             
             return result
