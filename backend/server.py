@@ -111,7 +111,7 @@ async def update_pillar(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.delete("/pillars/{pillar_id}")
-async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user)):
+async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     """Delete a pillar"""
     try:
         success = await SupabasePillarService.delete_pillar(pillar_id, str(current_user.id))
