@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   HomeIcon, 
   CalendarIcon, 
-  BoltIcon, 
+  LightningBoltIcon, 
   ViewGridIcon, 
   FolderIcon, 
   DocumentTextIcon, 
@@ -11,7 +11,7 @@ import {
   ChatIcon, 
   ChartBarIcon, 
   CogIcon, 
-  TrophyIcon, 
+  BadgeCheckIcon, 
   UserIcon,
   BeakerIcon,
   AdjustmentsIcon,
