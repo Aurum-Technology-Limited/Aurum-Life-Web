@@ -430,8 +430,8 @@ class SupabaseProjectService:
                 update_dict['color'] = project_data.color
             if project_data.icon is not None:
                 update_dict['icon'] = project_data.icon
-            if project_data.due_date is not None:
-                update_dict['due_date'] = project_data.due_date.isoformat() if project_data.due_date else None
+            if project_data.deadline is not None:
+                update_dict['deadline'] = project_data.deadline.isoformat() if project_data.deadline else None
             if project_data.is_active is not None:
                 update_dict['is_active'] = project_data.is_active
                 
