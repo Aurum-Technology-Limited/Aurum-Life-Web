@@ -30,7 +30,7 @@ const Layout = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
     { name: 'Today', href: '/today', icon: CalendarIcon },
-    { name: 'Pillars', href: '/pillars', icon: BoltIcon },
+    { name: 'Pillars', href: '/pillars', icon: LightningBoltIcon },
     { name: 'Areas', href: '/areas', icon: ViewGridIcon },
     { name: 'Projects', href: '/projects', icon: FolderIcon },
     { name: 'Tasks', href: '/tasks', icon: ClipboardListIcon },
@@ -39,7 +39,7 @@ const Layout = ({ children }) => {
     { name: 'Insights', href: '/insights', icon: ChartBarIcon },
     { name: 'Feedback', href: '/feedback', icon: ChatIcon },
     { name: 'AI Coach', href: '/ai-coach', icon: BeakerIcon },
-    { name: 'Achievements', href: '/achievements', icon: TrophyIcon },
+    { name: 'Achievements', href: '/achievements', icon: BadgeCheckIcon },
     { name: 'Notifications', href: '/notifications', icon: BellIcon },
   ];
 
