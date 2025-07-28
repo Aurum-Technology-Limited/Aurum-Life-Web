@@ -520,9 +520,9 @@ class SupabaseTaskService:
             }
             
             priority_reverse_mapping = {
-                'Low': 'low',
-                'Medium': 'medium',
-                'High': 'high'
+                'low': 'low',
+                'medium': 'medium',
+                'high': 'high'
             }
             
             result['status'] = status_reverse_mapping.get(result.get('status'), 'todo')
