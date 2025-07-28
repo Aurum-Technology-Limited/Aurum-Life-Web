@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 import logging
+import asyncio
 from typing import List, Optional
 from datetime import timedelta, datetime
 import time
