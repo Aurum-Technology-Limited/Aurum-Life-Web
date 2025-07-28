@@ -9,7 +9,6 @@ import aiohttp
 import json
 import os
 from supabase import create_client, Client
-from supabase.client import AuthClientError
 from dotenv import load_dotenv
 
 # Load environment variables
