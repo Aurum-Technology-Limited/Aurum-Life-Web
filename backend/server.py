@@ -720,17 +720,25 @@ async def get_pillars(
     include_archived: bool = Query(False, description="Include archived pillars"),
     current_user: User = Depends(get_current_active_user)
 ):
-    """🚀 HYPER-OPTIMIZED Pillars endpoint - Sub-200ms target"""
+    """🚀 HYPER-OPTIMIZED Pillars endpoint - Sub-200ms target with caching"""
     try:
-        start_time = time.time()
         user_id = str(current_user.id)
+        cache_key = get_cache_key("pillars", user_id, f"{include_areas}_{include_archived}")
+        
+        # 🚀 CHECK CACHE FIRST
+        cached_result = check_cache(cache_key)
+        if cached_result is not None:
+            logger.info(f"🚀 Pillars cache hit for user: {user_id}")
+            return cached_result
+        
+        start_time = time.time()
         
         # 🚀 SIMPLE FAST QUERY: Get pillars only
         query = {"user_id": user_id}
         if not include_archived:
             query["archived"] = {"$ne": True}
             
-        pillars_docs = await find_documents("pillars", query, limit=25)  # Reduced limit for speed
+        pillars_docs = await find_documents("pillars", query, limit=20)  # Further reduced
         
         # 🚀 STREAMLINED PROCESSING
         pillar_responses = []
@@ -747,6 +755,9 @@ async def get_pillars(
         
         response_time = (time.time() - start_time) * 1000
         logger.info(f"✅ HYPER-OPTIMIZED Pillars completed in {response_time:.1f}ms")
+        
+        # 🚀 CACHE THE RESULT
+        set_cache(cache_key, pillar_responses)
         
         return pillar_responses
         
