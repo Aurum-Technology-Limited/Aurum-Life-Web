@@ -140,11 +140,14 @@ class SupabaseCRUDTestSuite:
                     self.created_resources['areas'].append(area['id'])
                     
                     # Verify field mapping
+                    print(f"DEBUG: Area response: {area}")
                     if area.get('importance') == 4 and area.get('pillar_id') == pillar_id:
                         print("✅ Area created successfully with proper field mapping")
                         self.test_results.append({"test": "Area Creation", "status": "PASSED", "details": "Field mapping and pillar linking working"})
                     else:
                         print("❌ Area field mapping or pillar linking failed")
+                        print(f"Expected importance: 4, got: {area.get('importance')}")
+                        print(f"Expected pillar_id: {pillar_id}, got: {area.get('pillar_id')}")
                         self.test_results.append({"test": "Area Creation", "status": "FAILED", "reason": "Field mapping or linking incorrect"})
                         return False
                 else:
