@@ -189,9 +189,11 @@ class SupabaseAreaService:
                 'color': area_data.color or '#10B981',
                 'icon': area_data.icon or 'Circle',
                 'importance': area_data.importance or 'medium',
-                'is_active': True,
+                'archived': False,  # Map is_active to archived (inverted)
+                'sort_order': 0,
                 'created_at': datetime.utcnow().isoformat(),
-                'updated_at': datetime.utcnow().isoformat()
+                'updated_at': datetime.utcnow().isoformat(),
+                'date_created': datetime.utcnow().isoformat()
             }
             
             response = supabase.table('areas').insert(area_dict).execute()
