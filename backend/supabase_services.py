@@ -68,7 +68,7 @@ class SupabasePillarService:
                 'description': pillar_data.description or '',
                 'color': pillar_data.color or '#3B82F6',
                 'icon': pillar_data.icon or 'Target',
-                'time_allocation_percentage': pillar_data.time_allocation or 0,  # Map to existing column
+                'time_allocation_percentage': pillar_data.time_allocation_percentage or 0,  # Use correct field name
                 'archived': False,  # Map is_active to archived (inverted)
                 'sort_order': 0,
                 'created_at': datetime.utcnow().isoformat(),
