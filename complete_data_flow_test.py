@@ -208,7 +208,7 @@ class CompleteDataFlowTestSuite:
                 "area_id": self.created_areas[0],  # Exercise & Fitness
                 "icon": "🌅",
                 "priority": "high",
-                "status": "active"
+                "status": "In Progress"
             },
             {
                 "name": "Python Certification",
@@ -216,7 +216,7 @@ class CompleteDataFlowTestSuite:
                 "area_id": self.created_areas[1],  # Skill Development
                 "icon": "🐍",
                 "priority": "high",
-                "status": "active"
+                "status": "In Progress"
             },
             {
                 "name": "Weekly Family Dinners",
@@ -224,7 +224,7 @@ class CompleteDataFlowTestSuite:
                 "area_id": self.created_areas[2],  # Family Time
                 "icon": "🍽️",
                 "priority": "medium",
-                "status": "active"
+                "status": "In Progress"
             }
         ]
         
