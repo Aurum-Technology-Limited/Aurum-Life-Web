@@ -222,7 +222,7 @@ async def get_projects(
 async def update_project(
     project_id: str, 
     project_data: ProjectUpdate, 
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Update a project"""
     try:
