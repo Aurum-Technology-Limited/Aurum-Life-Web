@@ -95,10 +95,15 @@ class SupabasePillarService:
             query = supabase.table('pillars').select('*').eq('user_id', user_id)
             
             if not include_archived:
-                query = query.eq('is_active', True)
+                query = query.eq('archived', False)  # Use archived instead of is_active
                 
             response = query.execute()
             pillars = response.data or []
+            
+            # Transform data to match expected format
+            for pillar in pillars:
+                pillar['is_active'] = not pillar.get('archived', False)  # Transform archived to is_active
+                pillar['time_allocation'] = pillar.get('time_allocation_percentage', 0)  # Map field name
             
             # If include_areas is True, fetch areas for each pillar
             if include_areas and pillars:
