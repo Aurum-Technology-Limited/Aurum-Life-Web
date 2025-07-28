@@ -2340,6 +2340,40 @@ This feedback was submitted through the Aurum Life application.
         logger.error(f"Error submitting feedback: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to submit feedback")
 
+# Analytics endpoints - MVP v1.2 "Alignment Snapshot"
+@api_router.get("/analytics/lifetime-stats")
+async def get_lifetime_stats(request: Request):
+    """Get lifetime statistics for user"""
+    try:
+        current_user = await get_current_active_user_hybrid(request)
+        stats = await AnalyticsService.get_lifetime_stats(current_user.id)
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting lifetime stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get lifetime statistics")
+
+@api_router.get("/analytics/pillar-alignment")
+async def get_pillar_alignment(request: Request):
+    """Get pillar alignment distribution for user"""
+    try:
+        current_user = await get_current_active_user_hybrid(request)
+        alignment = await AnalyticsService.get_pillar_alignment_distribution(current_user.id)
+        return alignment
+    except Exception as e:
+        logger.error(f"Error getting pillar alignment: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get pillar alignment")
+
+@api_router.get("/analytics/alignment-snapshot")
+async def get_alignment_snapshot(request: Request):
+    """Get complete alignment snapshot - MVP v1.2 Insights feature"""
+    try:
+        current_user = await get_current_active_user_hybrid(request)
+        snapshot = await AnalyticsService.get_alignment_snapshot(current_user.id)
+        return snapshot
+    except Exception as e:
+        logger.error(f"Error getting alignment snapshot: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get alignment snapshot")
+
 # Include the routers in the main app
 app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
