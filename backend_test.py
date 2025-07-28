@@ -76,7 +76,7 @@ class SupabaseCRUDTestSuite:
                 "description": "Physical and mental health pillar",
                 "icon": "💪",
                 "color": "#10B981",
-                "time_allocation": 30.0  # Should map to time_allocation_percentage
+                "time_allocation_percentage": 30.0  # Correct field name
             }
             
             async with self.session.post(f"{API_BASE}/pillars", json=pillar_data, headers=self.get_auth_headers()) as response:
