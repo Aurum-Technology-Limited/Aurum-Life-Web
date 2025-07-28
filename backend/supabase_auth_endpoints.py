@@ -167,22 +167,43 @@ async def login_user(user_credentials: UserLogin):
                 legacy_user = await supabase_manager.find_document("users", {"email": user_credentials.email})
                 
                 if legacy_user:
-                    # For development, create a JWT token manually
-                    from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-                    from datetime import timedelta
+                    # Get Supabase Auth user ID for this email
+                    auth_user_id = await get_supabase_auth_user_id(user_credentials.email)
                     
-                    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-                    access_token = create_access_token(
-                        data={"sub": legacy_user['id']}, 
-                        expires_delta=access_token_expires
-                    )
-                    
-                    logger.info(f"✅ Legacy authentication successful for {user_credentials.email}")
-                    
-                    return {
-                        "access_token": access_token,
-                        "token_type": "bearer"
-                    }
+                    if auth_user_id:
+                        # Use Supabase Auth user ID for token
+                        from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+                        from datetime import timedelta
+                        
+                        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                        access_token = create_access_token(
+                            data={"sub": auth_user_id},  # Use auth user ID instead of legacy ID
+                            expires_delta=access_token_expires
+                        )
+                        
+                        logger.info(f"✅ Hybrid authentication successful for {user_credentials.email} with auth ID: {auth_user_id}")
+                        
+                        return {
+                            "access_token": access_token,
+                            "token_type": "bearer"
+                        }
+                    else:
+                        # Fallback to legacy user ID if auth user not found
+                        from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+                        from datetime import timedelta
+                        
+                        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                        access_token = create_access_token(
+                            data={"sub": legacy_user['id']}, 
+                            expires_delta=access_token_expires
+                        )
+                        
+                        logger.warning(f"⚠️ Using legacy user ID for {user_credentials.email} - auth user not found")
+                        
+                        return {
+                            "access_token": access_token,
+                            "token_type": "bearer"
+                        }
         
         # If both methods fail
         raise HTTPException(
