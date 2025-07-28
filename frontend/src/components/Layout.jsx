@@ -190,33 +190,25 @@ const Layout = ({ children, activeSection, onSectionChange }) => {
             <div className="relative user-menu-container">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className={`
-                  w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-200
-                  ${sidebarCollapsed ? 'justify-center' : ''}
-                `}
-                title={sidebarCollapsed ? `${user?.first_name || 'User'} Menu` : ''}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-200"
               >
                 <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-gray-900 font-semibold text-sm">
                     {user?.first_name?.[0] || user?.username?.[0] || user?.email?.[0] || 'U'}
                   </span>
                 </div>
-                {!sidebarCollapsed && (
-                  <>
-                    <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-white truncate">
-                        {user?.first_name && user?.last_name 
-                          ? `${user.first_name} ${user.last_name}`
-                          : user?.username || user?.email || 'User'
-                        }
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Level {user?.level || 1} • {user?.total_points || 0} pts
-                      </div>
-                    </div>
-                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
-                  </>
-                )}
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-white truncate">
+                    {user?.first_name && user?.last_name 
+                      ? `${user.first_name} ${user.last_name}`
+                      : user?.username || user?.email || 'User'
+                    }
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Level {user?.level || 1} • {user?.total_points || 0} pts
+                  </div>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
               </button>
               
               {showUserMenu && (
