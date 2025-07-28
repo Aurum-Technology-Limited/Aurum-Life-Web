@@ -841,9 +841,14 @@ async def get_areas(
         # 🚀 SIMPLE FAST QUERY: Get areas only without complex joins
         query = {"user_id": user_id}
         if not include_archived:
-            query["archived"] = {"$ne": True}
+            # Use proper Supabase query - get all areas and filter archived in Python
+            pass  # We'll filter archived areas after fetching
             
         areas_docs = await find_documents("areas", query, limit=25)  # Reduced limit for speed
+        
+        # Filter archived areas if needed
+        if not include_archived:
+            areas_docs = [area for area in areas_docs if not area.get('archived', False)]
         
         # 🚀 STREAMLINED PROCESSING: Minimal processing for speed
         area_responses = []
