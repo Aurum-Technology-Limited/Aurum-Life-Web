@@ -127,7 +127,7 @@ async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current
 # ================================
 
 @api_router.post("/areas", response_model=dict)
-async def create_area(area_data: AreaCreate, current_user: User = Depends(get_current_active_user)):
+async def create_area(area_data: AreaCreate, current_user: User = Depends(get_current_active_user_hybrid)):
     """Create a new area"""
     try:
         result = await SupabaseAreaService.create_area(str(current_user.id), area_data)
