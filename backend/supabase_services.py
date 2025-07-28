@@ -626,7 +626,7 @@ class SupabaseTaskService:
                 'updated_at': datetime.utcnow().isoformat()
             }
             
-            # Only include fields that are provided
+            # Only include fields that are provided and map to correct database fields
             if task_data.name is not None:
                 update_dict['name'] = task_data.name
             if task_data.description is not None:
@@ -634,9 +634,22 @@ class SupabaseTaskService:
             if task_data.project_id is not None:
                 update_dict['project_id'] = task_data.project_id
             if task_data.status is not None:
-                update_dict['status'] = task_data.status
+                # Map backend status to database status
+                status_mapping = {
+                    'pending': 'todo',
+                    'in_progress': 'in_progress',
+                    'completed': 'completed',
+                    'cancelled': 'cancelled'
+                }
+                update_dict['status'] = status_mapping.get(task_data.status, task_data.status)
             if task_data.priority is not None:
-                update_dict['priority'] = task_data.priority
+                # Map backend priority to database priority
+                priority_mapping = {
+                    'low': 'Low',
+                    'medium': 'Medium',
+                    'high': 'High'
+                }
+                update_dict['priority'] = priority_mapping.get(task_data.priority, task_data.priority)
             if task_data.kanban_column is not None:
                 update_dict['kanban_column'] = task_data.kanban_column
             if task_data.due_date is not None:
@@ -654,7 +667,25 @@ class SupabaseTaskService:
                 raise Exception("Task not found or no changes made")
                 
             logger.info(f"✅ Updated task: {task_id} for user: {user_id}")
-            return response.data[0]
+            result = response.data[0]
+            
+            # Transform back to expected format
+            status_reverse_mapping = {
+                'todo': 'pending',
+                'in_progress': 'in_progress',
+                'completed': 'completed',
+                'cancelled': 'cancelled'
+            }
+            result['status'] = status_reverse_mapping.get(result.get('status'), result.get('status'))
+            
+            priority_reverse_mapping = {
+                'Low': 'low',
+                'Medium': 'medium',
+                'High': 'high'
+            }
+            result['priority'] = priority_reverse_mapping.get(result.get('priority'), result.get('priority'))
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error updating task: {e}")
