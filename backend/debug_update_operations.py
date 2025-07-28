@@ -28,8 +28,8 @@ def test_update_operations():
     
     print("🔧 TESTING UPDATE OPERATIONS...")
     
-    # Test user ID (known to exist)
-    test_user_id = "27849b87-02f5-4a97-9215-cdcfad231cc6"  # final.test@aurumlife.com
+    # Test user ID (known to work from previous tests)
+    test_user_id = "2d9fb107-0f47-42f9-b29b-605e96850599"  # nav.test@aurumlife.com
     
     # Create test entities first
     test_pillar_id = str(uuid.uuid4())
