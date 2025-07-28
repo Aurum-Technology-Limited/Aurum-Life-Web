@@ -188,7 +188,7 @@ function App() {
                 <DndProvider backend={HTML5Backend}>
                   <div className="App">
                   <ProtectedRoute>
-                    <Layout 
+                    <SimpleLayout 
                       activeSection={activeSection} 
                       onSectionChange={handleSectionChange}
                     >
