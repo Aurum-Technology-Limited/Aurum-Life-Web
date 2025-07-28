@@ -38,6 +38,15 @@ load_dotenv(ROOT_DIR / '.env')
 # Create the main app
 app = FastAPI(title="Aurum Life API", version="1.0.0")
 
+# CORS middleware - MUST be added BEFORE routers
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins for development
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE)
+    allow_headers=["*"],  # Allow all headers
+)
+
 # Create API router
 api_router = APIRouter(prefix="/api")
 
