@@ -160,7 +160,7 @@ async def get_areas(
 async def update_area(
     area_id: str, 
     area_data: AreaUpdate, 
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Update an area"""
     try:
