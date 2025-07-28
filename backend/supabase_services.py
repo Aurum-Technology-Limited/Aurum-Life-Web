@@ -103,7 +103,7 @@ class SupabasePillarService:
             # Transform data to match expected format
             for pillar in pillars:
                 pillar['is_active'] = not pillar.get('archived', False)  # Transform archived to is_active
-                pillar['time_allocation'] = pillar.get('time_allocation_percentage', 0)  # Map field name
+                pillar['time_allocation'] = pillar.get('time_allocation_percentage', 0)  # Map field name back
             
             # If include_areas is True, fetch areas for each pillar
             if include_areas and pillars:
