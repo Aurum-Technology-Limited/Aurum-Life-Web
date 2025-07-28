@@ -1,246 +1,135 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
-  Home, 
-  Calendar, 
-  Target, 
-  FolderOpen, 
-  CheckSquare, 
-  BookOpen, 
-  MessageSquare, 
-  Bot, 
-  Trophy, 
-  User, 
-  BarChart3, 
-  Settings,
-  Bell,
-  Menu,
-  X,
-  ChevronDown,
-  LogOut,
-  Mountain
-} from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { useNotification } from '../contexts/NotificationContext';
-import NotificationManager from './NotificationManager';
+  HomeIcon, 
+  CalendarIcon, 
+  BoltIcon, 
+  ViewGridIcon, 
+  FolderIcon, 
+  DocumentTextIcon, 
+  ClipboardListIcon, 
+  ChatIcon, 
+  ChartBarIcon, 
+  CogIcon, 
+  TrophyIcon, 
+  UserIcon,
+  BeakerIcon,
+  AdjustmentsIcon,
+  BellIcon
+} from '@heroicons/react/outline';
 import UserMenu from './UserMenu';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 
-const Layout = ({ children, activeSection, onSectionChange }) => {
-  const { user, logout } = useAuth();
-  const { notifications } = useNotification();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+const Layout = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Navigation items
-  const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'today', label: 'Today', icon: Calendar },
-    { id: 'pillars', label: 'Pillars', icon: Mountain },
-    { id: 'areas', label: 'Areas', icon: Target },
-    { id: 'projects', label: 'Projects', icon: FolderOpen },
-    { id: 'project-templates', label: 'Templates', icon: BookOpen },
-    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-    { id: 'journal', label: 'Journal', icon: BookOpen },
-    { id: 'insights', label: 'Insights', icon: BarChart3 },
-    { id: 'feedback', label: 'Feedback', icon: MessageSquare },
-    { id: 'ai-coach', label: 'AI Coach', icon: Bot },
-    { id: 'achievements', label: 'Achievements', icon: Trophy },
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+    { name: 'Today', href: '/today', icon: CalendarIcon },
+    { name: 'Pillars', href: '/pillars', icon: BoltIcon },
+    { name: 'Areas', href: '/areas', icon: ViewGridIcon },
+    { name: 'Projects', href: '/projects', icon: FolderIcon },
+    { name: 'Tasks', href: '/tasks', icon: ClipboardListIcon },
+    { name: 'Templates', href: '/templates', icon: DocumentTextIcon },
+    { name: 'Journal', href: '/journal', icon: DocumentTextIcon },
+    { name: 'Insights', href: '/insights', icon: ChartBarIcon },
+    { name: 'Feedback', href: '/feedback', icon: ChatIcon },
+    { name: 'AI Coach', href: '/ai-coach', icon: BeakerIcon },
+    { name: 'Achievements', href: '/achievements', icon: TrophyIcon },
+    { name: 'Notifications', href: '/notifications', icon: BellIcon },
   ];
 
-  const handleNavigation = (sectionId) => {
-    console.log('🔄 Layout: Navigating to', sectionId);
-    onSectionChange(sectionId);
-    setSidebarOpen(false); // Close mobile sidebar
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setShowUserMenu(false);
-    } catch (error) {
-      console.error('Logout error:', error);
+  const isActive = (href) => {
+    if (href === '/dashboard' && (location.pathname === '/' || location.pathname === '/dashboard')) {
+      return true;
     }
+    return location.pathname === href;
   };
 
-  // Close user menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showUserMenu && !event.target.closest('.user-menu-container')) {
-        setShowUserMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showUserMenu]);
-
-  // Close mobile sidebar when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sidebarOpen && !event.target.closest('.sidebar-container') && !event.target.closest('.mobile-menu-button')) {
-        setSidebarOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [sidebarOpen]);
+  const handleNavClick = (href) => {
+    navigate(href);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      {/* Mobile Header */}
-      <div className="lg:hidden bg-gray-900 border-b border-gray-700 px-4 py-3 flex items-center justify-between relative z-50">
-        <div className="flex items-center gap-3">
+    <div className="flex h-screen bg-[#0B0D14]">
+      {/* Sidebar */}
+      <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-gray-900 transition-all duration-300 ease-in-out flex flex-col border-r border-gray-700`}>
+        {/* Logo and collapse button */}
+        <div className="flex items-center justify-between p-4">
+          {!sidebarCollapsed && (
+            <div className="flex items-center space-x-2">
+              <div className="bg-yellow-500 text-black px-2 py-1 rounded font-bold">AL</div>
+              <span className="text-white font-semibold">Aurum Life</span>
+            </div>
+          )}
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="mobile-menu-button text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-gray-800"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           >
-            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <AdjustmentsIcon className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold text-white">Aurum Life</h1>
         </div>
-        
-        <div className="flex items-center gap-3">
-          {/* Notifications */}
-          <div className="relative">
-            <button className="text-gray-400 hover:text-white relative transition-colors p-1 rounded-md hover:bg-gray-800">
-              <Bell className="h-6 w-6" />
-              {notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                  {notifications.length}
-                </span>
-              )}
-            </button>
-          </div>
-          
-          {/* User Menu */}
-          <div className="relative user-menu-container">
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-gray-800"
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-gray-900 font-semibold text-sm">
-                  {user?.first_name?.[0] || user?.username?.[0] || user?.email?.[0] || 'U'}
-                </span>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+          {navigation.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <button
+                key={item.name}
+                onClick={() => handleNavClick(item.href)}
+                className={`group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                  active
+                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+                title={sidebarCollapsed ? item.name : ''}
+              >
+                <item.icon
+                  className={`${sidebarCollapsed ? 'h-6 w-6' : 'h-5 w-5'} ${
+                    active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
+                  } ${sidebarCollapsed ? '' : 'mr-3'} transition-colors`}
+                  aria-hidden="true"
+                />
+                {!sidebarCollapsed && item.name}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* User menu */}
+        <div className="p-4 border-t border-gray-700">
+          <UserMenu />
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top header */}
+        <header className="bg-gray-900 border-b border-gray-700 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold text-white">
+              {navigation.find(item => isActive(item.href))?.name || 'Aurum Life'}
+            </h1>
+            {user && (
+              <div className="flex items-center space-x-4">
+                <div className="text-gray-300 text-sm">
+                  Level {user.level || 1} • {user.total_points || 0} pts
+                </div>
               </div>
-              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {showUserMenu && (
-              <UserMenu 
-                user={user} 
-                onClose={() => setShowUserMenu(false)}
-                onNavigate={handleNavigation}
-                onLogout={handleLogout}
-              />
             )}
           </div>
-        </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto bg-[#0B0D14] p-6">
+          {children}
+        </main>
       </div>
-
-      <div className="flex min-h-screen">
-        {/* Fixed Sidebar - Always positioned fixed for smooth experience */}
-        <div className={`
-          sidebar-container fixed top-0 left-0 h-full bg-gray-900 border-r border-gray-700 transition-all duration-300 ease-in-out z-40 w-64
-          ${sidebarOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full'}
-          shadow-xl
-        `}>
-          {/* Logo */}
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-700 bg-gray-800/50">
-            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-gray-900 font-bold text-sm">AL</span>
-            </div>
-            <h1 className="text-xl font-bold text-white">Aurum Life</h1>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeSection === item.id;
-              
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavigation(item.id)}
-                  className={`
-                    group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-gray-900 font-medium shadow-lg transform scale-105' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50 hover:transform hover:scale-102'
-                    }
-                  `}
-                >
-                  <Icon className={`h-5 w-5 ${isActive ? 'text-gray-900' : 'text-gray-400 group-hover:text-white'} transition-colors`} />
-                  <span className="truncate">{item.label}</span>
-                  {isActive && (
-                    <div className="ml-auto w-2 h-2 bg-gray-900 rounded-full"></div>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* User Section - Desktop */}
-          <div className="border-t border-gray-700 p-4 bg-gray-800/30">
-            <div className="relative user-menu-container">
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-200"
-              >
-                <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
-                  <span className="text-gray-900 font-semibold text-sm">
-                    {user?.first_name?.[0] || user?.username?.[0] || user?.email?.[0] || 'U'}
-                  </span>
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="text-sm font-medium text-white truncate">
-                    {user?.first_name && user?.last_name 
-                      ? `${user.first_name} ${user.last_name}`
-                      : user?.username || user?.email || 'User'
-                    }
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Level {user?.level || 1} • {user?.total_points || 0} pts
-                  </div>
-                </div>
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {showUserMenu && (
-                <UserMenu 
-                  user={user} 
-                  onClose={() => setShowUserMenu(false)}
-                  onNavigate={handleNavigation}
-                  onLogout={handleLogout}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Overlay */}
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        {/* Main Content */}
-        <div className="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-64">
-          <main className="h-full">
-            {children}
-          </main>
-        </div>
-      </div>
-
-      {/* Notification Manager */}
-      <NotificationManager />
     </div>
   );
 };

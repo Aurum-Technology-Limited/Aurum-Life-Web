@@ -1,103 +1,107 @@
-import React from 'react';
-import { User, Settings, Bell, LogOut, Trophy, BarChart3 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../contexts/SupabaseAuthContext';
+import { UserIcon, CogIcon, LogoutIcon } from '@heroicons/react/outline';
 
-const UserMenu = ({ user, onClose, onNavigate, onLogout }) => {
-  const handleMenuClick = (action) => {
-    if (action === 'logout') {
-      onLogout();
-    } else {
-      onNavigate(action);
-    }
-    onClose();
+const UserMenu = () => {
+  const { user, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false);
   };
 
+  if (!user) return null;
+
+  const initials = user.first_name && user.last_name 
+    ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
+    : user.email?.[0]?.toUpperCase() || 'U';
+
   return (
-    <div className="absolute bottom-full mb-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-in slide-in-from-bottom-2 duration-200 right-0 w-64">
-      {/* User Info */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-gray-900 font-semibold">
-              {user?.first_name?.[0] || user?.username?.[0] || user?.email?.[0] || 'U'}
-            </span>
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center w-full p-2 text-left text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
+      >
+        <div className="flex items-center min-w-0 flex-1">
+          <div className="flex-shrink-0">
+            {user.profile_picture ? (
+              <img
+                className="h-8 w-8 rounded-full"
+                src={user.profile_picture}
+                alt="Profile"
+              />
+            ) : (
+              <div className="h-8 w-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                <span className="text-black font-medium text-sm">{initials}</span>
+              </div>
+            )}
           </div>
-          <div className="flex-1">
-            <div className="text-white font-medium truncate">
-              {user?.first_name && user?.last_name 
+          <div className="ml-3 overflow-hidden">
+            <p className="text-sm font-medium text-white truncate">
+              {user.first_name && user.last_name 
                 ? `${user.first_name} ${user.last_name}`
-                : user?.username || user?.email || 'User'
+                : user.username || user.email
               }
-            </div>
-            <div className="text-gray-400 text-sm truncate">{user?.email}</div>
+            </p>
+            <p className="text-xs text-gray-400 truncate">
+              Level {user.level || 1} • {user.total_points || 0} pts
+            </p>
           </div>
         </div>
-        
-        <div className="mt-3 flex items-center justify-between text-sm">
-          <span className="text-gray-400">Level {user?.level || 1}</span>
-          <span className="text-yellow-500 font-medium">{user?.total_points || 0} points</span>
-        </div>
-        
-        {user?.current_streak > 0 && (
-          <div className="mt-1 text-sm text-gray-400">
-            🔥 {user.current_streak} day streak
+      </button>
+
+      {isOpen && (
+        <div className="absolute bottom-full left-0 w-48 mb-2 bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-700">
+          <div className="px-4 py-2 border-b border-gray-700">
+            <p className="text-sm font-medium text-white">
+              {user.first_name && user.last_name 
+                ? `${user.first_name} ${user.last_name}`
+                : user.username || user.email
+              }
+            </p>
+            <p className="text-xs text-gray-400">{user.email}</p>
           </div>
-        )}
-      </div>
-
-      {/* Menu Items */}
-      <div className="py-2">
-        <button
-          onClick={() => handleMenuClick('profile')}
-          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-        >
-          <User className="h-4 w-4" />
-          <span>Profile</span>
-        </button>
-        
-        <button
-          onClick={() => handleMenuClick('achievements')}
-          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-        >
-          <Trophy className="h-4 w-4" />
-          <span>Achievements</span>
-        </button>
-        
-        <button
-          onClick={() => handleMenuClick('insights')}
-          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-        >
-          <BarChart3 className="h-4 w-4" />
-          <span>Insights</span>
-        </button>
-        
-        <button
-          onClick={() => handleMenuClick('notification-settings')}
-          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-        >
-          <Bell className="h-4 w-4" />
-          <span>Notifications</span>
-        </button>
-        
-        <button
-          onClick={() => handleMenuClick('profile')}
-          className="w-full flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-        >
-          <Settings className="h-4 w-4" />
-          <span>Settings</span>
-        </button>
-      </div>
-
-      {/* Logout */}
-      <div className="border-t border-gray-700 py-2">
-        <button
-          onClick={() => handleMenuClick('logout')}
-          className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-gray-700 transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          <span>Sign Out</span>
-        </button>
-      </div>
+          
+          <button
+            onClick={() => {/* Navigate to profile */}}
+            className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+          >
+            <UserIcon className="h-4 w-4 mr-2" />
+            Profile
+          </button>
+          
+          <button
+            onClick={() => {/* Navigate to settings */}}
+            className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+          >
+            <CogIcon className="h-4 w-4 mr-2" />
+            Settings
+          </button>
+          
+          <div className="border-t border-gray-700 my-1"></div>
+          
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
+          >
+            <LogoutIcon className="h-4 w-4 mr-2" />
+            Sign out
+          </button>
+        </div>
+      )}
     </div>
   );
 };
