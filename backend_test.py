@@ -197,7 +197,7 @@ class SupabaseCRUDTestSuite:
                     self.created_resources['projects'].append(project['id'])
                     
                     # Verify enum mapping
-                    if (project.get('status') == 'not_started' and 
+                    if (project.get('status') == 'Not Started' and 
                         project.get('priority') == 'high' and 
                         project.get('area_id') == area_id):
                         print("✅ Project created successfully with proper enum mapping")
