@@ -189,7 +189,7 @@ async def delete_area(area_id: str, current_user: User = Depends(get_current_act
 # ================================
 
 @api_router.post("/projects", response_model=dict)
-async def create_project(project_data: ProjectCreate, current_user: User = Depends(get_current_active_user)):
+async def create_project(project_data: ProjectCreate, current_user: User = Depends(get_current_active_user_hybrid)):
     """Create a new project"""
     try:
         result = await SupabaseProjectService.create_project(str(current_user.id), project_data)
