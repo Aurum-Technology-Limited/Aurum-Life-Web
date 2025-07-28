@@ -550,6 +550,24 @@ class SupabaseTaskService:
             response = query.execute()
             tasks = response.data or []
             
+            # Transform data to match expected format
+            status_reverse_mapping = {
+                'todo': 'pending',
+                'in_progress': 'in_progress',
+                'completed': 'completed',
+                'cancelled': 'cancelled'
+            }
+            
+            priority_reverse_mapping = {
+                'Low': 'low',
+                'Medium': 'medium',
+                'High': 'high'
+            }
+            
+            for task in tasks:
+                task['status'] = status_reverse_mapping.get(task.get('status'), 'pending')
+                task['priority'] = priority_reverse_mapping.get(task.get('priority'), 'medium')
+            
             logger.info(f"✅ Retrieved {len(tasks)} tasks for user: {user_id}")
             return tasks
             
