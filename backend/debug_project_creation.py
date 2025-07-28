@@ -40,7 +40,7 @@ def test_project_creation():
         'description': 'Debug area',
         'color': '#10B981',
         'icon': 'Circle',
-        'importance': 'medium',
+        'importance': 3,  # Use integer directly
         'archived': False,
         'sort_order': 0,
         'created_at': datetime.utcnow().isoformat(),
