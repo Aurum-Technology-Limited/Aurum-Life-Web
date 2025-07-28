@@ -230,8 +230,17 @@ class SupabaseAreaService:
             areas = response.data or []
             
             # Transform data to match expected format
+            importance_reverse_mapping = {
+                1: 'low',
+                2: 'medium_low', 
+                3: 'medium',
+                4: 'medium_high',
+                5: 'high'
+            }
+            
             for area in areas:
                 area['is_active'] = not area.get('archived', False)  # Transform archived to is_active
+                area['importance'] = importance_reverse_mapping.get(area.get('importance'), 'medium')  # Map back to string
             
             # If include_projects is True, fetch projects for each area
             if include_projects and areas:
