@@ -905,7 +905,7 @@ async def get_projects(
         if not include_archived:
             query["archived"] = {"$ne": True}
             
-        projects_docs = await find_documents("projects", query, limit=50)
+        projects_docs = await find_documents("projects", query, limit=25)  # Reduced limit for speed
         
         # 🚀 STREAMLINED PROCESSING
         project_responses = []
