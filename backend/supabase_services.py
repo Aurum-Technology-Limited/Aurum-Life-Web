@@ -306,20 +306,37 @@ class SupabaseProjectService:
     async def create_project(user_id: str, project_data: ProjectCreate) -> Dict[str, Any]:
         """Create a new project"""
         try:
+            # Map backend status to database status
+            status_mapping = {
+                'not_started': 'Not Started',
+                'in_progress': 'In Progress', 
+                'completed': 'Completed',
+                'on_hold': 'On Hold'
+            }
+            
+            priority_mapping = {
+                'low': 'Low',
+                'medium': 'Medium',
+                'high': 'High'
+            }
+            
             project_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
                 'area_id': project_data.area_id,
                 'name': project_data.name,
                 'description': project_data.description or '',
-                'status': project_data.status or 'not_started',
-                'priority': project_data.priority or 'medium',
+                'status': status_mapping.get(project_data.status or 'not_started', 'Not Started'),
+                'priority': priority_mapping.get(project_data.priority or 'medium', 'Medium'),
                 'color': project_data.color or '#F59E0B',
                 'icon': project_data.icon or 'FolderOpen',
-                'due_date': project_data.due_date.isoformat() if project_data.due_date else None,
-                'is_active': True,
+                'deadline': project_data.due_date.isoformat() if project_data.due_date else None,
+                'archived': False,  # Map is_active to archived (inverted)
+                'sort_order': 0,
+                'completion_percentage': 0,
                 'created_at': datetime.utcnow().isoformat(),
-                'updated_at': datetime.utcnow().isoformat()
+                'updated_at': datetime.utcnow().isoformat(),
+                'date_created': datetime.utcnow().isoformat()
             }
             
             response = supabase.table('projects').insert(project_dict).execute()
@@ -328,7 +345,13 @@ class SupabaseProjectService:
                 raise Exception("Failed to create project")
                 
             logger.info(f"✅ Created project: {project_data.name} for user: {user_id}")
-            return response.data[0]
+            result = response.data[0]
+            
+            # Transform back to expected format
+            result['due_date'] = result.get('deadline')
+            result['is_active'] = not result.get('archived', False)
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error creating project: {e}")
