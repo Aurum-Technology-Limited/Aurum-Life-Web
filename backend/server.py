@@ -204,7 +204,7 @@ async def create_project(project_data: ProjectCreate, current_user: User = Depen
 async def get_projects(
     include_tasks: bool = Query(False, description="Include project tasks"),
     include_archived: bool = Query(False, description="Include archived projects"),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Get user's projects"""
     try:
