@@ -330,14 +330,15 @@ class SupabaseProjectService:
                 'area_id': project_data.area_id,
                 'name': project_data.name,
                 'description': project_data.description or '',
-                'status': project_data.status or 'Not Started',  # Use enum value directly
-                'priority': project_data.priority or 'medium',   # Use enum value directly
+                'status': project_data.status or 'Not Started',  # Database uses display names
+                'priority': project_data.priority or 'medium',   # Database uses lowercase
                 'color': project_data.color or '#F59E0B',
                 'icon': project_data.icon or 'FolderOpen',
-                'deadline': project_data.deadline.isoformat() if project_data.deadline else None,
+                'deadline': project_data.due_date.isoformat() if getattr(project_data, 'due_date', None) else None,
+                'importance': 3,  # Default importance as integer
                 'archived': False,  # Map is_active to archived (inverted)
                 'sort_order': 0,
-                'completion_percentage': 0,
+                'completion_percentage': 0.0,  # Float as per database
                 'created_at': datetime.utcnow().isoformat(),
                 'updated_at': datetime.utcnow().isoformat(),
                 'date_created': datetime.utcnow().isoformat()
