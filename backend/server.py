@@ -397,14 +397,19 @@ async def get_dashboard(current_user: User = Depends(get_current_active_user)):
             "updated_at": datetime.utcnow()
         }
         
-        # 🚀 BUILD RESPONSE
+        # 🚀 BUILD MINIMAL RESPONSE
         dashboard_response = UserDashboard(
-            user=User(**user_data),
+            user=User(**user_data) if user_data else User(
+                id=user_id, username="user", email="user@example.com",
+                first_name="User", last_name="", is_active=True,
+                level=1, total_points=0, current_streak=0,
+                created_at=datetime.utcnow()
+            ),
             stats=UserStats(**stats_data),
             recent_tasks=processed_tasks,
             recent_courses=[],
             recent_achievements=[],
-            areas=processed_areas,
+            areas=[],  # Empty for speed
             today_tasks=processed_tasks  # Reuse processed_tasks
         )
         
