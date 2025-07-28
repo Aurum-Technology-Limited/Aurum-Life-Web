@@ -283,7 +283,7 @@ class SupabaseAreaService:
                 'updated_at': datetime.utcnow().isoformat()
             }
             
-            # Only include fields that are provided
+            # Only include fields that are provided and map to correct database fields
             if area_data.name is not None:
                 update_dict['name'] = area_data.name
             if area_data.description is not None:
@@ -295,9 +295,18 @@ class SupabaseAreaService:
             if area_data.icon is not None:
                 update_dict['icon'] = area_data.icon
             if area_data.importance is not None:
-                update_dict['importance'] = area_data.importance
-            if area_data.is_active is not None:
-                update_dict['is_active'] = area_data.is_active
+                # Map importance string to integer
+                importance_mapping = {
+                    'low': 1,
+                    'medium': 3,
+                    'high': 5
+                }
+                if isinstance(area_data.importance, str):
+                    update_dict['importance'] = importance_mapping.get(area_data.importance, 3)
+                else:
+                    update_dict['importance'] = area_data.importance
+            if getattr(area_data, 'is_active', None) is not None:
+                update_dict['archived'] = not area_data.is_active  # Map is_active to archived (inverted)
                 
             response = supabase.table('areas').update(update_dict).eq('id', area_id).eq('user_id', user_id).execute()
             
@@ -305,7 +314,14 @@ class SupabaseAreaService:
                 raise Exception("Area not found or no changes made")
                 
             logger.info(f"✅ Updated area: {area_id} for user: {user_id}")
-            return response.data[0]
+            result = response.data[0]
+            
+            # Transform back to expected format
+            result['is_active'] = not result.get('archived', False)  # Transform archived to is_active
+            importance_reverse_mapping = {1: 'low', 3: 'medium', 5: 'high'}
+            result['importance'] = importance_reverse_mapping.get(result.get('importance'), 'medium')
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error updating area: {e}")
