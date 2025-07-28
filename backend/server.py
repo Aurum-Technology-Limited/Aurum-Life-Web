@@ -851,15 +851,23 @@ async def unarchive_pillar(pillar_id: str, current_user: User = Depends(get_curr
 async def delete_pillar(pillar_id: str, request: Request):
     """Delete a pillar and unlink associated areas"""
     try:
+        if not pillar_id or pillar_id.strip() == "":
+            raise HTTPException(status_code=400, detail="Pillar ID is required")
+            
         current_user = await get_current_active_user_hybrid(request)
+        logger.info(f"Deleting pillar {pillar_id} for user {current_user.id}")
+        
         success = await PillarService.delete_pillar(current_user.id, pillar_id)
         if not success:
             raise HTTPException(status_code=404, detail="Pillar not found")
+            
+        logger.info(f"✅ Pillar {pillar_id} deleted successfully")
         return {"success": True, "message": "Pillar deleted successfully"}
     except ValueError as e:
+        logger.error(f"ValueError deleting pillar {pillar_id}: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error deleting pillar: {e}")
+        logger.error(f"Error deleting pillar {pillar_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Area endpoints
