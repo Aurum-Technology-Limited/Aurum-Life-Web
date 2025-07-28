@@ -251,7 +251,7 @@ async def delete_project(project_id: str, current_user: User = Depends(get_curre
 # ================================
 
 @api_router.post("/tasks", response_model=dict)
-async def create_task(task_data: TaskCreate, current_user: User = Depends(get_current_active_user)):
+async def create_task(task_data: TaskCreate, current_user: User = Depends(get_current_active_user_hybrid)):
     """Create a new task"""
     try:
         result = await SupabaseTaskService.create_task(str(current_user.id), task_data)
