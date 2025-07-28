@@ -1669,6 +1669,10 @@ class TaskService:
         
         task = Task(user_id=user_id, sort_order=max_sort_order + 1, **task_data.dict())
         
+        # Debug: Print task data before processing
+        logger.info(f"Task data before processing: {task_data.dict()}")
+        logger.info(f"Task object parent_task_id: {task.parent_task_id}")
+        
         # Set initial kanban column based on status
         if task.status == TaskStatusEnum.in_progress:
             task.kanban_column = "in_progress"
@@ -1682,8 +1686,10 @@ class TaskService:
             task.kanban_column = "to_do"
         
         task_dict = task.dict()
+        logger.info(f"Task dict before filtering: {task_dict}")
         # Fix None values for UUID fields - remove None values to let database handle defaults
         task_dict = {k: v for k, v in task_dict.items() if v is not None and v != "None"}
+        logger.info(f"Task dict after filtering: {task_dict}")
         await create_document("tasks", task_dict)
         
         # 🚀 THE ARCHITECT'S EVENT TRIGGER: Calculate initial score for new task
