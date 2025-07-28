@@ -43,7 +43,7 @@ class SupabaseCRUDTestSuite:
                 "password": self.test_user_password
             }
             
-            async with self.session.post(f"{API_BASE}/auth/login", json=login_data) as response:
+            async with self.session.post(f"{AUTH_BASE}/login", json=login_data) as response:
                 if response.status == 200:
                     data = await response.json()
                     self.auth_token = data["access_token"]
