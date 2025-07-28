@@ -173,7 +173,18 @@ async def root():
 
 @api_router.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "aurum-life-api"}
+    """Health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {"message": "Aurum Life API", "version": "1.0.0", "status": "running"}
+
+@app.get("/favicon.ico")
+async def favicon():
+    """Favicon endpoint to prevent 404 errors"""
+    return {"message": "No favicon configured"}
 
 @api_router.get("/test-fast")
 async def test_fast_endpoint():
