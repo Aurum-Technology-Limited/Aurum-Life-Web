@@ -1664,7 +1664,19 @@ class TaskService:
             raise ValueError(f"Project with ID {task_data.project_id} not found or does not belong to user")
         
         # Get the current max sort_order for this project
-        tasks = await find_documents("tasks", {"user_id": user_id, "project_id": task_data.project_id, "parent_task_id": task_data.parent_task_id})
+        # Build query for existing tasks, handling None parent_task_id properly
+        query = {"user_id": user_id, "project_id": task_data.project_id}
+        if task_data.parent_task_id is not None:
+            query["parent_task_id"] = task_data.parent_task_id
+        else:
+            # For tasks with no parent, we need to query for tasks where parent_task_id is NULL
+            # This is handled differently in Supabase - we'll get all tasks and filter in Python
+            pass
+            
+        tasks = await find_documents("tasks", query)
+        # Filter out tasks with parent_task_id if we're looking for root tasks
+        if task_data.parent_task_id is None:
+            tasks = [task for task in tasks if task.get("parent_task_id") is None]
         max_sort_order = max([task.get("sort_order", 0) for task in tasks] + [0])
         
         task = Task(user_id=user_id, sort_order=max_sort_order + 1, **task_data.dict())
