@@ -342,6 +342,9 @@ async def get_today_view(current_user: User = Depends(get_current_active_user_hy
         logger.error(f"Error getting today view: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+# Include authentication routes under /api
+api_router.include_router(auth_router, prefix="/auth")
+
 # Include API router
 app.include_router(api_router)
 
