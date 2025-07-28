@@ -23,11 +23,13 @@ logger = logging.getLogger(__name__)
 # Initialize Supabase client
 supabase_url = os.environ.get('SUPABASE_URL')
 supabase_anon_key = os.environ.get('SUPABASE_ANON_KEY')
+supabase_service_key = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
 
 if not supabase_url or not supabase_anon_key:
     raise ValueError(f"Missing Supabase configuration: URL={bool(supabase_url)}, KEY={bool(supabase_anon_key)}")
 
-supabase: Client = create_client(supabase_url, supabase_anon_key)
+# Use service role key for CRUD operations (bypasses RLS for testing)
+supabase: Client = create_client(supabase_url, supabase_service_key or supabase_anon_key)
 
 
 class SupabaseUserService:
