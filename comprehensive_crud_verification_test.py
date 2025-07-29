@@ -495,7 +495,7 @@ class ComprehensiveCRUDVerificationSuite:
                 else:
                     print(f"   ❌ Areas list failed: {response.status}")
                     
-            # Test POST /api/areas
+            # Test POST /api/areas (area_id is optional)
             print("   Testing POST /api/areas...")
             area_data = {
                 "name": "Test Area",
@@ -505,7 +505,7 @@ class ComprehensiveCRUDVerificationSuite:
                 "importance": 4
             }
             
-            # Add pillar_id if we have one
+            # Add pillar_id if we have one (optional field)
             if self.created_resources['pillars']:
                 area_data["pillar_id"] = self.created_resources['pillars'][0]
             
@@ -519,7 +519,8 @@ class ComprehensiveCRUDVerificationSuite:
                     else:
                         print("   ❌ Area creation missing ID")
                 else:
-                    print(f"   ❌ Area creation failed: {response.status}")
+                    error_text = await response.text()
+                    print(f"   ❌ Area creation failed: {response.status} - {error_text}")
                     
             # Test PUT /api/areas/{area_id}
             if self.created_resources['areas']:
