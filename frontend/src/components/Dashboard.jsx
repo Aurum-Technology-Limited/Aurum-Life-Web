@@ -340,4 +340,6 @@ const Dashboard = memo(({ onSectionChange }) => {
   );
 };
 
+Dashboard.displayName = 'Dashboard';
+
 export default Dashboard;
