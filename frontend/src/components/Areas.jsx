@@ -224,7 +224,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     description: '',
     color: '#F4B400',
     icon: '🎯', // Use emoji instead of component reference
-    pillar_id: '',
+    pillar_id: activePillarId || '', // Pre-populate with active pillar
     importance: 3  // Default to medium importance
   });
 
