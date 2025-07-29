@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { CheckSquare, Plus, Calendar, Flag, Clock, Check, X, Loader2, AlertCircle, Lock, Repeat, ChevronDown, ChevronUp } from 'lucide-react';
 import { tasksAPI, projectsAPI, handleApiError } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
