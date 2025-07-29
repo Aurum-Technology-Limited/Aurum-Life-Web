@@ -104,8 +104,18 @@ const Pillars = memo(() => {
   };
 
   const renderPillar = (pillar) => {
+    const handlePillarClick = () => {
+      // Navigate to areas section filtered by this pillar
+      handleSectionChange('areas', { pillarId: pillar.id, pillarName: pillar.name });
+    };
+
     return (
-      <div key={pillar.id} className="bg-gray-900 rounded-lg shadow-sm border border-gray-800">
+      <div 
+        key={pillar.id} 
+        className="bg-gray-900 rounded-lg shadow-sm border border-gray-800 cursor-pointer hover:border-gray-700 transition-all duration-200 hover:shadow-lg"
+        onClick={handlePillarClick}
+        title={`Click to view areas for ${pillar.name}`}
+      >
         {/* Main Pillar Row */}
         <div className="p-6">
           <div className="flex items-center justify-between">
@@ -125,9 +135,18 @@ const Pillars = memo(() => {
                 
                 {/* Progress Stats */}
                 <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                  <span>{pillar.area_count} areas</span>
-                  <span>{pillar.project_count} projects</span>
-                  <span>{pillar.task_count} tasks</span>
+                  <span className="flex items-center space-x-1">
+                    <span className="font-medium text-blue-400">{pillar.area_count || 0}</span>
+                    <span>areas</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <span className="font-medium text-green-400">{pillar.project_count || 0}</span>
+                    <span>projects</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <span className="font-medium text-yellow-400">{pillar.task_count || 0}</span>
+                    <span>tasks</span>
+                  </span>
                   {pillar.progress_percentage > 0 && (
                     <span className="text-green-400">{pillar.progress_percentage.toFixed(1)}% complete</span>
                   )}
@@ -141,7 +160,10 @@ const Pillars = memo(() => {
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => handleEdit(pillar)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(pillar);
+                }}
                 className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Edit pillar"
               >
@@ -149,7 +171,10 @@ const Pillars = memo(() => {
               </button>
               
               <button
-                onClick={() => handleDelete(pillar.id, pillar.name)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(pillar.id, pillar.name);
+                }}
                 className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Delete pillar"
               >
