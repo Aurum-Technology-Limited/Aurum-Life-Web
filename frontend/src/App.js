@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import "./App.css";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -10,27 +10,39 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ProtectedRoute from './components/ProtectedRoute';
 import SimpleLayout from './components/SimpleLayout';
-import OptimizedDashboard from './components/OptimizedDashboard';
-import Today from './components/Today';
-import Pillars from './components/Pillars';
-import Areas from './components/Areas';
-import Projects from './components/Projects';
-import ProjectTemplates from './components/ProjectTemplates';
-import Journal from './components/Journal';
-import Tasks from './components/Tasks';
-import Feedback from './components/Feedback';
-import AICoach from './components/AICoach';
 import globalErrorHandler from './utils/globalErrorHandler'; // Import global error handler
-import Achievements from './components/Achievements';
-import Profile from './components/Profile';
-import Insights from './components/Insights';
-import PasswordReset from './components/PasswordReset';
-import NotificationSettings from './components/NotificationSettings';
-import NotificationCenter from './components/NotificationCenter';
 import ErrorBoundary from './components/ErrorBoundary';
+import PasswordReset from './components/PasswordReset';
 
 // Import performance test for debugging
 import './services/performanceTest';
+
+// Lazy load components for better performance and code splitting
+const OptimizedDashboard = lazy(() => import('./components/OptimizedDashboard'));
+const Today = lazy(() => import('./components/Today'));
+const Pillars = lazy(() => import('./components/Pillars'));
+const Areas = lazy(() => import('./components/Areas'));
+const Projects = lazy(() => import('./components/Projects'));
+const ProjectTemplates = lazy(() => import('./components/ProjectTemplates'));
+const Journal = lazy(() => import('./components/Journal'));
+const Tasks = lazy(() => import('./components/Tasks'));
+const Feedback = lazy(() => import('./components/Feedback'));
+const AICoach = lazy(() => import('./components/AICoach'));
+const Achievements = lazy(() => import('./components/Achievements'));
+const Profile = lazy(() => import('./components/Profile'));
+const Insights = lazy(() => import('./components/Insights'));
+const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
+const NotificationCenter = lazy(() => import('./components/NotificationCenter'));
+
+// Loading component for suspense fallback
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen bg-[#0B0D14]">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+      <p className="text-gray-400 text-sm">Loading...</p>
+    </div>
+  </div>
+);
 
 // Create TanStack Query client with optimized configuration
 const queryClient = new QueryClient({
