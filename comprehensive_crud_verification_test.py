@@ -584,7 +584,7 @@ class ComprehensiveCRUDVerificationSuite:
                 else:
                     print(f"   ❌ Projects list failed: {response.status}")
                     
-            # Test POST /api/projects
+            # Test POST /api/projects (area_id is required)
             print("   Testing POST /api/projects...")
             project_data = {
                 "name": "Test Project",
@@ -594,9 +594,29 @@ class ComprehensiveCRUDVerificationSuite:
                 "priority": "high"
             }
             
-            # Add area_id if we have one
+            # area_id is required - use existing area or create one
             if self.created_resources['areas']:
                 project_data["area_id"] = self.created_resources['areas'][0]
+            else:
+                # Create a temporary area for project testing
+                temp_area_data = {
+                    "name": "Temp Area for Project Test",
+                    "description": "Temporary area for project testing",
+                    "icon": "📁",
+                    "color": "#10B981",
+                    "importance": 3
+                }
+                
+                async with self.session.post(f"{API_BASE}/areas", json=temp_area_data, headers=self.get_auth_headers()) as area_response:
+                    if area_response.status == 200:
+                        temp_area = await area_response.json()
+                        project_data["area_id"] = temp_area['id']
+                        self.created_resources['areas'].append(temp_area['id'])
+                        print("   📁 Created temporary area for project testing")
+                    else:
+                        print("   ❌ Could not create area for project testing")
+                        self.test_results.append({"test": "Projects CRUD", "status": "FAILED", "reason": "Could not create required area"})
+                        return False
             
             async with self.session.post(f"{API_BASE}/projects", json=project_data, headers=self.get_auth_headers()) as response:
                 if response.status == 200:
@@ -608,7 +628,8 @@ class ComprehensiveCRUDVerificationSuite:
                     else:
                         print("   ❌ Project creation missing ID")
                 else:
-                    print(f"   ❌ Project creation failed: {response.status}")
+                    error_text = await response.text()
+                    print(f"   ❌ Project creation failed: {response.status} - {error_text}")
                     
             # Test PUT /api/projects/{project_id}
             if self.created_resources['projects']:
