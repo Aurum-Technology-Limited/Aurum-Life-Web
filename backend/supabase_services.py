@@ -787,22 +787,29 @@ class SupabaseTaskService:
             if task_data.description is not None:
                 update_dict['description'] = task_data.description
             if task_data.status is not None:
-                # Map backend status to database status
+                # Map backend status to database status (using correct TaskStatusEnum values)
                 status_mapping = {
-                    'pending': 'todo',
+                    'todo': 'todo',
                     'in_progress': 'in_progress',
                     'completed': 'completed',
-                    'cancelled': 'cancelled'
+                    'review': 'review'
                 }
-                update_dict['status'] = status_mapping.get(task_data.status, task_data.status)
+                mapped_status = status_mapping.get(str(task_data.status), str(task_data.status))
+                update_dict['status'] = mapped_status
+                
+                # Auto-complete if setting status to completed
+                if mapped_status == 'completed' and not task_data.completed:
+                    update_dict['completed'] = True
+                    update_dict['completed_at'] = datetime.utcnow().isoformat()
+                    
             if task_data.priority is not None:
-                # Map backend priority to database priority
+                # Map backend priority to database priority (keep consistent casing)
                 priority_mapping = {
-                    'low': 'Low',
-                    'medium': 'Medium',
-                    'high': 'High'
+                    'low': 'low',
+                    'medium': 'medium',
+                    'high': 'high'
                 }
-                update_dict['priority'] = priority_mapping.get(task_data.priority, task_data.priority)
+                update_dict['priority'] = priority_mapping.get(str(task_data.priority), str(task_data.priority))
             if task_data.kanban_column is not None:
                 update_dict['kanban_column'] = task_data.kanban_column
             if task_data.due_date is not None:
@@ -811,9 +818,14 @@ class SupabaseTaskService:
                 update_dict['completed'] = task_data.completed
                 if task_data.completed:
                     update_dict['completed_at'] = datetime.utcnow().isoformat()
+                    # Auto-set status to completed when marking as complete
+                    update_dict['status'] = 'completed'
                 else:
                     update_dict['completed_at'] = None
-                    
+                    # Reset status if uncompleting (unless explicitly set)
+                    if task_data.status is None:
+                        update_dict['status'] = 'todo'
+                        
             response = supabase.table('tasks').update(update_dict).eq('id', task_id).eq('user_id', user_id).execute()
             
             if not response.data:
@@ -824,22 +836,25 @@ class SupabaseTaskService:
             
             # Transform back to expected format
             status_reverse_mapping = {
-                'todo': 'pending',
+                'todo': 'todo',
                 'in_progress': 'in_progress',
                 'completed': 'completed',
-                'cancelled': 'cancelled'
+                'review': 'review'
             }
             result['status'] = status_reverse_mapping.get(result.get('status'), result.get('status'))
             
             priority_reverse_mapping = {
-                'Low': 'low',
-                'Medium': 'medium',
-                'High': 'high'
+                'low': 'low',
+                'medium': 'medium',
+                'high': 'high'
             }
             result['priority'] = priority_reverse_mapping.get(result.get('priority'), result.get('priority'))
             
             return result
             
+        except ValueError as e:
+            logger.error(f"Validation error updating task: {e}")
+            raise
         except Exception as e:
             logger.error(f"Error updating task: {e}")
             raise
