@@ -1038,6 +1038,11 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
     }
   };
 
+  // Filter tasks by project if projectId is provided
+  const filteredTasksByProject = activeProjectId 
+    ? tasks.filter(task => task.project_id === activeProjectId)
+    : tasks;
+
   const handleToggleTask = async (taskId, completed) => {
     try {
       setActionLoading(taskId);
