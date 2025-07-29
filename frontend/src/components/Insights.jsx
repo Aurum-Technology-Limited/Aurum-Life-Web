@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { BarChart3, Target, CheckCircle, FolderOpen, TrendingUp, Clock } from 'lucide-react';
 
-const Insights = () => {
+const Insights = memo(() => {
   const [loading, setLoading] = useState(true);
   const [alignmentSnapshot, setAlignmentSnapshot] = useState(null);
   const [error, setError] = useState(null);
