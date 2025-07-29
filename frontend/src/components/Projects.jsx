@@ -16,12 +16,14 @@ import {
 } from '@heroicons/react/solid';
 import { useAuth } from '../contexts/BackendAuthContext';
 
-const Projects = memo(() => {
+const Projects = memo(({ onSectionChange }) => {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
   const [error, setError] = useState('');
   
   const [newProject, setNewProject] = useState({
