@@ -22,7 +22,7 @@ import { useAuth } from '../contexts/BackendAuthContext';
 const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
   const { user } = useAuth();
 
-  const navigation = [
+  const navigation = useMemo(() => [
     { name: 'Dashboard', key: 'dashboard', icon: HomeIcon },
     { name: 'Today', key: 'today', icon: CalendarIcon },
     { name: 'Pillars', key: 'pillars', icon: LightningBoltIcon },
@@ -36,7 +36,11 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
     { name: 'AI Coach', key: 'ai-coach', icon: BeakerIcon },
     { name: 'Achievements', key: 'achievements', icon: BadgeCheckIcon },
     { name: 'Notifications', key: 'notifications', icon: BellIcon },
-  ];
+  ], []);
+
+  const currentPageName = useMemo(() => {
+    return navigation.find(item => activeSection === item.key)?.name || 'Aurum Life';
+  }, [navigation, activeSection]);
 
   const isActive = (key) => {
     return activeSection === key;
