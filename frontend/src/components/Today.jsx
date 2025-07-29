@@ -18,7 +18,7 @@ import { todayAPI, tasksAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import PomodoroTimer from './PomodoroTimer';
 
-const DragTaskItem = ({ task, index, moveTask, onToggleComplete, onStartPomodoro, onRemove }) => {
+const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPomodoro, onRemove }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'daily-task',
     item: { id: task.id, index },
