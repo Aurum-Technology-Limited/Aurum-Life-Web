@@ -182,20 +182,29 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
 
 AreaCard.displayName = 'AreaCard';
 
-const Areas = memo(({ onSectionChange }) => {
+const Areas = memo(({ onSectionChange, sectionParams }) => {
   const { onDataMutation } = useDataContext();
   const [showModal, setShowModal] = useState(false);
   const [editingArea, setEditingArea] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
   
+  // Extract pillar filter from section params
+  const activePillarId = sectionParams?.pillarId || null;
+  const activePillarName = sectionParams?.pillarName || null;
+  
   // Use TanStack Query for areas and pillars data
   const { 
-    data: areas = [], 
+    data: allAreas = [], 
     isLoading: loading, 
     error, 
     isError,
     refetch: refetchAreas 
   } = useAreasQuery(true, showArchived); // Include projects, respect archived filter
+  
+  // Filter areas by pillar if pillarId is provided
+  const areas = activePillarId 
+    ? allAreas.filter(area => area.pillar_id === activePillarId)
+    : allAreas;
   
   const { 
     data: pillars = [], 
