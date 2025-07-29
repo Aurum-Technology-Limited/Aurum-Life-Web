@@ -75,7 +75,7 @@ const Insights = memo(() => {
     );
   }
 
-  const { lifetime_stats, pillar_alignment, generated_at } = alignmentSnapshot || {};
+  const { alignment_snapshot, productivity_trends, area_distribution, insights_text, recommendations, generated_at } = insightsData || {};
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6">
