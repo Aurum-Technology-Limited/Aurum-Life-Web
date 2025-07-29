@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { BarChart3, Target, CheckCircle, FolderOpen, TrendingUp, Clock } from 'lucide-react';
 
 const Insights = () => {
