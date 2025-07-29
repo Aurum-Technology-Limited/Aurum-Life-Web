@@ -3,7 +3,7 @@ import { BarChart3, Target, CheckCircle, FolderOpen, TrendingUp, Clock, Lightbul
 
 const Insights = memo(() => {
   const [loading, setLoading] = useState(true);
-  const [alignmentSnapshot, setAlignmentSnapshot] = useState(null);
+  const [insightsData, setInsightsData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
