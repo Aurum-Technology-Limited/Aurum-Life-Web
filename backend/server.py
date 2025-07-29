@@ -908,36 +908,12 @@ async def get_insights(
     area_id: Optional[str] = None,
     current_user: User = Depends(get_current_active_user_hybrid)
 ):
-    """Get insights and analytics"""
+    """Get comprehensive insights and analytics with real user data"""
     try:
-        insights = {
-            "alignment_snapshot": {
-                "total_tasks_completed": 127,
-                "total_projects_completed": 23,
-                "pillar_alignment": [
-                    {"pillar": "Health & Fitness", "percentage": 35, "tasks_completed": 45},
-                    {"pillar": "Career Growth", "percentage": 28, "tasks_completed": 36},
-                    {"pillar": "Personal Development", "percentage": 22, "tasks_completed": 28},
-                    {"pillar": "Relationships", "percentage": 15, "tasks_completed": 18}
-                ]
-            },
-            "productivity_trends": {
-                "this_week": 85,
-                "last_week": 72,
-                "monthly_average": 78
-            },
-            "time_allocation": {
-                "work": 40,
-                "personal": 35,
-                "learning": 25
-            },
-            "goal_progress": {
-                "on_track": 18,
-                "behind": 3,
-                "completed": 7
-            }
-        }
-        
+        insights = await SupabaseInsightsService.get_comprehensive_insights(
+            user_id=str(current_user.id),
+            date_range=date_range
+        )
         return insights
     except Exception as e:
         logger.error(f"Error getting insights: {str(e)}")
