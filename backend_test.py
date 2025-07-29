@@ -46,7 +46,7 @@ class SupabaseCRUDTestSuite:
             }
             
             # Auth endpoints are not under /api prefix
-            async with self.session.post(f"{BACKEND_URL}/auth/login", json=login_data) as response:
+            async with self.session.post(f"{BACKEND_URL}/api/auth/login", json=login_data) as response:
                 if response.status == 200:
                     data = await response.json()
                     self.auth_token = data["access_token"]
