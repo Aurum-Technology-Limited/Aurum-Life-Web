@@ -567,6 +567,17 @@ class SupabaseTaskService:
     async def create_task(user_id: str, task_data: TaskCreate) -> Dict[str, Any]:
         """Create a new task"""
         try:
+            # Validate project_id exists for the user
+            project_check = supabase.table('projects').select('id').eq('id', task_data.project_id).eq('user_id', user_id).execute()
+            if not project_check.data:
+                raise ValueError(f"Project with id '{task_data.project_id}' not found for user '{user_id}'")
+            
+            # Validate parent_task_id exists if provided
+            if task_data.parent_task_id:
+                parent_task_check = supabase.table('tasks').select('id').eq('id', task_data.parent_task_id).eq('user_id', user_id).execute()
+                if not parent_task_check.data:
+                    raise ValueError(f"Parent task with id '{task_data.parent_task_id}' not found for user '{user_id}'")
+                    
             # Map backend status to database status  
             status_mapping = {
                 'todo': 'todo',
