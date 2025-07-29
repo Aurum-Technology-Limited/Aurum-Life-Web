@@ -130,6 +130,82 @@ const Projects = memo(({ onSectionChange }) => {
     }
   };
 
+  const handleEditProject = (project) => {
+    setEditingProject({
+      ...project,
+      due_date: project.due_date ? new Date(project.due_date).toISOString().split('T')[0] : ''
+    });
+    setShowEditForm(true);
+  };
+
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      const projectData = {
+        ...editingProject,
+        due_date: editingProject.due_date ? new Date(editingProject.due_date).toISOString() : null
+      };
+
+      const response = await fetch(`${backendURL}/api/projects/${editingProject.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+        },
+        body: JSON.stringify(projectData),
+      });
+
+      if (response.ok) {
+        const updatedProject = await response.json();
+        setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+        setShowEditForm(false);
+        setEditingProject(null);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || 'Failed to update project');
+      }
+    } catch (error) {
+      console.error('Error updating project:', error);
+      setError('Network error updating project');
+    }
+  };
+
+  const handleDeleteProject = async (projectId, projectName) => {
+    if (!window.confirm(`Are you sure you want to delete the project "${projectName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      const response = await fetch(`${backendURL}/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+        },
+      });
+
+      if (response.ok) {
+        setProjects(prev => prev.filter(p => p.id !== projectId));
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || 'Failed to delete project');
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      setError('Network error deleting project');
+    }
+  };
+
+  const handleViewProjectTasks = (project) => {
+    // Navigate to tasks section with project filter
+    if (onSectionChange) {
+      onSectionChange('tasks', { projectId: project.id, projectName: project.name });
+    }
+  };
+
   const updateProjectStatus = async (projectId, newStatus) => {
     try {
       const backendURL = process.env.REACT_APP_BACKEND_URL || '';
