@@ -693,7 +693,7 @@ class ComprehensiveCRUDVerificationSuite:
                 else:
                     print(f"   ❌ Tasks list failed: {response.status}")
                     
-            # Test POST /api/tasks
+            # Test POST /api/tasks (project_id is required)
             print("   Testing POST /api/tasks...")
             task_data = {
                 "name": "Test Task",
@@ -702,9 +702,51 @@ class ComprehensiveCRUDVerificationSuite:
                 "priority": "medium"
             }
             
-            # Add project_id if we have one
+            # project_id is required - use existing project or create one
             if self.created_resources['projects']:
                 task_data["project_id"] = self.created_resources['projects'][0]
+            else:
+                # Create a temporary project for task testing
+                # First ensure we have an area
+                if not self.created_resources['areas']:
+                    temp_area_data = {
+                        "name": "Temp Area for Task Test",
+                        "description": "Temporary area for task testing",
+                        "icon": "📁",
+                        "color": "#10B981",
+                        "importance": 3
+                    }
+                    
+                    async with self.session.post(f"{API_BASE}/areas", json=temp_area_data, headers=self.get_auth_headers()) as area_response:
+                        if area_response.status == 200:
+                            temp_area = await area_response.json()
+                            self.created_resources['areas'].append(temp_area['id'])
+                            print("   📁 Created temporary area for task testing")
+                        else:
+                            print("   ❌ Could not create area for task testing")
+                            self.test_results.append({"test": "Tasks CRUD", "status": "FAILED", "reason": "Could not create required area"})
+                            return False
+                
+                # Now create temporary project
+                temp_project_data = {
+                    "area_id": self.created_resources['areas'][0],
+                    "name": "Temp Project for Task Test",
+                    "description": "Temporary project for task testing",
+                    "icon": "🚀",
+                    "status": "Not Started",
+                    "priority": "medium"
+                }
+                
+                async with self.session.post(f"{API_BASE}/projects", json=temp_project_data, headers=self.get_auth_headers()) as project_response:
+                    if project_response.status == 200:
+                        temp_project = await project_response.json()
+                        task_data["project_id"] = temp_project['id']
+                        self.created_resources['projects'].append(temp_project['id'])
+                        print("   🚀 Created temporary project for task testing")
+                    else:
+                        print("   ❌ Could not create project for task testing")
+                        self.test_results.append({"test": "Tasks CRUD", "status": "FAILED", "reason": "Could not create required project"})
+                        return False
             
             async with self.session.post(f"{API_BASE}/tasks", json=task_data, headers=self.get_auth_headers()) as response:
                 if response.status == 200:
@@ -716,7 +758,8 @@ class ComprehensiveCRUDVerificationSuite:
                     else:
                         print("   ❌ Task creation missing ID")
                 else:
-                    print(f"   ❌ Task creation failed: {response.status}")
+                    error_text = await response.text()
+                    print(f"   ❌ Task creation failed: {response.status} - {error_text}")
                     
             # Test PUT /api/tasks/{task_id}
             if self.created_resources['tasks']:
