@@ -307,12 +307,6 @@ const Today = memo(() => {
       setError('Failed to remove task from today');
     }
   };
-      loadTodayView(); // Refresh to get updated data
-      onDataMutation('today', 'remove_task', { taskId });
-    } catch (err) {
-      console.error('Error removing task from today:', err);
-    }
-  };
 
   const handleStartPomodoro = (task) => {
     setActivePomodoro(task);
