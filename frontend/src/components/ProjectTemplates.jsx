@@ -653,6 +653,8 @@ const ProjectTemplates = memo(({ onSectionChange }) => {
       </div>
     </div>
   );
-};
+});
+
+ProjectTemplates.displayName = 'ProjectTemplates';
 
 export default ProjectTemplates;
