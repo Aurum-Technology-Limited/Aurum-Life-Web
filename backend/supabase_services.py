@@ -574,12 +574,22 @@ class SupabaseTaskService:
         """Create a new task"""
         try:
             # Validate project_id exists for the user
+            try:
+                uuid.UUID(task_data.project_id)
+            except ValueError:
+                raise ValueError(f"Invalid project_id format: '{task_data.project_id}' is not a valid UUID")
+                
             project_check = supabase.table('projects').select('id').eq('id', task_data.project_id).eq('user_id', user_id).execute()
             if not project_check.data:
                 raise ValueError(f"Project with id '{task_data.project_id}' not found for user '{user_id}'")
             
             # Validate parent_task_id exists if provided
             if task_data.parent_task_id:
+                try:
+                    uuid.UUID(task_data.parent_task_id)
+                except ValueError:
+                    raise ValueError(f"Invalid parent_task_id format: '{task_data.parent_task_id}' is not a valid UUID")
+                    
                 parent_task_check = supabase.table('tasks').select('id').eq('id', task_data.parent_task_id).eq('user_id', user_id).execute()
                 if not parent_task_check.data:
                     raise ValueError(f"Parent task with id '{task_data.parent_task_id}' not found for user '{user_id}'")
