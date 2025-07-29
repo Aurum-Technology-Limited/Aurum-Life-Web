@@ -143,9 +143,11 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
       </div>
     </div>
   );
-};
+});
 
-const AvailableTaskItem = ({ task, onAdd }) => {
+DragTaskItem.displayName = 'DragTaskItem';
+
+const AvailableTaskItem = memo(({ task, onAdd }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'available-task',
     item: { id: task.id, task },
