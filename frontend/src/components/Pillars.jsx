@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import IconPicker from './ui/IconPicker';
 
-const Pillars = memo(() => {
+const Pillars = memo(({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
   const { invalidatePillars } = useInvalidateQueries();
   
