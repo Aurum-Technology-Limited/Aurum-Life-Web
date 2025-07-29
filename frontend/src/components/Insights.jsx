@@ -28,11 +28,10 @@ const Insights = memo(() => {
       }
 
       const data = await response.json();
-      // Extract alignment_snapshot from the insights response
-      setAlignmentSnapshot(data.alignment_snapshot || data);
+      setInsightsData(data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching alignment snapshot:', err);
+      console.error('Error fetching insights:', err);
       setError(err.message);
     } finally {
       setLoading(false);
