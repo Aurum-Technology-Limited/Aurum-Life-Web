@@ -1096,6 +1096,8 @@ const Journal = memo(() => {
       )}
     </div>
   );
-};
+});
+
+Journal.displayName = 'Journal';
 
 export default Journal;
