@@ -106,7 +106,7 @@ const Pillars = memo(({ onSectionChange }) => {
   const renderPillar = (pillar) => {
     const handlePillarClick = () => {
       // Navigate to areas section filtered by this pillar
-      handleSectionChange('areas', { pillarId: pillar.id, pillarName: pillar.name });
+      onSectionChange('areas', { pillarId: pillar.id, pillarName: pillar.name });
     };
 
     return (
