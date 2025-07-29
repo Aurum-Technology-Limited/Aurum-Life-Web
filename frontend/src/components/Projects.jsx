@@ -392,6 +392,8 @@ const Projects = memo(() => {
       </div>
     </div>
   );
-};
+});
+
+Projects.displayName = 'Projects';
 
 export default Projects;
