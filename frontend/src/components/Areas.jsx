@@ -29,7 +29,7 @@ import {
   getCharacterCounterData
 } from '../utils/textUtils';
 
-const Areas = ({ onSectionChange }) => {
+const Areas = memo(({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
   const [showModal, setShowModal] = useState(false);
   const [editingArea, setEditingArea] = useState(null);
