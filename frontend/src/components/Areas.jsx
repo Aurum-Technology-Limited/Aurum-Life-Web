@@ -416,14 +416,21 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
         {areas.length === 0 ? (
           <div className="text-center py-12">
             <Layers className="mx-auto h-16 w-16 text-gray-600 mb-4" />
-            <h3 className="text-xl font-medium text-gray-400 mb-2">No areas yet</h3>
-            <p className="text-gray-500 mb-6">Create your first life area to get started</p>
+            <h3 className="text-xl font-medium text-gray-400 mb-2">
+              {activePillarName ? `No areas in ${activePillarName} pillar yet` : 'No areas yet'}
+            </h3>
+            <p className="text-gray-500 mb-6">
+              {activePillarName 
+                ? `Create your first area for the ${activePillarName} pillar`
+                : 'Create your first life area to get started'
+              }
+            </p>
             <button
               onClick={() => setShowModal(true)}
               className="px-6 py-3 rounded-lg font-medium"
               style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
             >
-              Create First Area
+              {activePillarName ? `Create Area for ${activePillarName}` : 'Create First Area'}
             </button>
           </div>
         ) : (
