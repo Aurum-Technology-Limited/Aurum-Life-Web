@@ -44,19 +44,20 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Create TanStack Query client with optimized configuration
+// Create TanStack Query client with optimized configuration for better performance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
-      gcTime: 10 * 60 * 1000, // 10 minutes - cache time (renamed from cacheTime in v5)
-      retry: 1, // Only retry once on failure
+      staleTime: 2 * 60 * 1000, // 2 minutes - reduced for more responsive updates  
+      gcTime: 5 * 60 * 1000, // 5 minutes - reduced memory usage
+      retry: 1, // Only retry once on failure for faster error feedback
       refetchOnWindowFocus: false, // Don't refetch when window regains focus
-      refetchOnMount: true, // Refetch when component mounts
+      refetchOnMount: false, // Don't refetch when component mounts if data is fresh
       refetchOnReconnect: true, // Refetch when reconnecting to internet
+      refetchInterval: false, // Disable automatic refetching
     },
     mutations: {
-      retry: 1,
+      retry: 1, // Faster error feedback for mutations
     },
   },
 });
