@@ -338,7 +338,7 @@ const Dashboard = memo(({ onSectionChange }) => {
       </div>
     </div>
   );
-};
+});
 
 Dashboard.displayName = 'Dashboard';
 
