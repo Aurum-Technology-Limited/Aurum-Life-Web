@@ -109,9 +109,10 @@ function App() {
     }
   }, []);
 
-  const handleSectionChange = (newSection) => {
-    console.log('🔄 Navigation: Changing section from', activeSection, 'to', newSection);
+  const handleSectionChange = (newSection, params = {}) => {
+    console.log('🔄 Navigation: Changing section from', activeSection, 'to', newSection, 'with params:', params);
     setActiveSection(newSection);
+    setSectionParams(params);
   };
 
   const renderActiveSection = () => {
