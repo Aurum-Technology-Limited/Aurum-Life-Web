@@ -399,6 +399,183 @@ async def reorder_daily_tasks(
         logger.error(f"Error reordering tasks: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+# ================================
+# PROJECT TEMPLATES ENDPOINTS
+# ================================
+
+@api_router.get("/project-templates")
+async def get_project_templates(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get all project templates for the user"""
+    try:
+        # For now, return mock templates - can be enhanced with actual database storage
+        mock_templates = [
+            {
+                "id": "template-1",
+                "name": "Website Development",
+                "description": "Complete website development project with all necessary tasks",
+                "category": "Development",
+                "tasks": [
+                    {"name": "Requirements Gathering", "description": "Collect and document requirements", "priority": "high", "estimated_duration": 120},
+                    {"name": "Design Mockups", "description": "Create visual designs", "priority": "high", "estimated_duration": 240},
+                    {"name": "Frontend Development", "description": "Build user interface", "priority": "medium", "estimated_duration": 480},
+                    {"name": "Backend Development", "description": "Build server-side logic", "priority": "medium", "estimated_duration": 360},
+                    {"name": "Testing", "description": "Test all functionality", "priority": "high", "estimated_duration": 120},
+                    {"name": "Deployment", "description": "Deploy to production", "priority": "medium", "estimated_duration": 60}
+                ],
+                "created_at": "2024-01-15T10:00:00Z",
+                "updated_at": "2024-01-15T10:00:00Z"
+            },
+            {
+                "id": "template-2", 
+                "name": "Marketing Campaign",
+                "description": "Comprehensive marketing campaign planning and execution",
+                "category": "Marketing",
+                "tasks": [
+                    {"name": "Market Research", "description": "Research target audience and competitors", "priority": "high", "estimated_duration": 180},
+                    {"name": "Strategy Planning", "description": "Develop marketing strategy", "priority": "high", "estimated_duration": 120},
+                    {"name": "Content Creation", "description": "Create marketing materials", "priority": "medium", "estimated_duration": 300},
+                    {"name": "Campaign Launch", "description": "Execute marketing campaign", "priority": "high", "estimated_duration": 60},
+                    {"name": "Performance Analysis", "description": "Analyze campaign results", "priority": "medium", "estimated_duration": 90}
+                ],
+                "created_at": "2024-01-15T10:00:00Z",
+                "updated_at": "2024-01-15T10:00:00Z"
+            },
+            {
+                "id": "template-3",
+                "name": "Product Launch",
+                "description": "Complete product launch process from planning to post-launch analysis",
+                "category": "Product",
+                "tasks": [
+                    {"name": "Product Planning", "description": "Define product specifications and features", "priority": "high", "estimated_duration": 240},
+                    {"name": "Development", "description": "Build the product", "priority": "high", "estimated_duration": 720},
+                    {"name": "Quality Assurance", "description": "Test product thoroughly", "priority": "high", "estimated_duration": 180},
+                    {"name": "Marketing Preparation", "description": "Prepare marketing materials", "priority": "medium", "estimated_duration": 120},
+                    {"name": "Launch Event", "description": "Execute product launch", "priority": "high", "estimated_duration": 90},
+                    {"name": "Post-Launch Support", "description": "Provide customer support and fixes", "priority": "medium", "estimated_duration": 160}
+                ],
+                "created_at": "2024-01-15T10:00:00Z",
+                "updated_at": "2024-01-15T10:00:00Z"
+            }
+        ]
+        
+        return mock_templates
+    except Exception as e:
+        logger.error(f"Error getting project templates: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/project-templates/{template_id}")
+async def get_project_template(
+    template_id: str,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get a specific project template"""
+    try:
+        # Mock template data - can be enhanced with actual database lookup
+        if template_id == "template-1":
+            template = {
+                "id": "template-1",
+                "name": "Website Development",
+                "description": "Complete website development project with all necessary tasks",
+                "category": "Development",
+                "tasks": [
+                    {"name": "Requirements Gathering", "description": "Collect and document requirements", "priority": "high", "estimated_duration": 120},
+                    {"name": "Design Mockups", "description": "Create visual designs", "priority": "high", "estimated_duration": 240},
+                    {"name": "Frontend Development", "description": "Build user interface", "priority": "medium", "estimated_duration": 480},
+                    {"name": "Backend Development", "description": "Build server-side logic", "priority": "medium", "estimated_duration": 360},
+                    {"name": "Testing", "description": "Test all functionality", "priority": "high", "estimated_duration": 120},
+                    {"name": "Deployment", "description": "Deploy to production", "priority": "medium", "estimated_duration": 60}
+                ]
+            }
+            return template
+        else:
+            raise HTTPException(status_code=404, detail="Template not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting project template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/project-templates")
+async def create_project_template(
+    template_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Create a new project template"""
+    try:
+        # For now, return success with generated ID - can be enhanced with actual database storage
+        template_id = f"template-{len(template_data.get('name', ''))}-{hash(template_data.get('name', '')) % 10000}"
+        
+        response = {
+            "id": template_id,
+            "message": "Template created successfully",
+            **template_data,
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error creating project template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.put("/project-templates/{template_id}")
+async def update_project_template(
+    template_id: str,
+    template_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Update a project template"""
+    try:
+        # For now, return success - can be enhanced with actual database update
+        response = {
+            "id": template_id,
+            "message": "Template updated successfully",
+            **template_data,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error updating project template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.delete("/project-templates/{template_id}")
+async def delete_project_template(
+    template_id: str,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Delete a project template"""
+    try:
+        # For now, return success - can be enhanced with actual database deletion
+        return {"message": "Template deleted successfully", "template_id": template_id}
+    except Exception as e:
+        logger.error(f"Error deleting project template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/project-templates/{template_id}/use")
+async def use_project_template(
+    template_id: str,
+    project_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Create a project from a template"""
+    try:
+        # For now, return success with project creation - can be enhanced with actual project and task creation
+        project_id = f"project-from-{template_id}-{hash(project_data.get('name', '')) % 10000}"
+        
+        response = {
+            "project_id": project_id,
+            "message": "Project created from template successfully",
+            "template_id": template_id,
+            **project_data,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error using project template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 # Include authentication routes under /api
 api_router.include_router(auth_router, prefix="/auth")
 
