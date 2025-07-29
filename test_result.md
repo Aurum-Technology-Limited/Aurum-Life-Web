@@ -163,10 +163,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Journal and Insights API Endpoints Testing - COMPLETED"
+    - "Comprehensive CRUD Verification - All Core Components (Dashboard, Insights, Journal, Pillars, Areas, Projects, Tasks)"
   stuck_tasks: []
-  test_all: false
-  test_priority: "high_first"
+  test_all: true
+  test_priority: "crud_systematic"
 
 agent_communication:
     - agent: "main"
