@@ -15,7 +15,7 @@ import {
 import { projectTemplatesAPI, areasAPI, projectsAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 
-const ProjectTemplates = ({ onSectionChange }) => {
+const ProjectTemplates = memo(({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
   const [templates, setTemplates] = useState([]);
   const [areas, setAreas] = useState([]);
