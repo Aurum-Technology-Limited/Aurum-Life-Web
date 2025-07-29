@@ -192,7 +192,9 @@ const AvailableTaskItem = memo(({ task, onAdd }) => {
       </div>
     </div>
   );
-};
+});
+
+AvailableTaskItem.displayName = 'AvailableTaskItem';
 
 const Today = memo(() => {
   const { onDataMutation } = useDataContext();
