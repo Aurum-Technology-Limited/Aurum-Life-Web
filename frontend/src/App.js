@@ -117,54 +117,60 @@ function App() {
     
     console.log('🎯 Rendering active section:', activeSection);
     
-    switch (activeSection) {
-      case 'today':
-        console.log('📅 Rendering Today component');
-        return <Today {...props} />;
-      case 'insights':
-        console.log('📊 Rendering Insights component');
-        return <Insights {...props} />;
-      case 'pillars':
-        console.log('⛰️ Rendering Pillars component');
-        return <Pillars {...props} />;
-      case 'areas':
-        console.log('🗂️ Rendering Areas component');
-        return <Areas {...props} />;
-      case 'projects':
-        console.log('📁 Rendering Projects component');
-        return <Projects {...props} />;
-      case 'project-templates':
-        console.log('📋 Rendering ProjectTemplates component');
-        return <ProjectTemplates {...props} />;
-      case 'journal':
-        console.log('📖 Rendering Journal component');
-        return <Journal {...props} />;
-      case 'tasks':
-        console.log('✅ Rendering Tasks component');
-        return <Tasks {...props} />;
-      case 'feedback':
-        console.log('💬 Rendering Feedback component');
-        return <Feedback {...props} />;
-      case 'ai-coach':
-        console.log('🤖 Rendering AICoach component');
-        return <AICoach {...props} />;
-      case 'achievements':
-        console.log('🏆 Rendering Achievements component');
-        return <Achievements {...props} />;
-      case 'notification-settings':
-        console.log('🔔 Rendering NotificationSettings component');
-        return <NotificationSettings {...props} />;
-      case 'notifications':
-        console.log('📋 Rendering NotificationCenter component');
-        return <NotificationCenter {...props} />;
-      case 'profile':
-        console.log('👤 Rendering Profile component');
-        return <Profile {...props} />;
-      case 'dashboard':
-      default:
-        console.log('🏠 Rendering Optimized Dashboard component');
-        return <OptimizedDashboard {...props} />;
-    }
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        {(() => {
+          switch (activeSection) {
+            case 'today':
+              console.log('📅 Rendering Today component');
+              return <Today {...props} />;
+            case 'insights':
+              console.log('📊 Rendering Insights component');
+              return <Insights {...props} />;
+            case 'pillars':
+              console.log('⛰️ Rendering Pillars component');
+              return <Pillars {...props} />;
+            case 'areas':
+              console.log('🗂️ Rendering Areas component');
+              return <Areas {...props} />;
+            case 'projects':
+              console.log('📁 Rendering Projects component');
+              return <Projects {...props} />;
+            case 'project-templates':
+              console.log('📋 Rendering ProjectTemplates component');
+              return <ProjectTemplates {...props} />;
+            case 'journal':
+              console.log('📖 Rendering Journal component');
+              return <Journal {...props} />;
+            case 'tasks':
+              console.log('✅ Rendering Tasks component');
+              return <Tasks {...props} />;
+            case 'feedback':
+              console.log('💬 Rendering Feedback component');
+              return <Feedback {...props} />;
+            case 'ai-coach':
+              console.log('🤖 Rendering AICoach component');
+              return <AICoach {...props} />;
+            case 'achievements':
+              console.log('🏆 Rendering Achievements component');
+              return <Achievements {...props} />;
+            case 'notification-settings':
+              console.log('🔔 Rendering NotificationSettings component');
+              return <NotificationSettings {...props} />;
+            case 'notifications':
+              console.log('📋 Rendering NotificationCenter component');
+              return <NotificationCenter {...props} />;
+            case 'profile':
+              console.log('👤 Rendering Profile component');
+              return <Profile {...props} />;
+            case 'dashboard':
+            default:
+              console.log('🏠 Rendering Optimized Dashboard component');
+              return <OptimizedDashboard {...props} />;
+          }
+        })()}
+      </Suspense>
+    );
   };
 
   // If on password reset page, show the PasswordReset component
