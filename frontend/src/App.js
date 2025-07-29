@@ -116,9 +116,9 @@ function App() {
   };
 
   const renderActiveSection = () => {
-    const props = { onSectionChange: handleSectionChange };
+    const props = { onSectionChange: handleSectionChange, sectionParams };
     
-    console.log('🎯 Rendering active section:', activeSection);
+    console.log('🎯 Rendering active section:', activeSection, 'with params:', sectionParams);
     
     return (
       <Suspense fallback={<LoadingSpinner />}>
