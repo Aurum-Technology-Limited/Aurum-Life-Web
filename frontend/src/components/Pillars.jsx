@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, memo } from 'react';
 import { useDataContext } from '../contexts/DataContext';
 import { api } from '../services/api';
 import { usePillarsQuery, useInvalidateQueries } from '../hooks/useQueries';
