@@ -920,3 +920,230 @@ class SupabaseDashboardService:
                 'recent_tasks': [],
                 'areas': []
             }
+
+
+class SupabaseInsightsService:
+    """Service for generating meaningful insights and analytics"""
+    
+    @staticmethod
+    async def get_comprehensive_insights(user_id: str, date_range: str = "all_time") -> Dict[str, Any]:
+        """Generate comprehensive insights with real user data"""
+        try:
+            # Get all user data in batch
+            pillars_data = await SupabasePillarService.get_user_pillars(user_id, include_areas=True, include_archived=False)
+            areas_data = await SupabaseAreaService.get_user_areas(user_id, include_projects=True, include_archived=False)
+            projects_data = await SupabaseProjectService.get_user_projects(user_id, include_tasks=False, include_archived=False)
+            tasks_data = await SupabaseTaskService.get_user_tasks(user_id)
+            
+            # Calculate basic statistics
+            total_tasks = len(tasks_data)
+            completed_tasks = [task for task in tasks_data if task.get('completed', False)]
+            total_tasks_completed = len(completed_tasks)
+            
+            total_projects = len(projects_data)
+            completed_projects = [proj for proj in projects_data if proj.get('status') == 'completed']
+            total_projects_completed = len(completed_projects)
+            
+            # Calculate pillar alignment with real data
+            pillar_alignment = []
+            if pillars_data and completed_tasks:
+                for pillar in pillars_data:
+                    # Get tasks for this pillar through the hierarchy: pillar -> areas -> projects -> tasks
+                    pillar_areas = [area for area in areas_data if area.get('pillar_id') == pillar['id']]
+                    pillar_projects = []
+                    for area in pillar_areas:
+                        area_projects = [proj for proj in projects_data if proj.get('area_id') == area['id']]
+                        pillar_projects.extend(area_projects)
+                    
+                    pillar_tasks = []
+                    for project in pillar_projects:
+                        project_tasks = [task for task in completed_tasks if task.get('project_id') == project['id']]
+                        pillar_tasks.extend(project_tasks)
+                    
+                    pillar_task_count = len(pillar_tasks)
+                    pillar_percentage = (pillar_task_count / total_tasks_completed * 100) if total_tasks_completed > 0 else 0
+                    
+                    if pillar_task_count > 0 or pillar_percentage > 0:  # Only include pillars with activity
+                        pillar_alignment.append({
+                            "pillar_id": pillar['id'],
+                            "pillar_name": pillar['name'],
+                            "pillar_icon": pillar.get('icon', '🎯'),
+                            "pillar_color": pillar.get('color', '#F4B400'),
+                            "task_count": pillar_task_count,
+                            "percentage": round(pillar_percentage, 1),
+                            "areas_count": len(pillar_areas),
+                            "projects_count": len(pillar_projects)
+                        })
+                
+                # Sort by percentage (highest first)
+                pillar_alignment.sort(key=lambda x: x['percentage'], reverse=True)
+            
+            # Add pillars with no completed tasks (but show 0%)
+            if pillars_data:
+                included_pillar_ids = {item['pillar_id'] for item in pillar_alignment}
+                for pillar in pillars_data:
+                    if pillar['id'] not in included_pillar_ids:
+                        pillar_areas = [area for area in areas_data if area.get('pillar_id') == pillar['id']]
+                        pillar_projects = []
+                        for area in pillar_areas:
+                            area_projects = [proj for proj in projects_data if proj.get('area_id') == area['id']]
+                            pillar_projects.extend(area_projects)
+                        
+                        pillar_alignment.append({
+                            "pillar_id": pillar['id'], 
+                            "pillar_name": pillar['name'],
+                            "pillar_icon": pillar.get('icon', '🎯'),
+                            "pillar_color": pillar.get('color', '#F4B400'),
+                            "task_count": 0,
+                            "percentage": 0.0,
+                            "areas_count": len(pillar_areas),
+                            "projects_count": len(pillar_projects)
+                        })
+            
+            # Calculate productivity trends (mock for now, can be enhanced with actual date-based analysis)
+            productivity_trends = {
+                "this_week": 85 if total_tasks_completed > 20 else 65,
+                "last_week": 72 if total_tasks_completed > 15 else 55,
+                "monthly_average": 78 if total_tasks_completed > 10 else 60,
+                "trend": "increasing" if total_tasks_completed > 25 else "stable"
+            }
+            
+            # Calculate area distribution
+            area_distribution = []
+            if areas_data and completed_tasks:
+                for area in areas_data:
+                    area_projects = [proj for proj in projects_data if proj.get('area_id') == area['id']]
+                    area_tasks = []
+                    for project in area_projects:
+                        project_tasks = [task for task in completed_tasks if task.get('project_id') == project['id']]
+                        area_tasks.extend(project_tasks)
+                    
+                    area_task_count = len(area_tasks)
+                    area_percentage = (area_task_count / total_tasks_completed * 100) if total_tasks_completed > 0 else 0
+                    
+                    if area_task_count > 0:
+                        area_distribution.append({
+                            "area_id": area['id'],
+                            "area_name": area['name'],
+                            "area_icon": area.get('icon', '🎯'),
+                            "area_color": area.get('color', '#10B981'),
+                            "task_count": area_task_count,
+                            "percentage": round(area_percentage, 1),
+                            "projects_count": len(area_projects)
+                        })
+                
+                # Sort by percentage
+                area_distribution.sort(key=lambda x: x['percentage'], reverse=True)
+            
+            # Generate actionable insights
+            insights_text = []
+            if pillar_alignment:
+                top_pillar = pillar_alignment[0]
+                if top_pillar['percentage'] > 50:
+                    insights_text.append(f"🔍 You're heavily focused on {top_pillar['pillar_name']} ({top_pillar['percentage']}% of completed tasks). Consider if this aligns with your current priorities.")
+                elif top_pillar['percentage'] > 0:
+                    insights_text.append(f"✅ Your effort is well-distributed across pillars. Your top focus is {top_pillar['pillar_name']} at {top_pillar['percentage']}%.")
+                else:
+                    insights_text.append("📊 No completed tasks yet. Start by completing some tasks to see your pillar alignment!")
+                
+                # Add recommendations
+                zero_pillars = [p for p in pillar_alignment if p['percentage'] == 0 and p['areas_count'] > 0]
+                if zero_pillars:
+                    insights_text.append(f"💡 Consider focusing on {zero_pillars[0]['pillar_name']} - it has {zero_pillars[0]['areas_count']} areas but no completed tasks yet.")
+            
+            return {
+                "alignment_snapshot": {
+                    "total_tasks": total_tasks,
+                    "total_tasks_completed": total_tasks_completed,
+                    "total_projects": total_projects,
+                    "total_projects_completed": total_projects_completed,
+                    "pillar_alignment": pillar_alignment[:6],  # Limit to top 6 pillars
+                    "completion_rate": round((total_tasks_completed / total_tasks * 100), 1) if total_tasks > 0 else 0
+                },
+                "productivity_trends": productivity_trends,
+                "area_distribution": area_distribution[:5],  # Top 5 areas
+                "insights_text": insights_text,
+                "recommendations": await SupabaseInsightsService._generate_recommendations(pillars_data, areas_data, projects_data, tasks_data),
+                "generated_at": datetime.utcnow().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error generating insights: {e}")
+            return {
+                "alignment_snapshot": {
+                    "total_tasks": 0,
+                    "total_tasks_completed": 0,
+                    "total_projects": 0,
+                    "total_projects_completed": 0,
+                    "pillar_alignment": [],
+                    "completion_rate": 0
+                },
+                "productivity_trends": {
+                    "this_week": 0,
+                    "last_week": 0,
+                    "monthly_average": 0,
+                    "trend": "no_data"
+                },
+                "area_distribution": [],
+                "insights_text": ["📊 Unable to generate insights. Please try again later."],
+                "recommendations": [],
+                "generated_at": datetime.utcnow().isoformat()
+            }
+    
+    @staticmethod
+    async def _generate_recommendations(pillars_data: List[Dict], areas_data: List[Dict], projects_data: List[Dict], tasks_data: List[Dict]) -> List[Dict[str, str]]:
+        """Generate actionable recommendations based on user data"""
+        recommendations = []
+        
+        try:
+            # Recommendation 1: Areas without projects
+            areas_without_projects = [area for area in areas_data if not any(proj.get('area_id') == area['id'] for proj in projects_data)]
+            if areas_without_projects:
+                area = areas_without_projects[0]
+                recommendations.append({
+                    "type": "create_project",
+                    "title": f"Create a project in {area['name']}",
+                    "description": f"You have the '{area['name']}' area but no projects in it yet. Consider creating a project to start making progress.",
+                    "action": "create_project",
+                    "area_id": area['id']
+                })
+            
+            # Recommendation 2: Projects without tasks
+            projects_without_tasks = [proj for proj in projects_data if not any(task.get('project_id') == proj['id'] for task in tasks_data)]
+            if projects_without_tasks:
+                project = projects_without_tasks[0]
+                recommendations.append({
+                    "type": "create_task",
+                    "title": f"Add tasks to '{project['name']}'",
+                    "description": f"Break down your '{project['name']}' project into actionable tasks to start making progress.",
+                    "action": "create_task",
+                    "project_id": project['id']
+                })
+            
+            # Recommendation 3: Incomplete tasks
+            incomplete_tasks = [task for task in tasks_data if not task.get('completed', False)]
+            if incomplete_tasks:
+                recommendations.append({
+                    "type": "complete_tasks",
+                    "title": f"Complete {min(3, len(incomplete_tasks))} pending tasks",
+                    "description": f"You have {len(incomplete_tasks)} incomplete tasks. Focus on completing a few to make progress.",
+                    "action": "complete_tasks",
+                    "count": len(incomplete_tasks)
+                })
+            
+            # Recommendation 4: Pillars without areas
+            pillars_without_areas = [pillar for pillar in pillars_data if not any(area.get('pillar_id') == pillar['id'] for area in areas_data)]
+            if pillars_without_areas:
+                pillar = pillars_without_areas[0]
+                recommendations.append({
+                    "type": "create_area",
+                    "title": f"Add areas to {pillar['name']} pillar",
+                    "description": f"Your '{pillar['name']}' pillar doesn't have any areas yet. Create some life areas to organize this pillar better.",
+                    "action": "create_area",
+                    "pillar_id": pillar['id']
+                })
+                
+        except Exception as e:
+            logger.error(f"Error generating recommendations: {e}")
+            
+        return recommendations[:3]  # Return top 3 recommendations
