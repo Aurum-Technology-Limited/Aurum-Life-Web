@@ -20,7 +20,7 @@ Edit `/app/frontend/.env` and replace:
 
 ```bash
 # Replace with your actual backend URL:
-REACT_APP_BACKEND_URL=https://008e000d-f023-448d-a17e-eec026cb8b9a.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://2cd28277-bdef-4a23-84f3-f1e19960e535.preview.emergentagent.com
 ```
 
 ## 🚀 Restart Services

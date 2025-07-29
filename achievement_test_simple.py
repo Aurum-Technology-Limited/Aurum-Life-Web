@@ -12,7 +12,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://008e000d-f023-448d-a17e-eec026cb8b9a.preview.emergentagent.com/api"
+BACKEND_URL = "https://2cd28277-bdef-4a23-84f3-f1e19960e535.preview.emergentagent.com/api"
 
 class SimpleAchievementTester:
     def __init__(self):
