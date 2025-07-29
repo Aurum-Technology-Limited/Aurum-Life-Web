@@ -420,7 +420,7 @@ class SupabaseProjectService:
     
     @staticmethod
     async def get_user_projects(user_id: str, include_tasks: bool = False, include_archived: bool = False) -> List[Dict[str, Any]]:
-        """Get user's projects"""
+        """Get user's projects with optimized batch queries"""
         try:
             query = supabase.table('projects').select('*').eq('user_id', user_id)
             
@@ -430,23 +430,47 @@ class SupabaseProjectService:
             response = query.execute()
             projects = response.data or []
             
-            # Transform data to match expected format
+            if not projects:
+                return []
+            
+            # Extract project IDs and area IDs for batch operations
+            project_ids = [project['id'] for project in projects]
+            area_ids = [project['area_id'] for project in projects if project.get('area_id')]
+            
+            # Batch fetch all tasks for all projects in one query (if needed)
+            tasks_by_project = {}
+            if include_tasks and project_ids:
+                tasks_response = supabase.table('tasks').select('*').in_('project_id', project_ids).execute()
+                all_tasks = tasks_response.data or []
+                
+                # Group tasks by project_id
+                for task in all_tasks:
+                    project_id = task['project_id']
+                    if project_id not in tasks_by_project:
+                        tasks_by_project[project_id] = []
+                    tasks_by_project[project_id].append(task)
+            
+            # Batch fetch all area names in one query (if needed)
+            areas_by_id = {}
+            if area_ids:
+                areas_response = supabase.table('areas').select('id, name').in_('id', area_ids).execute()
+                areas_data = areas_response.data or []
+                areas_by_id = {area['id']: area['name'] for area in areas_data}
+            
+            # Transform data to match expected format with batch-fetched data
             for project in projects:
                 project['is_active'] = not project.get('archived', False)  # Transform archived to is_active
                 project['due_date'] = project.get('deadline')  # Map deadline to due_date
+                
+                # Add tasks if requested (already batch-fetched)
+                if include_tasks:
+                    project['tasks'] = tasks_by_project.get(project['id'], [])
+                
+                # Add area name if available (already batch-fetched)
+                if project.get('area_id') and project['area_id'] in areas_by_id:
+                    project['area_name'] = areas_by_id[project['area_id']]
             
-            # If include_tasks is True, fetch tasks for each project
-            if include_tasks and projects:
-                for project in projects:
-                    tasks_response = supabase.table('tasks').select('*').eq('project_id', project['id']).execute()
-                    project['tasks'] = tasks_response.data or []
-                    
-                    # Get area name if area_id exists
-                    if project.get('area_id'):
-                        area_response = supabase.table('areas').select('name').eq('id', project['area_id']).single().execute()
-                        project['area_name'] = area_response.data.get('name') if area_response.data else None
-            
-            logger.info(f"✅ Retrieved {len(projects)} projects for user: {user_id}")
+            logger.info(f"✅ Retrieved {len(projects)} projects for user: {user_id} (optimized batch queries)")
             return projects
             
         except Exception as e:
