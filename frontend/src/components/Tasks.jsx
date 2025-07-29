@@ -1148,8 +1148,34 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Task Management</h1>
-          <p className="text-gray-400">Organize your goals and track your productivity</p>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Task Management
+            </h1>
+            {activeProjectName && (
+              <>
+                <span className="text-2xl text-gray-500">›</span>
+                <div className="flex items-center space-x-2">
+                  <FolderIcon className="h-5 w-5 text-yellow-400" />
+                  <span className="text-xl font-medium text-yellow-400">{activeProjectName}</span>
+                </div>
+              </>
+            )}
+          </div>
+          <p className="text-gray-400">
+            {activeProjectName 
+              ? `Manage tasks for ${activeProjectName} project`
+              : 'Organize your goals and track your productivity'
+            }
+          </p>
+          {activeProjectName && onSectionChange && (
+            <button
+              onClick={() => onSectionChange('projects')}
+              className="mt-2 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
+            >
+              ← Back to all projects
+            </button>
+          )}
         </div>
         <button
           onClick={handleCreateTask}
