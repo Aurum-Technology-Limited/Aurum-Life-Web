@@ -31,7 +31,9 @@ const StatCard = memo(({ title, value, subtitle, icon: Icon, trend, loading = fa
   </div>
 ));
 
-const Dashboard = ({ onSectionChange }) => {
+StatCard.displayName = 'StatCard';
+
+const Dashboard = memo(({ onSectionChange }) => {
   // Replace useState and useEffect with TanStack Query
   const { 
     data: dashboardData, 
