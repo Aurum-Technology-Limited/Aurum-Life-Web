@@ -163,43 +163,66 @@ const Insights = memo(() => {
           </div>
         </div>
 
-        {/* Pillar Alignment Distribution */}
-        <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+        {/* Enhanced Pillar Alignment Distribution */}
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <Target className="h-6 w-6 text-yellow-500" />
-            <h2 className="text-xl font-semibold text-white">Pillar Alignment</h2>
+            <h2 className="text-xl font-semibold text-white">Pillar Alignment Distribution</h2>
           </div>
 
-          {pillar_alignment && pillar_alignment.length > 0 ? (
+          {alignment_snapshot?.pillar_alignment && alignment_snapshot.pillar_alignment.length > 0 ? (
             <div className="space-y-4">
               <p className="text-gray-400 mb-4">
-                Distribution of your completed tasks across life pillars
+                How your {alignment_snapshot.total_tasks_completed} completed tasks are distributed across your life pillars
               </p>
               
-              {pillar_alignment.map((pillar, index) => (
-                <div key={pillar.pillar_id} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-medium">{pillar.pillar_name}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-400 text-sm">
-                        {pillar.task_count} tasks
-                      </span>
-                      <span className="text-yellow-500 font-semibold">
-                        {pillar.percentage}%
-                      </span>
+              {alignment_snapshot.pillar_alignment.map((pillar, index) => (
+                <div key={pillar.pillar_id} className="space-y-3 p-4 bg-gray-800 rounded-lg">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
+                        style={{ backgroundColor: pillar.pillar_color }}
+                      >
+                        {pillar.pillar_icon}
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold text-lg">{pillar.pillar_name}</h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <span className="flex items-center gap-1">
+                            <Folder className="h-3 w-3" />
+                            {pillar.areas_count} areas
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <List className="h-3 w-3" />
+                            {pillar.projects_count} projects
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-gray-400 text-sm">
+                          {pillar.task_count} tasks
+                        </span>
+                        <span className="text-yellow-500 font-bold text-lg">
+                          {pillar.percentage}%
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        of completed tasks
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="w-full bg-gray-800 rounded-full h-3">
+                  <div className="w-full bg-gray-700 rounded-full h-4">
                     <div
-                      className={`h-3 rounded-full transition-all duration-500 ${
-                        index === 0 ? 'bg-yellow-500' :
-                        index === 1 ? 'bg-blue-500' :
-                        index === 2 ? 'bg-green-500' :
-                        index === 3 ? 'bg-purple-500' :
-                        'bg-gray-600'
-                      }`}
-                      style={{ width: `${pillar.percentage}%` }}
+                      className="h-4 rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${pillar.percentage}%`,
+                        backgroundColor: pillar.pillar_color
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -207,14 +230,60 @@ const Insights = memo(() => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <TrendingUp className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-300 mb-2">No Data Yet</h3>
+              <Target className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-300 mb-2">No Completed Tasks Yet</h3>
               <p className="text-gray-500">
                 Complete some tasks to see your pillar alignment distribution
               </p>
             </div>
           )}
         </div>
+
+        {/* Area Distribution (New Section) */}
+        {area_distribution && area_distribution.length > 0 && (
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Users className="h-6 w-6 text-green-500" />
+              <h2 className="text-xl font-semibold text-white">Top Performing Areas</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {area_distribution.map((area, index) => (
+                <div key={area.area_id} className="bg-gray-800 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div 
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                      style={{ backgroundColor: area.area_color }}
+                    >
+                      {area.area_icon}
+                    </div>
+                    <div>
+                      <h4 className="text-white font-medium">{area.area_name}</h4>
+                      <div className="text-xs text-gray-400">
+                        {area.projects_count} projects
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-gray-400">{area.task_count} tasks</span>
+                    <span className="text-green-500 font-semibold">{area.percentage}%</span>
+                  </div>
+                  
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${area.percentage}%`,
+                        backgroundColor: area.area_color
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Action Prompt */}
         {pillar_alignment && pillar_alignment.length > 0 && (
