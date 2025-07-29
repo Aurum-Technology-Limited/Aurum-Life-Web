@@ -92,7 +92,7 @@ class SupabasePillarService:
     
     @staticmethod
     async def get_user_pillars(user_id: str, include_areas: bool = False, include_archived: bool = False) -> List[Dict[str, Any]]:
-        """Get user's pillars"""
+        """Get user's pillars with calculated statistics"""
         try:
             query = supabase.table('pillars').select('*').eq('user_id', user_id)
             
@@ -102,18 +102,94 @@ class SupabasePillarService:
             response = query.execute()
             pillars = response.data or []
             
-            # Transform data to match expected format
+            if not pillars:
+                return []
+            
+            # Get pillar IDs for batch operations
+            pillar_ids = [pillar['id'] for pillar in pillars]
+            
+            # Batch fetch areas for all pillars
+            areas_response = supabase.table('areas').select('*').in_('pillar_id', pillar_ids).execute()
+            all_areas = areas_response.data or []
+            
+            # Group areas by pillar_id
+            areas_by_pillar = {}
+            area_ids = []
+            for area in all_areas:
+                pillar_id = area.get('pillar_id')
+                if pillar_id:
+                    if pillar_id not in areas_by_pillar:
+                        areas_by_pillar[pillar_id] = []
+                    areas_by_pillar[pillar_id].append(area)
+                    area_ids.append(area['id'])
+            
+            # Batch fetch projects for all areas
+            projects_by_area = {}
+            project_ids = []
+            if area_ids:
+                projects_response = supabase.table('projects').select('*').in_('area_id', area_ids).execute()
+                all_projects = projects_response.data or []
+                
+                for project in all_projects:
+                    area_id = project.get('area_id')
+                    if area_id:
+                        if area_id not in projects_by_area:
+                            projects_by_area[area_id] = []
+                        projects_by_area[area_id].append(project)
+                        project_ids.append(project['id'])
+            
+            # Batch fetch tasks for all projects
+            tasks_by_project = {}
+            if project_ids:
+                tasks_response = supabase.table('tasks').select('*').in_('project_id', project_ids).execute()
+                all_tasks = tasks_response.data or []
+                
+                for task in all_tasks:
+                    project_id = task.get('project_id')
+                    if project_id:
+                        if project_id not in tasks_by_project:
+                            tasks_by_project[project_id] = []
+                        tasks_by_project[project_id].append(task)
+            
+            # Transform data and calculate statistics for each pillar
             for pillar in pillars:
                 pillar['is_active'] = not pillar.get('archived', False)  # Transform archived to is_active
                 pillar['time_allocation'] = pillar.get('time_allocation_percentage', 0)  # Map field name back
+                
+                # Calculate statistics
+                pillar_areas = areas_by_pillar.get(pillar['id'], [])
+                pillar['area_count'] = len(pillar_areas)
+                
+                # Count projects across all areas of this pillar
+                pillar_projects = []
+                for area in pillar_areas:
+                    area_projects = projects_by_area.get(area['id'], [])
+                    pillar_projects.extend(area_projects)
+                
+                pillar['project_count'] = len(pillar_projects)
+                
+                # Count tasks across all projects of this pillar
+                pillar_tasks = []
+                for project in pillar_projects:
+                    project_tasks = tasks_by_project.get(project['id'], [])
+                    pillar_tasks.extend(project_tasks)
+                
+                pillar['task_count'] = len(pillar_tasks)
+                
+                # Calculate completion statistics
+                completed_tasks = [task for task in pillar_tasks if task.get('completed', False)]
+                pillar['completed_task_count'] = len(completed_tasks)
+                
+                if pillar_tasks:
+                    pillar['progress_percentage'] = (len(completed_tasks) / len(pillar_tasks)) * 100
+                else:
+                    pillar['progress_percentage'] = 0.0
+                
+                # Add areas if requested (already batch-fetched)
+                if include_areas:
+                    pillar['areas'] = pillar_areas
             
-            # If include_areas is True, fetch areas for each pillar
-            if include_areas and pillars:
-                for pillar in pillars:
-                    areas_response = supabase.table('areas').select('*').eq('pillar_id', pillar['id']).execute()
-                    pillar['areas'] = areas_response.data or []
-            
-            logger.info(f"✅ Retrieved {len(pillars)} pillars for user: {user_id}")
+            logger.info(f"✅ Retrieved {len(pillars)} pillars with statistics for user: {user_id}")
             return pillars
             
         except Exception as e:
