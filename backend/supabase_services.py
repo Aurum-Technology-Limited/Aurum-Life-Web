@@ -234,8 +234,9 @@ class SupabaseAreaService:
     
     @staticmethod
     async def get_user_areas(user_id: str, include_projects: bool = False, include_archived: bool = False) -> List[Dict[str, Any]]:
-        """Get user's areas"""
+        """Get user's areas with optimized batch queries"""
         try:
+            # Single optimized query for areas
             query = supabase.table('areas').select('*').eq('user_id', user_id)
             
             if not include_archived:
@@ -243,6 +244,33 @@ class SupabaseAreaService:
                 
             response = query.execute()
             areas = response.data or []
+            
+            if not areas:
+                return []
+            
+            # Extract area IDs and pillar IDs for batch operations
+            area_ids = [area['id'] for area in areas]
+            pillar_ids = [area['pillar_id'] for area in areas if area.get('pillar_id')]
+            
+            # Batch fetch all projects for all areas in one query (if needed)
+            projects_by_area = {}
+            if include_projects and area_ids:
+                projects_response = supabase.table('projects').select('*').in_('area_id', area_ids).execute()
+                all_projects = projects_response.data or []
+                
+                # Group projects by area_id
+                for project in all_projects:
+                    area_id = project['area_id']
+                    if area_id not in projects_by_area:
+                        projects_by_area[area_id] = []
+                    projects_by_area[area_id].append(project)
+            
+            # Batch fetch all pillar names in one query (if needed)
+            pillars_by_id = {}
+            if pillar_ids:
+                pillars_response = supabase.table('pillars').select('id, name').in_('id', pillar_ids).execute()
+                pillars_data = pillars_response.data or []
+                pillars_by_id = {pillar['id']: pillar['name'] for pillar in pillars_data}
             
             # Transform data to match expected format
             importance_reverse_mapping = {
@@ -253,22 +281,20 @@ class SupabaseAreaService:
                 5: 'high'
             }
             
+            # Process areas with batch-fetched data
             for area in areas:
                 area['is_active'] = not area.get('archived', False)  # Transform archived to is_active
                 area['importance'] = importance_reverse_mapping.get(area.get('importance'), 'medium')  # Map back to string
+                
+                # Add projects if requested (already batch-fetched)
+                if include_projects:
+                    area['projects'] = projects_by_area.get(area['id'], [])
+                
+                # Add pillar name if available (already batch-fetched)
+                if area.get('pillar_id') and area['pillar_id'] in pillars_by_id:
+                    area['pillar_name'] = pillars_by_id[area['pillar_id']]
             
-            # If include_projects is True, fetch projects for each area
-            if include_projects and areas:
-                for area in areas:
-                    projects_response = supabase.table('projects').select('*').eq('area_id', area['id']).execute()
-                    area['projects'] = projects_response.data or []
-                    
-                    # Get pillar name if pillar_id exists
-                    if area.get('pillar_id'):
-                        pillar_response = supabase.table('pillars').select('name').eq('id', area['pillar_id']).single().execute()
-                        area['pillar_name'] = pillar_response.data.get('name') if pillar_response.data else None
-            
-            logger.info(f"✅ Retrieved {len(areas)} areas for user: {user_id}")
+            logger.info(f"✅ Retrieved {len(areas)} areas for user: {user_id} (optimized batch queries)")
             return areas
             
         except Exception as e:
