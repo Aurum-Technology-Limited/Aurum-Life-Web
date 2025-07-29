@@ -16,7 +16,7 @@ const Insights = () => {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
       const token = localStorage.getItem('auth_token');
       
-      const response = await fetch(`${backendUrl}/api/analytics/alignment-snapshot`, {
+      const response = await fetch(`${backendUrl}/api/insights`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
