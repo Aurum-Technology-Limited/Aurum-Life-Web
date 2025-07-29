@@ -499,6 +499,8 @@ const Today = memo(() => {
       </div>
     </DndProvider>
   );
-};
+});
+
+Today.displayName = 'Today';
 
 export default Today;
