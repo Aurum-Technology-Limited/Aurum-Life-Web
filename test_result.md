@@ -163,7 +163,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Project Templates API Endpoints Testing - COMPLETED"
+    - "Journal and Insights API Endpoints Testing - COMPLETED"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
