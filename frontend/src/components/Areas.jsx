@@ -29,6 +29,159 @@ import {
   getCharacterCounterData
 } from '../utils/textUtils';
 
+// Memoized AreaCard component to prevent unnecessary re-renders
+const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) => (
+  <div
+    key={area.id}
+    className={`bg-gray-900/50 border rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg cursor-pointer ${
+      area.archived ? 'border-gray-700 opacity-75' : 'border-gray-800'
+    }`}
+    onClick={() => onSectionChange && onSectionChange('projects', { areaId: area.id })}
+  >
+    {/* Area Header */}
+    <div className="flex items-start justify-between mb-4">
+      <div className="flex items-center space-x-3 flex-1 min-w-0">
+        <div
+          className="p-3 rounded-lg flex-shrink-0"
+          style={{ backgroundColor: area.color + '20' }}
+        >
+          <span className="text-2xl">{area.icon || '🎯'}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center space-x-2 mb-1">
+            <h3 className={`font-semibold text-white dynamic-text ${getDynamicFontSize(area.name, 'title')}`}>
+              {area.name}
+            </h3>
+            {area.archived && (
+              <span className="px-2 py-1 text-xs rounded-full bg-gray-600 text-gray-300 flex-shrink-0">
+                Archived
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 mb-1">
+            {area.pillar_name && (
+              <div className="flex items-center space-x-1 flex-shrink-0">
+                <Mountain className="h-3 w-3 flex-shrink-0" />
+                <span className="dynamic-text">{area.pillar_name}</span>
+              </div>
+            )}
+            <span className="flex-shrink-0">
+              {area.projects?.length || 0} projects
+            </span>
+            {area.date_created && (
+              <span className="text-xs text-gray-500 dynamic-text">
+                Created {new Date(area.date_created).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+          {/* Importance Indicator */}
+          {area.importance && (
+            <div className="mt-2">
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                area.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
+                area.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
+                area.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
+                'bg-gray-800/30 text-gray-400 border border-gray-600'
+              }`}>
+                {area.importance >= 5 ? '🔥 Critical' :
+                 area.importance >= 4 ? '⚡ High' :
+                 area.importance >= 3 ? '📊 Medium' :
+                 '📝 Low'}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex space-x-1">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onArchive(area.id, area.archived);
+          }}
+          className={`p-2 rounded-lg transition-colors ${
+            area.archived
+              ? 'text-blue-400 hover:text-blue-300 hover:bg-gray-800'
+              : 'text-gray-400 hover:text-yellow-400 hover:bg-gray-800'
+          }`}
+          title={area.archived ? 'Unarchive Area' : 'Archive Area'}
+        >
+          {area.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(area);
+          }}
+          className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+        >
+          <Edit2 className="h-4 w-4" />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(area.id);
+          }}
+          className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+
+    {/* Description */}
+    {area.description && (
+      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+        {area.description}
+      </p>
+    )}
+
+    {/* Stats */}
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <p className="text-2xl font-bold text-white">
+          {area.projects?.filter(p => p.status === 'active').length || 0}
+        </p>
+        <p className="text-xs text-gray-400">Active Projects</p>
+      </div>
+      <div>
+        <p className="text-2xl font-bold text-white">
+          {area.projects?.filter(p => p.status === 'completed').length || 0}
+        </p>
+        <p className="text-xs text-gray-400">Completed</p>
+      </div>
+    </div>
+
+    {/* Progress Bar */}
+    {area.projects && area.projects.length > 0 && (
+      <div className="mt-4">
+        <div className="flex justify-between text-xs text-gray-400 mb-2">
+          <span>Progress</span>
+          <span>
+            {Math.round(
+              ((area.projects?.filter(p => p.status === 'completed').length || 0) / 
+               area.projects.length) * 100
+            )}%
+          </span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <div
+            className="h-2 rounded-full transition-all duration-500"
+            style={{
+              backgroundColor: area.color || '#F4B400',
+              width: `${Math.round(
+                ((area.projects?.filter(p => p.status === 'completed').length || 0) / 
+                 area.projects.length) * 100
+              )}%`
+            }}
+          />
+        </div>
+      </div>
+    )}
+  </div>
+));
+
+AreaCard.displayName = 'AreaCard';
+
 const Areas = memo(({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
   const [showModal, setShowModal] = useState(false);
