@@ -1073,6 +1073,12 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const handleCreateTask = () => {
     setEditingTask(null);
     setModalOpen(true);
+    
+    // If we're viewing tasks for a specific project, pre-populate the project_id
+    if (activeProjectId) {
+      // We'll need to modify the modal to handle this pre-population
+      // For now, this will be handled in the modal's useEffect
+    }
   };
 
   const handleSaveTask = async (formData) => {
