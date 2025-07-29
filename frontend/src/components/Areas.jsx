@@ -341,12 +341,34 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-              Life Areas
-            </h1>
+            <div className="flex items-center space-x-3">
+              <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
+                Life Areas
+              </h1>
+              {activePillarName && (
+                <>
+                  <span className="text-2xl text-gray-500">›</span>
+                  <div className="flex items-center space-x-2">
+                    <Mountain className="h-5 w-5 text-blue-400" />
+                    <span className="text-xl font-medium text-blue-400">{activePillarName}</span>
+                  </div>
+                </>
+              )}
+            </div>
             <p className="text-gray-400 mt-1">
-              Organize your life into meaningful domains
+              {activePillarName 
+                ? `Areas within the ${activePillarName} pillar`
+                : 'Organize your life into meaningful domains'
+              }
             </p>
+            {activePillarName && (
+              <button
+                onClick={() => onSectionChange('pillars')}
+                className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                ← Back to all pillars
+              </button>
+            )}
           </div>
           <div className="flex items-center space-x-4">
             {/* Archive Toggle */}
