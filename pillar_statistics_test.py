@@ -127,13 +127,15 @@ class PillarStatisticsTestSuite:
                                             
                                             # Create 3 tasks per project (mix of completed and incomplete)
                                             for k in range(3):
-                                                task_status = "completed" if k == 0 else "todo"  # First task completed, others todo
+                                                is_completed = k == 0  # First task completed, others todo
+                                                task_status = "completed" if is_completed else "todo"
                                                 task_data = {
                                                     "project_id": project_id,
                                                     "name": f"Test Task {i+1}-{j+1}-{k+1}",
                                                     "description": f"Test task {k+1} in project {j+1}",
                                                     "status": task_status,
-                                                    "priority": "medium"
+                                                    "priority": "medium",
+                                                    "completed": is_completed  # Explicitly set completed field
                                                 }
                                                 
                                                 async with self.session.post(f"{API_BASE}/tasks", json=task_data, headers=self.get_auth_headers()) as task_response:
