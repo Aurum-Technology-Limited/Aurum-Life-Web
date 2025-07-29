@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react';
-import { BarChart3, Target, CheckCircle, FolderOpen, TrendingUp, Clock } from 'lucide-react';
+import { BarChart3, Target, CheckCircle, FolderOpen, TrendingUp, Clock, Lightbulb, ArrowRight, Users, Folder, List } from 'lucide-react';
 
 const Insights = memo(() => {
   const [loading, setLoading] = useState(true);
