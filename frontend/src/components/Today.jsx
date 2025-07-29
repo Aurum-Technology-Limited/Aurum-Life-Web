@@ -204,16 +204,37 @@ const Today = memo(() => {
   const loadTodayView = async () => {
     try {
       setLoading(true);
-      const [todayResponse, availableResponse] = await Promise.all([
-        todayAPI.getTodayView(),
-        todayAPI.getAvailableTasks()
-      ]);
-      setTodayData(todayResponse.data);
-      setAvailableTasks(availableResponse.data);
       setError(null);
+      
+      // Try to load today view and available tasks
+      const promises = [
+        todayAPI.getTodayView().catch(err => {
+          console.error('Error loading today view:', err);
+          return { data: { tasks: [], priorities: [], recommendations: [], completed_tasks: 0, total_tasks: 0 } };
+        }),
+        todayAPI.getAvailableTasks().catch(err => {
+          console.error('Error loading available tasks:', err);
+          return { data: [] };
+        })
+      ];
+      
+      const [todayResponse, availableResponse] = await Promise.all(promises);
+      
+      setTodayData(todayResponse.data);
+      setAvailableTasks(availableResponse.data || []);
+      
     } catch (err) {
+      console.error('Critical error loading today view:', err);
       setError('Failed to load today\'s data');
-      console.error('Error loading today view:', err);
+      // Set fallback data
+      setTodayData({ 
+        tasks: [], 
+        priorities: [], 
+        recommendations: [], 
+        completed_tasks: 0, 
+        total_tasks: 0 
+      });
+      setAvailableTasks([]);
     } finally {
       setLoading(false);
     }
