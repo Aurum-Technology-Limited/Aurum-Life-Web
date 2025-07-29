@@ -29,7 +29,7 @@ const StatCard = memo(({ title, value, subtitle, icon: Icon, trend, loading = fa
     <p className="text-xs sm:text-sm text-gray-400">{title}</p>
     {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
   </div>
-);
+));
 
 const Dashboard = ({ onSectionChange }) => {
   // Replace useState and useEffect with TanStack Query
