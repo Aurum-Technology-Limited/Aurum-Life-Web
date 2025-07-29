@@ -445,8 +445,10 @@ const Journal = () => {
   const fetchEntriesWithFallback = async () => {
     try {
       const response = await journalAPI.getEntries();
-      setEntries(response.data || []);
-      console.log('✅ Journal entries loaded successfully');
+      // Extract entries from the response structure: { entries: [...], total: 2, skip: 0, limit: 20 }
+      const entriesData = response.data?.entries || response.data || [];
+      setEntries(Array.isArray(entriesData) ? entriesData : []);
+      console.log('✅ Journal entries loaded successfully', entriesData.length, 'entries');
     } catch (err) {
       console.warn('⚠️ Journal entries endpoint not available:', err.message);
       // Fallback to empty state
