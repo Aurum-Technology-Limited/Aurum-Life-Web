@@ -28,7 +28,8 @@ const Insights = () => {
       }
 
       const data = await response.json();
-      setAlignmentSnapshot(data);
+      // Extract alignment_snapshot from the insights response
+      setAlignmentSnapshot(data.alignment_snapshot || data);
       setError(null);
     } catch (err) {
       console.error('Error fetching alignment snapshot:', err);
