@@ -95,28 +95,71 @@ const Insights = memo(() => {
           )}
         </div>
 
-        {/* Lifetime Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Enhanced Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <CheckCircle className="h-6 w-6 text-green-500" />
-              <h2 className="text-xl font-semibold text-white">Tasks Completed</h2>
+              <h2 className="text-lg font-semibold text-white">Tasks Completed</h2>
             </div>
-            <div className="text-4xl font-bold text-green-500 mb-2">
-              {lifetime_stats?.total_tasks_completed || 0}
+            <div className="text-3xl font-bold text-green-500 mb-2">
+              {alignment_snapshot?.total_tasks_completed || 0}
             </div>
-            <p className="text-gray-400">Total tasks you've completed</p>
+            <p className="text-gray-400 text-sm">
+              of {alignment_snapshot?.total_tasks || 0} total tasks
+            </p>
+            {alignment_snapshot?.completion_rate && (
+              <div className="mt-2">
+                <div className="text-xs text-gray-500 mb-1">Completion Rate</div>
+                <div className="w-full bg-gray-800 rounded-full h-2">
+                  <div
+                    className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${alignment_snapshot.completion_rate}%` }}
+                  ></div>
+                </div>
+                <div className="text-xs text-green-400 mt-1">{alignment_snapshot.completion_rate}%</div>
+              </div>
+            )}
           </div>
 
           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <FolderOpen className="h-6 w-6 text-blue-500" />
-              <h2 className="text-xl font-semibold text-white">Projects Completed</h2>
+              <h2 className="text-lg font-semibold text-white">Projects Completed</h2>
             </div>
-            <div className="text-4xl font-bold text-blue-500 mb-2">
-              {lifetime_stats?.total_projects_completed || 0}
+            <div className="text-3xl font-bold text-blue-500 mb-2">
+              {alignment_snapshot?.total_projects_completed || 0}
             </div>
-            <p className="text-gray-400">Total projects you've finished</p>
+            <p className="text-gray-400 text-sm">
+              of {alignment_snapshot?.total_projects || 0} total projects
+            </p>
+          </div>
+
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <TrendingUp className="h-6 w-6 text-purple-500" />
+              <h2 className="text-lg font-semibold text-white">This Week</h2>
+            </div>
+            <div className="text-3xl font-bold text-purple-500 mb-2">
+              {productivity_trends?.this_week || 0}%
+            </div>
+            <p className="text-gray-400 text-sm">Productivity score</p>
+            {productivity_trends?.trend && (
+              <div className="text-xs text-purple-400 mt-1">
+                Trend: {productivity_trends.trend}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Target className="h-6 w-6 text-yellow-500" />
+              <h2 className="text-lg font-semibold text-white">Active Pillars</h2>
+            </div>
+            <div className="text-3xl font-bold text-yellow-500 mb-2">
+              {alignment_snapshot?.pillar_alignment?.length || 0}
+            </div>
+            <p className="text-gray-400 text-sm">Life pillars with activity</p>
           </div>
         </div>
 
