@@ -64,6 +64,7 @@ const queryClient = new QueryClient({
 
 function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [sectionParams, setSectionParams] = useState({}); // Add state for section parameters
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
 
   // Debug effect to track activeSection changes
