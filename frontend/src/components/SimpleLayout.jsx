@@ -115,6 +115,8 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
       </div>
     </div>
   );
-};
+});
+
+SimpleLayout.displayName = 'SimpleLayout';
 
 export default SimpleLayout;
