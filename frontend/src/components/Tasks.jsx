@@ -1005,7 +1005,7 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
   );
 };
 
-const Tasks = memo(() => {
+const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const { onDataMutation } = useDataContext();
   const [tasks, setTasks] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -1015,6 +1015,10 @@ const Tasks = memo(() => {
   const [actionLoading, setActionLoading] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Extract project filter from section params
+  const activeProjectId = sectionParams?.projectId || null;
+  const activeProjectName = sectionParams?.projectName || null;
 
   useEffect(() => {
     fetchTasks();
