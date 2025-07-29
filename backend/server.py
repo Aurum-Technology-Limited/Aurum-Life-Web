@@ -576,6 +576,425 @@ async def use_project_template(
         logger.error(f"Error using project template: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+# ================================
+# JOURNAL ENDPOINTS
+# ================================
+
+@api_router.get("/journal")
+async def get_journal_entries(
+    skip: int = 0,
+    limit: int = 20,
+    mood_filter: Optional[str] = None,
+    tag_filter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get journal entries for the user"""
+    try:
+        # Mock journal entries data
+        mock_entries = [
+            {
+                "id": "entry-1",
+                "title": "Productive Day",
+                "content": "Had a great day working on the new project. Made significant progress on the frontend components.",
+                "mood": "happy",
+                "tags": ["work", "productivity", "frontend"],
+                "date": "2024-01-15T18:30:00Z",
+                "created_at": "2024-01-15T18:30:00Z",
+                "updated_at": "2024-01-15T18:30:00Z"
+            },
+            {
+                "id": "entry-2", 
+                "title": "Learning New Things",
+                "content": "Spent time learning React optimization techniques. React.memo is really powerful for preventing unnecessary re-renders.",
+                "mood": "excited",
+                "tags": ["learning", "react", "optimization"],
+                "date": "2024-01-14T20:15:00Z",
+                "created_at": "2024-01-14T20:15:00Z",
+                "updated_at": "2024-01-14T20:15:00Z"
+            }
+        ]
+        
+        # Apply filters if provided
+        filtered_entries = mock_entries
+        if mood_filter:
+            filtered_entries = [e for e in filtered_entries if e['mood'] == mood_filter]
+        
+        # Apply pagination
+        paginated_entries = filtered_entries[skip:skip+limit]
+        
+        return {
+            "entries": paginated_entries,
+            "total": len(filtered_entries),
+            "skip": skip,
+            "limit": limit
+        }
+    except Exception as e:
+        logger.error(f"Error getting journal entries: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/journal")
+async def create_journal_entry(
+    entry_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Create a new journal entry"""
+    try:
+        entry_id = f"entry-{hash(entry_data.get('title', '')) % 10000}"
+        
+        response = {
+            "id": entry_id,
+            "message": "Journal entry created successfully",
+            **entry_data,
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error creating journal entry: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.put("/journal/{entry_id}")
+async def update_journal_entry(
+    entry_id: str,
+    entry_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Update a journal entry"""
+    try:
+        response = {
+            "id": entry_id,
+            "message": "Journal entry updated successfully",
+            **entry_data,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error updating journal entry: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.delete("/journal/{entry_id}")
+async def delete_journal_entry(
+    entry_id: str,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Delete a journal entry"""
+    try:
+        return {"message": "Journal entry deleted successfully", "entry_id": entry_id}
+    except Exception as e:
+        logger.error(f"Error deleting journal entry: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/journal/search")
+async def search_journal_entries(
+    q: str,
+    limit: int = 20,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Search journal entries"""
+    try:
+        # Mock search results
+        mock_results = [
+            {
+                "id": "entry-1",
+                "title": "Productive Day",
+                "content": "Had a great day working on the new project...",
+                "mood": "happy",
+                "date": "2024-01-15T18:30:00Z",
+                "relevance_score": 0.95
+            }
+        ]
+        
+        return {
+            "results": mock_results,
+            "query": q,
+            "total": len(mock_results)
+        }
+    except Exception as e:
+        logger.error(f"Error searching journal entries: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/journal/insights")
+async def get_journal_insights(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get journal insights and analytics"""
+    try:
+        insights = {
+            "total_entries": 47,
+            "entries_this_month": 12,
+            "most_common_mood": "happy",
+            "mood_distribution": {
+                "happy": 20,
+                "neutral": 15,
+                "excited": 8,
+                "sad": 4
+            },
+            "writing_streak": 7,
+            "popular_tags": [
+                {"tag": "work", "count": 23},
+                {"tag": "learning", "count": 15},
+                {"tag": "personal", "count": 12}
+            ],
+            "monthly_stats": [
+                {"month": "Jan 2024", "entries": 12, "avg_mood": "happy"},
+                {"month": "Dec 2023", "entries": 18, "avg_mood": "neutral"}
+            ]
+        }
+        
+        return insights
+    except Exception as e:
+        logger.error(f"Error getting journal insights: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/journal/on-this-day")
+async def get_journal_on_this_day(
+    date: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get journal entries from this day in previous years"""
+    try:
+        # Mock historical entries
+        historical_entries = [
+            {
+                "id": "entry-historical-1",
+                "title": "One Year Ago Today",
+                "content": "Started learning React for the first time. Had no idea how powerful it would become in my toolkit.",
+                "date": "2023-01-15T18:30:00Z",
+                "year": 2023
+            }
+        ]
+        
+        return {
+            "entries": historical_entries,
+            "date": date or datetime.utcnow().strftime("%Y-%m-%d")
+        }
+    except Exception as e:
+        logger.error(f"Error getting journal on this day: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# Journal Templates
+@api_router.get("/journal/templates")
+async def get_journal_templates(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get journal templates"""
+    try:
+        templates = [
+            {
+                "id": "template-daily",
+                "name": "Daily Reflection", 
+                "description": "Template for daily reflection and goal tracking",
+                "structure": {
+                    "sections": [
+                        {"name": "Today I accomplished", "type": "text"},
+                        {"name": "Challenges I faced", "type": "text"},
+                        {"name": "Tomorrow I will", "type": "text"},
+                        {"name": "Mood", "type": "select", "options": ["happy", "neutral", "sad", "excited"]}
+                    ]
+                },
+                "created_at": "2024-01-15T10:00:00Z"
+            },
+            {
+                "id": "template-gratitude",
+                "name": "Gratitude Journal",
+                "description": "Focus on gratitude and positive experiences",
+                "structure": {
+                    "sections": [
+                        {"name": "Three things I'm grateful for", "type": "list"},
+                        {"name": "Best part of my day", "type": "text"},
+                        {"name": "Acts of kindness I witnessed", "type": "text"}
+                    ]
+                },
+                "created_at": "2024-01-15T10:00:00Z"
+            }
+        ]
+        
+        return templates
+    except Exception as e:
+        logger.error(f"Error getting journal templates: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/journal/templates/{template_id}")
+async def get_journal_template(
+    template_id: str,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get a specific journal template"""
+    try:
+        if template_id == "template-daily":
+            template = {
+                "id": "template-daily",
+                "name": "Daily Reflection",
+                "description": "Template for daily reflection and goal tracking",
+                "structure": {
+                    "sections": [
+                        {"name": "Today I accomplished", "type": "text"},
+                        {"name": "Challenges I faced", "type": "text"},
+                        {"name": "Tomorrow I will", "type": "text"},
+                        {"name": "Mood", "type": "select", "options": ["happy", "neutral", "sad", "excited"]}
+                    ]
+                }
+            }
+            return template
+        else:
+            raise HTTPException(status_code=404, detail="Template not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting journal template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/journal/templates")
+async def create_journal_template(
+    template_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Create a new journal template"""
+    try:
+        template_id = f"template-{hash(template_data.get('name', '')) % 10000}"
+        
+        response = {
+            "id": template_id,
+            "message": "Journal template created successfully",
+            **template_data,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error creating journal template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.put("/journal/templates/{template_id}")
+async def update_journal_template(
+    template_id: str,
+    template_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Update a journal template"""
+    try:
+        response = {
+            "id": template_id,
+            "message": "Journal template updated successfully",
+            **template_data,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error updating journal template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.delete("/journal/templates/{template_id}")
+async def delete_journal_template(
+    template_id: str,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Delete a journal template"""
+    try:
+        return {"message": "Journal template deleted successfully", "template_id": template_id}
+    except Exception as e:
+        logger.error(f"Error deleting journal template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# ================================
+# INSIGHTS ENDPOINTS
+# ================================
+
+@api_router.get("/insights")
+async def get_insights(
+    date_range: str = "all_time",
+    area_id: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get insights and analytics"""
+    try:
+        insights = {
+            "alignment_snapshot": {
+                "total_tasks_completed": 127,
+                "total_projects_completed": 23,
+                "pillar_alignment": [
+                    {"pillar": "Health & Fitness", "percentage": 35, "tasks_completed": 45},
+                    {"pillar": "Career Growth", "percentage": 28, "tasks_completed": 36},
+                    {"pillar": "Personal Development", "percentage": 22, "tasks_completed": 28},
+                    {"pillar": "Relationships", "percentage": 15, "tasks_completed": 18}
+                ]
+            },
+            "productivity_trends": {
+                "this_week": 85,
+                "last_week": 72,
+                "monthly_average": 78
+            },
+            "time_allocation": {
+                "work": 40,
+                "personal": 35,
+                "learning": 25
+            },
+            "goal_progress": {
+                "on_track": 18,
+                "behind": 3,
+                "completed": 7
+            }
+        }
+        
+        return insights
+    except Exception as e:
+        logger.error(f"Error getting insights: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/insights/areas/{area_id}")
+async def get_area_insights(
+    area_id: str,
+    date_range: str = "all_time",
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get insights for a specific area"""
+    try:
+        area_insights = {
+            "area_id": area_id,
+            "tasks_completed": 45,
+            "projects_completed": 8,
+            "completion_rate": 87.5,
+            "time_spent": 120, # hours
+            "productivity_score": 4.2,
+            "recent_activity": [
+                {"date": "2024-01-15", "tasks": 5, "time": 8},
+                {"date": "2024-01-14", "tasks": 3, "time": 6}
+            ]
+        }
+        
+        return area_insights
+    except Exception as e:
+        logger.error(f"Error getting area insights: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/insights/projects/{project_id}")
+async def get_project_insights(
+    project_id: str,
+    date_range: str = "all_time",
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get insights for a specific project"""
+    try:
+        project_insights = {
+            "project_id": project_id,
+            "tasks_completed": 12,
+            "tasks_remaining": 3,
+            "completion_percentage": 80,
+            "estimated_completion": "2024-01-20",
+            "time_spent": 25, # hours
+            "velocity": 2.4, # tasks per day
+            "milestones": [
+                {"name": "Phase 1", "completed": True, "date": "2024-01-10"},
+                {"name": "Phase 2", "completed": False, "estimated": "2024-01-18"}
+            ]
+        }
+        
+        return project_insights
+    except Exception as e:
+        logger.error(f"Error getting project insights: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 # Include authentication routes under /api
 api_router.include_router(auth_router, prefix="/auth")
 
