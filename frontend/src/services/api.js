@@ -309,8 +309,47 @@ export const healthAPI = {
 
 // Utility functions
 export const handleApiError = (error, defaultMessage = 'An error occurred') => {
-  const message = error.response?.data?.detail || error.message || defaultMessage;
-  console.error('API Error:', message);
+  let message = defaultMessage;
+  
+  if (error.response?.data?.detail) {
+    const detail = error.response.data.detail;
+    
+    // Handle FastAPI validation errors (arrays of error objects)
+    if (Array.isArray(detail)) {
+      const validationErrors = detail.map(err => {
+        if (typeof err === 'object' && err.msg) {
+          const field = Array.isArray(err.loc) ? err.loc.join('.') : 'field';
+          return `${field}: ${err.msg}`;
+        }
+        return typeof err === 'string' ? err : 'Validation error';
+      });
+      message = validationErrors.join(', ');
+    }
+    // Handle simple string messages
+    else if (typeof detail === 'string') {
+      message = detail;
+    }
+    // Handle object with message property
+    else if (typeof detail === 'object' && detail.message) {
+      message = detail.message;
+    }
+    // Handle any other object by converting to string
+    else if (typeof detail === 'object') {
+      message = JSON.stringify(detail);
+    }
+  }
+  // Fallback to error message
+  else if (error.message) {
+    message = error.message;
+  }
+  
+  console.error('API Error:', {
+    url: error.config?.url,
+    status: error.response?.status,
+    message: message,
+    originalError: error.response?.data
+  });
+  
   return message;
 };
 
