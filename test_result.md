@@ -211,7 +211,7 @@ test_plan:
     - "Frontend Supabase Authentication Migration"
   stuck_tasks: []
   test_all: false
-  test_priority: "frontend_testing"
+  test_priority: "completed_testing"
 
 agent_communication:
     - agent: "main"
