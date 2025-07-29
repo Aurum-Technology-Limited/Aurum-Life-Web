@@ -69,8 +69,8 @@ function App() {
 
   // Debug effect to track activeSection changes
   useEffect(() => {
-    console.log('🔄 Active section updated to:', activeSection);
-  }, [activeSection]);
+    console.log('🔄 Active section updated to:', activeSection, 'with params:', sectionParams);
+  }, [activeSection, sectionParams]);
 
   // Update document title based on active section
   useEffect(() => {
