@@ -205,10 +205,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Comprehensive CRUD Verification - All Core Components (Dashboard, Insights, Journal, Pillars, Areas, Projects, Tasks)"
+    - "Frontend Supabase Authentication Migration"
   stuck_tasks: []
-  test_all: true
-  test_priority: "crud_systematic"
+  test_all: false
+  test_priority: "frontend_testing"
 
 agent_communication:
     - agent: "main"
