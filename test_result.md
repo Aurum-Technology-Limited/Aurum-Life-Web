@@ -220,7 +220,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend Supabase Authentication Migration"
+    - "Enhanced Insights API Testing - Descriptive Data Verification"
   stuck_tasks: []
   test_all: false
   test_priority: "completed_testing"
