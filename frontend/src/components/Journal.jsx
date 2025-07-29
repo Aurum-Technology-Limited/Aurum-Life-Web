@@ -363,7 +363,7 @@ const JournalModal = ({ entry, isOpen, onClose, onSave, loading = false, templat
   );
 };
 
-const Journal = () => {
+const Journal = memo(() => {
   const [entries, setEntries] = useState([]);
   const [filteredEntries, setFilteredEntries] = useState([]);
   const [templates, setTemplates] = useState([]);
