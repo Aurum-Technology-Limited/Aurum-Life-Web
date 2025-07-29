@@ -516,7 +516,7 @@ const Projects = memo(({ onSectionChange }) => {
         {projects.map((project) => (
           <div
             key={project.id}
-            className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-colors"
+            className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-colors group"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
@@ -527,15 +527,60 @@ const Projects = memo(({ onSectionChange }) => {
                   <FolderOpenIcon className="h-5 w-5 text-black" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">{project.name}</h3>
+                  <h3 
+                    className="font-semibold text-white cursor-pointer hover:text-yellow-400 transition-colors"
+                    onClick={() => handleViewProjectTasks(project)}
+                    title="Click to view project tasks"
+                  >
+                    {project.name}
+                  </h3>
                   {project.area_name && (
                     <p className="text-sm text-gray-400">{project.area_name}</p>
                   )}
                 </div>
               </div>
-              <button className="text-gray-400 hover:text-white">
-                <DotsVerticalIcon className="h-5 w-5" />
-              </button>
+              
+              {/* Action Menu */}
+              <div className="relative group/menu">
+                <button className="text-gray-400 hover:text-white p-1 rounded">
+                  <DotsVerticalIcon className="h-5 w-5" />
+                </button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-8 w-48 bg-gray-900 border border-gray-600 rounded-lg shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 z-10">
+                  <div className="py-2">
+                    <button
+                      onClick={() => handleViewProjectTasks(project)}
+                      className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                    >
+                      <EyeIcon className="h-4 w-4 mr-2" />
+                      View Tasks
+                    </button>
+                    <button
+                      onClick={() => handleEditProject(project)}
+                      className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                    >
+                      <PencilIcon className="h-4 w-4 mr-2" />
+                      Edit Project
+                    </button>
+                    <button
+                      onClick={() => updateProjectStatus(project.id, project.status === 'completed' ? 'in_progress' : 'completed')}
+                      className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                    >
+                      <CheckIcon className="h-4 w-4 mr-2" />
+                      {project.status === 'completed' ? 'Mark In Progress' : 'Mark Complete'}
+                    </button>
+                    <div className="border-t border-gray-600 my-1"></div>
+                    <button
+                      onClick={() => handleDeleteProject(project.id, project.name)}
+                      className="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300 transition-colors"
+                    >
+                      <TrashIcon className="h-4 w-4 mr-2" />
+                      Delete Project
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {project.description && (
@@ -562,21 +607,34 @@ const Projects = memo(({ onSectionChange }) => {
 
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-400">
-                {project.tasks ? `${project.tasks.length} tasks` : '0 tasks'}
+                <button
+                  onClick={() => handleViewProjectTasks(project)}
+                  className="hover:text-yellow-400 transition-colors"
+                  title="Click to view tasks"
+                >
+                  {project.tasks ? `${project.tasks.length} tasks` : '0 tasks'}
+                </button>
               </div>
               
               <div className="flex space-x-2">
                 <button
-                  onClick={() => updateProjectStatus(project.id, 'in_progress')}
-                  className="p-1 text-blue-400 hover:text-blue-300"
-                  title="Mark In Progress"
+                  onClick={() => handleViewProjectTasks(project)}
+                  className="p-1 text-gray-400 hover:text-yellow-400 transition-colors"
+                  title="View Tasks"
                 >
-                  <FolderIcon className="h-4 w-4" />
+                  <EyeIcon className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => updateProjectStatus(project.id, 'completed')}
-                  className="p-1 text-green-400 hover:text-green-300"
-                  title="Mark Complete"
+                  onClick={() => handleEditProject(project)}
+                  className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
+                  title="Edit Project"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => updateProjectStatus(project.id, project.status === 'completed' ? 'in_progress' : 'completed')}
+                  className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                  title={project.status === 'completed' ? 'Mark In Progress' : 'Mark Complete'}
                 >
                   <CheckIcon className="h-4 w-4" />
                 </button>
