@@ -21,7 +21,8 @@ from supabase_services import (
     SupabaseAreaService, 
     SupabaseProjectService,
     SupabaseTaskService,
-    SupabaseDashboardService
+    SupabaseDashboardService,
+    SupabaseInsightsService
 )
 from supabase_auth import get_current_active_user, verify_token
 from supabase_auth_endpoints import auth_router
