@@ -561,6 +561,8 @@ const Areas = memo(({ onSectionChange }) => {
       </div>
     </div>
   );
-};
+});
+
+Areas.displayName = 'Areas';
 
 export default Areas;
