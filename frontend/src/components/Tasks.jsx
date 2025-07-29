@@ -1122,7 +1122,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
     }
   };
 
-  const filteredTasks = tasks.filter(task => {
+  const filteredTasks = filteredTasksByProject.filter(task => {
     switch (filter) {
       case 'active': return !task.completed;
       case 'completed': return task.completed;
@@ -1130,9 +1130,9 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
     }
   });
 
-  const completedCount = tasks.filter(t => t.completed).length;
-  const activeCount = tasks.filter(t => !t.completed).length;
-  const overdueCount = tasks.filter(t => !t.completed && t.is_overdue).length;
+  const completedCount = filteredTasksByProject.filter(t => t.completed).length;
+  const activeCount = filteredTasksByProject.filter(t => !t.completed).length;
+  const overdueCount = filteredTasksByProject.filter(t => !t.completed && t.is_overdue).length;
 
   if (loading) {
     return (
