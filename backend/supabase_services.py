@@ -188,6 +188,12 @@ class SupabaseAreaService:
     async def create_area(user_id: str, area_data: AreaCreate) -> Dict[str, Any]:
         """Create a new area"""
         try:
+            # Validate pillar_id exists if provided
+            if area_data.pillar_id:
+                pillar_check = supabase.table('pillars').select('id').eq('id', area_data.pillar_id).eq('user_id', user_id).execute()
+                if not pillar_check.data:
+                    raise ValueError(f"Pillar with id '{area_data.pillar_id}' not found for user '{user_id}'")
+            
             # Handle importance as integer (schema fix applied)
             importance_value = area_data.importance
             if isinstance(importance_value, str):
@@ -207,7 +213,7 @@ class SupabaseAreaService:
             area_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
-                'pillar_id': area_data.pillar_id,
+                'pillar_id': area_data.pillar_id,  # Can be null for areas without pillars
                 'name': area_data.name,
                 'description': area_data.description or '',
                 'color': area_data.color or '#10B981',
