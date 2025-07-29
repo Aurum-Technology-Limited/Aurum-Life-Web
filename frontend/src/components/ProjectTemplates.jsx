@@ -64,12 +64,19 @@ const ProjectTemplates = memo(({ onSectionChange }) => {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await projectTemplatesAPI.getTemplates();
-      setTemplates(response.data);
       setError(null);
+      
+      const response = await projectTemplatesAPI.getTemplates().catch(err => {
+        console.error('Error loading templates:', err);
+        return { data: [] }; // Return empty array as fallback
+      });
+      
+      setTemplates(response.data || []);
+      
     } catch (err) {
+      console.error('Critical error loading templates:', err);
       setError('Failed to load templates');
-      console.error('Error loading templates:', err);
+      setTemplates([]); // Set fallback empty array
     } finally {
       setLoading(false);
     }
