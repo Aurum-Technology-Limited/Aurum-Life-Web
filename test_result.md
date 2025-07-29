@@ -385,17 +385,17 @@ agent_communication:
           agent: "testing"
           comment: "🎉 JOURNAL TEMPLATES API ENDPOINTS TESTING COMPLETED - 100% SUCCESS RATE! Comprehensive testing executed covering all requested Journal Templates API endpoints: ✅ GET /api/journal/templates: Working perfectly, returns array of 2 templates (Daily Reflection, Gratitude Journal) with proper structure (id, name, description, structure with sections). Template structure verified with all required fields present. ✅ GET /api/journal/templates/{template_id}: Working perfectly, retrieves specific template (template-daily: Daily Reflection) with complete structure including sections array with field types and options. ✅ POST /api/journal/templates: Working perfectly, creates new templates with generated IDs and proper response structure including success message and timestamps. ✅ PUT /api/journal/templates/{template_id}: Working perfectly, updates existing templates with proper response structure and updated timestamps. ✅ DELETE /api/journal/templates/{template_id}: Working perfectly, deletes templates with proper confirmation response (message, template_id). ✅ AUTHENTICATION PROTECTION: All 5 Template endpoints properly require authentication, returning 401/403 for unauthenticated requests. ✅ DATA STRUCTURE VERIFICATION: All endpoints return proper JSON responses with template structure containing sections with proper field types (text, select, list) and options. SUCCESS CRITERIA ACHIEVED: All Journal Templates endpoints functional (100%), proper authentication implemented (100%), correct data structures returned (100%), CRUD operations working (100%). The Journal Templates API endpoints are PRODUCTION-READY and fully functional!"
 
-  - task: "Insights API Endpoints Testing"
+  - task: "Comprehensive CRUD Verification - All Core Components"
     implemented: true
-    working: true
-    file: "backend/server.py"
+    working: false
+    file: "backend/server.py, backend/supabase_services.py, all core components"
     stuck_count: 0
-    priority: "high"
-    needs_retesting: false
+    priority: "critical"
+    needs_retesting: true
     status_history:
-        - working: true
-          agent: "testing"
-          comment: "🎉 INSIGHTS API ENDPOINTS TESTING COMPLETED - 100% SUCCESS RATE! Comprehensive testing executed covering all requested Insights API endpoints to fix 404 console errors: ✅ GET /api/insights: Working perfectly, returns comprehensive insights with alignment_snapshot structure verified. Contains total_tasks_completed (127), total_projects_completed (23), pillar_alignment array with 4 pillar entries showing percentage distribution and task counts. Also includes productivity_trends, time_allocation, and goal_progress sections. ✅ GET /api/insights/areas/{area_id}: Working perfectly, returns area-specific insights with proper structure (area_id, tasks_completed: 45, projects_completed: 8, completion_rate: 87.5%, time_spent, productivity_score, recent_activity). ✅ GET /api/insights/projects/{project_id}: Working perfectly, returns project-specific insights with proper structure (project_id, tasks_completed: 12, tasks_remaining: 3, completion_percentage: 80%, estimated_completion, time_spent, velocity, milestones). ✅ AUTHENTICATION PROTECTION: All 3 Insights endpoints properly require authentication, returning 401/403 for unauthenticated requests. ✅ DATA STRUCTURE VERIFICATION: All endpoints return proper JSON responses that match frontend expectations. Alignment_snapshot contains all required fields (total_tasks_completed, total_projects_completed, pillar_alignment) as specified in review request. SUCCESS CRITERIA ACHIEVED: All Insights API endpoints functional (100%), proper authentication implemented (100%), correct data structures returned (100%), alignment_snapshot structure verified (100%). The Insights API endpoints are PRODUCTION-READY and will eliminate 404 console errors!"
+        - working: false
+          agent: "main"
+          comment: "🔍 INITIATED COMPREHENSIVE CORE COMPONENT CRUD VERIFICATION! User requested to ensure all CRUD functions work across core components: Dashboard, Insights, Journal, Pillars, Areas, Projects, Tasks. Previous testing showed high success rates (87.5-100%) but need to verify current functional state and fix any issues. Will systematically test: 1) Dashboard - Read operations for user stats and data 2) Insights - Read operations for analytics data 3) Journal - Full CRUD (Create, Read, Update, Delete) for entries and templates 4) Pillars - Full CRUD operations 5) Areas - Full CRUD operations 6) Projects - Full CRUD operations 7) Tasks - Full CRUD operations. Starting with comprehensive backend CRUD testing to ensure all endpoints are functional."
 
 frontend:
   - task: "TanStack Query Foundation Setup and Dashboard Conversion"
