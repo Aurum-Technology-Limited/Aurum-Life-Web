@@ -100,7 +100,7 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
         <header className="bg-gray-900 border-b border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-white">
-              {navigation.find(item => isActive(item.key))?.name || 'Aurum Life'}
+              {currentPageName}
             </h1>
             {user && (
               <div className="flex items-center space-x-4">
