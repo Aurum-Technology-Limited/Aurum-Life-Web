@@ -297,7 +297,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
       description: '',
       color: '#F4B400',
       icon: '🎯',
-      pillar_id: '',
+      pillar_id: activePillarId || '', // Reset to active pillar if present
       importance: 3
     });
   };
