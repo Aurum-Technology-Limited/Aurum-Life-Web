@@ -544,6 +544,8 @@ class SupabaseCRUDTestSuite:
             # Test additional endpoints
             await self.test_dashboard_endpoint()
             await self.test_today_view_endpoint()
+            await self.test_today_api_endpoints()
+            await self.test_today_authentication_protection()
             
             # Cleanup
             await self.cleanup_test_data()
