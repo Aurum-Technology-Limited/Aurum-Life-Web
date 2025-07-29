@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/solid';
 import { useAuth } from '../contexts/BackendAuthContext';
 
-const Projects = () => {
+const Projects = memo(() => {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [areas, setAreas] = useState([]);
