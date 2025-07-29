@@ -293,12 +293,20 @@ const Today = memo(() => {
       onDataMutation('today', 'add_task', { taskId });
     } catch (err) {
       console.error('Error adding task to today:', err);
+      setError('Failed to add task to today');
     }
   };
 
   const handleRemoveFromToday = async (taskId) => {
     try {
       await todayAPI.removeTaskFromToday(taskId);
+      loadTodayView(); // Refresh to get updated data
+      onDataMutation('today', 'remove_task', { taskId });
+    } catch (err) {
+      console.error('Error removing task from today:', err);
+      setError('Failed to remove task from today');
+    }
+  };
       loadTodayView(); // Refresh to get updated data
       onDataMutation('today', 'remove_task', { taskId });
     } catch (err) {
