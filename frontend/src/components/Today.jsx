@@ -192,7 +192,7 @@ const AvailableTaskItem = ({ task, onAdd }) => {
   );
 };
 
-const Today = () => {
+const Today = memo(() => {
   const { onDataMutation } = useDataContext();
   const [todayData, setTodayData] = useState(null);
   const [availableTasks, setAvailableTasks] = useState([]);
