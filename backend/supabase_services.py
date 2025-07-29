@@ -190,6 +190,12 @@ class SupabaseAreaService:
         try:
             # Validate pillar_id exists if provided
             if area_data.pillar_id:
+                # First validate UUID format to avoid database errors
+                try:
+                    uuid.UUID(area_data.pillar_id)
+                except ValueError:
+                    raise ValueError(f"Invalid pillar_id format: '{area_data.pillar_id}' is not a valid UUID")
+                
                 pillar_check = supabase.table('pillars').select('id').eq('id', area_data.pillar_id).eq('user_id', user_id).execute()
                 if not pillar_check.data:
                     raise ValueError(f"Pillar with id '{area_data.pillar_id}' not found for user '{user_id}'")
