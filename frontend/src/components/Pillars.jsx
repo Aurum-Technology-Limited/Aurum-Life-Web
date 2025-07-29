@@ -330,6 +330,8 @@ const Pillars = memo(() => {
       )}
     </div>
   );
-};
+});
+
+Pillars.displayName = 'Pillars';
 
 export default Pillars;
