@@ -232,16 +232,6 @@ export const recurringTasksAPI = {
   generateRecurringTaskInstances: () => apiClient.post('/recurring-tasks/generate-instances')
 };
 
-// Project Templates API
-export const projectTemplatesAPI = {
-  getTemplates: () => apiClient.get('/project-templates'),
-  getTemplate: (templateId) => apiClient.get(`/project-templates/${templateId}`),
-  createTemplate: (templateData) => apiClient.post('/project-templates', templateData),
-  updateTemplate: (templateId, templateData) => apiClient.put(`/project-templates/${templateId}`, templateData),
-  deleteTemplate: (templateId) => apiClient.delete(`/project-templates/${templateId}`),
-  useTemplate: (templateId, projectData) => apiClient.post(`/project-templates/${templateId}/use`, projectData)
-};
-
 // Insights API
 export const insightsAPI = {
   getInsights: (dateRange = 'all_time', areaId = null) => {
