@@ -1208,8 +1208,10 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
               <CheckSquare size={20} style={{ color: '#0B0D14' }} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-white">{tasks.length}</h3>
-              <p className="text-sm text-gray-400">Total Tasks</p>
+              <h3 className="text-2xl font-bold text-white">{filteredTasksByProject.length}</h3>
+              <p className="text-sm text-gray-400">
+                {activeProjectName ? `${activeProjectName} Tasks` : 'Total Tasks'}
+              </p>
             </div>
           </div>
         </div>
