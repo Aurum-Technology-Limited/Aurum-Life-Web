@@ -285,22 +285,73 @@ const Insights = memo(() => {
           </div>
         )}
 
-        {/* Action Prompt */}
-        {pillar_alignment && pillar_alignment.length > 0 && (
+        {/* Actionable Insights & Recommendations */}
+        {(insights_text && insights_text.length > 0) || (recommendations && recommendations.length > 0) ? (
+          <div className="space-y-6">
+            {/* Insights Text */}
+            {insights_text && insights_text.length > 0 && (
+              <div className="bg-gray-900 border border-yellow-500/30 rounded-lg p-6">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="h-6 w-6 text-yellow-500 mt-1" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3">Key Insights</h3>
+                    <div className="space-y-2">
+                      {insights_text.map((insight, index) => (
+                        <p key={index} className="text-gray-300 leading-relaxed">
+                          {insight}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Recommendations */}
+            {recommendations && recommendations.length > 0 && (
+              <div className="bg-gray-900 border border-blue-500/30 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <ArrowRight className="h-6 w-6 text-blue-500" />
+                  <h3 className="text-lg font-semibold text-white">Recommended Actions</h3>
+                </div>
+                <div className="space-y-4">
+                  {recommendations.map((rec, index) => (
+                    <div key={index} className="bg-gray-800 rounded-lg p-4 border-l-4 border-blue-500">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-white font-medium">{rec.title}</h4>
+                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
+                          {rec.type?.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="text-gray-300 text-sm leading-relaxed">
+                        {rec.description}
+                      </p>
+                      {rec.count && (
+                        <div className="mt-2 text-xs text-blue-400">
+                          Count: {rec.count}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : alignment_snapshot?.pillar_alignment && alignment_snapshot.pillar_alignment.length > 0 && (
           <div className="mt-8 bg-gray-900 border border-yellow-500/30 rounded-lg p-6">
             <div className="flex items-start gap-3">
               <Target className="h-6 w-6 text-yellow-500 mt-1" />
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2">Alignment Insight</h3>
                 <p className="text-gray-300">
-                  {pillar_alignment[0]?.percentage > 50 ? (
+                  {alignment_snapshot.pillar_alignment[0]?.percentage > 50 ? (
                     <>
-                      You're heavily focused on <strong>{pillar_alignment[0]?.pillar_name}</strong> ({pillar_alignment[0]?.percentage}% of completed tasks). 
+                      You're heavily focused on <strong>{alignment_snapshot.pillar_alignment[0]?.pillar_name}</strong> ({alignment_snapshot.pillar_alignment[0]?.percentage}% of completed tasks). 
                       Consider if this aligns with your current priorities.
                     </>
                   ) : (
                     <>
-                      Your effort is well-distributed across pillars. Your top focus is <strong>{pillar_alignment[0]?.pillar_name}</strong> at {pillar_alignment[0]?.percentage}%.
+                      Your effort is well-distributed across pillars. Your top focus is <strong>{alignment_snapshot.pillar_alignment[0]?.pillar_name}</strong> at {alignment_snapshot.pillar_alignment[0]?.percentage}%.
                     </>
                   )}
                 </p>
