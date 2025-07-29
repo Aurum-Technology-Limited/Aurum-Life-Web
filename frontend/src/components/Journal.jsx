@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { BookOpen, Plus, Calendar, Tag, Smile, Meh, Frown, Loader2, AlertCircle, Search, Filter, BarChart3, FileText, Clock, TrendingUp } from 'lucide-react';
 import { journalAPI, handleApiError } from '../services/api';
 
