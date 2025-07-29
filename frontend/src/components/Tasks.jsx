@@ -1292,6 +1292,8 @@ const Tasks = memo(() => {
       />
     </div>
   );
-};
+});
+
+Tasks.displayName = 'Tasks';
 
 export default Tasks;
