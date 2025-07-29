@@ -134,8 +134,7 @@ class PillarStatisticsTestSuite:
                                                     "name": f"Test Task {i+1}-{j+1}-{k+1}",
                                                     "description": f"Test task {k+1} in project {j+1}",
                                                     "status": task_status,
-                                                    "priority": "medium",
-                                                    "completed": is_completed  # Explicitly set completed field
+                                                    "priority": "medium"
                                                 }
                                                 
                                                 async with self.session.post(f"{API_BASE}/tasks", json=task_data, headers=self.get_auth_headers()) as task_response:
@@ -143,7 +142,17 @@ class PillarStatisticsTestSuite:
                                                         task = await task_response.json()
                                                         task_id = task['id']
                                                         self.created_resources['tasks'].append(task_id)
-                                                        print(f"✅ Created test task {i+1}-{j+1}-{k+1} ({task_status}): {task_id}")
+                                                        
+                                                        # If this should be a completed task, update it to mark as completed
+                                                        if is_completed:
+                                                            update_data = {"completed": True, "status": "completed"}
+                                                            async with self.session.put(f"{API_BASE}/tasks/{task_id}", json=update_data, headers=self.get_auth_headers()) as update_response:
+                                                                if update_response.status == 200:
+                                                                    print(f"✅ Created and completed test task {i+1}-{j+1}-{k+1}: {task_id}")
+                                                                else:
+                                                                    print(f"⚠️ Created task but failed to mark as completed: {task_id}")
+                                                        else:
+                                                            print(f"✅ Created test task {i+1}-{j+1}-{k+1} (todo): {task_id}")
                                                     else:
                                                         print(f"❌ Failed to create task {i+1}-{j+1}-{k+1}: {task_response.status}")
                                         else:
