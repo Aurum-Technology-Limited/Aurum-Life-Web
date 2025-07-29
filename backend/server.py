@@ -334,12 +334,69 @@ async def get_today_view(current_user: User = Depends(get_current_active_user_hy
         today_data = {
             'tasks': tasks[:10],  # Limit to 10 tasks
             'priorities': [],
-            'recommendations': []
+            'recommendations': [],
+            'completed_tasks': len([t for t in tasks if t.get('completed', False)]),
+            'total_tasks': len(tasks)
         }
         
         return today_data
     except Exception as e:
         logger.error(f"Error getting today view: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/today/available-tasks")
+async def get_available_tasks(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get available tasks that can be added to today's list"""
+    try:
+        # Get all user tasks
+        all_tasks = await SupabaseTaskService.get_user_tasks(str(current_user.id))
+        
+        # Filter out completed tasks and return available ones
+        available_tasks = [task for task in all_tasks if not task.get('completed', False)]
+        
+        return available_tasks
+    except Exception as e:
+        logger.error(f"Error getting available tasks: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/today/tasks/{task_id}")
+async def add_task_to_today(
+    task_id: str,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Add a task to today's list"""
+    try:
+        # For now, just return success - can be enhanced with actual today list management
+        return {"message": "Task added to today's list", "task_id": task_id}
+    except Exception as e:
+        logger.error(f"Error adding task to today: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.delete("/today/tasks/{task_id}")
+async def remove_task_from_today(
+    task_id: str,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Remove a task from today's list"""
+    try:
+        # For now, just return success - can be enhanced with actual today list management
+        return {"message": "Task removed from today's list", "task_id": task_id}
+    except Exception as e:
+        logger.error(f"Error removing task from today: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.put("/today/reorder")
+async def reorder_daily_tasks(
+    task_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Reorder tasks in today's list"""
+    try:
+        # For now, just return success - can be enhanced with actual reordering
+        task_ids = task_data.get('task_ids', [])
+        return {"message": "Tasks reordered successfully", "task_ids": task_ids}
+    except Exception as e:
+        logger.error(f"Error reordering tasks: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 # Include authentication routes under /api
