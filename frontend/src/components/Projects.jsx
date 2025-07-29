@@ -5,7 +5,10 @@ import {
   DotsVerticalIcon, 
   CalendarIcon, 
   CheckIcon,
-  XIcon
+  XIcon,
+  PencilIcon,
+  TrashIcon,
+  EyeIcon
 } from '@heroicons/react/outline';
 import { 
   FolderOpenIcon,
