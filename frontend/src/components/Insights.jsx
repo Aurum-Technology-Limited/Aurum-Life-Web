@@ -200,6 +200,8 @@ const Insights = memo(() => {
       </div>
     </div>
   );
-};
+});
+
+Insights.displayName = 'Insights';
 
 export default Insights;
