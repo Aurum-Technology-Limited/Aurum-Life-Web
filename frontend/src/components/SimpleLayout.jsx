@@ -19,7 +19,7 @@ import {
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
 
-const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
+const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
   const { user } = useAuth();
 
   const navigation = [
