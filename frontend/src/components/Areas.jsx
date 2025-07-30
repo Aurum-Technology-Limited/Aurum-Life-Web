@@ -257,8 +257,8 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
         onDataMutation('area', 'create', response.data || formData);
       }
       
-      console.log('🗂️ Areas: Refetching areas...');
-      refetchAreas();
+      console.log('🗂️ Areas: Invalidating areas cache...');
+      invalidateAreas();
       handleCloseModal();
       console.log('🗂️ Areas: Form submission successful');
     } catch (err) {
