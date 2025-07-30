@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/solid';
 import { useAuth } from '../contexts/BackendAuthContext';
 
-const Projects = memo(({ onSectionChange }) => {
+const Projects = memo(({ onSectionChange, sectionParams }) => {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [areas, setAreas] = useState([]);
@@ -25,6 +25,10 @@ const Projects = memo(({ onSectionChange }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [error, setError] = useState('');
+  
+  // Extract area filter from section params
+  const activeAreaId = sectionParams?.areaId || null;
+  const activeAreaName = sectionParams?.areaName || null;
   
   const [newProject, setNewProject] = useState({
     name: '',
