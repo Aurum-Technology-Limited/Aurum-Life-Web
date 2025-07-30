@@ -151,9 +151,6 @@ function App() {
             case 'ai-coach':
               console.log('🤖 Rendering AICoach component');
               return <AICoach {...props} />;
-            case 'achievements':
-              console.log('🏆 Rendering Achievements component');
-              return <Achievements {...props} />;
             case 'notification-settings':
               console.log('🔔 Rendering NotificationSettings component');
               return <NotificationSettings {...props} />;
