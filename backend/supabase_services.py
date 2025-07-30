@@ -887,6 +887,12 @@ class SupabaseDashboardService:
             # Get user profile
             user_profile = await SupabaseUserService.get_user_profile(user_id)
             
+            # Remove achievement/level related fields from user profile
+            if user_profile:
+                # Remove level and points fields that are no longer needed
+                user_profile.pop('level', None)
+                user_profile.pop('total_points', None)
+            
             # Get basic stats
             tasks_response = supabase.table('tasks').select('completed').eq('user_id', user_id).execute()
             tasks = tasks_response.data or []
@@ -917,8 +923,7 @@ class SupabaseDashboardService:
                     'active_areas': areas_count,
                     'current_streak': 0,  # Can be calculated based on completed tasks
                     'habits_today': 0,    # Placeholder
-                    'active_learning': 0, # Placeholder
-                    'achievements': 0     # Placeholder
+                    'active_learning': 0  # Placeholder - removed achievements field
                 },
                 'recent_tasks': recent_tasks,
                 'areas': []  # Can be added if needed
