@@ -240,20 +240,36 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log('🗂️ Areas: Submitting form...', { editingArea: !!editingArea, formData });
+      
       if (editingArea) {
-        await areasAPI.updateArea(editingArea.id, formData);
+        console.log('🗂️ Areas: Updating area with ID:', editingArea.id);
+        const response = await areasAPI.updateArea(editingArea.id, formData);
+        console.log('🗂️ Areas: Update response:', response);
         // Notify data context of the mutation
         onDataMutation('area', 'update', { areaId: editingArea.id, ...formData });
       } else {
+        console.log('🗂️ Areas: Creating new area');
         const response = await areasAPI.createArea(formData);
+        console.log('🗂️ Areas: Create response:', response);
         // Notify data context of the mutation
         onDataMutation('area', 'create', response.data || formData);
       }
+      
+      console.log('🗂️ Areas: Refetching areas...');
       refetchAreas();
       handleCloseModal();
+      console.log('🗂️ Areas: Form submission successful');
     } catch (err) {
-      console.error('Error saving area:', err);
-      // Error handling is now managed by TanStack Query
+      console.error('🗂️ Areas: Error saving area:', err);
+      console.error('🗂️ Areas: Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      
+      // Show user-friendly error message
+      alert(`Failed to ${editingArea ? 'update' : 'create'} area: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
     }
   };
 
