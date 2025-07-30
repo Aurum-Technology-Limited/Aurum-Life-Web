@@ -185,7 +185,7 @@ AreaCard.displayName = 'AreaCard';
 
 const Areas = memo(({ onSectionChange, sectionParams }) => {
   const { onDataMutation } = useDataContext();
-  const { invalidateAreas } = useInvalidateQueries();
+  const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [editingArea, setEditingArea] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
@@ -212,6 +212,63 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     data: pillars = [], 
     isLoading: pillarsLoading 
   } = usePillarsQuery(false, false, false); // Don't include sub-pillars or areas
+  
+  // Create mutations for area operations
+  const updateAreaMutation = useMutation({
+    mutationFn: ({ areaId, areaData }) => areasAPI.updateArea(areaId, areaData),
+    onSuccess: (data) => {
+      console.log('🗂️ Areas: Update mutation successful:', data);
+      // Invalidate and refetch areas data
+      queryClient.invalidateQueries({ queryKey: ['areas'] });
+      onDataMutation('area', 'update', data);
+    },
+    onError: (error) => {
+      console.error('🗂️ Areas: Update mutation failed:', error);
+      alert(`Failed to update area: ${error.response?.data?.detail || error.message || 'Unknown error'}`);
+    }
+  });
+  
+  const createAreaMutation = useMutation({
+    mutationFn: (areaData) => areasAPI.createArea(areaData),
+    onSuccess: (data) => {
+      console.log('🗂️ Areas: Create mutation successful:', data);
+      // Invalidate and refetch areas data
+      queryClient.invalidateQueries({ queryKey: ['areas'] });
+      onDataMutation('area', 'create', data);
+    },
+    onError: (error) => {
+      console.error('🗂️ Areas: Create mutation failed:', error);
+      alert(`Failed to create area: ${error.response?.data?.detail || error.message || 'Unknown error'}`);
+    }
+  });
+  
+  const archiveAreaMutation = useMutation({
+    mutationFn: ({ areaId, isArchived }) => areasAPI.archiveArea(areaId, !isArchived),
+    onSuccess: (data, variables) => {
+      console.log('🗂️ Areas: Archive mutation successful:', data);
+      // Invalidate and refetch areas data
+      queryClient.invalidateQueries({ queryKey: ['areas'] });
+      onDataMutation('area', 'archive', { areaId: variables.areaId, archived: !variables.isArchived });
+    },
+    onError: (error, variables) => {
+      console.error('🗂️ Areas: Archive mutation failed:', error);
+      alert(`Failed to ${variables.isArchived ? 'unarchive' : 'archive'} area: ${error.response?.data?.detail || error.message || 'Unknown error'}`);
+    }
+  });
+  
+  const deleteAreaMutation = useMutation({
+    mutationFn: (areaId) => areasAPI.deleteArea(areaId),
+    onSuccess: (data, areaId) => {
+      console.log('🗂️ Areas: Delete mutation successful:', data);
+      // Invalidate and refetch areas data
+      queryClient.invalidateQueries({ queryKey: ['areas'] });
+      onDataMutation('area', 'delete', { areaId });
+    },
+    onError: (error) => {
+      console.error('🗂️ Areas: Delete mutation failed:', error);
+      alert(`Failed to delete area: ${error.response?.data?.detail || error.message || 'Unknown error'}`);
+    }
+  });
   
   // Performance logging
   useEffect(() => {
