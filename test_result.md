@@ -119,7 +119,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "SUPABASE-ONLY MIGRATION COMPLETED - Core CRUD functionality testing: Completely removed MongoDB and hybrid authentication system. Application now uses pure Supabase for authentication and data storage. Need to test that all CRUD operations (Create, Read, Update, Delete) for Pillars, Areas, Projects, and Tasks are working correctly with the new Supabase-only architecture."
+user_problem_statement: "Remove achievements and all relevant dependencies such as the user level. Once that is done, fix the broken profile menu. The settings and profile button do not work once the user's icon is pressed. fix them"
 
 backend:
   - task: "Supabase-Only Architecture Migration - Core CRUD Testing"
