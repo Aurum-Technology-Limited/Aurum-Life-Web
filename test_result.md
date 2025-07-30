@@ -228,10 +228,11 @@ metadata:
   critical_issue: "Testing Supabase-only CRUD operations"
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Areas Update Functionality Testing"
   stuck_tasks: []
   test_all: false
-  test_priority: "completed_testing"
+  test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
