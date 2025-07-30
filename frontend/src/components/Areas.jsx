@@ -291,13 +291,15 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   const handleDelete = async (areaId) => {
     if (window.confirm('Are you sure? This will delete all projects and tasks in this area.')) {
       try {
+        console.log('🗂️ Areas: Deleting area:', areaId);
         await areasAPI.deleteArea(areaId);
-        refetchAreas();
+        console.log('🗂️ Areas: Delete operation successful');
+        invalidateAreas();
         // Notify data context of the mutation
         onDataMutation('area', 'delete', { areaId });
       } catch (err) {
-        console.error('Error deleting area:', err);
-        // Error handling is now managed by TanStack Query
+        console.error('🗂️ Areas: Error deleting area:', err);
+        alert(`Failed to delete area: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
       }
     }
   };
