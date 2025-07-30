@@ -276,19 +276,15 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
 
   const handleArchive = async (areaId, isArchived) => {
     try {
-      if (isArchived) {
-        await areasAPI.unarchiveArea(areaId);
-        // Notify data context of the mutation
-        onDataMutation('area', 'unarchive', { areaId });
-      } else {
-        await areasAPI.archiveArea(areaId);
-        // Notify data context of the mutation  
-        onDataMutation('area', 'archive', { areaId });
-      }
-      refetchAreas();
+      console.log('🗂️ Areas: Archiving/unarchiving area:', { areaId, isArchived });
+      await areasAPI.archiveArea(areaId, !isArchived);
+      console.log('🗂️ Areas: Archive operation successful');
+      invalidateAreas();
+      // Also notify data context
+      onDataMutation('area', 'archive', { areaId, archived: !isArchived });
     } catch (err) {
-      console.error('Error archiving/unarchiving area:', err);
-      // Error handling is now managed by TanStack Query
+      console.error('🗂️ Areas: Error archiving area:', err);
+      alert(`Failed to ${isArchived ? 'unarchive' : 'archive'} area: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
     }
   };
 
