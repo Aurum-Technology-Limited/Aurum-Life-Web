@@ -41,6 +41,13 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     due_date: ''
   });
 
+  // Update form when activeAreaId changes (for pre-populating area)
+  useEffect(() => {
+    if (activeAreaId) {
+      setNewProject(prev => ({ ...prev, area_id: activeAreaId }));
+    }
+  }, [activeAreaId]);
+
   // Load projects and areas
   useEffect(() => {
     if (user) {
