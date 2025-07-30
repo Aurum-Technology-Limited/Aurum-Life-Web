@@ -319,15 +319,18 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   };
 
   const handleEdit = (area) => {
+    console.log('🗂️ Areas: Starting edit for area:', area);
     setEditingArea(area);
-    setFormData({
+    const editFormData = {
       name: area.name,
       description: area.description || '',
       color: area.color || '#F4B400',
       icon: area.icon || '🎯', // Use emoji icon
       pillar_id: area.pillar_id || '',
       importance: area.importance || 3
-    });
+    };
+    console.log('🗂️ Areas: Setting edit form data:', editFormData);
+    setFormData(editFormData);
     setShowModal(true);
   };
 
