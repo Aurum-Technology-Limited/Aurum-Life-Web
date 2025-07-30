@@ -409,16 +409,16 @@ class SupabaseAreaService:
             if area_data.icon is not None:
                 update_dict['icon'] = area_data.icon
             if area_data.importance is not None:
-                # Map importance string to integer
-                importance_mapping = {
-                    'low': 1,
-                    'medium': 3,
-                    'high': 5
-                }
-                if isinstance(area_data.importance, str):
-                    update_dict['importance'] = importance_mapping.get(area_data.importance, 3)
-                else:
+                # Handle importance as integer (direct value from frontend)
+                # ImportanceEnum values: 1=low, 2=medium_low, 3=medium, 4=medium_high, 5=critical
+                if isinstance(area_data.importance, int):
                     update_dict['importance'] = area_data.importance
+                elif hasattr(area_data.importance, 'value'):
+                    # Handle enum object
+                    update_dict['importance'] = area_data.importance.value
+                else:
+                    # Fallback - try to convert
+                    update_dict['importance'] = int(area_data.importance)
             if getattr(area_data, 'is_active', None) is not None:
                 update_dict['archived'] = not area_data.is_active  # Map is_active to archived (inverted)
                 
