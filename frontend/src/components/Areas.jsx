@@ -184,6 +184,7 @@ AreaCard.displayName = 'AreaCard';
 
 const Areas = memo(({ onSectionChange, sectionParams }) => {
   const { onDataMutation } = useDataContext();
+  const { invalidateAreas } = useInvalidateQueries();
   const [showModal, setShowModal] = useState(false);
   const [editingArea, setEditingArea] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
