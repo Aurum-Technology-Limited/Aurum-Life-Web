@@ -37,7 +37,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
     className={`bg-gray-900/50 border rounded-xl p-6 hover:border-gray-700 transition-all duration-200 hover:shadow-lg cursor-pointer ${
       area.archived ? 'border-gray-700 opacity-75' : 'border-gray-800'
     }`}
-    onClick={() => onSectionChange && onSectionChange('projects', { areaId: area.id })}
+    onClick={() => onSectionChange && onSectionChange('projects', { areaId: area.id, areaName: area.name })}
   >
     {/* Area Header */}
     <div className="flex items-start justify-between mb-4">
