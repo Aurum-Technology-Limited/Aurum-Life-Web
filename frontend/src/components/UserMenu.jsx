@@ -18,6 +18,20 @@ const UserMenu = ({ onSectionChange }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleProfileClick = () => {
+    setIsOpen(false);
+    if (onSectionChange) {
+      onSectionChange('profile');
+    }
+  };
+
+  const handleSettingsClick = () => {
+    setIsOpen(false);
+    if (onSectionChange) {
+      onSectionChange('notification-settings');
+    }
+  };
+
   const handleLogout = async () => {
     await logout();
     setIsOpen(false);
