@@ -33,9 +33,6 @@ class UserUpdate(BaseModel):
     email: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    level: Optional[int] = None
-    total_points: Optional[int] = None
-    current_streak: Optional[int] = None
     profile_data: Optional[Dict[str, Any]] = None
 
 class UserLogin(BaseModel):
