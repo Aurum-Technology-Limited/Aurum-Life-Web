@@ -378,8 +378,20 @@ class AreaUpdate(BaseModel):
     description: Optional[str] = None
     icon: Optional[str] = None
     color: Optional[str] = None
-    importance: Optional[ImportanceEnum] = None
+    importance: Optional[Union[ImportanceEnum, int]] = None  # Allow both enum and int
     sort_order: Optional[int] = None
+    
+    @validator('importance', pre=True)
+    def validate_importance(cls, v):
+        if v is None:
+            return v
+        if isinstance(v, int):
+            # Convert int to ImportanceEnum if valid
+            if v in [1, 2, 3, 4, 5]:
+                return ImportanceEnum(v)
+            else:
+                raise ValueError("Importance must be between 1 and 5")
+        return v
 
 # Project models
 class Project(BaseDocument):
