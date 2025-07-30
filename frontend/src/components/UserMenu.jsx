@@ -90,7 +90,7 @@ const UserMenu = ({ onSectionChange }) => {
           </div>
           
           <button
-            onClick={() => {/* Navigate to profile */}}
+            onClick={handleProfileClick}
             className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
           >
             <UserIcon className="h-4 w-4 mr-2" />
@@ -98,7 +98,7 @@ const UserMenu = ({ onSectionChange }) => {
           </button>
           
           <button
-            onClick={() => {/* Navigate to settings */}}
+            onClick={handleSettingsClick}
             className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
           >
             <CogIcon className="h-4 w-4 mr-2" />
