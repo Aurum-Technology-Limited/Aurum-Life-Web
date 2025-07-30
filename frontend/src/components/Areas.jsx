@@ -330,16 +330,13 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
 
   const handleDelete = async (areaId) => {
     if (window.confirm('Are you sure? This will delete all projects and tasks in this area.')) {
+      console.log('🗂️ Areas: Deleting area:', areaId);
       try {
-        console.log('🗂️ Areas: Deleting area:', areaId);
-        await areasAPI.deleteArea(areaId);
+        await deleteAreaMutation.mutateAsync(areaId);
         console.log('🗂️ Areas: Delete operation successful');
-        invalidateAreas();
-        // Notify data context of the mutation
-        onDataMutation('area', 'delete', { areaId });
       } catch (err) {
-        console.error('🗂️ Areas: Error deleting area:', err);
-        alert(`Failed to delete area: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
+        // Error handling is done in the mutation's onError callback
+        console.error('🗂️ Areas: Delete operation failed:', err);
       }
     }
   };
