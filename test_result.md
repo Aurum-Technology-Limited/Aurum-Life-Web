@@ -245,7 +245,8 @@ metadata:
 test_plan:
   current_focus:
     - "Areas Update Functionality Testing"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Areas Update Functionality Testing"
   test_all: false
   test_priority: "high_first"
 
