@@ -355,6 +355,16 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false, defaultProj
     }
   }, [task, isOpen, projects]);
 
+  // Set default project when defaultProjectId changes
+  useEffect(() => {
+    if (defaultProjectId && !task && !formData.project_id) {
+      setFormData(prev => ({
+        ...prev,
+        project_id: defaultProjectId
+      }));
+    }
+  }, [defaultProjectId, task, formData.project_id]);
+
   // Load dependencies when project changes
   useEffect(() => {
     if (formData.project_id) {
