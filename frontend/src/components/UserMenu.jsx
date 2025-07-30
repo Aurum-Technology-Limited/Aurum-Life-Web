@@ -57,7 +57,7 @@ const UserMenu = () => {
               }
             </p>
             <p className="text-xs text-gray-400 truncate">
-              Level {user.level || 1} • {user.total_points || 0} pts
+              {user.email}
             </p>
           </div>
         </div>
