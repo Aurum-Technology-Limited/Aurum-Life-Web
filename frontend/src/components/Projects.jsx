@@ -49,6 +49,23 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     }
   }, [user]);
 
+  // Set area name when activeAreaId changes
+  useEffect(() => {
+    if (activeAreaId && areas.length > 0) {
+      const area = areas.find(a => a.id === activeAreaId);
+      if (area) {
+        // Update the sectionParams to include area name for display
+        const updatedParams = { ...sectionParams, areaName: area.name };
+        // Note: We don't call onSectionChange here to avoid infinite loop
+      }
+    }
+  }, [activeAreaId, areas]);
+
+  // Filter projects by area if activeAreaId is provided
+  const filteredProjects = activeAreaId 
+    ? projects.filter(project => project.area_id === activeAreaId)
+    : projects;
+
   const loadProjects = async () => {
     try {
       const backendURL = process.env.REACT_APP_BACKEND_URL || '';
