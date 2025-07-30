@@ -688,11 +688,21 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
           </div>
         ))}
 
-        {projects.length === 0 && !showCreateForm && (
+        {filteredProjects.length === 0 && !showCreateForm && (
           <div className="col-span-full text-center py-12">
             <FolderIcon className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">No projects yet</h3>
-            <p className="text-gray-400 mb-4">Create your first project to get started</p>
+            <h3 className="text-lg font-medium text-white mb-2">
+              {activeAreaId && sectionParams?.areaName 
+                ? `No projects in ${sectionParams.areaName} yet`
+                : 'No projects yet'
+              }
+            </h3>
+            <p className="text-gray-400 mb-4">
+              {activeAreaId && sectionParams?.areaName
+                ? `Create your first project in the ${sectionParams.areaName} area`
+                : 'Create your first project to get started'
+              }
+            </p>
             <button
               onClick={() => setShowCreateForm(true)}
               className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium hover:bg-yellow-600 transition-colors"
