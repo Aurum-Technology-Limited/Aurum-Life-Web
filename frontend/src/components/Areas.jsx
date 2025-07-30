@@ -20,6 +20,7 @@ import {
 import { areasAPI, api } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import { useAreasQuery, usePillarsQuery, useInvalidateQueries } from '../hooks/useQueries';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import DonutChart from './ui/DonutChart';
 import IconPicker from './ui/IconPicker';
 import { 
