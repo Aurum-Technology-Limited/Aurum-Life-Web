@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { UserIcon, CogIcon, LogoutIcon } from '@heroicons/react/outline';
 
-const UserMenu = () => {
+const UserMenu = ({ onSectionChange }) => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
