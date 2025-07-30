@@ -259,10 +259,11 @@ const TaskModal = ({ task, isOpen, onClose, onSave, loading = false, defaultProj
       setProjects(response.data);
       
       // Set default project if none is selected and we're creating a new task
-      if (!task && response.data.length > 0 && !formData.project_id) {
+      if (!task && !formData.project_id) {
+        const projectId = defaultProjectId || (response.data.length > 0 ? response.data[0].id : '');
         setFormData(prev => ({
           ...prev,
-          project_id: response.data[0].id
+          project_id: projectId
         }));
       }
     } catch (err) {
