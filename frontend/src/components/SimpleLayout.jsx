@@ -33,7 +33,6 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
     { name: 'Insights', key: 'insights', icon: ChartBarIcon },
     { name: 'Feedback', key: 'feedback', icon: ChatIcon },
     { name: 'AI Coach', key: 'ai-coach', icon: BeakerIcon },
-    { name: 'Achievements', key: 'achievements', icon: BadgeCheckIcon },
     { name: 'Notifications', key: 'notifications', icon: BellIcon },
   ], []);
 
