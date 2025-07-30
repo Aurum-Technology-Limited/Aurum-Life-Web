@@ -46,9 +46,6 @@ class UserResponse(BaseModel):
     first_name: str
     last_name: str
     is_active: bool
-    level: int
-    total_points: int
-    current_streak: int
     created_at: datetime
 
 class Token(BaseModel):
