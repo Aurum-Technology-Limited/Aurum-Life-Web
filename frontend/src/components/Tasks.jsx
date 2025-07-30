@@ -134,7 +134,7 @@ const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
   );
 };
 
-const TaskModal = ({ task, isOpen, onClose, onSave, loading = false }) => {
+const TaskModal = ({ task, isOpen, onClose, onSave, loading = false, defaultProjectId = null }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
