@@ -432,8 +432,11 @@ class SupabaseAreaService:
             
             # Transform back to expected format
             result['is_active'] = not result.get('archived', False)  # Transform archived to is_active
-            importance_reverse_mapping = {1: 'low', 3: 'medium', 5: 'high'}
-            result['importance'] = importance_reverse_mapping.get(result.get('importance'), 'medium')
+            # Keep importance as integer (1-5) - don't convert to string
+            # The frontend expects integer values for importance field validation
+            if 'importance' in result and result['importance'] is not None:
+                # Ensure importance is returned as integer
+                result['importance'] = int(result['importance'])
             
             return result
             
