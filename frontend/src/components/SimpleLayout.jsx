@@ -10,7 +10,6 @@ import {
   ChatIcon, 
   ChartBarIcon, 
   CogIcon, 
-  BadgeCheckIcon, 
   UserIcon,
   BeakerIcon,
   AdjustmentsIcon,
