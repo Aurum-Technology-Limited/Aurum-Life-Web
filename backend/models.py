@@ -20,9 +20,6 @@ class User(BaseDocument):
     google_id: Optional[str] = None  # Google OAuth ID
     profile_picture: Optional[str] = None  # URL to profile picture
     is_active: bool = True
-    level: int = 1
-    total_points: int = 0
-    current_streak: int = 0
 
 class UserCreate(BaseModel):
     username: str
