@@ -115,11 +115,6 @@ const Profile = () => {
                 }
               </h2>
               <p className="text-gray-400">{user.email}</p>
-              <div className="flex items-center space-x-4 mt-2">
-                <span className="text-sm text-yellow-400">Level {user.level || 1}</span>
-                <span className="text-sm text-gray-400">{user.total_points || 0} points</span>
-                <span className="text-sm text-gray-400">{user.current_streak || 0} day streak</span>
-              </div>
             </div>
 
             {!isEditing && (
