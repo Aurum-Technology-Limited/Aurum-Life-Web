@@ -102,9 +102,6 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
             </h1>
             {user && (
               <div className="flex items-center space-x-4">
-                <div className="text-gray-300 text-sm">
-                  Level {user.level || 1} • {user.total_points || 0} pts
-                </div>
               </div>
             )}
           </div>
