@@ -280,8 +280,32 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white">Projects</h1>
-          <p className="text-gray-400 mt-1">Manage your life projects and track progress</p>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl font-bold text-white">Projects</h1>
+            {activeAreaId && sectionParams?.areaName && (
+              <>
+                <span className="text-2xl text-gray-500">›</span>
+                <div className="flex items-center space-x-2">
+                  <FolderIcon className="h-5 w-5 text-yellow-400" />
+                  <span className="text-xl font-medium text-yellow-400">{sectionParams.areaName}</span>
+                </div>
+              </>
+            )}
+          </div>
+          <p className="text-gray-400 mt-1">
+            {activeAreaId && sectionParams?.areaName
+              ? `Projects within the ${sectionParams.areaName} area`
+              : 'Manage your life projects and track progress'
+            }
+          </p>
+          {activeAreaId && (
+            <button
+              onClick={() => onSectionChange('areas')}
+              className="mt-2 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
+            >
+              ← Back to all areas
+            </button>
+          )}
         </div>
         <button
           onClick={() => setShowCreateForm(true)}
