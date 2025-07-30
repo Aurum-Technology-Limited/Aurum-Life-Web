@@ -318,16 +318,13 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   };
 
   const handleArchive = async (areaId, isArchived) => {
+    console.log('🗂️ Areas: Archiving/unarchiving area:', { areaId, isArchived });
     try {
-      console.log('🗂️ Areas: Archiving/unarchiving area:', { areaId, isArchived });
-      await areasAPI.archiveArea(areaId, !isArchived);
+      await archiveAreaMutation.mutateAsync({ areaId, isArchived });
       console.log('🗂️ Areas: Archive operation successful');
-      invalidateAreas();
-      // Also notify data context
-      onDataMutation('area', 'archive', { areaId, archived: !isArchived });
     } catch (err) {
-      console.error('🗂️ Areas: Error archiving area:', err);
-      alert(`Failed to ${isArchived ? 'unarchive' : 'archive'} area: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
+      // Error handling is done in the mutation's onError callback
+      console.error('🗂️ Areas: Archive operation failed:', err);
     }
   };
 
