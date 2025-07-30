@@ -570,7 +570,5 @@ export default {
   resources: resourcesAPI,
   googleAuth: googleAuthAPI,
   aiCoach: aiCoachAPI,
-  achievements: achievementsAPI,
-  feedback: feedbackAPI,
-  customAchievements: customAchievementsAPI
+  feedback: feedbackAPI
 };
