@@ -74,7 +74,6 @@ function App() {
   // Update document title based on active section
   useEffect(() => {
     const sectionTitles = {
-      'dashboard': 'Dashboard',
       'today': 'Today',
       'pillars': 'Pillars',
       'areas': 'Areas', 
@@ -84,7 +83,6 @@ function App() {
       'journal': 'Journal',
       'feedback': 'Feedback & Support',
       'ai-coach': 'AI Coach',
-      'achievements': 'Achievements',
       'profile': 'Profile',
       'insights': 'Insights',
       'notification-settings': 'Notifications',
