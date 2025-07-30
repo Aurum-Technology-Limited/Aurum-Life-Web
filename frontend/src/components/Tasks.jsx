@@ -1332,6 +1332,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
         }}
         onSave={handleSaveTask}
         loading={modalLoading}
+        defaultProjectId={activeProjectId}
       />
     </div>
   );
