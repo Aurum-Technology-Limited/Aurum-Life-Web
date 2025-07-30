@@ -601,8 +601,16 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors"
-                    style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+                    disabled={!formData.name.trim()}
+                    className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      !formData.name.trim() 
+                        ? 'bg-gray-600 cursor-not-allowed opacity-50' 
+                        : 'hover:opacity-90'
+                    }`}
+                    style={{ 
+                      backgroundColor: !formData.name.trim() ? '#6B7280' : '#F4B400', 
+                      color: '#0B0D14' 
+                    }}
                   >
                     <Save className="h-4 w-4" />
                     <span>{editingArea ? 'Update' : 'Create'}</span>
