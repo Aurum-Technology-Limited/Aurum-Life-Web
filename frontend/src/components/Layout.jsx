@@ -39,7 +39,6 @@ const Layout = ({ children }) => {
     { name: 'Insights', href: '/insights', icon: ChartBarIcon },
     { name: 'Feedback', href: '/feedback', icon: ChatIcon },
     { name: 'AI Coach', href: '/ai-coach', icon: BeakerIcon },
-    { name: 'Achievements', href: '/achievements', icon: BadgeCheckIcon },
     { name: 'Notifications', href: '/notifications', icon: BellIcon },
   ];
 
