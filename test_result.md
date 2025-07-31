@@ -310,6 +310,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Areas API Performance Optimization"
     - "Authentication Fixed and Verified"
     - "All Core Functionality Working"
   stuck_tasks: []
