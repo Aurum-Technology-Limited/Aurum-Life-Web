@@ -47,16 +47,18 @@ const LoadingSpinner = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 2 * 60 * 1000, // 2 minutes - reduced for more responsive updates  
-      gcTime: 5 * 60 * 1000, // 5 minutes - reduced memory usage
+      staleTime: 5 * 60 * 1000, // 5 minutes - increased for better performance
+      gcTime: 10 * 60 * 1000, // 10 minutes - increased for better caching
       retry: 1, // Only retry once on failure for faster error feedback
       refetchOnWindowFocus: false, // Don't refetch when window regains focus
-      refetchOnMount: false, // Don't refetch when component mounts if data is fresh
+      refetchOnMount: 'always', // Always refetch when component mounts for fresh data
       refetchOnReconnect: true, // Refetch when reconnecting to internet
       refetchInterval: false, // Disable automatic refetching
+      networkMode: 'online', // Only run queries when online
     },
     mutations: {
       retry: 1, // Faster error feedback for mutations
+      networkMode: 'online', // Only run mutations when online
     },
   },
 });
