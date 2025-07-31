@@ -264,56 +264,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (credentialResponse) => {
     try {
       setLoading(true);
       
-      // Get the current app URL for redirect
-      const redirectUrl = window.location.origin + '/profile';
-      
-      // Get the auth URL from backend
-      const response = await fetch(`${BACKEND_URL}/api/auth/google/initiate`, {
+      // Use the ID token from Google's credential response
+      const response = await fetch(`${BACKEND_URL}/api/auth/google/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ redirect_url: redirectUrl })
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.auth_url) {
-        // Redirect to Google auth
-        window.location.href = data.auth_url;
-        return { success: true };
-      } else {
-        return { 
-          success: false, 
-          error: data.detail || 'Failed to initiate Google authentication' 
-        };
-      }
-      
-    } catch (error) {
-      console.error('Google login error:', error);
-      return { 
-        success: false, 
-        error: 'Network error. Please try again.' 
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleCallback = async (sessionId) => {
-    try {
-      setLoading(true);
-      
-      const response = await fetch(`${BACKEND_URL}/api/auth/google/callback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ session_id: sessionId })
+        body: JSON.stringify({ id_token: credentialResponse.credential })
       });
 
       const data = await response.json();
@@ -338,7 +299,7 @@ export const AuthProvider = ({ children }) => {
       }
       
     } catch (error) {
-      console.error('Google callback error:', error);
+      console.error('Google login error:', error);
       return { 
         success: false, 
         error: 'Network error. Please try again.' 
@@ -346,6 +307,16 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleCallback = async (sessionId) => {
+    // This method is no longer needed with the new Google OAuth flow
+    // but keeping it for backward compatibility
+    console.warn('handleGoogleCallback is deprecated with new Google OAuth flow');
+    return { 
+      success: false, 
+      error: 'This method is no longer supported'
+    };
   };
 
   const value = {
