@@ -42,7 +42,7 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 flex items-center justify-center">
               <img 
-                src="/aurum-brain-logo.png" 
+                src="/aurum-brain-logo.svg" 
                 alt="Aurum Life Logo" 
                 className="w-8 h-8 object-contain"
                 onError={(e) => {
