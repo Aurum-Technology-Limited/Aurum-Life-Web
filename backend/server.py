@@ -27,6 +27,15 @@ from supabase_services import (
 from supabase_auth import get_current_active_user, verify_token
 from supabase_auth_endpoints import auth_router
 from hybrid_auth import get_current_active_user_hybrid
+from emergent_auth import (
+    EmergentAuthService, 
+    SessionManager, 
+    GoogleAuthRequest, 
+    GoogleAuthResponse, 
+    SessionValidationRequest, 
+    AuthTokenResponse,
+    UserProfileResponse
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
