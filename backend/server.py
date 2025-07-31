@@ -279,7 +279,7 @@ async def decompose_project(
 async def create_suggested_tasks(
     project_id: str,
     suggested_tasks: List[Dict[str, Any]],
-    current_user: dict = Depends(get_current_active_user_hybrid)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """
     Create actual tasks from suggested tasks for a project
