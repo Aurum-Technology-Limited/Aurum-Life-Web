@@ -200,7 +200,8 @@ class AiCoachMvpService:
             return ProjectDecompositionResponse(
                 project_name=request.project_name,
                 template_type=request.template_type,
-                suggested_tasks=template_tasks
+                suggested_tasks=template_tasks,
+                total_tasks=len(template_tasks)
             )
             
         except Exception as e:
