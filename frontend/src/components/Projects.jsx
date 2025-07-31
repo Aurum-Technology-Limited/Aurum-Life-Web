@@ -800,6 +800,16 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
           </div>
         )}
       </div>
+      
+      {/* Project Decomposition Helper */}
+      {showDecompositionHelper && newProjectForDecomposition && (
+        <ProjectDecompositionHelper
+          projectName={newProjectForDecomposition.name}
+          projectDescription={newProjectForDecomposition.description}
+          onTasksCreated={handleTasksCreated}
+          onCancel={handleCancelDecomposition}
+        />
+      )}
     </div>
   );
 });
