@@ -119,14 +119,9 @@ class AiCoachMvpService:
                         task_id=task['id'],
                         task_name=task['name'],
                         why_statement=why_statement,
-                        project_name=project['name'],
-                        pillar_name=pillar['name'] if pillar else None,
-                        vertical_alignment={
-                            'task': task['name'],
-                            'project': project['name'],
-                            'area': area['name'] if area else 'No Area',
-                            'pillar': pillar['name'] if pillar else 'No Pillar'
-                        }
+                        project_connection=project['name'],
+                        pillar_connection=pillar['name'] if pillar else None,
+                        area_connection=area['name'] if area else None
                     ))
                     
                 except Exception as e:
@@ -134,7 +129,15 @@ class AiCoachMvpService:
                     continue
             
             logger.info(f"✅ Generated {len(tasks_with_why)} why statements for user: {user_id}")
-            return TaskWhyStatementResponse(tasks_with_why=tasks_with_why)
+            return TaskWhyStatementResponse(
+                why_statements=tasks_with_why,
+                tasks_analyzed=len(tasks),
+                vertical_alignment={
+                    'total_tasks_analyzed': len(tasks),
+                    'successful_statements': len(tasks_with_why),
+                    'hierarchy_depth': 'task -> project -> area -> pillar'
+                }
+            )
             
         except Exception as e:
             logger.error(f"Error generating task why statements: {e}")
