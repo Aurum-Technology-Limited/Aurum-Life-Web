@@ -27,12 +27,12 @@ from supabase_services import (
 from supabase_auth import get_current_active_user, verify_token
 from supabase_auth_endpoints import auth_router
 from hybrid_auth import get_current_active_user_hybrid
-from emergent_auth import (
-    EmergentAuthService, 
+from google_oauth import (
+    GoogleOAuthService, 
     SessionManager, 
-    GoogleAuthRequest, 
-    GoogleAuthResponse, 
-    SessionValidationRequest, 
+    GoogleAuthInitiateResponse,
+    GoogleAuthCallbackRequest,
+    GoogleAuthTokenRequest,
     AuthTokenResponse,
     UserProfileResponse
 )
