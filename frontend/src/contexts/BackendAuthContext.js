@@ -264,15 +264,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const value = {
-    user,
-    loading,
-    token,
-    login,
-    register,
-    logout,
-    updateProfile,
-    forgotPassword,
   const loginWithGoogle = async () => {
     try {
       setLoading(true);
@@ -356,6 +347,18 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+  const value = {
+    user,
+    loading,
+    token,
+    login,
+    register,
+    logout,
+    updateProfile,
+    forgotPassword,
+    loginWithGoogle,
+    handleGoogleCallback
   };
 
   return (
