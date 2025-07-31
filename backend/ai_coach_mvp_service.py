@@ -406,7 +406,7 @@ class AiCoachMvpService:
     async def get_user_reflections(self, user_id: str, days: int = 30) -> List[DailyReflectionResponse]:
         """Get user's recent daily reflections"""
         try:
-            supabase = self.supabase_manager.get_client()
+            supabase = self.supabase
             
             # Get reflections from the last N days
             since_date = (datetime.utcnow() - timedelta(days=days)).date()
@@ -420,7 +420,7 @@ class AiCoachMvpService:
                 reflections.append(DailyReflectionResponse(
                     id=reflection_dict['id'],
                     user_id=reflection_dict['user_id'],
-                    date=datetime.fromisoformat(reflection_dict['date']).date(),
+                    reflection_date=datetime.fromisoformat(reflection_dict['date']),
                     reflection_text=reflection_dict['reflection_text'],
                     completion_score=reflection_dict.get('completion_score'),
                     mood=reflection_dict.get('mood'),
@@ -440,7 +440,7 @@ class AiCoachMvpService:
     async def get_user_streak(self, user_id: str) -> int:
         """Get user's current daily streak"""
         try:
-            supabase = self.supabase_manager.get_client()
+            supabase = self.supabase
             
             # Get user profile with streak info
             response = supabase.table('user_profiles').select('current_streak').eq('id', user_id).execute()
@@ -456,7 +456,7 @@ class AiCoachMvpService:
     async def _update_daily_streak(self, user_id: str, reflection_date: date) -> None:
         """Update user's daily streak based on reflection activity"""
         try:
-            supabase = self.supabase_manager.get_client()
+            supabase = self.supabase
             
             # Get current streak
             current_streak = await self.get_user_streak(user_id)
@@ -488,7 +488,7 @@ class AiCoachMvpService:
     async def should_show_daily_prompt(self, user_id: str) -> bool:
         """Check if daily prompt should be shown to user"""
         try:
-            supabase = self.supabase_manager.get_client()
+            supabase = self.supabase
             
             # Check if user has already completed reflection today
             today = datetime.utcnow().date()
