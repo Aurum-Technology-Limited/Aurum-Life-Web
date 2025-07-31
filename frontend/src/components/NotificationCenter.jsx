@@ -1,19 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Bell, 
-  Check, 
-  CheckCheck, 
-  Trash2, 
-  X, 
-  AlertCircle,
-  Clock,
-  Calendar,
-  FolderOpen,
-  CheckSquare,
-  Trophy,
-  Loader,
-  MoreVertical
-} from 'lucide-react';
+import {Bell, Check, CheckCheck, Trash2, X, AlertCircle, Clock, Calendar, FolderOpen, CheckSquare, Trophy, Loader} from 'lucide-react';
 import { notificationsAPI } from '../services/api';
 
 const NotificationCenter = () => {

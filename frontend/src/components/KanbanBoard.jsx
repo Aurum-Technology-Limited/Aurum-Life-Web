@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { 
-  Plus, 
-  MoreVertical, 
-  Edit2, 
-  Trash2, 
-  Calendar, 
-  Clock,
-  Circle,
-  CheckCircle2,
-  AlertCircle,
-  ArrowLeft,
-  X,
-  GripVertical
-} from 'lucide-react';
-import { projectsAPI, tasksAPI } from '../services/api';
+import {Plus, Edit2, Trash2, Calendar, ArrowLeft, X, GripVertical} from 'lucide-react';
+import {tasksAPI} from '../services/api';
 import FileManager from './FileManager';
 
 const KanbanBoard = ({ project, tasks, onBack, onTaskUpdate, loading }) => {

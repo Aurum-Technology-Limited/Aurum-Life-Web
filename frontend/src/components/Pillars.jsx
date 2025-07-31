@@ -2,15 +2,7 @@ import React, { useState, useEffect, useContext, memo } from 'react';
 import { useDataContext } from '../contexts/DataContext';
 import { api } from '../services/api';
 import { usePillarsQuery, useInvalidateQueries } from '../hooks/useQueries';
-import { 
-  Plus, 
-  Target, 
-  TrendingUp, 
-  Trash2, 
-  Edit2,
-  BarChart3,
-  Layers
-} from 'lucide-react';
+import {Plus, Trash2, Edit2, Layers} from 'lucide-react';
 import IconPicker from './ui/IconPicker';
 
 const Pillars = memo(({ onSectionChange }) => {

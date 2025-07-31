@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import {X, CheckCircle, AlertCircle, Info, AlertTriangle} from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 
 // Notification types and their corresponding icons and colors

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, Bot, User, Lightbulb, Target, TrendingUp, Loader2, AlertCircle } from 'lucide-react';
+import {Send, Bot, User, Lightbulb, Target, TrendingUp, Loader2, AlertCircle} from 'lucide-react';
 import { aiCoachAPI, statsAPI, handleApiError } from '../services/api';
 
 const Message = ({ message, isUser }) => (

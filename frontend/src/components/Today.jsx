@@ -1,19 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { 
-  Calendar, 
-  Clock, 
-  CheckCircle2, 
-  Circle, 
-  Plus, 
-  Star, 
-  AlertCircle, 
-  Timer,
-  GripVertical,
-  X,
-  ArrowRight
-} from 'lucide-react';
+import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVertical, X} from 'lucide-react';
 import { todayAPI, tasksAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import PomodoroTimer from './PomodoroTimer';

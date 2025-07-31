@@ -12,7 +12,7 @@ import {
   ArrowRight,
   Copy
 } from 'lucide-react';
-import { projectTemplatesAPI, areasAPI, projectsAPI } from '../services/api';
+import {projectTemplatesAPI, areasAPI} from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 
 const ProjectTemplates = memo(({ onSectionChange }) => {

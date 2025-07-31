@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
-import { UserIcon, SaveIcon } from '@heroicons/react/outline';
+import {SaveIcon} from '@heroicons/react/outline';
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();

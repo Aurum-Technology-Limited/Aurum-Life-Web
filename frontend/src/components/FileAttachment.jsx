@@ -6,19 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { toast } from '../hooks/use-toast';
-import { 
-  Upload, 
-  File, 
-  Image, 
-  FileText, 
-  Archive, 
-  Download, 
-  Trash2, 
-  Eye,
-  X,
-  Loader2,
-  Plus
-} from 'lucide-react';
+import {Upload, File, Image, FileText, Archive, Download, Trash2, Loader2} from 'lucide-react';
 
 const FileAttachment = ({ 
   parentType, 

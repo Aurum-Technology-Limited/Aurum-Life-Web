@@ -1,34 +1,12 @@
 import React, { useState, useEffect, memo } from 'react';
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Target, 
-  BarChart3, 
-  FolderOpen, 
-  Calendar,
-  AlertCircle,
-  X,
-  Save,
-  Layers,
-  Archive,
-  ArchiveRestore,
-  Eye,
-  EyeOff,
-  Mountain
-} from 'lucide-react';
+import {Plus, Edit2, Trash2, AlertCircle, X, Save, Layers, Archive, ArchiveRestore, Eye, EyeOff, Mountain} from 'lucide-react';
 import { areasAPI, api } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
-import { useAreasQuery, usePillarsQuery, useInvalidateQueries } from '../hooks/useQueries';
+import {useAreasQuery, usePillarsQuery} from '../hooks/useQueries';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import DonutChart from './ui/DonutChart';
 import IconPicker from './ui/IconPicker';
-import { 
-  getDynamicFontSize, 
-  validateTextLength, 
-  CHARACTER_LIMITS,
-  getCharacterCounterData
-} from '../utils/textUtils';
+import {getDynamicFontSize, CHARACTER_LIMITS, getCharacterCounterData} from '../utils/textUtils';
 
 // Memoized AreaCard component to prevent unnecessary re-renders
 const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) => (

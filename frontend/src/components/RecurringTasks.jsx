@@ -1,19 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Save, 
-  X, 
-  AlertCircle, 
-  Repeat, 
-  Calendar, 
-  Clock,
-  Target,
-  TrendingUp,
-  Play,
-  Pause
-} from 'lucide-react';
+import {Plus, Edit2, Trash2, Save, X, AlertCircle, Repeat, Clock, Target, Play} from 'lucide-react';
 import { recurringTasksAPI, projectsAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 
