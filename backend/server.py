@@ -289,7 +289,7 @@ async def create_suggested_tasks(
     - suggested_tasks: List of suggested task dictionaries
     """
     try:
-        user_id = current_user['id']
+        user_id = current_user.id
         created_tasks = await ai_coach_mvp.create_tasks_from_suggestions(
             user_id, project_id, suggested_tasks
         )
