@@ -818,6 +818,76 @@ ProjectResponse.model_rebuild()
 AreaResponse.model_rebuild()
 PillarResponse.model_rebuild()
 
+# AI Coach MVP Feature Models
+class DailyReflection(BaseDocument):
+    """Daily reflection entry for habit formation and progress tracking"""
+    user_id: str
+    date: date = Field(default_factory=lambda: datetime.utcnow().date())
+    reflection_text: str
+    completion_score: Optional[int] = None  # 1-10 scale
+    mood: Optional[str] = None
+    biggest_accomplishment: Optional[str] = None
+    challenges_faced: Optional[str] = None
+    tomorrow_focus: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class DailyReflectionCreate(BaseModel):
+    reflection_text: str
+    completion_score: Optional[int] = None
+    mood: Optional[str] = None
+    biggest_accomplishment: Optional[str] = None
+    challenges_faced: Optional[str] = None
+    tomorrow_focus: Optional[str] = None
+    date: Optional[date] = None
+
+class DailyReflectionResponse(BaseModel):
+    id: str
+    user_id: str
+    date: date
+    reflection_text: str
+    completion_score: Optional[int]
+    mood: Optional[str]
+    biggest_accomplishment: Optional[str]
+    challenges_faced: Optional[str]
+    tomorrow_focus: Optional[str]
+    created_at: datetime
+
+class ProjectDecompositionTemplate(BaseModel):
+    """Template for project decomposition suggestions"""
+    template_type: str
+    suggested_tasks: List[Dict[str, Any]]
+
+class ProjectDecompositionRequest(BaseModel):
+    """Request for project decomposition assistance"""
+    project_name: str
+    project_description: Optional[str] = None
+    template_type: Optional[str] = "general"
+
+class ProjectDecompositionResponse(BaseModel):
+    """Response with suggested tasks for project decomposition"""
+    project_name: str
+    template_type: str
+    suggested_tasks: List[Dict[str, Any]]
+    
+class TaskWhyStatement(BaseModel):
+    """Contextual why statement for a task"""
+    task_id: str
+    task_name: str
+    why_statement: str
+    project_name: Optional[str] = None
+    pillar_name: Optional[str] = None
+    vertical_alignment: Dict[str, str] = {}
+
+class TaskWhyStatementResponse(BaseModel):
+    """Response containing contextual why statements for tasks"""
+    tasks_with_why: List[TaskWhyStatement]
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+# User streak tracking extension
+class UserStreakUpdate(BaseModel):
+    """Update user's daily streak"""
+    daily_streak: int
+
 # Task Reminders & Notifications Models
 class NotificationTypeEnum(str, Enum):
     task_due = "task_due"
