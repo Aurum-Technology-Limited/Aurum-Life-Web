@@ -176,6 +176,8 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [showDecompositionHelper, setShowDecompositionHelper] = useState(false);
+  const [newProjectForDecomposition, setNewProjectForDecomposition] = useState(null);
   const [error, setError] = useState('');
   
   // Extract area filter from section params
