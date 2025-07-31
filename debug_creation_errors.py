@@ -5,7 +5,7 @@ import aiohttp
 import json
 
 # Configuration
-BACKEND_URL = "https://776a09a2-f446-49dd-9112-c1d61e461e4c.preview.emergentagent.com"
+BACKEND_URL = "https://2a9362a1-0858-4070-86b9-4648da4a94c4.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 async def debug_creation_errors():
