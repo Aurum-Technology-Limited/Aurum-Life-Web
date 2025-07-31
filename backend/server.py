@@ -156,8 +156,8 @@ async def google_auth_token(request: GoogleAuthTokenRequest):
         logger.error(f"Error in Google token auth: {str(e)}")
         raise HTTPException(status_code=500, detail="Authentication failed")
 
-@api_router.get("/auth/me", response_model=UserProfileResponse)
-async def get_current_user_profile(token: str = Depends(HTTPBearer())):
+@api_router.get("/auth/google/me", response_model=UserProfileResponse)
+async def get_current_user_profile_google(token: str = Depends(HTTPBearer())):
     """Get current user profile from session token"""
     try:
         # Extract token from Bearer scheme
