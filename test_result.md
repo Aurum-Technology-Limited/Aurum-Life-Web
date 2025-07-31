@@ -265,11 +265,11 @@ metadata:
 
   - task: "Areas Importance Field Update Issue"
     implemented: true
-    working: true
+    working: "NA"
     file: "backend/supabase_services.py, backend/models.py, frontend/src/components/Areas.jsx"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
           agent: "main"
@@ -277,6 +277,9 @@ metadata:
         - working: true
           agent: "main"
           comment: "✅ AREAS IMPORTANCE FIELD UPDATE WORKING IN BACKEND! Direct API testing confirmed PUT /api/areas/{area_id} correctly accepts integer importance values and returns proper integer responses. Test: Updated area with importance: 4 → returned 'importance': 4 (integer). Test: Updated area with importance: 5 → returned 'importance': 5 (integer). ISSUE IDENTIFIED: Some existing areas in database still have legacy string values ('medium_high', 'medium') from previous system. Backend API working correctly - issue is likely frontend cache or legacy data display. Ready for frontend testing to verify TanStack Query cache invalidation and UI updates."
+        - working: "NA"
+          agent: "testing"
+          comment: "🚨 FRONTEND TESTING BLOCKED - INFRASTRUCTURE LIMITATION! Unable to perform comprehensive frontend testing due to external domain resolution failure. The frontend/.env file contains URL 'https://smart-tasks-7.preview.emergentgent.com' which is not accessible from testing environment (net::ERR_NAME_NOT_RESOLVED). ANALYSIS BASED ON CODE REVIEW: ✅ Areas.jsx component properly implements TanStack Query mutations with cache invalidation (queryClient.invalidateQueries), ✅ Importance field correctly configured with integer values 1-5 in form, ✅ Update mutation properly structured with error handling, ✅ Backend API confirmed working by main agent. RECOMMENDATION: Main agent should verify frontend functionality manually or provide accessible testing URL. Code structure suggests fixes should work correctly."
 
 test_plan:
   current_focus:
