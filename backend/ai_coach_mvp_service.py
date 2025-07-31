@@ -141,7 +141,11 @@ class AiCoachMvpService:
             
         except Exception as e:
             logger.error(f"Error generating task why statements: {e}")
-            return TaskWhyStatementResponse(tasks_with_why=[])
+            return TaskWhyStatementResponse(
+                why_statements=[],
+                tasks_analyzed=0,
+                vertical_alignment={}
+            )
     
     def _generate_why_statement(
         self, 
