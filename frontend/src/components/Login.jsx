@@ -98,14 +98,21 @@ const Login = () => {
     setIsSubmitting(false);
   };
 
-  const handleGoogleLogin = async () => {
-    setIsSubmitting(true);
-    const result = await loginWithGoogle();
-    if (!result.success && result.error) {
-      setError(result.error);
+  const handleGoogleLogin = async (credentialResponse) => {
+    if (credentialResponse?.credential) {
+      setIsSubmitting(true);
+      const result = await loginWithGoogle(credentialResponse);
+      if (!result.success && result.error) {
+        setError(result.error);
+      }
+      setIsSubmitting(false);
+    } else {
+      setError('Google authentication failed. Please try again.');
     }
-    // Note: Google OAuth redirects automatically, so we don't handle success here
-    setIsSubmitting(false);
+  };
+
+  const handleGoogleError = () => {
+    setError('Google authentication failed. Please try again.');
   };
 
   return (
