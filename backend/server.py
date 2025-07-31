@@ -39,7 +39,7 @@ from google_oauth import (
     AuthTokenResponse,
     UserProfileResponse
 )
-# from ai_coach_mvp_service import AiCoachMvpService
+from ai_coach_mvp_service import AiCoachMvpService
 from models import (
     DailyReflectionCreate,
     DailyReflectionResponse,
