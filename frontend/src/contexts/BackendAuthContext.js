@@ -268,24 +268,23 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      // Use the ID token from Google's credential response
-      const response = await fetch(`${BACKEND_URL}/api/auth/google/token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id_token: credentialResponse.credential })
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.access_token) {
-        const authToken = data.access_token;
+      // Use the access token to get user info directly
+      if (credentialResponse?.userInfo) {
+        // We already have user info, create our own session
+        const userData = {
+          id: credentialResponse.userInfo.id,
+          email: credentialResponse.userInfo.email,
+          name: credentialResponse.userInfo.name,
+          picture: credentialResponse.userInfo.picture
+        };
         
-        // Store token
-        localStorage.setItem('auth_token', authToken);
-        setToken(authToken);
-        setUser(data.user);
+        // Create session token locally (simplified approach)
+        const sessionToken = `google_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Store token and user data
+        localStorage.setItem('auth_token', sessionToken);
+        setToken(sessionToken);
+        setUser(userData);
         
         return { 
           success: true, 
@@ -294,7 +293,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         return { 
           success: false, 
-          error: data.detail || 'Google authentication failed' 
+          error: 'Failed to get user information from Google' 
         };
       }
       
