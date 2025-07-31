@@ -16,7 +16,7 @@ from models import (
     TaskWhyStatement,
     TaskWhyStatementResponse
 )
-from supabase_services import SupabaseManager
+from supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class AiCoachMvpService:
     """Service class for AI Coach MVP features"""
     
     def __init__(self):
-        self.supabase_manager = SupabaseManager()
+        self.supabase = get_supabase_client()
     
     # Feature 1: Contextual "Why" Statements
     async def generate_task_why_statements(self, user_id: str, task_ids: List[str] = None) -> TaskWhyStatementResponse:
