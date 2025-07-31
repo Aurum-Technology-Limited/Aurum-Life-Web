@@ -137,7 +137,8 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading = false }) =>
 
 TaskCard.displayName = 'TaskCard';
 
-const TaskModal = ({ task, isOpen, onClose, onSave, loading = false, defaultProjectId = null }) => {
+// Memoized TaskModal component to prevent unnecessary re-renders
+const TaskModal = memo(({ task, isOpen, onClose, onSave, loading = false, defaultProjectId = null }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
