@@ -226,31 +226,31 @@ async def logout_user(token: str = Depends(HTTPBearer())):
 ai_coach_mvp = AiCoachMvpService()
 
 # Feature 1: Contextual "Why" Statements
-# @api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse)
-# async def get_task_why_statements(
-#     task_ids: Optional[str] = None,
-#     current_user: dict = Depends(get_current_active_user_hybrid)
-# ):
-#     """
-#     Get contextual why statements for tasks explaining their vertical alignment
-#     
-#     Query Parameters:
-#     - task_ids: Optional comma-separated list of task IDs (if not provided, uses recent incomplete tasks)
-#     """
-#     try:
-#         user_id = current_user['id']
-#         
-#         # Parse task_ids if provided
-#         parsed_task_ids = None
-#         if task_ids:
-#             parsed_task_ids = [tid.strip() for tid in task_ids.split(',') if tid.strip()]
-#         
-#         why_statements = await ai_coach_mvp.generate_task_why_statements(user_id, parsed_task_ids)
-#         return why_statements
-#         
-#     except Exception as e:
-#         logger.error(f"Error getting task why statements: {e}")
-#         raise HTTPException(status_code=500, detail="Failed to generate task context")
+@api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse)
+async def get_task_why_statements(
+    task_ids: Optional[str] = None,
+    current_user: dict = Depends(get_current_active_user_hybrid)
+):
+    """
+    Get contextual why statements for tasks explaining their vertical alignment
+    
+    Query Parameters:
+    - task_ids: Optional comma-separated list of task IDs (if not provided, uses recent incomplete tasks)
+    """
+    try:
+        user_id = current_user['id']
+        
+        # Parse task_ids if provided
+        parsed_task_ids = None
+        if task_ids:
+            parsed_task_ids = [tid.strip() for tid in task_ids.split(',') if tid.strip()]
+        
+        why_statements = await ai_coach_mvp.generate_task_why_statements(user_id, parsed_task_ids)
+        return why_statements
+        
+    except Exception as e:
+        logger.error(f"Error getting task why statements: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate task context")
 
 # Feature 2: Lean Goal Decomposition Assistance
 # @api_router.post("/ai/decompose-project", response_model=ProjectDecompositionResponse)
