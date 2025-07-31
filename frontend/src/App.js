@@ -170,7 +170,7 @@ function App() {
               // Check if this is an OAuth callback
               const hash = window.location.hash;
               if (hash.includes('session_id=')) {
-                return <ProfilePage {...props} />;
+                return <ProfilePage setActiveSection={setActiveSection} />;
               } else {
                 return <Profile {...props} />;
               }
