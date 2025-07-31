@@ -256,7 +256,7 @@ async def get_task_why_statements(
 @api_router.post("/ai/decompose-project", response_model=ProjectDecompositionResponse)
 async def decompose_project(
     request: ProjectDecompositionRequest,
-    current_user: dict = Depends(get_current_active_user_hybrid)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """
     Get suggested tasks for a new project to help with the blank slate problem
