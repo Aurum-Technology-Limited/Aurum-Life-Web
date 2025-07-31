@@ -236,7 +236,7 @@ class SupabaseManager:
 supabase_manager = SupabaseManager()
 
 # Helper functions for compatibility with existing code
-async def get_supabase_client():
+def get_supabase_client():
     """Get the Supabase client - replaces get_database()"""
     return supabase_manager.get_client()
 
