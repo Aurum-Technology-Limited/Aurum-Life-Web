@@ -288,7 +288,7 @@ class AiCoachMvpService:
             List of created task dictionaries
         """
         try:
-            supabase = self.supabase_manager.get_client()
+            supabase = self.supabase
             created_tasks = []
             
             for i, task_suggestion in enumerate(suggested_tasks):
