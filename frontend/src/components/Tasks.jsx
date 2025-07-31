@@ -1304,17 +1304,30 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
 
       {/* Tasks Grid */}
       {filteredTasks.length > 0 ? (
-        <div className="space-y-4">
-          {filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onToggle={handleToggleTask}
-              onEdit={handleEditTask}
-              onDelete={handleDeleteTask}
-              loading={actionLoading === task.id}
-            />
-          ))}
+        <div className="space-y-8">
+          {/* Task Why Statements - Show insights for active tasks */}
+          {filteredTasks.filter(task => !task.completed).length > 0 && (
+            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+              <TaskWhyStatements 
+                taskIds={filteredTasks.filter(task => !task.completed).slice(0, 5).map(task => task.id)}
+                showAll={false}
+              />
+            </div>
+          )}
+          
+          {/* Tasks List */}
+          <div className="space-y-4">
+            {filteredTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onToggle={handleToggleTask}
+                onEdit={handleEditTask}
+                onDelete={handleDeleteTask}
+                loading={actionLoading === task.id}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="text-center py-12">
