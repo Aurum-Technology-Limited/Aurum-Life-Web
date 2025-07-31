@@ -29,16 +29,12 @@ class GoogleAuthTestSuite:
             await self.session.close()
             
     async def test_google_auth_initiate(self):
-        """Test 1: Google Auth Initiate Endpoint"""
-        print("\n🧪 Test 1: Google Auth Initiate Endpoint")
+        """Test 1: Google Auth Initiate Endpoint (GET)"""
+        print("\n🧪 Test 1: Google Auth Initiate Endpoint (GET)")
         
         try:
-            # Test with valid redirect URL
-            initiate_data = {
-                "redirect_url": "http://localhost:3000/profile"
-            }
-            
-            async with self.session.post(f"{API_BASE}/auth/google/initiate", json=initiate_data) as response:
+            # Test GET request as specified in review request
+            async with self.session.get(f"{API_BASE}/auth/google/initiate") as response:
                 if response.status == 200:
                     data = await response.json()
                     
