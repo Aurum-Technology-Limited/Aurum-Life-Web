@@ -253,56 +253,56 @@ async def get_task_why_statements(
         raise HTTPException(status_code=500, detail="Failed to generate task context")
 
 # Feature 2: Lean Goal Decomposition Assistance
-# @api_router.post("/ai/decompose-project", response_model=ProjectDecompositionResponse)
-# async def decompose_project(
-#     request: ProjectDecompositionRequest,
-#     current_user: dict = Depends(get_current_active_user_hybrid)
-# ):
-#     """
-#     Get suggested tasks for a new project to help with the blank slate problem
-#     
-#     Body:
-#     - project_name: Name of the project
-#     - project_description: Optional description 
-#     - template_type: Type of project (learning, health, career, personal, work, general)
-#     """
-#     try:
-#         user_id = current_user['id']
-#         suggestions = await ai_coach_mvp.suggest_project_tasks(user_id, request)
-#         return suggestions
-#         
-#     except Exception as e:
-#         logger.error(f"Error decomposing project: {e}")
-#         raise HTTPException(status_code=500, detail="Failed to generate project suggestions")
+@api_router.post("/ai/decompose-project", response_model=ProjectDecompositionResponse)
+async def decompose_project(
+    request: ProjectDecompositionRequest,
+    current_user: dict = Depends(get_current_active_user_hybrid)
+):
+    """
+    Get suggested tasks for a new project to help with the blank slate problem
+    
+    Body:
+    - project_name: Name of the project
+    - project_description: Optional description 
+    - template_type: Type of project (learning, health, career, personal, work, general)
+    """
+    try:
+        user_id = current_user['id']
+        suggestions = await ai_coach_mvp.suggest_project_tasks(user_id, request)
+        return suggestions
+        
+    except Exception as e:
+        logger.error(f"Error decomposing project: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate project suggestions")
 
-# @api_router.post("/ai/create-suggested-tasks")
-# async def create_suggested_tasks(
-#     project_id: str,
-#     suggested_tasks: List[Dict[str, Any]],
-#     current_user: dict = Depends(get_current_active_user_hybrid)
-# ):
-#     """
-#     Create actual tasks from suggested tasks for a project
-#     
-#     Body:
-#     - project_id: ID of the project to add tasks to
-#     - suggested_tasks: List of suggested task dictionaries
-#     """
-#     try:
-#         user_id = current_user['id']
-#         created_tasks = await ai_coach_mvp.create_tasks_from_suggestions(
-#             user_id, project_id, suggested_tasks
-#         )
-#         
-#         return {
-#             "success": True,
-#             "created_tasks": created_tasks,
-#             "count": len(created_tasks)
-#         }
-#         
-#     except Exception as e:
-#         logger.error(f"Error creating suggested tasks: {e}")
-#         raise HTTPException(status_code=500, detail="Failed to create suggested tasks")
+@api_router.post("/ai/create-suggested-tasks")
+async def create_suggested_tasks(
+    project_id: str,
+    suggested_tasks: List[Dict[str, Any]],
+    current_user: dict = Depends(get_current_active_user_hybrid)
+):
+    """
+    Create actual tasks from suggested tasks for a project
+    
+    Body:
+    - project_id: ID of the project to add tasks to
+    - suggested_tasks: List of suggested task dictionaries
+    """
+    try:
+        user_id = current_user['id']
+        created_tasks = await ai_coach_mvp.create_tasks_from_suggestions(
+            user_id, project_id, suggested_tasks
+        )
+        
+        return {
+            "success": True,
+            "created_tasks": created_tasks,
+            "count": len(created_tasks)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating suggested tasks: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create suggested tasks")
 
 # Feature 3: Daily Reflection & Progress Prompt
 # @api_router.post("/ai/daily-reflection", response_model=DailyReflectionResponse)
