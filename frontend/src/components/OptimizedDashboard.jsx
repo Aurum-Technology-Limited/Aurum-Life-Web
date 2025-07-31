@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { TrendingUp, Target, BookOpen, Trophy, Flame, Loader2, RefreshCw } from 'lucide-react';
 import fixedAPI from '../services/fixedApi';
 import ErrorBoundary from './ErrorBoundary';
+import DailyStreakTracker from './DailyStreakTracker';
 
 // Memoized StatCard component
 const StatCard = React.memo(({ title, value, subtitle, icon: Icon, trend, loading = false }) => (
