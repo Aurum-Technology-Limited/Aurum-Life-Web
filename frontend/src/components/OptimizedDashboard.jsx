@@ -233,8 +233,14 @@ const OptimizedDashboard = () => {
           />
         </div>
 
-        {/* AI Coach Section */}
-        <SimpleAiCoach />
+        {/* AI Coach & Daily Streak - Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* AI Coach Section */}
+          <SimpleAiCoach />
+          
+          {/* Daily Streak Tracker */}
+          <DailyStreakTracker showReflectionPrompt={true} />
+        </div>
       </div>
     </div>
   );
