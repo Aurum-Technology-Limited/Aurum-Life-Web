@@ -2267,9 +2267,12 @@ class ProjectTemplatesTestSuite:
 
 async def main():
     """Main test execution"""
-    # Run the Project Templates API test as requested
-    templates_test_suite = ProjectTemplatesTestSuite()
-    await templates_test_suite.run_comprehensive_templates_test()
+    # Run the Google Authentication endpoints test as requested in the review
+    print("🔐 GOOGLE AUTHENTICATION ENDPOINTS TESTING")
+    print("="*60)
+    
+    google_auth_test_suite = GoogleAuthTestSuite()
+    await google_auth_test_suite.run_google_auth_tests()
 
 if __name__ == "__main__":
     asyncio.run(main())
