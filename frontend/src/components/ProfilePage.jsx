@@ -77,7 +77,7 @@ const ProfilePage = ({ setActiveSection }) => {
           <h2 className="text-white text-xl font-semibold mb-2">Authentication Failed</h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => window.location.href = '/'}
             className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-6 py-2 rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 transition-colors"
           >
             Back to Login
