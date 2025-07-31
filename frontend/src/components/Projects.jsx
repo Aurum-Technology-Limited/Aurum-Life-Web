@@ -261,6 +261,33 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     }
   }, []);
 
+  // Update form when activeAreaId changes (for pre-populating area)
+  useEffect(() => {
+    if (activeAreaId) {
+      setNewProject(prev => ({ ...prev, area_id: activeAreaId }));
+    }
+  }, [activeAreaId]);
+
+  // Load projects and areas
+  useEffect(() => {
+    if (user) {
+      loadProjects();
+      loadAreas();
+    }
+  }, [user]);
+
+  // Set area name when activeAreaId changes
+  useEffect(() => {
+    if (activeAreaId && areas.length > 0) {
+      const area = areas.find(a => a.id === activeAreaId);
+      if (area) {
+        // Update the sectionParams to include area name for display
+        const updatedParams = { ...sectionParams, areaName: area.name };
+        // Note: We don't call onSectionChange here to avoid infinite loop
+      }
+    }
+  }, [activeAreaId, areas, sectionParams]);
+
   const loadProjects = async () => {
     try {
       const backendURL = process.env.REACT_APP_BACKEND_URL || '';
@@ -344,14 +371,6 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
       console.error('Error creating project:', error);
       setError('Network error creating project');
     }
-  };
-
-  const handleEditProject = (project) => {
-    setEditingProject({
-      ...project,
-      due_date: project.due_date ? new Date(project.due_date).toISOString().split('T')[0] : ''
-    });
-    setShowEditForm(true);
   };
 
   const handleUpdateProject = async (e) => {
