@@ -1146,6 +1146,1000 @@ class SupabaseCRUDTestSuite:
         # Print summary
         self.print_test_summary()
 
+class AiCoachMvpTestSuite:
+    """Comprehensive testing for AI Coach MVP feature endpoints"""
+    
+    def __init__(self):
+        self.session = None
+        self.auth_token = None
+        self.test_user_email = "nav.test@aurumlife.com"
+        self.test_user_password = "testpassword123"
+        self.test_results = []
+        self.created_resources = {
+            'tasks': [],
+            'projects': [],
+            'areas': [],
+            'pillars': [],
+            'reflections': []
+        }
+        
+    async def setup_session(self):
+        """Initialize HTTP session"""
+        self.session = aiohttp.ClientSession()
+        
+    async def cleanup_session(self):
+        """Clean up HTTP session"""
+        if self.session:
+            await self.session.close()
+            
+    async def authenticate(self):
+        """Authenticate with test credentials"""
+        try:
+            login_data = {
+                "email": self.test_user_email,
+                "password": self.test_user_password
+            }
+            
+            async with self.session.post(f"{API_BASE}/auth/login", json=login_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.auth_token = data["access_token"]
+                    print(f"✅ Authentication successful for {self.test_user_email}")
+                    return True
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Authentication failed: {response.status} - {error_text}")
+                    return False
+                    
+        except Exception as e:
+            print(f"❌ Authentication error: {e}")
+            return False
+            
+    def get_auth_headers(self):
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.auth_token}"}
+        
+    async def create_test_data(self):
+        """Create test data for AI Coach MVP testing"""
+        try:
+            # Create test pillar
+            pillar_data = {
+                "name": "AI Coach Test Pillar",
+                "description": "Test pillar for AI Coach MVP",
+                "icon": "🤖",
+                "color": "#3B82F6",
+                "time_allocation_percentage": 25.0
+            }
+            
+            async with self.session.post(f"{API_BASE}/pillars", json=pillar_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    pillar = await response.json()
+                    self.created_resources['pillars'].append(pillar['id'])
+                    
+                    # Create test area
+                    area_data = {
+                        "pillar_id": pillar['id'],
+                        "name": "AI Coach Test Area",
+                        "description": "Test area for AI Coach MVP",
+                        "icon": "🎯",
+                        "color": "#10B981",
+                        "importance": 4
+                    }
+                    
+                    async with self.session.post(f"{API_BASE}/areas", json=area_data, headers=self.get_auth_headers()) as area_response:
+                        if area_response.status == 200:
+                            area = await area_response.json()
+                            self.created_resources['areas'].append(area['id'])
+                            
+                            # Create test project
+                            project_data = {
+                                "area_id": area['id'],
+                                "name": "AI Coach Test Project",
+                                "description": "Test project for AI Coach MVP",
+                                "icon": "📋",
+                                "status": "Not Started",
+                                "priority": "high"
+                            }
+                            
+                            async with self.session.post(f"{API_BASE}/projects", json=project_data, headers=self.get_auth_headers()) as proj_response:
+                                if proj_response.status == 200:
+                                    project = await proj_response.json()
+                                    self.created_resources['projects'].append(project['id'])
+                                    
+                                    # Create test tasks (some incomplete for why statements)
+                                    task_data_list = [
+                                        {
+                                            "project_id": project['id'],
+                                            "name": "Complete AI Coach testing",
+                                            "description": "Test all AI Coach MVP endpoints",
+                                            "status": "todo",
+                                            "priority": "high"
+                                        },
+                                        {
+                                            "project_id": project['id'],
+                                            "name": "Review AI Coach responses",
+                                            "description": "Validate AI Coach response quality",
+                                            "status": "todo",
+                                            "priority": "medium"
+                                        },
+                                        {
+                                            "project_id": project['id'],
+                                            "name": "Document AI Coach features",
+                                            "description": "Create documentation for AI Coach MVP",
+                                            "status": "in_progress",
+                                            "priority": "low"
+                                        }
+                                    ]
+                                    
+                                    for task_data in task_data_list:
+                                        async with self.session.post(f"{API_BASE}/tasks", json=task_data, headers=self.get_auth_headers()) as task_response:
+                                            if task_response.status == 200:
+                                                task = await task_response.json()
+                                                self.created_resources['tasks'].append(task['id'])
+                                    
+                                    print(f"✅ Created test data: {len(self.created_resources['tasks'])} tasks, 1 project, 1 area, 1 pillar")
+                                    return True
+                                    
+            print("❌ Failed to create complete test data hierarchy")
+            return False
+            
+        except Exception as e:
+            print(f"❌ Error creating test data: {e}")
+            return False
+            
+    async def test_task_why_statements_without_task_ids(self):
+        """Test 1: GET /api/ai/task-why-statements without task_ids (should get recent incomplete tasks)"""
+        print("\n🧪 Test 1: Task Why Statements - Without Task IDs")
+        
+        try:
+            async with self.session.get(f"{API_BASE}/ai/task-why-statements", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ['why_statements', 'tasks_analyzed', 'vertical_alignment']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        why_statements = data.get('why_statements', [])
+                        tasks_analyzed = data.get('tasks_analyzed', 0)
+                        vertical_alignment = data.get('vertical_alignment', {})
+                        
+                        print(f"✅ Task why statements endpoint successful")
+                        print(f"   - Why statements generated: {len(why_statements)}")
+                        print(f"   - Tasks analyzed: {tasks_analyzed}")
+                        print(f"   - Vertical alignment info present: {bool(vertical_alignment)}")
+                        
+                        # Verify why statements structure
+                        if why_statements and isinstance(why_statements, list):
+                            first_statement = why_statements[0]
+                            statement_fields = ['task_id', 'task_name', 'why_statement', 'pillar_connection', 'area_connection']
+                            statement_missing = [field for field in statement_fields if field not in first_statement]
+                            
+                            if not statement_missing:
+                                print("✅ Why statement structure is correct")
+                                self.test_results.append({
+                                    "test": "Task Why Statements (No Task IDs)", 
+                                    "status": "PASSED", 
+                                    "details": f"Generated {len(why_statements)} why statements with proper structure and vertical alignment"
+                                })
+                            else:
+                                print(f"❌ Why statement missing fields: {statement_missing}")
+                                self.test_results.append({
+                                    "test": "Task Why Statements (No Task IDs)", 
+                                    "status": "FAILED", 
+                                    "reason": f"Why statement structure incomplete: {statement_missing}"
+                                })
+                        else:
+                            print("✅ No why statements generated (no incomplete tasks)")
+                            self.test_results.append({
+                                "test": "Task Why Statements (No Task IDs)", 
+                                "status": "PASSED", 
+                                "details": "Endpoint working, no incomplete tasks to analyze"
+                            })
+                    else:
+                        print(f"❌ Response missing required fields: {missing_fields}")
+                        self.test_results.append({
+                            "test": "Task Why Statements (No Task IDs)", 
+                            "status": "FAILED", 
+                            "reason": f"Missing required fields: {missing_fields}"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Task why statements failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Task Why Statements (No Task IDs)", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Task why statements test failed: {e}")
+            self.test_results.append({
+                "test": "Task Why Statements (No Task IDs)", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_task_why_statements_with_task_ids(self):
+        """Test 2: GET /api/ai/task-why-statements?task_ids=some-task-id with specific task IDs"""
+        print("\n🧪 Test 2: Task Why Statements - With Specific Task IDs")
+        
+        try:
+            if not self.created_resources['tasks']:
+                print("⚠️ No test tasks available for specific task ID test")
+                self.test_results.append({
+                    "test": "Task Why Statements (With Task IDs)", 
+                    "status": "SKIPPED", 
+                    "reason": "No test tasks available"
+                })
+                return
+                
+            # Use first two task IDs
+            task_ids = ','.join(self.created_resources['tasks'][:2])
+            
+            async with self.session.get(f"{API_BASE}/ai/task-why-statements?task_ids={task_ids}", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ['why_statements', 'tasks_analyzed', 'vertical_alignment']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        why_statements = data.get('why_statements', [])
+                        tasks_analyzed = data.get('tasks_analyzed', 0)
+                        
+                        print(f"✅ Task why statements with specific IDs successful")
+                        print(f"   - Why statements generated: {len(why_statements)}")
+                        print(f"   - Tasks analyzed: {tasks_analyzed}")
+                        
+                        # Verify that the specific tasks were analyzed
+                        analyzed_task_ids = [stmt.get('task_id') for stmt in why_statements]
+                        requested_task_ids = task_ids.split(',')
+                        
+                        if any(task_id in analyzed_task_ids for task_id in requested_task_ids):
+                            print("✅ Specific task IDs were properly analyzed")
+                            self.test_results.append({
+                                "test": "Task Why Statements (With Task IDs)", 
+                                "status": "PASSED", 
+                                "details": f"Analyzed specific tasks with {len(why_statements)} why statements generated"
+                            })
+                        else:
+                            print("❌ Specific task IDs were not found in analysis")
+                            self.test_results.append({
+                                "test": "Task Why Statements (With Task IDs)", 
+                                "status": "FAILED", 
+                                "reason": "Requested task IDs not found in analysis"
+                            })
+                    else:
+                        print(f"❌ Response missing required fields: {missing_fields}")
+                        self.test_results.append({
+                            "test": "Task Why Statements (With Task IDs)", 
+                            "status": "FAILED", 
+                            "reason": f"Missing required fields: {missing_fields}"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Task why statements with IDs failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Task Why Statements (With Task IDs)", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Task why statements with IDs test failed: {e}")
+            self.test_results.append({
+                "test": "Task Why Statements (With Task IDs)", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_project_decomposition_learning_template(self):
+        """Test 3: POST /api/ai/decompose-project with learning template"""
+        print("\n🧪 Test 3: Project Decomposition - Learning Template")
+        
+        try:
+            decomposition_data = {
+                "project_name": "Learn Advanced Python",
+                "project_description": "Master advanced Python concepts and frameworks",
+                "template_type": "learning"
+            }
+            
+            async with self.session.post(f"{API_BASE}/ai/decompose-project", json=decomposition_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ['project_name', 'suggested_tasks', 'template_type', 'total_tasks']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        suggested_tasks = data.get('suggested_tasks', [])
+                        total_tasks = data.get('total_tasks', 0)
+                        
+                        print(f"✅ Project decomposition (learning) successful")
+                        print(f"   - Project name: {data.get('project_name')}")
+                        print(f"   - Template type: {data.get('template_type')}")
+                        print(f"   - Total suggested tasks: {total_tasks}")
+                        
+                        # Verify we got 3-5 tasks as specified
+                        if 3 <= len(suggested_tasks) <= 5:
+                            print(f"✅ Appropriate number of tasks suggested: {len(suggested_tasks)}")
+                            
+                            # Verify task structure
+                            if suggested_tasks:
+                                first_task = suggested_tasks[0]
+                                task_fields = ['name', 'description', 'priority', 'estimated_duration']
+                                task_missing = [field for field in task_fields if field not in first_task]
+                                
+                                if not task_missing:
+                                    print("✅ Task structure is correct")
+                                    self.test_results.append({
+                                        "test": "Project Decomposition (Learning)", 
+                                        "status": "PASSED", 
+                                        "details": f"Generated {len(suggested_tasks)} tasks with proper structure and priorities"
+                                    })
+                                else:
+                                    print(f"❌ Task structure missing fields: {task_missing}")
+                                    self.test_results.append({
+                                        "test": "Project Decomposition (Learning)", 
+                                        "status": "FAILED", 
+                                        "reason": f"Task structure incomplete: {task_missing}"
+                                    })
+                            else:
+                                print("❌ No tasks in suggested_tasks array")
+                                self.test_results.append({
+                                    "test": "Project Decomposition (Learning)", 
+                                    "status": "FAILED", 
+                                    "reason": "No tasks generated"
+                                })
+                        else:
+                            print(f"❌ Inappropriate number of tasks: {len(suggested_tasks)} (expected 3-5)")
+                            self.test_results.append({
+                                "test": "Project Decomposition (Learning)", 
+                                "status": "FAILED", 
+                                "reason": f"Wrong number of tasks: {len(suggested_tasks)}"
+                            })
+                    else:
+                        print(f"❌ Response missing required fields: {missing_fields}")
+                        self.test_results.append({
+                            "test": "Project Decomposition (Learning)", 
+                            "status": "FAILED", 
+                            "reason": f"Missing required fields: {missing_fields}"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Project decomposition failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Project Decomposition (Learning)", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Project decomposition test failed: {e}")
+            self.test_results.append({
+                "test": "Project Decomposition (Learning)", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_project_decomposition_career_template(self):
+        """Test 4: POST /api/ai/decompose-project with career template"""
+        print("\n🧪 Test 4: Project Decomposition - Career Template")
+        
+        try:
+            decomposition_data = {
+                "project_name": "Get Promoted to Senior Developer",
+                "project_description": "Advance career to senior developer position",
+                "template_type": "career"
+            }
+            
+            async with self.session.post(f"{API_BASE}/ai/decompose-project", json=decomposition_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    suggested_tasks = data.get('suggested_tasks', [])
+                    template_type = data.get('template_type')
+                    
+                    print(f"✅ Project decomposition (career) successful")
+                    print(f"   - Template type: {template_type}")
+                    print(f"   - Tasks suggested: {len(suggested_tasks)}")
+                    
+                    if 3 <= len(suggested_tasks) <= 5 and template_type == "career":
+                        self.test_results.append({
+                            "test": "Project Decomposition (Career)", 
+                            "status": "PASSED", 
+                            "details": f"Career template generated {len(suggested_tasks)} appropriate tasks"
+                        })
+                    else:
+                        self.test_results.append({
+                            "test": "Project Decomposition (Career)", 
+                            "status": "FAILED", 
+                            "reason": f"Template type or task count issue: {template_type}, {len(suggested_tasks)} tasks"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Project decomposition (career) failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Project Decomposition (Career)", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Project decomposition (career) test failed: {e}")
+            self.test_results.append({
+                "test": "Project Decomposition (Career)", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_project_decomposition_general_template(self):
+        """Test 5: POST /api/ai/decompose-project with general template"""
+        print("\n🧪 Test 5: Project Decomposition - General Template")
+        
+        try:
+            decomposition_data = {
+                "project_name": "Organize Home Office",
+                "project_description": "Create an efficient and organized home office space",
+                "template_type": "general"
+            }
+            
+            async with self.session.post(f"{API_BASE}/ai/decompose-project", json=decomposition_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    suggested_tasks = data.get('suggested_tasks', [])
+                    template_type = data.get('template_type')
+                    
+                    print(f"✅ Project decomposition (general) successful")
+                    print(f"   - Template type: {template_type}")
+                    print(f"   - Tasks suggested: {len(suggested_tasks)}")
+                    
+                    if 3 <= len(suggested_tasks) <= 5 and template_type == "general":
+                        self.test_results.append({
+                            "test": "Project Decomposition (General)", 
+                            "status": "PASSED", 
+                            "details": f"General template generated {len(suggested_tasks)} appropriate tasks"
+                        })
+                    else:
+                        self.test_results.append({
+                            "test": "Project Decomposition (General)", 
+                            "status": "FAILED", 
+                            "reason": f"Template type or task count issue: {template_type}, {len(suggested_tasks)} tasks"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Project decomposition (general) failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Project Decomposition (General)", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Project decomposition (general) test failed: {e}")
+            self.test_results.append({
+                "test": "Project Decomposition (General)", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_create_daily_reflection(self):
+        """Test 6: POST /api/ai/daily-reflection - Create a daily reflection"""
+        print("\n🧪 Test 6: Create Daily Reflection")
+        
+        try:
+            reflection_data = {
+                "reflection_text": "Today was a productive day working on the AI Coach MVP. I made significant progress on the testing suite and feel confident about the implementation.",
+                "completion_score": 8,
+                "mood": "accomplished",
+                "biggest_accomplishment": "Completed comprehensive testing for AI Coach MVP endpoints",
+                "challenges_faced": "Had to debug some authentication issues but resolved them quickly",
+                "tomorrow_focus": "Continue with frontend integration testing"
+            }
+            
+            async with self.session.post(f"{API_BASE}/ai/daily-reflection", json=reflection_data, headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ['id', 'reflection_text', 'completion_score', 'mood', 'date', 'created_at']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        reflection_id = data.get('id')
+                        self.created_resources['reflections'].append(reflection_id)
+                        
+                        print(f"✅ Daily reflection created successfully")
+                        print(f"   - Reflection ID: {reflection_id}")
+                        print(f"   - Completion score: {data.get('completion_score')}")
+                        print(f"   - Mood: {data.get('mood')}")
+                        print(f"   - Date: {data.get('date')}")
+                        
+                        self.test_results.append({
+                            "test": "Create Daily Reflection", 
+                            "status": "PASSED", 
+                            "details": f"Reflection created with ID {reflection_id} and proper structure"
+                        })
+                    else:
+                        print(f"❌ Response missing required fields: {missing_fields}")
+                        self.test_results.append({
+                            "test": "Create Daily Reflection", 
+                            "status": "FAILED", 
+                            "reason": f"Missing required fields: {missing_fields}"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Daily reflection creation failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Create Daily Reflection", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Daily reflection creation test failed: {e}")
+            self.test_results.append({
+                "test": "Create Daily Reflection", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_get_daily_reflections(self):
+        """Test 7: GET /api/ai/daily-reflections - Get recent reflections"""
+        print("\n🧪 Test 7: Get Daily Reflections")
+        
+        try:
+            async with self.session.get(f"{API_BASE}/ai/daily-reflections?days=30", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ['reflections', 'count']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        reflections = data.get('reflections', [])
+                        count = data.get('count', 0)
+                        
+                        print(f"✅ Daily reflections retrieved successfully")
+                        print(f"   - Reflections count: {count}")
+                        print(f"   - Reflections array length: {len(reflections)}")
+                        
+                        # Verify reflection structure if any exist
+                        if reflections:
+                            first_reflection = reflections[0]
+                            reflection_fields = ['id', 'reflection_text', 'date', 'created_at']
+                            reflection_missing = [field for field in reflection_fields if field not in first_reflection]
+                            
+                            if not reflection_missing:
+                                print("✅ Reflection structure is correct")
+                                self.test_results.append({
+                                    "test": "Get Daily Reflections", 
+                                    "status": "PASSED", 
+                                    "details": f"Retrieved {count} reflections with proper structure"
+                                })
+                            else:
+                                print(f"❌ Reflection structure missing fields: {reflection_missing}")
+                                self.test_results.append({
+                                    "test": "Get Daily Reflections", 
+                                    "status": "FAILED", 
+                                    "reason": f"Reflection structure incomplete: {reflection_missing}"
+                                })
+                        else:
+                            print("✅ No reflections found (expected for new user)")
+                            self.test_results.append({
+                                "test": "Get Daily Reflections", 
+                                "status": "PASSED", 
+                                "details": "Endpoint working, no reflections found"
+                            })
+                    else:
+                        print(f"❌ Response missing required fields: {missing_fields}")
+                        self.test_results.append({
+                            "test": "Get Daily Reflections", 
+                            "status": "FAILED", 
+                            "reason": f"Missing required fields: {missing_fields}"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Get daily reflections failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Get Daily Reflections", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Get daily reflections test failed: {e}")
+            self.test_results.append({
+                "test": "Get Daily Reflections", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_get_daily_streak(self):
+        """Test 8: GET /api/ai/daily-streak - Get current streak"""
+        print("\n🧪 Test 8: Get Daily Streak")
+        
+        try:
+            async with self.session.get(f"{API_BASE}/ai/daily-streak", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ['daily_streak', 'user_id']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        daily_streak = data.get('daily_streak', 0)
+                        user_id = data.get('user_id')
+                        
+                        print(f"✅ Daily streak retrieved successfully")
+                        print(f"   - Daily streak: {daily_streak}")
+                        print(f"   - User ID: {user_id}")
+                        
+                        # Verify streak is a non-negative integer
+                        if isinstance(daily_streak, int) and daily_streak >= 0:
+                            print("✅ Daily streak value is valid")
+                            self.test_results.append({
+                                "test": "Get Daily Streak", 
+                                "status": "PASSED", 
+                                "details": f"Daily streak: {daily_streak} (valid integer)"
+                            })
+                        else:
+                            print(f"❌ Invalid daily streak value: {daily_streak}")
+                            self.test_results.append({
+                                "test": "Get Daily Streak", 
+                                "status": "FAILED", 
+                                "reason": f"Invalid streak value: {daily_streak}"
+                            })
+                    else:
+                        print(f"❌ Response missing required fields: {missing_fields}")
+                        self.test_results.append({
+                            "test": "Get Daily Streak", 
+                            "status": "FAILED", 
+                            "reason": f"Missing required fields: {missing_fields}"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Get daily streak failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Get Daily Streak", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Get daily streak test failed: {e}")
+            self.test_results.append({
+                "test": "Get Daily Streak", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_should_show_daily_prompt(self):
+        """Test 9: GET /api/ai/should-show-daily-prompt - Check if prompt should show"""
+        print("\n🧪 Test 9: Should Show Daily Prompt")
+        
+        try:
+            async with self.session.get(f"{API_BASE}/ai/should-show-daily-prompt", headers=self.get_auth_headers()) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ['should_show_prompt', 'user_id']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        should_show_prompt = data.get('should_show_prompt')
+                        user_id = data.get('user_id')
+                        
+                        print(f"✅ Should show daily prompt retrieved successfully")
+                        print(f"   - Should show prompt: {should_show_prompt}")
+                        print(f"   - User ID: {user_id}")
+                        
+                        # Verify should_show_prompt is a boolean
+                        if isinstance(should_show_prompt, bool):
+                            print("✅ Should show prompt value is valid boolean")
+                            self.test_results.append({
+                                "test": "Should Show Daily Prompt", 
+                                "status": "PASSED", 
+                                "details": f"Should show prompt: {should_show_prompt} (valid boolean)"
+                            })
+                        else:
+                            print(f"❌ Invalid should show prompt value: {should_show_prompt}")
+                            self.test_results.append({
+                                "test": "Should Show Daily Prompt", 
+                                "status": "FAILED", 
+                                "reason": f"Invalid boolean value: {should_show_prompt}"
+                            })
+                    else:
+                        print(f"❌ Response missing required fields: {missing_fields}")
+                        self.test_results.append({
+                            "test": "Should Show Daily Prompt", 
+                            "status": "FAILED", 
+                            "reason": f"Missing required fields: {missing_fields}"
+                        })
+                else:
+                    error_text = await response.text()
+                    print(f"❌ Should show daily prompt failed: {response.status} - {error_text}")
+                    self.test_results.append({
+                        "test": "Should Show Daily Prompt", 
+                        "status": "FAILED", 
+                        "reason": f"HTTP {response.status}"
+                    })
+                    
+        except Exception as e:
+            print(f"❌ Should show daily prompt test failed: {e}")
+            self.test_results.append({
+                "test": "Should Show Daily Prompt", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_authentication_required(self):
+        """Test 10: Verify all AI Coach endpoints require authentication"""
+        print("\n🧪 Test 10: Authentication Required for AI Coach Endpoints")
+        
+        try:
+            # Test endpoints without authentication
+            endpoints_to_test = [
+                ("GET", f"{API_BASE}/ai/task-why-statements"),
+                ("POST", f"{API_BASE}/ai/decompose-project"),
+                ("POST", f"{API_BASE}/ai/daily-reflection"),
+                ("GET", f"{API_BASE}/ai/daily-reflections"),
+                ("GET", f"{API_BASE}/ai/daily-streak"),
+                ("GET", f"{API_BASE}/ai/should-show-daily-prompt")
+            ]
+            
+            auth_protected_count = 0
+            
+            for method, url in endpoints_to_test:
+                try:
+                    if method == "GET":
+                        async with self.session.get(url) as response:
+                            if response.status in [401, 403]:
+                                auth_protected_count += 1
+                                print(f"   ✅ {url.split('/')[-1]} properly protected")
+                            else:
+                                print(f"   ❌ {url.split('/')[-1]} not properly protected: {response.status}")
+                    elif method == "POST":
+                        test_data = {"test": "data"}
+                        async with self.session.post(url, json=test_data) as response:
+                            if response.status in [401, 403]:
+                                auth_protected_count += 1
+                                print(f"   ✅ {url.split('/')[-1]} properly protected")
+                            else:
+                                print(f"   ❌ {url.split('/')[-1]} not properly protected: {response.status}")
+                except Exception as e:
+                    print(f"   ⚠️ Error testing {method} {url}: {e}")
+                    
+            if auth_protected_count == len(endpoints_to_test):
+                print(f"\n✅ All {len(endpoints_to_test)} AI Coach endpoints properly protected")
+                self.test_results.append({
+                    "test": "AI Coach Authentication Protection", 
+                    "status": "PASSED", 
+                    "details": f"All {len(endpoints_to_test)} endpoints require authentication"
+                })
+            else:
+                print(f"\n❌ Only {auth_protected_count}/{len(endpoints_to_test)} endpoints properly protected")
+                self.test_results.append({
+                    "test": "AI Coach Authentication Protection", 
+                    "status": "FAILED", 
+                    "reason": f"Only {auth_protected_count}/{len(endpoints_to_test)} endpoints protected"
+                })
+                
+        except Exception as e:
+            print(f"❌ Authentication protection test failed: {e}")
+            self.test_results.append({
+                "test": "AI Coach Authentication Protection", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def test_error_handling(self):
+        """Test 11: Error handling with invalid data"""
+        print("\n🧪 Test 11: Error Handling with Invalid Data")
+        
+        try:
+            error_tests_passed = 0
+            total_error_tests = 3
+            
+            # Test 1: Invalid project decomposition data
+            print("\n   Testing invalid project decomposition data...")
+            invalid_decomposition = {
+                "project_name": "",  # Empty name
+                "template_type": "invalid_template"  # Invalid template
+            }
+            
+            async with self.session.post(f"{API_BASE}/ai/decompose-project", json=invalid_decomposition, headers=self.get_auth_headers()) as response:
+                if response.status in [400, 422, 500]:
+                    print(f"   ✅ Project decomposition properly handles invalid data: {response.status}")
+                    error_tests_passed += 1
+                else:
+                    print(f"   ❌ Project decomposition should reject invalid data: {response.status}")
+                    
+            # Test 2: Invalid daily reflection data
+            print("\n   Testing invalid daily reflection data...")
+            invalid_reflection = {
+                "reflection_text": "",  # Empty reflection
+                "completion_score": 15  # Invalid score (should be 1-10)
+            }
+            
+            async with self.session.post(f"{API_BASE}/ai/daily-reflection", json=invalid_reflection, headers=self.get_auth_headers()) as response:
+                if response.status in [400, 422, 500]:
+                    print(f"   ✅ Daily reflection properly handles invalid data: {response.status}")
+                    error_tests_passed += 1
+                else:
+                    print(f"   ❌ Daily reflection should reject invalid data: {response.status}")
+                    
+            # Test 3: Invalid task IDs for why statements
+            print("\n   Testing invalid task IDs for why statements...")
+            async with self.session.get(f"{API_BASE}/ai/task-why-statements?task_ids=invalid-id-123,another-invalid-id", headers=self.get_auth_headers()) as response:
+                if response.status in [200, 400, 404]:  # 200 is OK if it handles gracefully
+                    print(f"   ✅ Task why statements handles invalid task IDs: {response.status}")
+                    error_tests_passed += 1
+                else:
+                    print(f"   ❌ Task why statements unexpected response: {response.status}")
+                    
+            if error_tests_passed == total_error_tests:
+                self.test_results.append({
+                    "test": "AI Coach Error Handling", 
+                    "status": "PASSED", 
+                    "details": f"All {total_error_tests} error handling tests passed"
+                })
+            else:
+                self.test_results.append({
+                    "test": "AI Coach Error Handling", 
+                    "status": "PARTIAL", 
+                    "details": f"{error_tests_passed}/{total_error_tests} error handling tests passed"
+                })
+                
+        except Exception as e:
+            print(f"❌ Error handling test failed: {e}")
+            self.test_results.append({
+                "test": "AI Coach Error Handling", 
+                "status": "FAILED", 
+                "reason": str(e)
+            })
+            
+    async def cleanup_test_data(self):
+        """Clean up created test data"""
+        print("\n🧹 Cleaning up AI Coach test data...")
+        
+        try:
+            # Delete in reverse order (tasks → projects → areas → pillars)
+            for task_id in self.created_resources['tasks']:
+                async with self.session.delete(f"{API_BASE}/tasks/{task_id}", headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print(f"✅ Deleted task {task_id}")
+                    else:
+                        print(f"⚠️ Failed to delete task {task_id}: {response.status}")
+                        
+            for project_id in self.created_resources['projects']:
+                async with self.session.delete(f"{API_BASE}/projects/{project_id}", headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print(f"✅ Deleted project {project_id}")
+                    else:
+                        print(f"⚠️ Failed to delete project {project_id}: {response.status}")
+                        
+            for area_id in self.created_resources['areas']:
+                async with self.session.delete(f"{API_BASE}/areas/{area_id}", headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print(f"✅ Deleted area {area_id}")
+                    else:
+                        print(f"⚠️ Failed to delete area {area_id}: {response.status}")
+                        
+            for pillar_id in self.created_resources['pillars']:
+                async with self.session.delete(f"{API_BASE}/pillars/{pillar_id}", headers=self.get_auth_headers()) as response:
+                    if response.status == 200:
+                        print(f"✅ Deleted pillar {pillar_id}")
+                    else:
+                        print(f"⚠️ Failed to delete pillar {pillar_id}: {response.status}")
+                        
+            # Note: Daily reflections cleanup might not be needed if they're user-specific
+            print("✅ AI Coach test data cleanup completed")
+            
+        except Exception as e:
+            print(f"⚠️ Cleanup error: {e}")
+            
+    def print_test_summary(self):
+        """Print comprehensive AI Coach MVP test summary"""
+        print("\n" + "="*80)
+        print("🤖 AI COACH MVP FEATURES - COMPREHENSIVE TEST SUMMARY")
+        print("="*80)
+        
+        passed = len([t for t in self.test_results if t["status"] == "PASSED"])
+        failed = len([t for t in self.test_results if t["status"] == "FAILED"])
+        skipped = len([t for t in self.test_results if t["status"] == "SKIPPED"])
+        partial = len([t for t in self.test_results if t["status"] == "PARTIAL"])
+        total = len(self.test_results)
+        
+        print(f"📊 OVERALL RESULTS: {passed}/{total} tests passed")
+        print(f"✅ Passed: {passed}")
+        print(f"❌ Failed: {failed}")
+        print(f"⚠️ Partial: {partial}")
+        print(f"⏭️ Skipped: {skipped}")
+        
+        success_rate = (passed / total * 100) if total > 0 else 0
+        print(f"🎯 Success Rate: {success_rate:.1f}%")
+        
+        print("\n📋 DETAILED RESULTS:")
+        for i, result in enumerate(self.test_results, 1):
+            status_icons = {"PASSED": "✅", "FAILED": "❌", "SKIPPED": "⏭️", "PARTIAL": "⚠️"}
+            icon = status_icons.get(result["status"], "❓")
+            print(f"{i:2d}. {icon} {result['test']}: {result['status']}")
+            
+            if "details" in result:
+                print(f"    📝 {result['details']}")
+            if "reason" in result:
+                print(f"    💬 {result['reason']}")
+                
+        print("\n" + "="*80)
+        
+        # Determine overall system status
+        if success_rate == 100:
+            print("🎉 AI COACH MVP FEATURES ARE PRODUCTION-READY!")
+            print("✅ All three features working perfectly:")
+            print("   • Contextual Why Statements ✅")
+            print("   • Project Decomposition ✅") 
+            print("   • Daily Reflection & Progress ✅")
+        elif success_rate >= 80:
+            print("⚠️ AI COACH MVP FEATURES ARE MOSTLY FUNCTIONAL")
+            print("✅ Core functionality working with minor issues")
+        else:
+            print("❌ AI COACH MVP FEATURES HAVE SIGNIFICANT ISSUES")
+            print("🔧 Requires attention before production use")
+            
+        print("="*80)
+        
+    async def run_ai_coach_mvp_tests(self):
+        """Run comprehensive AI Coach MVP test suite"""
+        print("🚀 Starting AI Coach MVP Features Testing...")
+        print(f"🔗 Backend URL: {BACKEND_URL}")
+        print("📋 Testing all three AI Coach MVP features:")
+        print("   1. Contextual Why Statements")
+        print("   2. Project Decomposition") 
+        print("   3. Daily Reflection & Progress")
+        
+        await self.setup_session()
+        
+        try:
+            # Authentication
+            if not await self.authenticate():
+                print("❌ Authentication failed - cannot proceed with tests")
+                return
+                
+            # Create test data for comprehensive testing
+            if not await self.create_test_data():
+                print("❌ Test data creation failed - proceeding with limited tests")
+                
+            # Run all AI Coach MVP tests
+            await self.test_task_why_statements_without_task_ids()
+            await self.test_task_why_statements_with_task_ids()
+            await self.test_project_decomposition_learning_template()
+            await self.test_project_decomposition_career_template()
+            await self.test_project_decomposition_general_template()
+            await self.test_create_daily_reflection()
+            await self.test_get_daily_reflections()
+            await self.test_get_daily_streak()
+            await self.test_should_show_daily_prompt()
+            await self.test_authentication_required()
+            await self.test_error_handling()
+            
+            # Cleanup
+            await self.cleanup_test_data()
+            
+        finally:
+            await self.cleanup_session()
+            
+        # Print summary
+        self.print_test_summary()
+
 class ContextualFileAttachmentsTestSuite:
     def __init__(self):
         self.session = None
