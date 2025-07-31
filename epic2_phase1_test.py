@@ -12,7 +12,7 @@ from typing import Dict, List, Any
 import uuid
 
 # Configuration
-BACKEND_URL = "https://53ab3f73-ea0e-440e-aa8f-0b2dd79cefc3.preview.emergentagent.com/api"
+BACKEND_URL = "https://776a09a2-f446-49dd-9112-c1d61e461e4c.preview.emergentagent.com/api"
 
 class Epic2Phase1Tester:
     def __init__(self):
