@@ -337,6 +337,31 @@ ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.journal_templates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.journal_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.daily_reflections ENABLE ROW LEVEL SECURITY;
+
+-- AI Coach MVP Features Tables
+
+-- Daily Reflections table for Feature 3: Daily Reflection & Progress Prompt
+CREATE TABLE public.daily_reflections (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    reflection_text TEXT NOT NULL,
+    completion_score INTEGER CHECK (completion_score >= 1 AND completion_score <= 10),
+    mood TEXT,
+    biggest_accomplishment TEXT,
+    challenges_faced TEXT,
+    tomorrow_focus TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    -- Ensure one reflection per user per date
+    UNIQUE(user_id, date)
+);
+
+-- Add daily_streak column to user_profiles for streak tracking
+ALTER TABLE public.user_profiles 
+ADD COLUMN IF NOT EXISTS daily_streak INTEGER DEFAULT 0;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.project_templates ENABLE ROW LEVEL SECURITY;
