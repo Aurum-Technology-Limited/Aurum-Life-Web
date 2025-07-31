@@ -45,19 +45,21 @@ const Layout = ({ children }) => {
         <div className="flex items-center justify-between p-4">
           {!sidebarCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <img 
-                  src="/aurum-brain-logo.png" 
-                  alt="Aurum Life Logo" 
-                  className="w-8 h-8 object-contain"
-                  onError={(e) => {
-                    // Fallback to text logo if image fails to load
-                    e.target.style.display = 'none';
-                    e.target.nextElementSibling.style.display = 'flex';
-                  }}
-                />
-                <div className="bg-yellow-500 text-black px-2 py-1 rounded font-bold" style={{display: 'none'}}>AL</div>
+            <div className="w-8 h-8 flex items-center justify-center">
+              <img 
+                src="/aurum-brain-logo.svg" 
+                alt="Aurum Life Logo" 
+                className="w-8 h-8 object-contain"
+                onError={(e) => {
+                  // Fallback to text logo if image fails to load
+                  e.target.style.display = 'none';
+                  e.target.nextElementSibling.style.display = 'flex';
+                }}
+              />
+              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
+                <span className="text-black font-bold text-sm">AL</span>
               </div>
+            </div>
               <span className="text-white font-semibold">Aurum Life</span>
             </div>
           )}
