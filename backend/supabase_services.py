@@ -360,19 +360,13 @@ class SupabaseAreaService:
                 pillars_data = pillars_response.data or []
                 pillars_by_id = {pillar['id']: pillar['name'] for pillar in pillars_data}
             
-            # Transform data to match expected format
-            importance_reverse_mapping = {
-                1: 'low',
-                2: 'medium_low', 
-                3: 'medium',
-                4: 'medium_high',
-                5: 'high'
-            }
-            
+            # Transform data to match expected format - OPTIMIZED
             # Process areas with batch-fetched data
             for area in areas:
                 area['is_active'] = not area.get('archived', False)  # Transform archived to is_active
-                area['importance'] = importance_reverse_mapping.get(area.get('importance'), 'medium')  # Map back to string
+                # Keep importance as integer (1-5) - frontend expects integers, no need for string conversion
+                if 'importance' in area and area['importance'] is not None:
+                    area['importance'] = int(area['importance'])  # Ensure it's an integer
                 
                 # Add projects if requested (already batch-fetched)
                 if include_projects:
