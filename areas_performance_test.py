@@ -8,8 +8,8 @@ import statistics
 from datetime import datetime
 from typing import Dict, Any, List
 
-# Configuration - Use the backend URL from frontend/.env
-BACKEND_URL = "https://2a9362a1-0858-4070-86b9-4648da4a94c4.preview.emergentagent.com"
+# Configuration - Use localhost URL for accurate performance testing
+BACKEND_URL = "http://localhost:8001"
 API_BASE = f"{BACKEND_URL}/api"
 
 class AreasPerformanceTestSuite:
