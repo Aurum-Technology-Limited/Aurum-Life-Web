@@ -213,7 +213,8 @@ class AiCoachMvpService:
             return ProjectDecompositionResponse(
                 project_name=request.project_name,
                 template_type=request.template_type,
-                suggested_tasks=[]
+                suggested_tasks=[],
+                total_tasks=0
             )
     
     def _get_project_template_tasks(self, template_type: str, project_name: str, project_description: Optional[str]) -> List[Dict[str, Any]]:
