@@ -294,8 +294,7 @@ test_plan:
   current_focus:
     - "Frontend Environment URL Configuration Fix"
     - "Areas Importance Field Update Issue"
-  stuck_tasks: 
-    - "Areas Importance Field Update Issue"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
