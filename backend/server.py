@@ -343,7 +343,7 @@ async def get_daily_reflections(
     - days: Number of days to look back (default: 30)
     """
     try:
-        user_id = current_user['id']
+        user_id = current_user.id
         reflections = await ai_coach_mvp.get_user_reflections(user_id, days)
         return {
             "reflections": reflections,
