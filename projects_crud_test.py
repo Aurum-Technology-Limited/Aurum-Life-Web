@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 
 # Configuration - Use external URL from frontend/.env
-BACKEND_URL = "https://3f9f12c4-ff11-434a-aa0a-125c04b1de64.preview.emergentagent.com"
+BACKEND_URL = "https://e8d251a8-b0fb-4ae3-9f4d-007f64ab283b.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class ProjectsCRUDTestSuite:
