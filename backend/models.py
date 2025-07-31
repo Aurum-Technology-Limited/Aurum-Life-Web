@@ -822,7 +822,7 @@ PillarResponse.model_rebuild()
 class DailyReflection(BaseDocument):
     """Daily reflection entry for habit formation and progress tracking"""
     user_id: str
-    date: date = Field(default_factory=lambda: datetime.utcnow().date())
+    reflection_date: datetime = Field(default_factory=lambda: datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0))
     reflection_text: str
     completion_score: Optional[int] = None  # 1-10 scale
     mood: Optional[str] = None
@@ -838,12 +838,12 @@ class DailyReflectionCreate(BaseModel):
     biggest_accomplishment: Optional[str] = None
     challenges_faced: Optional[str] = None
     tomorrow_focus: Optional[str] = None
-    date: Optional[date] = None
+    reflection_date: Optional[datetime] = None
 
 class DailyReflectionResponse(BaseModel):
     id: str
     user_id: str
-    date: date
+    reflection_date: datetime
     reflection_text: str
     completion_score: Optional[int]
     mood: Optional[str]
@@ -868,19 +868,22 @@ class ProjectDecompositionResponse(BaseModel):
     project_name: str
     template_type: str
     suggested_tasks: List[Dict[str, Any]]
+    total_tasks: int = 0
     
 class TaskWhyStatement(BaseModel):
     """Contextual why statement for a task"""
     task_id: str
     task_name: str
     why_statement: str
-    project_name: Optional[str] = None
-    pillar_name: Optional[str] = None
-    vertical_alignment: Dict[str, str] = {}
+    pillar_connection: Optional[str] = None
+    area_connection: Optional[str] = None
+    project_connection: Optional[str] = None
 
 class TaskWhyStatementResponse(BaseModel):
     """Response containing contextual why statements for tasks"""
-    tasks_with_why: List[TaskWhyStatement]
+    why_statements: List[TaskWhyStatement]
+    tasks_analyzed: int = 0
+    vertical_alignment: Dict[str, Any] = {}
     generated_at: datetime = Field(default_factory=datetime.utcnow)
 
 # User streak tracking extension
