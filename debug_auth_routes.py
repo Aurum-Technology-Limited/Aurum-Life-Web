@@ -6,7 +6,7 @@ Debug the authentication routing issue
 import requests
 
 # Test different auth endpoints
-BACKEND_URL = "https://bc255d0b-dfc1-4871-9ab3-ce599517e71d.preview.emergentagent.com"
+BACKEND_URL = "https://a6f7ddc8-1ace-40b1-9ed5-db784a5228b2.preview.emergentagent.com"
 
 endpoints_to_test = [
     "/api/auth/register",

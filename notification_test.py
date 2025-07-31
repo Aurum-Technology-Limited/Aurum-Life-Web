@@ -29,7 +29,7 @@ import uuid
 import time
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://bc255d0b-dfc1-4871-9ab3-ce599517e71d.preview.emergentagent.com/api"
+BACKEND_URL = "https://a6f7ddc8-1ace-40b1-9ed5-db784a5228b2.preview.emergentagent.com/api"
 
 class NotificationSystemTester:
     def __init__(self):
