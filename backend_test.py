@@ -38,33 +38,40 @@ class GoogleAuthTestSuite:
                 if response.status == 200:
                     data = await response.json()
                     
-                    # Verify response structure
-                    if "auth_url" in data:
+                    # Verify response structure as specified in review request
+                    if "auth_url" in data and "state" in data:
                         auth_url = data["auth_url"]
+                        state = data["state"]
                         print(f"✅ Google auth initiate successful")
                         print(f"   Auth URL received: {auth_url[:100]}...")
+                        print(f"   State received: {state}")
                         
-                        # Verify auth URL contains redirect parameter
-                        if "redirect" in auth_url or "redirect_url" in auth_url:
-                            print("✅ Auth URL contains redirect parameter")
+                        # Verify auth URL is a proper Google OAuth URL
+                        if "accounts.google.com" in auth_url or "oauth2" in auth_url:
+                            print("✅ Auth URL is a proper Google OAuth URL")
                             self.test_results.append({
-                                "test": "Google Auth Initiate", 
+                                "test": "Google Auth Initiate (GET)", 
                                 "status": "PASSED", 
-                                "details": "Auth URL generated with redirect parameter"
+                                "details": "Returns auth_url and state fields with proper Google OAuth URL"
                             })
                         else:
-                            print("⚠️ Auth URL may not contain redirect parameter")
+                            print("⚠️ Auth URL may not be a proper Google OAuth URL")
                             self.test_results.append({
-                                "test": "Google Auth Initiate", 
+                                "test": "Google Auth Initiate (GET)", 
                                 "status": "PASSED", 
-                                "details": "Auth URL generated but redirect parameter unclear"
+                                "details": "Returns auth_url and state but URL format unclear"
                             })
                     else:
-                        print("❌ Response missing auth_url field")
+                        missing_fields = []
+                        if "auth_url" not in data:
+                            missing_fields.append("auth_url")
+                        if "state" not in data:
+                            missing_fields.append("state")
+                        print(f"❌ Response missing required fields: {missing_fields}")
                         self.test_results.append({
-                            "test": "Google Auth Initiate", 
+                            "test": "Google Auth Initiate (GET)", 
                             "status": "FAILED", 
-                            "reason": "Missing auth_url in response"
+                            "reason": f"Missing required fields: {missing_fields}"
                         })
                 else:
                     error_text = await response.text()
