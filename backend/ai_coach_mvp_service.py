@@ -333,15 +333,15 @@ class AiCoachMvpService:
             Created daily reflection response
         """
         try:
-            supabase = self.supabase_manager.get_client()
+            supabase = self.supabase
             
             # Use provided date or default to today
-            reflection_date = reflection_data.date or datetime.utcnow().date()
+            reflection_date = reflection_data.reflection_date or datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
             
             # Check if reflection already exists for this date
             existing_response = supabase.table('daily_reflections').select('id').eq(
                 'user_id', user_id
-            ).eq('date', reflection_date.isoformat()).execute()
+            ).eq('date', reflection_date.date().isoformat()).execute()
             
             if existing_response.data:
                 # Update existing reflection
@@ -360,13 +360,13 @@ class AiCoachMvpService:
                 ).execute()
                 
                 reflection_dict = response.data[0] if response.data else None
-                logger.info(f"✅ Updated daily reflection for user: {user_id} on date: {reflection_date}")
+                logger.info(f"✅ Updated daily reflection for user: {user_id} on date: {reflection_date.date()}")
             else:
                 # Create new reflection
                 reflection_dict = {
                     'id': str(uuid.uuid4()),
                     'user_id': user_id,
-                    'date': reflection_date.isoformat(),
+                    'date': reflection_date.date().isoformat(),
                     'reflection_text': reflection_data.reflection_text,
                     'completion_score': reflection_data.completion_score,
                     'mood': reflection_data.mood,
@@ -378,18 +378,18 @@ class AiCoachMvpService:
                 
                 response = supabase.table('daily_reflections').insert(reflection_dict).execute()
                 reflection_dict = response.data[0] if response.data else None
-                logger.info(f"✅ Created daily reflection for user: {user_id} on date: {reflection_date}")
+                logger.info(f"✅ Created daily reflection for user: {user_id} on date: {reflection_date.date()}")
             
             if not reflection_dict:
                 raise Exception("Failed to create/update daily reflection")
             
             # Update user's daily streak
-            await self._update_daily_streak(user_id, reflection_date)
+            await self._update_daily_streak(user_id, reflection_date.date())
             
             return DailyReflectionResponse(
                 id=reflection_dict['id'],
                 user_id=reflection_dict['user_id'],
-                date=datetime.fromisoformat(reflection_dict['date']).date(),
+                reflection_date=reflection_date,
                 reflection_text=reflection_dict['reflection_text'],
                 completion_score=reflection_dict.get('completion_score'),
                 mood=reflection_dict.get('mood'),
