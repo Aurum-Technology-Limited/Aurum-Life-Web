@@ -1018,7 +1018,9 @@ const TaskModal = memo(({ task, isOpen, onClose, onSave, loading = false, defaul
       </div>
     </div>
   );
-};
+});
+
+TaskModal.displayName = 'TaskModal';
 
 const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const { onDataMutation } = useDataContext();
