@@ -71,42 +71,45 @@ async def root():
 # GOOGLE AUTHENTICATION ENDPOINTS
 # ================================
 
-@api_router.post("/auth/google/initiate", response_model=GoogleAuthResponse)
-async def initiate_google_auth(request: GoogleAuthRequest):
+# Initialize Google OAuth service
+google_oauth = GoogleOAuthService()
+
+@api_router.get("/auth/google/initiate", response_model=GoogleAuthInitiateResponse)
+async def initiate_google_auth():
     """Initiate Google OAuth authentication"""
     try:
-        auth_url = EmergentAuthService.generate_auth_url(request.redirect_url)
-        return GoogleAuthResponse(auth_url=auth_url)
+        state = str(uuid.uuid4())
+        auth_url = google_oauth.get_authorization_url(state)
+        return GoogleAuthInitiateResponse(auth_url=auth_url, state=state)
     except Exception as e:
         logger.error(f"Error initiating Google auth: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to initiate authentication")
 
-@api_router.post("/auth/google/callback", response_model=AuthTokenResponse)
-async def google_auth_callback(request: SessionValidationRequest):
-    """Handle Google OAuth callback with session ID"""
+@api_router.get("/auth/google/callback")
+async def google_auth_callback(code: str, state: str = None):
+    """Handle Google OAuth callback with authorization code"""
     try:
-        # Get user data from Emergent API
-        user_data = await EmergentAuthService.get_session_data(request.session_id)
+        # Exchange code for token
+        token_data = await google_oauth.exchange_code_for_token(code)
         
-        # Create or update user in our system (if using Supabase)
-        user_id = user_data.get('id')
-        email = user_data.get('email')
-        name = user_data.get('name')
-        picture = user_data.get('picture')
+        # Get user info using access token
+        user_data = await google_oauth.get_user_info(token_data['access_token'])
         
         # Create session in our system
         session_token = SessionManager.create_session(user_data)
         
         # Create user object for response
         user_response = {
-            'id': user_id,
-            'email': email,
-            'name': name,
-            'picture': picture
+            'id': user_data.get('id'),
+            'email': user_data.get('email'),
+            'name': user_data.get('name'),
+            'picture': user_data.get('picture')
         }
         
-        logger.info(f"Successfully authenticated user {email} via Google")
+        logger.info(f"Successfully authenticated user {user_data.get('email')} via Google")
         
+        # Return JSON response for API use or redirect to frontend with token
+        # For now, return JSON response
         return AuthTokenResponse(
             access_token=session_token,
             user=user_response,
@@ -117,6 +120,38 @@ async def google_auth_callback(request: SessionValidationRequest):
         raise
     except Exception as e:
         logger.error(f"Error in Google auth callback: {str(e)}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
+
+@api_router.post("/auth/google/token", response_model=AuthTokenResponse)
+async def google_auth_token(request: GoogleAuthTokenRequest):
+    """Handle Google OAuth with ID token (client-side authentication)"""
+    try:
+        # Verify ID token
+        user_data = google_oauth.verify_id_token(request.id_token)
+        
+        # Create session in our system
+        session_token = SessionManager.create_session(user_data)
+        
+        # Create user object for response
+        user_response = {
+            'id': user_data.get('sub'),  # 'sub' is the user ID in ID tokens
+            'email': user_data.get('email'),
+            'name': user_data.get('name'),
+            'picture': user_data.get('picture')
+        }
+        
+        logger.info(f"Successfully authenticated user {user_data.get('email')} via Google ID token")
+        
+        return AuthTokenResponse(
+            access_token=session_token,
+            user=user_response,
+            expires_in=604800  # 7 days
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in Google token auth: {str(e)}")
         raise HTTPException(status_code=500, detail="Authentication failed")
 
 @api_router.get("/auth/me", response_model=UserProfileResponse)
