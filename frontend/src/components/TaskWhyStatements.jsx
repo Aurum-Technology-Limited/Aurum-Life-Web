@@ -82,7 +82,7 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
     return (
       <div className="mt-4 p-4 bg-gray-800 rounded-lg">
         <div className="flex items-center space-x-2">
-          <BulbIcon className="h-5 w-5 text-gray-400" />
+          <LightBulbIcon className="h-5 w-5 text-gray-400" />
           <span className="text-gray-400">No active tasks found for context</span>
         </div>
       </div>
