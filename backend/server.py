@@ -226,167 +226,167 @@ async def logout_user(token: str = Depends(HTTPBearer())):
 # ai_coach_mvp = AiCoachMvpService()
 
 # Feature 1: Contextual "Why" Statements
-@api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse)
-async def get_task_why_statements(
-    task_ids: Optional[str] = None,
-    current_user: dict = Depends(get_current_active_user_hybrid)
-):
-    """
-    Get contextual why statements for tasks explaining their vertical alignment
-    
-    Query Parameters:
-    - task_ids: Optional comma-separated list of task IDs (if not provided, uses recent incomplete tasks)
-    """
-    try:
-        user_id = current_user['id']
-        
-        # Parse task_ids if provided
-        parsed_task_ids = None
-        if task_ids:
-            parsed_task_ids = [tid.strip() for tid in task_ids.split(',') if tid.strip()]
-        
-        why_statements = await ai_coach_mvp.generate_task_why_statements(user_id, parsed_task_ids)
-        return why_statements
-        
-    except Exception as e:
-        logger.error(f"Error getting task why statements: {e}")
-        raise HTTPException(status_code=500, detail="Failed to generate task context")
+# @api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse)
+# async def get_task_why_statements(
+#     task_ids: Optional[str] = None,
+#     current_user: dict = Depends(get_current_active_user_hybrid)
+# ):
+#     """
+#     Get contextual why statements for tasks explaining their vertical alignment
+#     
+#     Query Parameters:
+#     - task_ids: Optional comma-separated list of task IDs (if not provided, uses recent incomplete tasks)
+#     """
+#     try:
+#         user_id = current_user['id']
+#         
+#         # Parse task_ids if provided
+#         parsed_task_ids = None
+#         if task_ids:
+#             parsed_task_ids = [tid.strip() for tid in task_ids.split(',') if tid.strip()]
+#         
+#         why_statements = await ai_coach_mvp.generate_task_why_statements(user_id, parsed_task_ids)
+#         return why_statements
+#         
+#     except Exception as e:
+#         logger.error(f"Error getting task why statements: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to generate task context")
 
 # Feature 2: Lean Goal Decomposition Assistance
-@api_router.post("/ai/decompose-project", response_model=ProjectDecompositionResponse)
-async def decompose_project(
-    request: ProjectDecompositionRequest,
-    current_user: dict = Depends(get_current_active_user_hybrid)
-):
-    """
-    Get suggested tasks for a new project to help with the blank slate problem
-    
-    Body:
-    - project_name: Name of the project
-    - project_description: Optional description 
-    - template_type: Type of project (learning, health, career, personal, work, general)
-    """
-    try:
-        user_id = current_user['id']
-        suggestions = await ai_coach_mvp.suggest_project_tasks(user_id, request)
-        return suggestions
-        
-    except Exception as e:
-        logger.error(f"Error decomposing project: {e}")
-        raise HTTPException(status_code=500, detail="Failed to generate project suggestions")
+# @api_router.post("/ai/decompose-project", response_model=ProjectDecompositionResponse)
+# async def decompose_project(
+#     request: ProjectDecompositionRequest,
+#     current_user: dict = Depends(get_current_active_user_hybrid)
+# ):
+#     """
+#     Get suggested tasks for a new project to help with the blank slate problem
+#     
+#     Body:
+#     - project_name: Name of the project
+#     - project_description: Optional description 
+#     - template_type: Type of project (learning, health, career, personal, work, general)
+#     """
+#     try:
+#         user_id = current_user['id']
+#         suggestions = await ai_coach_mvp.suggest_project_tasks(user_id, request)
+#         return suggestions
+#         
+#     except Exception as e:
+#         logger.error(f"Error decomposing project: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to generate project suggestions")
 
-@api_router.post("/ai/create-suggested-tasks")
-async def create_suggested_tasks(
-    project_id: str,
-    suggested_tasks: List[Dict[str, Any]],
-    current_user: dict = Depends(get_current_active_user_hybrid)
-):
-    """
-    Create actual tasks from suggested tasks for a project
-    
-    Body:
-    - project_id: ID of the project to add tasks to
-    - suggested_tasks: List of suggested task dictionaries
-    """
-    try:
-        user_id = current_user['id']
-        created_tasks = await ai_coach_mvp.create_tasks_from_suggestions(
-            user_id, project_id, suggested_tasks
-        )
-        
-        return {
-            "success": True,
-            "created_tasks": created_tasks,
-            "count": len(created_tasks)
-        }
-        
-    except Exception as e:
-        logger.error(f"Error creating suggested tasks: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create suggested tasks")
+# @api_router.post("/ai/create-suggested-tasks")
+# async def create_suggested_tasks(
+#     project_id: str,
+#     suggested_tasks: List[Dict[str, Any]],
+#     current_user: dict = Depends(get_current_active_user_hybrid)
+# ):
+#     """
+#     Create actual tasks from suggested tasks for a project
+#     
+#     Body:
+#     - project_id: ID of the project to add tasks to
+#     - suggested_tasks: List of suggested task dictionaries
+#     """
+#     try:
+#         user_id = current_user['id']
+#         created_tasks = await ai_coach_mvp.create_tasks_from_suggestions(
+#             user_id, project_id, suggested_tasks
+#         )
+#         
+#         return {
+#             "success": True,
+#             "created_tasks": created_tasks,
+#             "count": len(created_tasks)
+#         }
+#         
+#     except Exception as e:
+#         logger.error(f"Error creating suggested tasks: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to create suggested tasks")
 
 # Feature 3: Daily Reflection & Progress Prompt
-@api_router.post("/ai/daily-reflection", response_model=DailyReflectionResponse)
-async def create_daily_reflection(
-    reflection_data: DailyReflectionCreate,
-    current_user: dict = Depends(get_current_active_user_hybrid)
-):
-    """
-    Create or update a daily reflection entry
-    
-    Body:
-    - reflection_text: Main reflection text (required)
-    - completion_score: Optional 1-10 completion score
-    - mood: Optional mood description
-    - biggest_accomplishment: Optional biggest accomplishment text
-    - challenges_faced: Optional challenges text
-    - tomorrow_focus: Optional tomorrow focus text
-    - date: Optional date (defaults to today)
-    """
-    try:
-        user_id = current_user['id']
-        reflection = await ai_coach_mvp.create_daily_reflection(user_id, reflection_data)
-        return reflection
-        
-    except Exception as e:
-        logger.error(f"Error creating daily reflection: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create daily reflection")
+# @api_router.post("/ai/daily-reflection", response_model=DailyReflectionResponse)
+# async def create_daily_reflection(
+#     reflection_data: DailyReflectionCreate,
+#     current_user: dict = Depends(get_current_active_user_hybrid)
+# ):
+#     """
+#     Create or update a daily reflection entry
+#     
+#     Body:
+#     - reflection_text: Main reflection text (required)
+#     - completion_score: Optional 1-10 completion score
+#     - mood: Optional mood description
+#     - biggest_accomplishment: Optional biggest accomplishment text
+#     - challenges_faced: Optional challenges text
+#     - tomorrow_focus: Optional tomorrow focus text
+#     - date: Optional date (defaults to today)
+#     """
+#     try:
+#         user_id = current_user['id']
+#         reflection = await ai_coach_mvp.create_daily_reflection(user_id, reflection_data)
+#         return reflection
+#         
+#     except Exception as e:
+#         logger.error(f"Error creating daily reflection: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to create daily reflection")
 
-@api_router.get("/ai/daily-reflections")
-async def get_daily_reflections(
-    days: int = 30,
-    current_user: dict = Depends(get_current_active_user_hybrid)
-):
-    """
-    Get user's recent daily reflections
-    
-    Query Parameters:
-    - days: Number of days to look back (default: 30)
-    """
-    try:
-        user_id = current_user['id']
-        reflections = await ai_coach_mvp.get_user_reflections(user_id, days)
-        return {
-            "reflections": reflections,
-            "count": len(reflections)
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting daily reflections: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get daily reflections")
+# @api_router.get("/ai/daily-reflections")
+# async def get_daily_reflections(
+#     days: int = 30,
+#     current_user: dict = Depends(get_current_active_user_hybrid)
+# ):
+#     """
+#     Get user's recent daily reflections
+#     
+#     Query Parameters:
+#     - days: Number of days to look back (default: 30)
+#     """
+#     try:
+#         user_id = current_user['id']
+#         reflections = await ai_coach_mvp.get_user_reflections(user_id, days)
+#         return {
+#             "reflections": reflections,
+#             "count": len(reflections)
+#         }
+#         
+#     except Exception as e:
+#         logger.error(f"Error getting daily reflections: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to get daily reflections")
 
-@api_router.get("/ai/daily-streak")
-async def get_daily_streak(
-    current_user: dict = Depends(get_current_active_user_hybrid)
-):
-    """Get user's current daily streak"""
-    try:
-        user_id = current_user['id']
-        streak = await ai_coach_mvp.get_user_streak(user_id)
-        return {
-            "daily_streak": streak,
-            "user_id": user_id
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting daily streak: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get daily streak")
+# @api_router.get("/ai/daily-streak")
+# async def get_daily_streak(
+#     current_user: dict = Depends(get_current_active_user_hybrid)
+# ):
+#     """Get user's current daily streak"""
+#     try:
+#         user_id = current_user['id']
+#         streak = await ai_coach_mvp.get_user_streak(user_id)
+#         return {
+#             "daily_streak": streak,
+#             "user_id": user_id
+#         }
+#         
+#     except Exception as e:
+#         logger.error(f"Error getting daily streak: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to get daily streak")
 
-@api_router.get("/ai/should-show-daily-prompt")
-async def should_show_daily_prompt(
-    current_user: dict = Depends(get_current_active_user_hybrid)
-):
-    """Check if daily reflection prompt should be shown"""
-    try:
-        user_id = current_user['id']
-        should_show = await ai_coach_mvp.should_show_daily_prompt(user_id)
-        return {
-            "should_show_prompt": should_show,
-            "user_id": user_id
-        }
-        
-    except Exception as e:
-        logger.error(f"Error checking daily prompt status: {e}")
-        raise HTTPException(status_code=500, detail="Failed to check prompt status")
+# @api_router.get("/ai/should-show-daily-prompt")
+# async def should_show_daily_prompt(
+#     current_user: dict = Depends(get_current_active_user_hybrid)
+# ):
+#     """Check if daily reflection prompt should be shown"""
+#     try:
+#         user_id = current_user['id']
+#         should_show = await ai_coach_mvp.should_show_daily_prompt(user_id)
+#         return {
+#             "should_show_prompt": should_show,
+#             "user_id": user_id
+#         }
+#         
+#     except Exception as e:
+#         logger.error(f"Error checking daily prompt status: {e}")
+#         raise HTTPException(status_code=500, detail="Failed to check prompt status")
 
 # ================================
 # PILLAR ENDPOINTS
