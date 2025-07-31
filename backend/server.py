@@ -68,6 +68,111 @@ async def root():
     return {"message": "Aurum Life API - Supabase Only", "version": "2.0.0", "status": "operational"}
 
 # ================================
+# GOOGLE AUTHENTICATION ENDPOINTS
+# ================================
+
+@api_router.post("/auth/google/initiate", response_model=GoogleAuthResponse)
+async def initiate_google_auth(request: GoogleAuthRequest):
+    """Initiate Google OAuth authentication"""
+    try:
+        auth_url = EmergentAuthService.generate_auth_url(request.redirect_url)
+        return GoogleAuthResponse(auth_url=auth_url)
+    except Exception as e:
+        logger.error(f"Error initiating Google auth: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to initiate authentication")
+
+@api_router.post("/auth/google/callback", response_model=AuthTokenResponse)
+async def google_auth_callback(request: SessionValidationRequest):
+    """Handle Google OAuth callback with session ID"""
+    try:
+        # Get user data from Emergent API
+        user_data = await EmergentAuthService.get_session_data(request.session_id)
+        
+        # Create or update user in our system (if using Supabase)
+        user_id = user_data.get('id')
+        email = user_data.get('email')
+        name = user_data.get('name')
+        picture = user_data.get('picture')
+        
+        # Create session in our system
+        session_token = SessionManager.create_session(user_data)
+        
+        # Create user object for response
+        user_response = {
+            'id': user_id,
+            'email': email,
+            'name': name,
+            'picture': picture
+        }
+        
+        logger.info(f"Successfully authenticated user {email} via Google")
+        
+        return AuthTokenResponse(
+            access_token=session_token,
+            user=user_response,
+            expires_in=604800  # 7 days
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in Google auth callback: {str(e)}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
+
+@api_router.get("/auth/me", response_model=UserProfileResponse)
+async def get_current_user_profile(token: str = Depends(HTTPBearer())):
+    """Get current user profile from session token"""
+    try:
+        # Extract token from Bearer scheme
+        session_token = token.credentials if hasattr(token, 'credentials') else token
+        
+        # Get session data
+        session_data = SessionManager.get_session(session_token)
+        
+        if not session_data:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired session"
+            )
+        
+        # Extend session on successful access
+        SessionManager.extend_session(session_token)
+        
+        return UserProfileResponse(
+            id=session_data['user_id'],
+            email=session_data['email'],
+            name=session_data['name'],
+            picture=session_data.get('picture'),
+            created_at=session_data['created_at']
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting user profile: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get user profile")
+
+@api_router.post("/auth/logout")
+async def logout_user(token: str = Depends(HTTPBearer())):
+    """Logout user and invalidate session"""
+    try:
+        # Extract token from Bearer scheme
+        session_token = token.credentials if hasattr(token, 'credentials') else token
+        
+        # Delete session
+        success = SessionManager.delete_session(session_token)
+        
+        if success:
+            return {"message": "Successfully logged out"}
+        else:
+            return {"message": "Session not found or already expired"}
+            
+    except Exception as e:
+        logger.error(f"Error during logout: {str(e)}")
+        # Still return success even if there's an error - user should be logged out
+        return {"message": "Logged out"}
+
+# ================================
 # PILLAR ENDPOINTS
 # ================================
 
