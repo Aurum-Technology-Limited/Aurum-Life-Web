@@ -308,7 +308,7 @@ async def create_suggested_tasks(
 @api_router.post("/ai/daily-reflection", response_model=DailyReflectionResponse)
 async def create_daily_reflection(
     reflection_data: DailyReflectionCreate,
-    current_user: dict = Depends(get_current_active_user_hybrid)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """
     Create or update a daily reflection entry
