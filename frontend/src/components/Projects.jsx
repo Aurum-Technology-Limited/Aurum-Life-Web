@@ -192,37 +192,74 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     due_date: ''
   });
 
-  // Update form when activeAreaId changes (for pre-populating area)
-  useEffect(() => {
-    if (activeAreaId) {
-      setNewProject(prev => ({ ...prev, area_id: activeAreaId }));
-    }
-  }, [activeAreaId]);
+  // Memoize filtered projects to prevent recalculation on every render
+  const filteredProjects = useMemo(() => {
+    return activeAreaId 
+      ? projects.filter(project => project.area_id === activeAreaId)
+      : projects;
+  }, [projects, activeAreaId]);
 
-  // Load projects and areas
-  useEffect(() => {
-    if (user) {
-      loadProjects();
-      loadAreas();
+  // Memoize callbacks to prevent unnecessary re-renders of child components
+  const handleViewProjectTasks = useCallback((project) => {
+    if (onSectionChange) {
+      onSectionChange('tasks', { projectId: project.id, projectName: project.name });
     }
-  }, [user]);
+  }, [onSectionChange]);
 
-  // Set area name when activeAreaId changes
-  useEffect(() => {
-    if (activeAreaId && areas.length > 0) {
-      const area = areas.find(a => a.id === activeAreaId);
-      if (area) {
-        // Update the sectionParams to include area name for display
-        const updatedParams = { ...sectionParams, areaName: area.name };
-        // Note: We don't call onSectionChange here to avoid infinite loop
+  const handleEditProject = useCallback((project) => {
+    setEditingProject({
+      ...project,
+      due_date: project.due_date ? new Date(project.due_date).toISOString().split('T')[0] : ''
+    });
+    setShowEditForm(true);
+  }, []);
+
+  const handleDeleteProject = useCallback(async (projectId, projectName) => {
+    if (!window.confirm(`Are you sure you want to delete the project "${projectName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      const response = await fetch(`${backendURL}/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+        },
+      });
+
+      if (response.ok) {
+        setProjects(prev => prev.filter(p => p.id !== projectId));
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || 'Failed to delete project');
       }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      setError('Network error deleting project');
     }
-  }, [activeAreaId, areas]);
+  }, []);
 
-  // Filter projects by area if activeAreaId is provided
-  const filteredProjects = activeAreaId 
-    ? projects.filter(project => project.area_id === activeAreaId)
-    : projects;
+  const updateProjectStatus = useCallback(async (projectId, newStatus) => {
+    try {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      const response = await fetch(`${backendURL}/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        const updatedProject = await response.json();
+        setProjects(prev => prev.map(p => p.id === projectId ? updatedProject : p));
+      }
+    } catch (error) {
+      console.error('Error updating project status:', error);
+    }
+  }, []);
 
   const loadProjects = async () => {
     try {
