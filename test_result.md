@@ -275,7 +275,14 @@ metadata:
           agent: "main"
           comment: "User reported: 'changing the importance field still isn't being changed on the frontend and maybe even the backend.' Backend has proper validation in AreaUpdate model with custom validator for integer importance values (1-5). Frontend Areas.jsx has TanStack Query mutations for cache invalidation. However, issue persists after environment URL fix."
 
-agent_communication:
+test_plan:
+  current_focus:
+    - "Frontend Environment URL Configuration Fix"
+    - "Areas Importance Field Update Issue"
+  stuck_tasks: 
+    - "Areas Importance Field Update Issue"
+  test_all: false
+  test_priority: "high_first"
     - agent: "testing"
       message: "🎉 AREAS UPDATE FUNCTIONALITY VALIDATION FIX COMPLETED - 100% SUCCESS RATE! Successfully identified and resolved the critical 422 validation error that was causing the 'update button not working' issue: ✅ ROOT CAUSE IDENTIFIED: The issue was in SupabaseAreaService.update_area() method where importance_reverse_mapping was converting integer importance values (1-5) back to strings ('low', 'medium', 'high'), causing frontend validation to fail when expecting integers ✅ FIX IMPLEMENTED: Removed the problematic importance_reverse_mapping and ensured integer values are returned directly from the database ✅ COMPREHENSIVE TESTING COMPLETED: All integer importance values (1-5) now work correctly with proper types returned, no more 422 validation errors detected, name and description updates working perfectly ✅ PRODUCTION-READY: The areas update functionality is now fully functional and the frontend update button should work correctly. The validation fix has resolved the user-reported issue completely."
     - agent: "main"
