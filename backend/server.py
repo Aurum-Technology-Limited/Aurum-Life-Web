@@ -267,7 +267,7 @@ async def decompose_project(
     - template_type: Type of project (learning, health, career, personal, work, general)
     """
     try:
-        user_id = current_user['id']
+        user_id = current_user.id
         suggestions = await ai_coach_mvp.suggest_project_tasks(user_id, request)
         return suggestions
         
