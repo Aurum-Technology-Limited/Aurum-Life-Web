@@ -323,7 +323,7 @@ async def create_daily_reflection(
     - reflection_date: Optional date (defaults to today)
     """
     try:
-        user_id = current_user['id']
+        user_id = current_user.id
         reflection = await ai_coach_mvp.create_daily_reflection(user_id, reflection_data)
         return reflection
         
