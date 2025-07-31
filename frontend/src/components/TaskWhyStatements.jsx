@@ -95,7 +95,7 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
     <div className="mt-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <BulbIcon className="h-5 w-5 text-yellow-400" />
+          <LightBulbIcon className="h-5 w-5 text-yellow-400" />
           <h3 className="text-lg font-semibold text-white">Why These Tasks Matter</h3>
         </div>
         {whyStatements.length > 3 && (
