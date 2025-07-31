@@ -5,6 +5,7 @@ import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVer
 import { todayAPI, tasksAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import PomodoroTimer from './PomodoroTimer';
+import TaskWhyStatements from './TaskWhyStatements';
 
 const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPomodoro, onRemove }) => {
   const [{ isDragging }, drag] = useDrag({
