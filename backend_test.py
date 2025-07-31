@@ -138,40 +138,44 @@ class GoogleAuthTestSuite:
             })
             
     async def test_google_auth_callback(self):
-        """Test 2: Google Auth Callback Endpoint"""
-        print("\n🧪 Test 2: Google Auth Callback Endpoint")
+        """Test 3: Google Auth Callback Endpoint (GET) - as specified in review request"""
+        print("\n🧪 Test 3: Google Auth Callback Endpoint (GET)")
         
         try:
-            # Test with fake session ID (should fail gracefully)
-            callback_data = {
-                "session_id": "test-session-id"
+            # Test GET request with fake code and state as specified in review request
+            callback_params = {
+                "code": "fake-code",
+                "state": "test-state"
             }
             
-            async with self.session.post(f"{API_BASE}/auth/google/callback", json=callback_data) as response:
-                # This should fail with authentication error since we're using fake session ID
+            # Build URL with query parameters
+            callback_url = f"{API_BASE}/auth/google/callback"
+            
+            async with self.session.get(callback_url, params=callback_params) as response:
+                # This should fail with authentication error since we're using fake code
                 if response.status in [400, 401, 500]:
                     error_data = await response.json() if response.content_type == 'application/json' else await response.text()
-                    print(f"✅ Google auth callback properly handles invalid session: {response.status}")
+                    print(f"✅ Google auth callback properly handles invalid code: {response.status}")
                     print(f"   Error response: {str(error_data)[:100]}...")
                     self.test_results.append({
-                        "test": "Google Auth Callback", 
+                        "test": "Google Auth Callback (GET)", 
                         "status": "PASSED", 
-                        "details": "Endpoint exists and handles invalid session correctly"
+                        "details": "Endpoint exists and handles invalid authorization code correctly"
                     })
                 elif response.status == 200:
-                    # Unexpected success with fake session ID
+                    # Unexpected success with fake code
                     data = await response.json()
-                    print(f"⚠️ Unexpected success with fake session ID: {data}")
+                    print(f"⚠️ Unexpected success with fake authorization code: {data}")
                     self.test_results.append({
-                        "test": "Google Auth Callback", 
+                        "test": "Google Auth Callback (GET)", 
                         "status": "PASSED", 
-                        "details": "Endpoint working but may need session validation review"
+                        "details": "Endpoint working but may need code validation review"
                     })
                 else:
                     error_text = await response.text()
                     print(f"❌ Unexpected response from callback: {response.status} - {error_text}")
                     self.test_results.append({
-                        "test": "Google Auth Callback", 
+                        "test": "Google Auth Callback (GET)", 
                         "status": "FAILED", 
                         "reason": f"Unexpected HTTP {response.status}"
                     })
@@ -179,7 +183,7 @@ class GoogleAuthTestSuite:
         except Exception as e:
             print(f"❌ Google auth callback test failed: {e}")
             self.test_results.append({
-                "test": "Google Auth Callback", 
+                "test": "Google Auth Callback (GET)", 
                 "status": "FAILED", 
                 "reason": str(e)
             })
