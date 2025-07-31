@@ -273,8 +273,89 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     forgotPassword,
-    // Compatibility methods
-    loginWithGoogle: () => ({ success: false, error: 'Google login not implemented' })
+  const loginWithGoogle = async () => {
+    try {
+      setLoading(true);
+      
+      // Get the current app URL for redirect
+      const redirectUrl = window.location.origin + '/profile';
+      
+      // Get the auth URL from backend
+      const response = await fetch(`${BACKEND_URL}/api/auth/google/initiate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ redirect_url: redirectUrl })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.auth_url) {
+        // Redirect to Google auth
+        window.location.href = data.auth_url;
+        return { success: true };
+      } else {
+        return { 
+          success: false, 
+          error: data.detail || 'Failed to initiate Google authentication' 
+        };
+      }
+      
+    } catch (error) {
+      console.error('Google login error:', error);
+      return { 
+        success: false, 
+        error: 'Network error. Please try again.' 
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleCallback = async (sessionId) => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch(`${BACKEND_URL}/api/auth/google/callback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ session_id: sessionId })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.access_token) {
+        const authToken = data.access_token;
+        
+        // Store token
+        localStorage.setItem('auth_token', authToken);
+        setToken(authToken);
+        setUser(data.user);
+        
+        return { 
+          success: true, 
+          message: 'Google login successful!'
+        };
+      } else {
+        return { 
+          success: false, 
+          error: data.detail || 'Google authentication failed' 
+        };
+      }
+      
+    } catch (error) {
+      console.error('Google callback error:', error);
+      return { 
+        success: false, 
+        error: 'Network error. Please try again.' 
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
   };
 
   return (
