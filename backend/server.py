@@ -38,6 +38,14 @@ from google_oauth import (
     AuthTokenResponse,
     UserProfileResponse
 )
+from ai_coach_mvp_service import AiCoachMvpService
+from models import (
+    DailyReflectionCreate,
+    DailyReflectionResponse,
+    ProjectDecompositionRequest,
+    ProjectDecompositionResponse,
+    TaskWhyStatementResponse
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
