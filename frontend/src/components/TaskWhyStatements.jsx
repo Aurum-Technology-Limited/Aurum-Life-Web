@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BulbIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
+import { LightBulbIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
 
 const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
   const [whyStatements, setWhyStatements] = useState([]);
