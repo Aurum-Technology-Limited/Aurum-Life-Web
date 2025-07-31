@@ -386,6 +386,59 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     }
   };
 
+  const handleTasksCreated = async (suggestedTasks) => {
+    try {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      const createdTasks = [];
+      
+      // Create each suggested task using the tasks API
+      for (const taskSuggestion of suggestedTasks) {
+        const taskData = {
+          name: taskSuggestion.name,
+          description: '',
+          project_id: newProjectForDecomposition.id,
+          priority: taskSuggestion.priority,
+          estimated_duration: taskSuggestion.estimated_duration,
+          status: 'todo',
+          completed: false
+        };
+
+        const response = await fetch(`${backendURL}/api/tasks`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+          },
+          body: JSON.stringify(taskData),
+        });
+
+        if (response.ok) {
+          const createdTask = await response.json();
+          createdTasks.push(createdTask);
+        }
+      }
+      
+      // Close decomposition helper
+      setShowDecompositionHelper(false);
+      setNewProjectForDecomposition(null);
+      
+      // Show success message
+      alert(`Successfully created ${createdTasks.length} tasks for your project!`);
+      
+      // Refresh projects to show updated task counts
+      loadProjects();
+      
+    } catch (error) {
+      console.error('Error creating tasks:', error);
+      setError('Failed to create tasks from suggestions');
+    }
+  };
+
+  const handleCancelDecomposition = () => {
+    setShowDecompositionHelper(false);
+    setNewProjectForDecomposition(null);
+  };
+
   const handleUpdateProject = async (e) => {
     e.preventDefault();
     setError('');
