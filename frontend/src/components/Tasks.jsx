@@ -4,7 +4,8 @@ import { tasksAPI, projectsAPI, handleApiError } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import FileAttachment from './FileAttachment';
 
-const TaskCard = ({ task, onToggle, onEdit, onDelete, loading = false }) => {
+// Memoized TaskCard component to prevent unnecessary re-renders
+const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading = false }) => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'bg-red-400';
