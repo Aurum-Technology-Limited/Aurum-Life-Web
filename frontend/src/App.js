@@ -167,7 +167,13 @@ function App() {
               return <NotificationCenter {...props} />;
             case 'profile':
               console.log('👤 Rendering Profile component');
-              return <Profile {...props} />;
+              // Check if this is an OAuth callback
+              const hash = window.location.hash;
+              if (hash.includes('session_id=')) {
+                return <ProfilePage {...props} />;
+              } else {
+                return <Profile {...props} />;
+              }
             case 'dashboard':
             default:
               console.log('🏠 Rendering Optimized Dashboard component');
