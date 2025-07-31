@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { TrendingUp, Target, BookOpen, Trophy, Flame, Loader2 } from 'lucide-react';
 import { useDashboardQuery, usePrefetchQueries } from '../hooks/useQueries';
 import AiCoachCard from './AiCoachCard';
+import DailyStreakTracker from './DailyStreakTracker';
 
 const StatCard = memo(({ title, value, subtitle, icon: Icon, trend, loading = false }) => (
   <div className="p-4 sm:p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group hover:scale-105">
