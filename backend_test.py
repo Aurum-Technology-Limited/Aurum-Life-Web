@@ -8,8 +8,8 @@ import os
 from datetime import datetime
 from typing import Dict, Any, List
 
-# Configuration - Use localhost URL as per review request
-BACKEND_URL = "http://localhost:8001"
+# Configuration - Use external URL from frontend .env
+BACKEND_URL = "https://3f9f12c4-ff11-434a-aa0a-125c04b1de64.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class GoogleAuthTestSuite:
