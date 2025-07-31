@@ -223,7 +223,7 @@ async def logout_user(token: str = Depends(HTTPBearer())):
 # ================================
 
 # Initialize AI Coach MVP service
-# ai_coach_mvp = AiCoachMvpService()
+ai_coach_mvp = AiCoachMvpService()
 
 # Feature 1: Contextual "Why" Statements
 # @api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse)
