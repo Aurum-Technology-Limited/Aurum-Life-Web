@@ -95,14 +95,19 @@ function App() {
     document.title = `${sectionTitle} | Aurum Life`;
   }, [activeSection]);
 
-  // Check if we're on password reset page
+  // Check if we're on password reset page or OAuth callback
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const pathname = window.location.pathname;
+    const hash = window.location.hash;
     
     if (token && (pathname === '/reset-password' || pathname === '/')) {
       setIsPasswordResetPage(true);
+    } else if (pathname === '/profile' && hash.includes('session_id=')) {
+      // This is an OAuth callback, set the active section to profile
+      setActiveSection('profile');
+      setIsPasswordResetPage(false);
     } else {
       setIsPasswordResetPage(false);
     }
