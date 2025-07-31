@@ -356,7 +356,7 @@ async def get_daily_reflections(
 
 @api_router.get("/ai/daily-streak")
 async def get_daily_streak(
-    current_user: dict = Depends(get_current_active_user_hybrid)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Get user's current daily streak"""
     try:
