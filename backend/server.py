@@ -360,7 +360,7 @@ async def get_daily_streak(
 ):
     """Get user's current daily streak"""
     try:
-        user_id = current_user['id']
+        user_id = current_user.id
         streak = await ai_coach_mvp.get_user_streak(user_id)
         return {
             "daily_streak": streak,
