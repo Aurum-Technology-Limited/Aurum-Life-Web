@@ -355,6 +355,11 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
       if (response.ok) {
         const createdProject = await response.json();
         setProjects(prev => [...prev, createdProject]);
+        
+        // Store the created project for potential decomposition
+        setNewProjectForDecomposition(createdProject);
+        
+        // Reset form
         setNewProject({
           name: '',
           description: '',
@@ -366,6 +371,11 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
           due_date: ''
         });
         setShowCreateForm(false);
+        
+        // Ask user if they want to break down the project
+        if (window.confirm('Project created successfully! Would you like to break it down into tasks using AI suggestions?')) {
+          setShowDecompositionHelper(true);
+        }
       } else {
         const errorData = await response.json();
         setError(errorData.detail || 'Failed to create project');
