@@ -463,6 +463,14 @@ const Today = memo(() => {
                     ))}
                   </div>
                 )}
+                
+                {/* Task Why Statements - Show contextual insights */}
+                {todayData?.tasks?.length > 0 && (
+                  <TaskWhyStatements 
+                    taskIds={todayData.tasks.filter(task => !task.completed).map(task => task.id)}
+                    showAll={false}
+                  />
+                )}
               </div>
             </div>
 
