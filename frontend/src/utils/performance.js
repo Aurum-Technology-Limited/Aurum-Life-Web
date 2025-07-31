@@ -1,3 +1,5 @@
+import React from 'react';
+
 // Performance monitoring utility for React components
 export const usePerformanceMonitor = (componentName) => {
   const renderStart = performance.now();
