@@ -377,7 +377,7 @@ async def should_show_daily_prompt(
 ):
     """Check if daily reflection prompt should be shown"""
     try:
-        user_id = current_user['id']
+        user_id = current_user.id
         should_show = await ai_coach_mvp.should_show_daily_prompt(user_id)
         return {
             "should_show_prompt": should_show,
