@@ -373,7 +373,7 @@ async def get_daily_streak(
 
 @api_router.get("/ai/should-show-daily-prompt")
 async def should_show_daily_prompt(
-    current_user: dict = Depends(get_current_active_user_hybrid)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """Check if daily reflection prompt should be shown"""
     try:
