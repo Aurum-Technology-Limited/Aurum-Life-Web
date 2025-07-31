@@ -334,7 +334,7 @@ async def create_daily_reflection(
 @api_router.get("/ai/daily-reflections")
 async def get_daily_reflections(
     days: int = 30,
-    current_user: dict = Depends(get_current_active_user_hybrid)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """
     Get user's recent daily reflections
