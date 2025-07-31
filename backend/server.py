@@ -14,6 +14,7 @@ from typing import List, Optional
 import asyncio
 import uuid
 from datetime import timedelta, datetime
+from typing import List, Optional, Dict, Any
 
 # Import our models and Supabase services
 from models import *
