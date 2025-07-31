@@ -3316,12 +3316,12 @@ class ProjectTemplatesTestSuite:
 
 async def main():
     """Main test execution"""
-    # Run the Google Authentication endpoints test as requested in the review
-    print("🔐 GOOGLE AUTHENTICATION ENDPOINTS TESTING")
+    # Run the AI Coach MVP features test as requested in the review
+    print("🤖 AI COACH MVP FEATURES TESTING")
     print("="*60)
     
-    google_auth_test_suite = GoogleAuthTestSuite()
-    await google_auth_test_suite.run_google_auth_tests()
+    ai_coach_test_suite = AiCoachMvpTestSuite()
+    await ai_coach_test_suite.run_ai_coach_mvp_tests()
 
 if __name__ == "__main__":
     asyncio.run(main())
