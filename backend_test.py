@@ -389,12 +389,13 @@ class GoogleAuthTestSuite:
         await self.setup_session()
         
         try:
-            # Run all Google Auth tests
+            # Run all Google Auth tests as specified in review request
             await self.test_google_auth_initiate()
-            await self.test_google_auth_callback()
-            await self.test_user_profile_endpoint()
-            await self.test_logout_endpoint()
-            await self.test_existing_endpoints_still_work()
+            await self.test_google_auth_token()  # Test Google Auth Token endpoint
+            await self.test_google_auth_callback()  # Test Google Auth Callback endpoint (GET)
+            await self.test_user_profile_endpoint()  # Test User Profile endpoint
+            await self.test_logout_endpoint()  # Test Logout endpoint
+            await self.test_existing_endpoints_still_work()  # Verify core functionality still works
             
         finally:
             await self.cleanup_session()
