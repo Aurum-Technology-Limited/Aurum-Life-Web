@@ -242,11 +242,11 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.1"
-  test_sequence: 3
+  version: "3.2"
+  test_sequence: 4
   run_ui: false
-  last_updated: "2025-07-30T12:51:00Z"
-  critical_issue: "Areas update functionality testing completed"
+  last_updated: "2025-07-31T00:25:00Z"
+  critical_issue: "Frontend ChunkLoadError and Environment URL mismatch fixed"
 
 test_plan:
   current_focus:
