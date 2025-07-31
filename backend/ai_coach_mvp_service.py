@@ -39,7 +39,7 @@ class AiCoachMvpService:
             TaskWhyStatementResponse with why statements for each task
         """
         try:
-            supabase = self.supabase_manager.get_client()
+            supabase = self.supabase
             
             # If no specific task IDs provided, get today's tasks or recent incomplete tasks
             if not task_ids:
