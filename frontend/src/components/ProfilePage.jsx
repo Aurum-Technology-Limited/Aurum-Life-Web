@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/BackendAuthContext';
 
-const ProfilePage = () => {
-  const navigate = useNavigate();
+const ProfilePage = ({ setActiveSection }) => {
   const { handleGoogleCallback, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,17 +23,21 @@ const ProfilePage = () => {
             // Clear the hash from URL
             window.history.replaceState(null, null, window.location.pathname);
             
-            // Redirect to dashboard
-            navigate('/dashboard');
+            // Navigate to dashboard using section system
+            if (setActiveSection) {
+              setActiveSection('dashboard');
+            }
           } else {
             setError(result.error || 'Authentication failed');
           }
         } else if (user) {
           // User is already authenticated, go to dashboard
-          navigate('/dashboard');
+          if (setActiveSection) {
+            setActiveSection('dashboard');
+          }
         } else {
-          // No session ID found and no user, redirect to login
-          navigate('/');
+          // No session ID found and no user, this shouldn't happen
+          setError('Invalid authentication state');
         }
       } catch (err) {
         console.error('OAuth callback error:', err);
@@ -46,7 +48,7 @@ const ProfilePage = () => {
     };
 
     handleOAuthCallback();
-  }, [handleGoogleCallback, navigate, user]);
+  }, [handleGoogleCallback, setActiveSection, user]);
 
   if (loading) {
     return (
