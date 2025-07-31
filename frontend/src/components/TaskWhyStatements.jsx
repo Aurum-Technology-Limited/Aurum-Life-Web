@@ -71,7 +71,7 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
     return (
       <div className="mt-4 p-4 bg-red-900 border border-red-700 rounded-lg">
         <div className="flex items-center space-x-2">
-          <BulbIcon className="h-5 w-5 text-red-400" />
+          <LightBulbIcon className="h-5 w-5 text-red-400" />
           <span className="text-red-300">Error: {error}</span>
         </div>
       </div>
