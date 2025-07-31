@@ -11,6 +11,8 @@ from pathlib import Path
 import os
 import logging
 from typing import List, Optional
+import asyncio
+import uuid
 from datetime import timedelta, datetime
 
 # Import our models and Supabase services
