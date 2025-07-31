@@ -98,21 +98,50 @@ const Login = () => {
     setIsSubmitting(false);
   };
 
-  const handleGoogleLogin = async (credentialResponse) => {
-    if (credentialResponse?.credential) {
-      setIsSubmitting(true);
-      const result = await loginWithGoogle(credentialResponse);
-      if (!result.success && result.error) {
-        setError(result.error);
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (codeResponse) => {
+      try {
+        setIsSubmitting(true);
+        
+        // Exchange the authorization code for user info on the client side
+        const userInfoResponse = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${codeResponse.access_token}`, {
+          headers: {
+            Authorization: `Bearer ${codeResponse.access_token}`,
+          },
+        });
+        
+        const userInfo = await userInfoResponse.json();
+        
+        // Create a mock ID token for our backend (in production, you'd get this from Google)
+        // For now, we'll use the user info directly
+        const mockCredentialResponse = {
+          credential: codeResponse.access_token, // Using access token as credential
+          userInfo: userInfo
+        };
+        
+        const result = await loginWithGoogle(mockCredentialResponse);
+        if (!result.success && result.error) {
+          setError(result.error);
+        }
+      } catch (error) {
+        setError('Google authentication failed. Please try again.');
+      } finally {
+        setIsSubmitting(false);
       }
-      setIsSubmitting(false);
-    } else {
+    },
+    onError: () => {
       setError('Google authentication failed. Please try again.');
-    }
-  };
+    },
+  });
 
-  const handleGoogleError = () => {
-    setError('Google authentication failed. Please try again.');
+  const handleGoogleLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      googleLogin();
+    } catch (error) {
+      setError('Google authentication failed. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
