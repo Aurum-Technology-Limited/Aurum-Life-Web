@@ -3,6 +3,7 @@ import { CheckSquare, Plus, Calendar, Flag, Clock, Check, X, Loader2, AlertCircl
 import { tasksAPI, projectsAPI, handleApiError } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import FileAttachment from './FileAttachment';
+import TaskWhyStatements from './TaskWhyStatements';
 
 // Memoized TaskCard component to prevent unnecessary re-renders
 const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading = false }) => {
