@@ -229,7 +229,7 @@ ai_coach_mvp = AiCoachMvpService()
 @api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse)
 async def get_task_why_statements(
     task_ids: Optional[str] = None,
-    current_user: dict = Depends(get_current_active_user_hybrid)
+    current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """
     Get contextual why statements for tasks explaining their vertical alignment
