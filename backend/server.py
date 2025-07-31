@@ -238,7 +238,7 @@ async def get_task_why_statements(
     - task_ids: Optional comma-separated list of task IDs (if not provided, uses recent incomplete tasks)
     """
     try:
-        user_id = current_user['id']
+        user_id = current_user.id
         
         # Parse task_ids if provided
         parsed_task_ids = None
