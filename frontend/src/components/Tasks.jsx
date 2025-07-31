@@ -133,7 +133,9 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading = false }) =>
       </div>
     </div>
   );
-};
+});
+
+TaskCard.displayName = 'TaskCard';
 
 const TaskModal = ({ task, isOpen, onClose, onSave, loading = false, defaultProjectId = null }) => {
   const [formData, setFormData] = useState({
