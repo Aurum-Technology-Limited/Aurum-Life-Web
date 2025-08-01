@@ -46,12 +46,18 @@ class NotificationService:
     @staticmethod
     async def update_notification_preferences(user_id: str, updates: NotificationPreferenceUpdate) -> Optional[NotificationPreference]:
         """Update user's notification preferences"""
+        # First, find the existing preferences document
+        pref_doc = await find_document("notification_preferences", {"user_id": user_id})
+        if not pref_doc:
+            # Create default preferences if none exist
+            return await NotificationService.create_default_notification_preferences(user_id)
+        
         update_data = {k: v for k, v in updates.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
         
         success = await update_document(
             "notification_preferences",
-            {"user_id": user_id},
+            {"id": pref_doc["id"]},  # Use the document ID for Supabase
             update_data
         )
         
