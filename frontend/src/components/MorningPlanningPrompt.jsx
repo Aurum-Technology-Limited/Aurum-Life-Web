@@ -18,7 +18,7 @@ const MorningPlanningPrompt = ({ onClose, onComplete }) => {
       setError('');
       
       // Get AI-curated task recommendations
-      const response = await api.get('/api/ai/task-why-statements');
+      const response = await api.get('/ai/task-why-statements');
       if (response.data && response.data.why_statements) {
         setRecommendations(response.data.why_statements.slice(0, 5)); // Top 5 recommendations
       }
