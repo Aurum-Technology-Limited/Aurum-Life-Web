@@ -790,7 +790,7 @@ const Journal = memo(() => {
               <div className="space-y-2 mb-4">
                 <p className="text-sm text-gray-400 font-medium">Prompts:</p>
                 <ul className="space-y-1">
-                  {template.prompts.slice(0, 3).map((prompt, index) => (
+                  {template.prompts?.slice(0, 3).map((prompt, index) => (
                     <li key={index} className="text-xs text-gray-500">
                       • {prompt}
                     </li>
