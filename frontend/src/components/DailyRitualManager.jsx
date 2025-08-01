@@ -119,6 +119,11 @@ const DailyRitualManager = () => {
     localStorage.setItem('aurum_ritual_settings', JSON.stringify(newSettings));
   };
 
+  // Only render if user is authenticated
+  if (!user) {
+    return null;
+  }
+
   // Component returns the prompts when they should be shown
   return (
     <>
