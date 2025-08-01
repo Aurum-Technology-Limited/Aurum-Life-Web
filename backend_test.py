@@ -1,4 +1,22 @@
 #!/usr/bin/env python3
+"""
+NOTIFICATION SETTINGS API TESTING
+Complete testing of the Notification Settings API endpoints that were just added to the backend server.
+
+FOCUS AREAS:
+1. Authentication with nav.test@aurumlife.com / testpassword123
+2. GET /api/notifications/preferences - should return notification preferences (or create default ones if none exist)
+3. PUT /api/notifications/preferences - test updating notification preferences with sample data
+4. POST /api/notifications/test - test the test notification feature
+5. GET /api/notifications - test getting notifications list
+
+TESTING CRITERIA:
+- Proper authentication
+- Correct response formats
+- Error handling
+- Data validation
+- NotificationService import and database operations
+"""
 
 import asyncio
 import aiohttp
