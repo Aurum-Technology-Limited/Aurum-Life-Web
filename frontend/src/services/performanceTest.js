@@ -78,7 +78,7 @@ class PerformanceTest {
     await this.testEndpoint('Dashboard', '/api/dashboard', authHeaders);
     
     // Test 5: AI Coach (was slow - now optimized)
-    await this.testEndpoint('AI Coach', '/api/ai_coach/today', authHeaders);
+    await this.testEndpoint('AI Coach', '/api/ai/task-why-statements', authHeaders);
     
     // Test 6: Areas (was slow - now optimized)
     await this.testEndpoint('Areas', '/api/areas?include_projects=true&include_archived=false', authHeaders);
