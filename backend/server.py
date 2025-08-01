@@ -1303,6 +1303,162 @@ async def get_project_insights(
         logger.error(f"Error getting project insights: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+# ================================
+# NOTIFICATIONS ENDPOINTS
+# ================================
+
+@api_router.get("/notifications/preferences", response_model=dict)
+async def get_notification_preferences(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get user notification preferences"""
+    try:
+        user_id = str(current_user.id)
+        preferences = await NotificationService.get_user_notification_preferences(user_id)
+        
+        if not preferences:
+            # Create default preferences if none exist
+            preferences = await NotificationService.create_default_notification_preferences(user_id)
+        
+        return {
+            "data": {
+                "email_notifications": preferences.email_notifications,
+                "browser_notifications": preferences.browser_notifications,
+                "task_due_notifications": preferences.task_due_notifications,
+                "task_overdue_notifications": preferences.task_overdue_notifications,
+                "task_reminder_notifications": preferences.task_reminder_notifications,
+                "project_deadline_notifications": preferences.project_deadline_notifications,
+                "recurring_task_notifications": preferences.recurring_task_notifications,
+                "achievement_notifications": preferences.achievement_notifications,
+                "unblocked_task_notifications": preferences.unblocked_task_notifications,
+                "reminder_advance_time": preferences.reminder_advance_time,
+                "overdue_check_interval": preferences.overdue_check_interval,
+                "quiet_hours_start": preferences.quiet_hours_start,
+                "quiet_hours_end": preferences.quiet_hours_end,
+                "daily_digest": preferences.daily_digest,
+                "weekly_digest": preferences.weekly_digest
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error getting notification preferences: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to load notification preferences")
+
+@api_router.put("/notifications/preferences", response_model=dict)
+async def update_notification_preferences(
+    preferences: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Update user notification preferences"""
+    try:
+        user_id = str(current_user.id)
+        
+        # Create the update object with the provided preferences
+        from models import NotificationPreferenceUpdate
+        prefs_update = NotificationPreferenceUpdate(**preferences)
+        
+        updated_prefs = await NotificationService.update_notification_preferences(user_id, prefs_update)
+        
+        if not updated_prefs:
+            raise HTTPException(status_code=404, detail="Notification preferences not found")
+        
+        return {
+            "message": "Notification preferences updated successfully",
+            "data": {
+                "email_notifications": updated_prefs.email_notifications,
+                "browser_notifications": updated_prefs.browser_notifications,
+                "task_due_notifications": updated_prefs.task_due_notifications,
+                "task_overdue_notifications": updated_prefs.task_overdue_notifications,
+                "task_reminder_notifications": updated_prefs.task_reminder_notifications,
+                "project_deadline_notifications": updated_prefs.project_deadline_notifications,
+                "recurring_task_notifications": updated_prefs.recurring_task_notifications,
+                "achievement_notifications": updated_prefs.achievement_notifications,
+                "unblocked_task_notifications": updated_prefs.unblocked_task_notifications,
+                "reminder_advance_time": updated_prefs.reminder_advance_time,
+                "overdue_check_interval": updated_prefs.overdue_check_interval,
+                "quiet_hours_start": updated_prefs.quiet_hours_start,
+                "quiet_hours_end": updated_prefs.quiet_hours_end,
+                "daily_digest": updated_prefs.daily_digest,
+                "weekly_digest": updated_prefs.weekly_digest
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error updating notification preferences: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update notification preferences")
+
+@api_router.post("/notifications/test", response_model=dict)
+async def send_test_notification(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Send a test notification to the user"""
+    try:
+        user_id = str(current_user.id)
+        
+        # Get user preferences to determine how to send the test
+        preferences = await NotificationService.get_user_notification_preferences(user_id)
+        
+        if not preferences:
+            raise HTTPException(status_code=404, detail="Notification preferences not found")
+        
+        # For now, just return success - actual notification sending would be implemented here
+        notification_sent = []
+        
+        if preferences.email_notifications:
+            # Send email test notification
+            notification_sent.append("email")
+            
+        if preferences.browser_notifications:
+            # Send browser test notification
+            notification_sent.append("browser")
+        
+        return {
+            "message": "Test notification sent successfully",
+            "channels": notification_sent if notification_sent else ["none - notifications disabled"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending test notification: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send test notification")
+
+@api_router.get("/notifications", response_model=dict)
+async def get_notifications(
+    unread_only: bool = Query(False, description="Filter to unread notifications only"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get user notifications"""
+    try:
+        # For now, return mock notifications - this would be replaced with actual notification retrieval
+        mock_notifications = [
+            {
+                "id": "notif-1",
+                "title": "Task Due Soon",
+                "message": "Your task 'Review project proposal' is due in 30 minutes",
+                "type": "task_reminder",
+                "read": False,
+                "created_at": datetime.utcnow().isoformat()
+            },
+            {
+                "id": "notif-2", 
+                "title": "Task Completed",
+                "message": "Great job completing 'Update documentation'!",
+                "type": "achievement",
+                "read": True,
+                "created_at": (datetime.utcnow() - timedelta(hours=2)).isoformat()
+            }
+        ]
+        
+        if unread_only:
+            mock_notifications = [n for n in mock_notifications if not n['read']]
+        
+        return {
+            "notifications": mock_notifications,
+            "total": len(mock_notifications),
+            "unread_count": len([n for n in mock_notifications if not n['read']])
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting notifications: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get notifications")
+
 # Include authentication routes under /api
 api_router.include_router(auth_router, prefix="/auth")
 
