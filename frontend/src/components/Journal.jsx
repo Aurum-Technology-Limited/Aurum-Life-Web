@@ -795,7 +795,7 @@ const Journal = memo(() => {
                       • {prompt}
                     </li>
                   ))}
-                  {template.prompts.length > 3 && (
+                  {template.prompts?.length > 3 && (
                     <li className="text-xs text-gray-500">
                       + {template.prompts.length - 3} more prompts
                     </li>
