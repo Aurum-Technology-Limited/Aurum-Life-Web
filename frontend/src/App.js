@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import SimpleLayout from './components/SimpleLayout';
 import globalErrorHandler from './utils/globalErrorHandler'; // Import global error handler
 import ErrorBoundary from './components/ErrorBoundary';
+import DailyRitualManager from './components/DailyRitualManager';
 import PasswordReset from './components/PasswordReset';
 
 // Import performance test for debugging
