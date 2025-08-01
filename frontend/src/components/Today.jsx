@@ -460,6 +460,21 @@ const Today = memo(() => {
 
   return (
     <DndProvider backend={HTML5Backend}>
+      {/* Daily Ritual Prompts (moved from DailyRitualManager) */}
+      {user && showMorningPrompt && (
+        <MorningPlanningPrompt
+          onComplete={handleMorningComplete}
+          onClose={closeMorningPrompt}
+        />
+      )}
+
+      {user && showEveningPrompt && (
+        <EveningReflectionPrompt
+          onComplete={handleEveningComplete}
+          onClose={closeEveningPrompt}
+        />
+      )}
+
       <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
         <div className="max-w-6xl mx-auto">
         {/* Header */}
