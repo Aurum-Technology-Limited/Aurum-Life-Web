@@ -227,6 +227,32 @@ const OptimizedDashboard = () => {
     };
   }, [dashboardData]);
 
+  // Show onboarding wizard if user is new
+  if (showOnboarding) {
+    return (
+      <OnboardingWizard 
+        onComplete={handleOnboardingComplete}
+        onClose={handleOnboardingClose}
+      />
+    );
+  }
+
+  // Show loading state while checking for new user
+  if (checkingNewUser) {
+    return (
+      <div className="min-h-screen p-4 sm:p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+              <p className="text-gray-400 text-sm">Setting up your experience...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="min-h-screen p-4 sm:p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
