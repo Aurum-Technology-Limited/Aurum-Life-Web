@@ -64,7 +64,19 @@ const EveningReflectionPrompt = ({ onClose, onComplete }) => {
       onComplete(response.data);
     } catch (err) {
       console.error('🌛 Evening reflection submission failed:', err);
-      setError(err.response?.data?.detail || 'Failed to save reflection. Please try again.');
+      console.error('🌛 Error response:', err.response?.data);
+      console.error('🌛 Submitted data was:', submissionData);
+      
+      let errorMessage = 'Failed to save reflection. Please try again.';
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setSubmitting(false);
     }
