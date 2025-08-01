@@ -43,10 +43,16 @@ const EveningReflectionPrompt = ({ onClose, onComplete }) => {
         return;
       }
 
-      // Prepare the data
+      // Prepare the data - handle empty strings and nulls properly
       const submissionData = {
-        ...reflectionData,
-        completion_score: reflectionData.completion_score ? parseInt(reflectionData.completion_score) : null
+        reflection_text: reflectionData.reflection_text.trim(),
+        completion_score: reflectionData.completion_score && reflectionData.completion_score !== '' 
+          ? parseInt(reflectionData.completion_score) 
+          : null,
+        mood: reflectionData.mood || null,
+        biggest_accomplishment: reflectionData.biggest_accomplishment.trim() || null,
+        challenges_faced: reflectionData.challenges_faced.trim() || null,
+        tomorrow_focus: reflectionData.tomorrow_focus.trim() || null
       };
 
       console.log('🌛 Submitting evening reflection:', submissionData);
