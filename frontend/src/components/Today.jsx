@@ -253,6 +253,107 @@ const Today = memo(() => {
     loadTodayView();
   }, []);
 
+  // Daily Ritual Effects and Functions (moved from DailyRitualManager)
+  useEffect(() => {
+    if (!user) return; // Only run if user is authenticated
+
+    // Load ritual settings from localStorage
+    const savedSettings = localStorage.getItem('aurum_ritual_settings');
+    if (savedSettings) {
+      setRitualSettings(JSON.parse(savedSettings));
+    }
+
+    // Check if prompts should be shown
+    checkPromptTiming();
+
+    // Set up interval to check timing every minute
+    const interval = setInterval(checkPromptTiming, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const checkPromptTiming = () => {
+    if (!user) return;
+    
+    const now = new Date();
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    const currentDate = now.toDateString();
+
+    // Check morning prompt
+    if (
+      ritualSettings.morningEnabled &&
+      currentTime === ritualSettings.morningTime &&
+      lastMorningPrompt !== currentDate
+    ) {
+      console.log('🌅 Triggering morning planning prompt');
+      setShowMorningPrompt(true);
+    }
+
+    // Check evening prompt
+    if (
+      ritualSettings.eveningEnabled &&
+      currentTime === ritualSettings.eveningTime &&
+      lastEveningPrompt !== currentDate
+    ) {
+      console.log('🌛 Triggering evening reflection prompt');
+      setShowEveningPrompt(true);
+    }
+  };
+
+  // Manual trigger functions for testing and user-initiated prompts
+  const triggerMorningPrompt = () => {
+    console.log('🌅 Manually triggering morning planning prompt');
+    setShowMorningPrompt(true);
+  };
+
+  const triggerEveningPrompt = () => {
+    console.log('🌛 Manually triggering evening reflection prompt');
+    setShowEveningPrompt(true);
+  };
+
+  const handleMorningComplete = (selectedTasks) => {
+    console.log('🌅 Morning planning completed:', selectedTasks);
+    setShowMorningPrompt(false);
+    setLastMorningPrompt(new Date().toDateString());
+    localStorage.setItem('aurum_last_morning_prompt', new Date().toDateString());
+    
+    // TODO: In a full implementation, we could:
+    // - Add selected tasks to Today view
+    // - Track morning ritual completion
+    // - Update user streak
+  };
+
+  const handleEveningComplete = (reflectionData) => {
+    console.log('🌛 Evening reflection completed:', reflectionData);
+    setShowEveningPrompt(false);
+    setLastEveningPrompt(new Date().toDateString());
+    localStorage.setItem('aurum_last_evening_prompt', new Date().toDateString());
+    
+    // Update daily streak (this could be handled by the API, but we'll track it here too)
+    updateDailyStreak();
+  };
+
+  const updateDailyStreak = async () => {
+    try {
+      // The streak is automatically updated by the backend when a reflection is created
+      // But we could add additional client-side tracking here if needed
+      console.log('✅ Daily streak updated via reflection submission');
+    } catch (err) {
+      console.error('Failed to update daily streak:', err);
+    }
+  };
+
+  const closeMorningPrompt = () => {
+    setShowMorningPrompt(false);
+    setLastMorningPrompt(new Date().toDateString());
+    localStorage.setItem('aurum_last_morning_prompt', new Date().toDateString());
+  };
+
+  const closeEveningPrompt = () => {
+    setShowEveningPrompt(false);
+    setLastEveningPrompt(new Date().toDateString());
+    localStorage.setItem('aurum_last_evening_prompt', new Date().toDateString());
+  };
+
   const moveTask = (fromIndex, toIndex) => {
     if (!todayData?.tasks) return;
 
