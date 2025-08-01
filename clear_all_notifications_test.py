@@ -30,7 +30,7 @@ import uuid
 import time
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://e8d251a8-b0fb-4ae3-9f4d-007f64ab283b.preview.emergentagent.com/api"
+BACKEND_URL = "https://3241bdaf-485d-4483-9bf8-f3b315478945.preview.emergentagent.com/api"
 
 class ClearAllNotificationsTester:
     def __init__(self):
