@@ -805,7 +805,7 @@ const Journal = memo(() => {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  {template.default_tags.slice(0, 2).map((tag, index) => (
+                  {template.default_tags?.slice(0, 2).map((tag, index) => (
                     <span
                       key={index}
                       className="px-2 py-1 rounded-full bg-gray-800 text-xs text-yellow-400 border border-gray-700"
