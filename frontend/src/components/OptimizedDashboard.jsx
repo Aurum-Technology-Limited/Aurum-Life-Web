@@ -3,6 +3,8 @@ import { TrendingUp, Target, BookOpen, Trophy, Flame, Loader2, RefreshCw } from 
 import fixedAPI from '../services/fixedApi';
 import ErrorBoundary from './ErrorBoundary';
 import DailyStreakTracker from './DailyStreakTracker';
+import OnboardingWizard from './OnboardingWizard';
+import { api } from '../services/api';
 
 // Memoized StatCard component
 const StatCard = React.memo(({ title, value, subtitle, icon: Icon, trend, loading = false }) => (
