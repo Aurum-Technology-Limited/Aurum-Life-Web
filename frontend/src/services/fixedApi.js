@@ -161,7 +161,7 @@ export const fixedAPI = {
     const token = getAuthToken();
     if (!token) throw new Error('No auth token');
     
-    const url = buildUrl('/api/ai_coach/today');
+    const url = buildUrl('/api/ai/task-why-statements');
     return safeFetch(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
