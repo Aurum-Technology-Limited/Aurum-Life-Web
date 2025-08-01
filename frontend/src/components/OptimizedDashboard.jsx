@@ -126,6 +126,47 @@ const OptimizedDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [checkingNewUser, setCheckingNewUser] = useState(true);
+
+  // Check if user is new (has no data)
+  const checkNewUser = useCallback(async () => {
+    try {
+      console.log('🔍 Checking if user is new...');
+      setCheckingNewUser(true);
+      
+      // Check for existing data across all main entities
+      const [pillarsResponse, areasResponse, projectsResponse] = await Promise.all([
+        api.get('/pillars'),
+        api.get('/areas'), 
+        api.get('/projects')
+      ]);
+
+      const totalItems = 
+        (pillarsResponse.data?.length || 0) + 
+        (areasResponse.data?.length || 0) + 
+        (projectsResponse.data?.length || 0);
+
+      console.log('📊 User data check:', {
+        pillars: pillarsResponse.data?.length || 0,
+        areas: areasResponse.data?.length || 0,
+        projects: projectsResponse.data?.length || 0,
+        total: totalItems
+      });
+
+      // If user has no data at all, show onboarding
+      if (totalItems === 0) {
+        console.log('🎯 New user detected - showing onboarding wizard');
+        setShowOnboarding(true);
+      }
+
+    } catch (err) {
+      console.error('❌ Error checking new user status:', err);
+      // On error, don't show onboarding to avoid blocking access
+    } finally {
+      setCheckingNewUser(false);
+    }
+  }, []);
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -145,8 +186,26 @@ const OptimizedDashboard = () => {
   }, []);
 
   useEffect(() => {
+    // Check for new user first, then load dashboard
+    const initializeDashboard = async () => {
+      await checkNewUser();
+      await fetchDashboard();
+    };
+    
+    initializeDashboard();
+  }, [checkNewUser, fetchDashboard]);
+
+  const handleOnboardingComplete = () => {
+    console.log('🎉 Onboarding completed successfully');
+    setShowOnboarding(false);
+    // Refresh dashboard data to show new structure
     fetchDashboard();
-  }, [fetchDashboard]);
+  };
+
+  const handleOnboardingClose = () => {
+    console.log('❌ User closed onboarding wizard');
+    setShowOnboarding(false);
+  };
 
   // Memoized stats calculations
   const stats = useMemo(() => {
