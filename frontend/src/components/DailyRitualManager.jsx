@@ -6,6 +6,7 @@ import { api } from '../services/api';
 import { useAuth } from '../contexts/BackendAuthContext';
 
 const DailyRitualManager = () => {
+  const { user } = useAuth(); // Get authenticated user
   const [showMorningPrompt, setShowMorningPrompt] = useState(false);
   const [showEveningPrompt, setShowEveningPrompt] = useState(false);
   const [ritualSettings, setRitualSettings] = useState({
