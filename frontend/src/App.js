@@ -89,6 +89,7 @@ function App() {
       'ai-coach': 'AI Coach',
       'profile': 'Profile',
       'insights': 'Insights',
+      'settings': 'Settings',
       'notification-settings': 'Notifications',
       'notifications': 'Notification Center'
     };
