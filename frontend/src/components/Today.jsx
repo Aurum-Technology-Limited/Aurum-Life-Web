@@ -190,12 +190,25 @@ AvailableTaskItem.displayName = 'AvailableTaskItem';
 
 const Today = memo(() => {
   const { onDataMutation } = useDataContext();
+  const { user } = useAuth(); // Get authenticated user for daily rituals
   const [todayData, setTodayData] = useState(null);
   const [availableTasks, setAvailableTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAvailable, setShowAvailable] = useState(false);
   const [activePomodoro, setActivePomodoro] = useState(null);
+
+  // Daily Ritual States (moved from DailyRitualManager)
+  const [showMorningPrompt, setShowMorningPrompt] = useState(false);
+  const [showEveningPrompt, setShowEveningPrompt] = useState(false);
+  const [ritualSettings, setRitualSettings] = useState({
+    morningTime: '08:00',
+    eveningTime: '18:00',
+    morningEnabled: true,
+    eveningEnabled: true
+  });
+  const [lastMorningPrompt, setLastMorningPrompt] = useState(null);
+  const [lastEveningPrompt, setLastEveningPrompt] = useState(null);
 
   const loadTodayView = async () => {
     try {
