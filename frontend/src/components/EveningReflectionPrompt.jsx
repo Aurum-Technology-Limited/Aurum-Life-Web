@@ -33,6 +33,7 @@ const EveningReflectionPrompt = ({ onClose, onComplete }) => {
   };
 
   const handleSubmit = async () => {
+    let submissionData = {};
     try {
       setSubmitting(true);
       setError('');
@@ -44,7 +45,7 @@ const EveningReflectionPrompt = ({ onClose, onComplete }) => {
       }
 
       // Prepare the data - handle empty strings and nulls properly
-      const submissionData = {
+      submissionData = {
         reflection_text: reflectionData.reflection_text.trim(),
         completion_score: reflectionData.completion_score && reflectionData.completion_score !== '' 
           ? parseInt(reflectionData.completion_score) 
