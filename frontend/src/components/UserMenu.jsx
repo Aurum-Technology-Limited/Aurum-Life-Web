@@ -28,7 +28,7 @@ const UserMenu = ({ onSectionChange }) => {
   const handleSettingsClick = () => {
     setIsOpen(false);
     if (onSectionChange) {
-      onSectionChange('notification-settings');
+      onSectionChange('settings', { subSection: 'notifications' });
     }
   };
 
