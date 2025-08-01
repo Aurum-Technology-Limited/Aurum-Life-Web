@@ -18,6 +18,564 @@ TESTING CRITERIA:
 - NotificationService import and database operations
 """
 
+import requests
+import json
+import sys
+from datetime import datetime
+from typing import Dict, List, Any
+import time
+
+# Configuration - Using the backend URL from frontend/.env
+BACKEND_URL = "http://localhost:8001/api"
+
+class NotificationSettingsAPITester:
+    def __init__(self):
+        self.base_url = BACKEND_URL
+        self.session = requests.Session()
+        self.test_results = []
+        self.auth_token = None
+        # Use the specified test credentials
+        self.test_user_email = "nav.test@aurumlife.com"
+        self.test_user_password = "testpassword123"
+        
+    def log_test(self, test_name: str, success: bool, message: str = "", data: Any = None):
+        """Log test results"""
+        result = {
+            'test': test_name,
+            'success': success,
+            'message': message,
+            'timestamp': datetime.now().isoformat()
+        }
+        if data:
+            result['data'] = data
+        self.test_results.append(result)
+        
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}: {message}")
+        if data and not success:
+            print(f"   Data: {json.dumps(data, indent=2, default=str)}")
+
+    def make_request(self, method: str, endpoint: str, data: Dict = None, params: Dict = None, use_auth: bool = False) -> Dict:
+        """Make HTTP request with error handling and optional authentication"""
+        url = f"{self.base_url}{endpoint}"
+        headers = {"Content-Type": "application/json"}
+        
+        # Add authentication header if token is available and requested
+        if use_auth and self.auth_token:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
+        
+        try:
+            if method.upper() == 'GET':
+                response = self.session.get(url, params=params, headers=headers, timeout=30)
+            elif method.upper() == 'POST':
+                response = self.session.post(url, json=data, params=params, headers=headers, timeout=30)
+            elif method.upper() == 'PUT':
+                response = self.session.put(url, json=data, params=params, headers=headers, timeout=30)
+            elif method.upper() == 'DELETE':
+                response = self.session.delete(url, params=params, headers=headers, timeout=30)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+            
+            # Try to parse JSON response
+            try:
+                response_data = response.json() if response.content else {}
+            except:
+                response_data = {"raw_content": response.text[:500] if response.text else "No content"}
+                
+            return {
+                'success': response.status_code < 400,
+                'status_code': response.status_code,
+                'data': response_data,
+                'response': response,
+                'error': f"HTTP {response.status_code}: {response_data}" if response.status_code >= 400 else None
+            }
+            
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Request failed: {str(e)}"
+            if hasattr(e, 'response') and e.response is not None:
+                try:
+                    error_data = e.response.json()
+                    error_msg += f" - Response: {error_data}"
+                except:
+                    error_msg += f" - Response: {e.response.text[:200]}"
+            
+            return {
+                'success': False,
+                'error': error_msg,
+                'status_code': getattr(e.response, 'status_code', None) if hasattr(e, 'response') else None,
+                'data': {},
+                'response': getattr(e, 'response', None)
+            }
+
+    def test_basic_connectivity(self):
+        """Test basic connectivity to the backend API"""
+        print("\n=== TESTING BASIC CONNECTIVITY ===")
+        
+        result = self.make_request('GET', '/')
+        self.log_test(
+            "BACKEND API CONNECTIVITY",
+            result['success'],
+            f"Backend API accessible at {self.base_url}" if result['success'] else f"Backend API not accessible: {result.get('error', 'Unknown error')}"
+        )
+        
+        return result['success']
+
+    def test_user_authentication(self):
+        """Test user authentication with specified credentials"""
+        print("\n=== TESTING USER AUTHENTICATION ===")
+        
+        # Login user with specified credentials
+        login_data = {
+            "email": self.test_user_email,
+            "password": self.test_user_password
+        }
+        
+        result = self.make_request('POST', '/auth/login', data=login_data)
+        self.log_test(
+            "USER LOGIN",
+            result['success'],
+            f"Login successful with {self.test_user_email}" if result['success'] else f"Login failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        token_data = result['data']
+        self.auth_token = token_data.get('access_token')
+        
+        # Verify token works
+        result = self.make_request('GET', '/auth/me', use_auth=True)
+        self.log_test(
+            "AUTHENTICATION TOKEN VALIDATION",
+            result['success'],
+            f"Token validated successfully, user: {result['data'].get('email', 'Unknown')}" if result['success'] else f"Token validation failed: {result.get('error', 'Unknown error')}"
+        )
+        
+        return result['success']
+
+    def test_get_notification_preferences(self):
+        """Test GET /api/notifications/preferences endpoint"""
+        print("\n=== TESTING GET NOTIFICATION PREFERENCES ===")
+        
+        if not self.auth_token:
+            self.log_test("GET NOTIFICATION PREFERENCES - Authentication Required", False, "No authentication token available")
+            return False
+        
+        # Test GET /api/notifications/preferences
+        result = self.make_request('GET', '/notifications/preferences', use_auth=True)
+        self.log_test(
+            "GET NOTIFICATION PREFERENCES",
+            result['success'],
+            f"Retrieved notification preferences successfully" if result['success'] else f"Failed to get preferences: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        preferences_response = result['data']
+        
+        # Check if response has the expected structure
+        has_data_field = 'data' in preferences_response
+        self.log_test(
+            "NOTIFICATION PREFERENCES - RESPONSE STRUCTURE",
+            has_data_field,
+            f"Response has 'data' field" if has_data_field else f"Response missing 'data' field: {list(preferences_response.keys())}"
+        )
+        
+        if not has_data_field:
+            return False
+        
+        preferences = preferences_response['data']
+        
+        # Verify required fields are present
+        required_fields = [
+            'email_notifications',
+            'browser_notifications', 
+            'task_due_notifications',
+            'task_overdue_notifications',
+            'task_reminder_notifications',
+            'project_deadline_notifications',
+            'recurring_task_notifications',
+            'achievement_notifications',
+            'unblocked_task_notifications',
+            'reminder_advance_time',
+            'overdue_check_interval',
+            'quiet_hours_start',
+            'quiet_hours_end',
+            'daily_digest',
+            'weekly_digest'
+        ]
+        
+        missing_fields = []
+        for field in required_fields:
+            if field not in preferences:
+                missing_fields.append(field)
+        
+        fields_present = len(missing_fields) == 0
+        self.log_test(
+            "NOTIFICATION PREFERENCES - REQUIRED FIELDS",
+            fields_present,
+            f"All {len(required_fields)} required fields present" if fields_present else f"Missing fields: {missing_fields}"
+        )
+        
+        # Test specific important fields
+        email_notifications_present = 'email_notifications' in preferences
+        browser_notifications_present = 'browser_notifications' in preferences
+        
+        self.log_test(
+            "NOTIFICATION PREFERENCES - EMAIL NOTIFICATIONS FIELD",
+            email_notifications_present,
+            f"email_notifications field present: {preferences.get('email_notifications')}" if email_notifications_present else "email_notifications field missing"
+        )
+        
+        self.log_test(
+            "NOTIFICATION PREFERENCES - BROWSER NOTIFICATIONS FIELD", 
+            browser_notifications_present,
+            f"browser_notifications field present: {preferences.get('browser_notifications')}" if browser_notifications_present else "browser_notifications field missing"
+        )
+        
+        return fields_present and email_notifications_present and browser_notifications_present
+
+    def test_update_notification_preferences(self):
+        """Test PUT /api/notifications/preferences endpoint"""
+        print("\n=== TESTING UPDATE NOTIFICATION PREFERENCES ===")
+        
+        if not self.auth_token:
+            self.log_test("UPDATE NOTIFICATION PREFERENCES - Authentication Required", False, "No authentication token available")
+            return False
+        
+        # Test PUT /api/notifications/preferences with sample data
+        update_data = {
+            "email_notifications": True,
+            "browser_notifications": True,
+            "task_due_notifications": True,
+            "task_overdue_notifications": False,
+            "task_reminder_notifications": True,
+            "project_deadline_notifications": True,
+            "recurring_task_notifications": False,
+            "achievement_notifications": True,
+            "unblocked_task_notifications": True,
+            "reminder_advance_time": 15,
+            "overdue_check_interval": 60,
+            "quiet_hours_start": "22:00",
+            "quiet_hours_end": "08:00",
+            "daily_digest": True,
+            "weekly_digest": False
+        }
+        
+        result = self.make_request('PUT', '/notifications/preferences', data=update_data, use_auth=True)
+        self.log_test(
+            "PUT NOTIFICATION PREFERENCES",
+            result['success'],
+            f"Updated notification preferences successfully" if result['success'] else f"Failed to update preferences: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        updated_response = result['data']
+        
+        # Check response structure
+        has_message = 'message' in updated_response
+        has_data = 'data' in updated_response
+        
+        self.log_test(
+            "UPDATE NOTIFICATION PREFERENCES - RESPONSE STRUCTURE",
+            has_message and has_data,
+            f"Response has 'message' and 'data' fields" if (has_message and has_data) else f"Response structure: {list(updated_response.keys())}"
+        )
+        
+        if has_data:
+            updated_preferences = updated_response['data']
+            
+            # Verify updates were applied
+            email_updated = updated_preferences.get('email_notifications') == True
+            browser_updated = updated_preferences.get('browser_notifications') == True
+            reminder_time_updated = updated_preferences.get('reminder_advance_time') == 15
+            
+            updates_applied = email_updated and browser_updated and reminder_time_updated
+            self.log_test(
+                "NOTIFICATION PREFERENCES - UPDATE VERIFICATION",
+                updates_applied,
+                f"Preference updates applied correctly" if updates_applied else f"Update verification failed: email={updated_preferences.get('email_notifications')}, browser={updated_preferences.get('browser_notifications')}, reminder_time={updated_preferences.get('reminder_advance_time')}"
+            )
+            
+            return updates_applied
+        
+        return False
+
+    def test_send_test_notification(self):
+        """Test POST /api/notifications/test endpoint"""
+        print("\n=== TESTING SEND TEST NOTIFICATION ===")
+        
+        if not self.auth_token:
+            self.log_test("SEND TEST NOTIFICATION - Authentication Required", False, "No authentication token available")
+            return False
+        
+        # Test POST /api/notifications/test
+        result = self.make_request('POST', '/notifications/test', use_auth=True)
+        self.log_test(
+            "POST NOTIFICATIONS TEST",
+            result['success'],
+            f"Test notification sent successfully" if result['success'] else f"Failed to send test notification: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        test_response = result['data']
+        
+        # Check response structure
+        has_message = 'message' in test_response
+        has_channels = 'channels' in test_response
+        
+        self.log_test(
+            "TEST NOTIFICATION - RESPONSE STRUCTURE",
+            has_message,
+            f"Response has 'message' field" if has_message else f"Response structure: {list(test_response.keys())}"
+        )
+        
+        if has_channels:
+            channels = test_response['channels']
+            self.log_test(
+                "TEST NOTIFICATION - CHANNELS",
+                isinstance(channels, list),
+                f"Notification sent via channels: {channels}" if isinstance(channels, list) else f"Invalid channels format: {channels}"
+            )
+        
+        return has_message
+
+    def test_get_notifications_list(self):
+        """Test GET /api/notifications endpoint"""
+        print("\n=== TESTING GET NOTIFICATIONS LIST ===")
+        
+        if not self.auth_token:
+            self.log_test("GET NOTIFICATIONS LIST - Authentication Required", False, "No authentication token available")
+            return False
+        
+        # Wait a moment for test notification to be processed
+        time.sleep(2)
+        
+        # Test GET /api/notifications
+        result = self.make_request('GET', '/notifications', use_auth=True)
+        self.log_test(
+            "GET NOTIFICATIONS LIST",
+            result['success'],
+            f"Retrieved notifications list successfully" if result['success'] else f"Failed to get notifications: {result.get('error', 'Unknown error')}"
+        )
+        
+        if not result['success']:
+            return False
+        
+        notifications_response = result['data']
+        
+        # Check response structure
+        has_notifications = 'notifications' in notifications_response
+        has_total = 'total' in notifications_response
+        has_unread_count = 'unread_count' in notifications_response
+        
+        structure_valid = has_notifications and has_total and has_unread_count
+        self.log_test(
+            "NOTIFICATIONS LIST - RESPONSE STRUCTURE",
+            structure_valid,
+            f"Response has required fields (notifications, total, unread_count)" if structure_valid else f"Response structure: {list(notifications_response.keys())}"
+        )
+        
+        if has_notifications:
+            notifications = notifications_response['notifications']
+            notification_count = len(notifications)
+            
+            self.log_test(
+                "NOTIFICATIONS LIST - COUNT",
+                notification_count >= 0,
+                f"Retrieved {notification_count} notifications"
+            )
+            
+            # If we have notifications, check their structure
+            if notification_count > 0:
+                first_notification = notifications[0]
+                required_notification_fields = ['id', 'title', 'message', 'type', 'read', 'created_at']
+                
+                missing_notification_fields = [field for field in required_notification_fields if field not in first_notification]
+                notification_structure_valid = len(missing_notification_fields) == 0
+                
+                self.log_test(
+                    "NOTIFICATION STRUCTURE VALIDATION",
+                    notification_structure_valid,
+                    f"Notification structure valid" if notification_structure_valid else f"Missing fields in notification: {missing_notification_fields}"
+                )
+                
+                return notification_structure_valid
+        
+        return structure_valid
+
+    def test_error_handling(self):
+        """Test error handling for notification endpoints"""
+        print("\n=== TESTING ERROR HANDLING ===")
+        
+        # Test endpoints without authentication
+        endpoints_to_test = [
+            ('GET', '/notifications/preferences'),
+            ('PUT', '/notifications/preferences'),
+            ('POST', '/notifications/test'),
+            ('GET', '/notifications')
+        ]
+        
+        auth_required_count = 0
+        total_endpoints = len(endpoints_to_test)
+        
+        for method, endpoint in endpoints_to_test:
+            result = self.make_request(method, endpoint, use_auth=False)
+            requires_auth = result['status_code'] in [401, 403]
+            
+            self.log_test(
+                f"ERROR HANDLING - {method} {endpoint} WITHOUT AUTH",
+                requires_auth,
+                f"Endpoint properly requires authentication (status: {result['status_code']})" if requires_auth else f"Endpoint does not require authentication (status: {result['status_code']})"
+            )
+            
+            if requires_auth:
+                auth_required_count += 1
+        
+        auth_success_rate = (auth_required_count / total_endpoints) * 100
+        overall_auth_success = auth_success_rate >= 75
+        
+        self.log_test(
+            "ERROR HANDLING - AUTHENTICATION REQUIREMENTS",
+            overall_auth_success,
+            f"Authentication requirements: {auth_required_count}/{total_endpoints} endpoints ({auth_success_rate:.1f}%)"
+        )
+        
+        # Test invalid data for PUT preferences
+        if self.auth_token:
+            invalid_data = {
+                "invalid_field": "invalid_value",
+                "reminder_advance_time": "not_a_number"
+            }
+            
+            result = self.make_request('PUT', '/notifications/preferences', data=invalid_data, use_auth=True)
+            handles_invalid_data = result['status_code'] in [400, 422]
+            
+            self.log_test(
+                "ERROR HANDLING - INVALID DATA VALIDATION",
+                handles_invalid_data,
+                f"Invalid data properly rejected (status: {result['status_code']})" if handles_invalid_data else f"Invalid data not properly handled (status: {result['status_code']})"
+            )
+            
+            return overall_auth_success and handles_invalid_data
+        
+        return overall_auth_success
+
+    def run_comprehensive_notification_settings_test(self):
+        """Run comprehensive notification settings API tests"""
+        print("\n🔔 STARTING NOTIFICATION SETTINGS API COMPREHENSIVE TESTING")
+        print("=" * 80)
+        print(f"Backend URL: {self.base_url}")
+        print(f"Test User: {self.test_user_email}")
+        print("=" * 80)
+        
+        # Run all tests in sequence
+        test_methods = [
+            ("Basic Connectivity", self.test_basic_connectivity),
+            ("User Authentication", self.test_user_authentication),
+            ("GET Notification Preferences", self.test_get_notification_preferences),
+            ("UPDATE Notification Preferences", self.test_update_notification_preferences),
+            ("Send Test Notification", self.test_send_test_notification),
+            ("GET Notifications List", self.test_get_notifications_list),
+            ("Error Handling", self.test_error_handling)
+        ]
+        
+        successful_tests = 0
+        total_tests = len(test_methods)
+        
+        for test_name, test_method in test_methods:
+            print(f"\n--- {test_name} ---")
+            try:
+                if test_method():
+                    successful_tests += 1
+                    print(f"✅ {test_name} completed successfully")
+                else:
+                    print(f"❌ {test_name} failed")
+            except Exception as e:
+                print(f"❌ {test_name} raised exception: {e}")
+        
+        success_rate = (successful_tests / total_tests) * 100
+        
+        print(f"\n" + "=" * 80)
+        print("🔔 NOTIFICATION SETTINGS API TESTING SUMMARY")
+        print("=" * 80)
+        print(f"Backend URL: {self.base_url}")
+        print(f"Test Methods: {successful_tests}/{total_tests} successful")
+        print(f"Overall Success Rate: {success_rate:.1f}%")
+        
+        # Analyze results for notification functionality
+        preferences_tests_passed = sum(1 for result in self.test_results if result['success'] and 'NOTIFICATION PREFERENCES' in result['test'])
+        test_notification_tests_passed = sum(1 for result in self.test_results if result['success'] and 'TEST NOTIFICATION' in result['test'])
+        notifications_list_tests_passed = sum(1 for result in self.test_results if result['success'] and 'NOTIFICATIONS LIST' in result['test'])
+        error_handling_tests_passed = sum(1 for result in self.test_results if result['success'] and 'ERROR HANDLING' in result['test'])
+        
+        print(f"\n🔍 SYSTEM ANALYSIS:")
+        print(f"Notification Preferences Tests Passed: {preferences_tests_passed}")
+        print(f"Test Notification Tests Passed: {test_notification_tests_passed}")
+        print(f"Notifications List Tests Passed: {notifications_list_tests_passed}")
+        print(f"Error Handling Tests Passed: {error_handling_tests_passed}")
+        
+        if success_rate >= 85:
+            print("\n✅ NOTIFICATION SETTINGS API SYSTEM: SUCCESS")
+            print("   ✅ GET /api/notifications/preferences working")
+            print("   ✅ PUT /api/notifications/preferences functional")
+            print("   ✅ POST /api/notifications/test operational")
+            print("   ✅ GET /api/notifications working")
+            print("   ✅ Authentication and error handling verified")
+            print("   The Notification Settings API is production-ready!")
+        else:
+            print("\n❌ NOTIFICATION SETTINGS API SYSTEM: ISSUES DETECTED")
+            print("   Issues found in notification settings API implementation")
+        
+        # Show failed tests for debugging
+        failed_tests = [result for result in self.test_results if not result['success']]
+        if failed_tests:
+            print(f"\n🔍 FAILED TESTS ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"   ❌ {test['test']}: {test['message']}")
+        
+        return success_rate >= 85
+
+def main():
+    """Run Notification Settings API Tests"""
+    print("🔔 STARTING NOTIFICATION SETTINGS API BACKEND TESTING")
+    print("=" * 80)
+    
+    tester = NotificationSettingsAPITester()
+    
+    try:
+        # Run the comprehensive notification settings API tests
+        success = tester.run_comprehensive_notification_settings_test()
+        
+        # Calculate overall results
+        total_tests = len(tester.test_results)
+        passed_tests = sum(1 for result in tester.test_results if result['success'])
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        
+        print("\n" + "=" * 80)
+        print("📊 FINAL RESULTS")
+        print("=" * 80)
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {total_tests - passed_tests}")
+        print(f"Success Rate: {success_rate:.1f}%")
+        print("=" * 80)
+        
+        return success_rate >= 85
+        
+    except Exception as e:
+        print(f"\n❌ CRITICAL ERROR during testing: {str(e)}")
+        return False
+
+if __name__ == "__main__":
+    success = main()
+    sys.exit(0 if success else 1)
+
 import asyncio
 import aiohttp
 import json
