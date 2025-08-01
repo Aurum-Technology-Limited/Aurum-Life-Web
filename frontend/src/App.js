@@ -31,6 +31,7 @@ const AICoach = lazy(() => import('./components/AICoach'));
 const Profile = lazy(() => import('./components/Profile'));
 const ProfilePage = lazy(() => import('./components/ProfilePage'));
 const Insights = lazy(() => import('./components/Insights'));
+const Settings = lazy(() => import('./components/Settings'));
 const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
 const NotificationCenter = lazy(() => import('./components/NotificationCenter'));
 
