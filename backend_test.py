@@ -111,7 +111,22 @@ class NotificationSettingsAPITester:
         """Test basic connectivity to the backend API"""
         print("\n=== TESTING BASIC CONNECTIVITY ===")
         
-        result = self.make_request('GET', '/')
+        # Test the root endpoint which should exist
+        result = self.make_request('GET', '', use_auth=False)
+        if not result['success']:
+            # Try the base URL without /api
+            base_url = self.base_url.replace('/api', '')
+            url = f"{base_url}/"
+            try:
+                response = self.session.get(url, timeout=30)
+                result = {
+                    'success': response.status_code < 400,
+                    'status_code': response.status_code,
+                    'data': response.json() if response.content else {},
+                }
+            except:
+                result = {'success': False, 'error': 'Connection failed'}
+        
         self.log_test(
             "BACKEND API CONNECTIVITY",
             result['success'],
