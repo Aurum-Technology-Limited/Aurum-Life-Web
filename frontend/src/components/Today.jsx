@@ -1,11 +1,14 @@
 import React, { useState, useEffect, memo } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVertical, X} from 'lucide-react';
+import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVertical, X, Sun, Moon} from 'lucide-react';
 import { todayAPI, tasksAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
+import { useAuth } from '../contexts/BackendAuthContext';
 import PomodoroTimer from './PomodoroTimer';
 import TaskWhyStatements from './TaskWhyStatements';
+import MorningPlanningPrompt from './MorningPlanningPrompt';
+import EveningReflectionPrompt from './EveningReflectionPrompt';
 
 const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPomodoro, onRemove }) => {
   const [{ isDragging }, drag] = useDrag({
