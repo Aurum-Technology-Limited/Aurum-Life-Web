@@ -539,9 +539,10 @@ export const resourcesAPI = {
 
 // AI Coach API
 export const aiCoachAPI = {
-  getTodaysPriorities: () => apiClient.get('/ai_coach/today'),
-  chatWithCoach: (message) => apiClient.post('/ai_coach/chat', null, {
-    params: { message }
+  getTodaysPriorities: () => apiClient.get('/api/ai/task-why-statements'),
+  chatWithCoach: (message) => apiClient.post('/api/ai/decompose-project', {
+    project_name: message,
+    template_type: 'general'
   })
 };
 
