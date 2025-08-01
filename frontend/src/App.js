@@ -215,6 +215,7 @@ function App() {
           <AuthProvider>
             <DataProvider>
               <NotificationProvider>
+                <DailyRitualManager />
                 <DndProvider backend={HTML5Backend}>
                   <div className="App">
                   <ProtectedRoute>
