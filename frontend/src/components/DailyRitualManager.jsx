@@ -3,6 +3,7 @@ import { Sun, Moon, Clock, Settings } from 'lucide-react';
 import MorningPlanningPrompt from './MorningPlanningPrompt';
 import EveningReflectionPrompt from './EveningReflectionPrompt';
 import { api } from '../services/api';
+import { useAuth } from '../contexts/BackendAuthContext';
 
 const DailyRitualManager = () => {
   const [showMorningPrompt, setShowMorningPrompt] = useState(false);
