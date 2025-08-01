@@ -161,6 +161,9 @@ function App() {
             case 'ai-coach':
               console.log('🤖 Rendering AICoach component');
               return <AICoach {...props} />;
+            case 'settings':
+              console.log('⚙️ Rendering Settings component');
+              return <Settings {...props} />;
             case 'notification-settings':
               console.log('🔔 Rendering NotificationSettings component');
               return <NotificationSettings {...props} />;
