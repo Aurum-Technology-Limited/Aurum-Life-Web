@@ -52,7 +52,7 @@ const EveningReflectionPrompt = ({ onClose, onComplete }) => {
       console.log('🌛 Submitting evening reflection:', submissionData);
 
       // Submit the reflection
-      const response = await api.post('/ai/daily-reflection', submissionData);
+      const response = await api.post('/api/ai/daily-reflection', submissionData);
       console.log('🌛 Evening reflection submitted successfully:', response.data);
 
       onComplete(response.data);
