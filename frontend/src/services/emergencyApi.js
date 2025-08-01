@@ -124,12 +124,15 @@ export const emergencyAPI = {
   },
   
   aiCoach: () => queuedApiCall(
-    () => apiClient.get('/api/ai_coach/today'),
+    () => apiClient.get('/api/ai/task-why-statements'),
     'ai_coach'
   ),
   
   aiCoachChat: (message) => queuedApiCall(
-    () => apiClient.post('/api/ai_coach/chat', { message }),
+    () => apiClient.post('/api/ai/decompose-project', { 
+      project_name: message,
+      template_type: 'general'
+    }),
     null // No caching for chat messages
   ),
   
