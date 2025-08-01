@@ -141,8 +141,8 @@ const DailyRitualManager = () => {
         />
       )}
 
-      {/* Debug/Manual Triggers (can be removed in production) */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* Debug/Manual Triggers (only for authenticated users in development) */}
+      {process.env.NODE_ENV === 'development' && user && (
         <div className="fixed bottom-4 right-4 space-y-2 z-40">
           <button
             onClick={triggerMorningPrompt}
