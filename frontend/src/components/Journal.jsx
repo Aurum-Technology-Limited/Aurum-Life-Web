@@ -712,7 +712,7 @@ const Journal = memo(() => {
             <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
               <h3 className="text-lg font-semibold text-white mb-4">Most Used Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {insights.most_used_tags.slice(0, 10).map((tagData, index) => (
+                {insights.most_used_tags?.slice(0, 10).map((tagData, index) => (
                   <span 
                     key={index}
                     className="px-3 py-1 rounded-full bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 text-sm"
