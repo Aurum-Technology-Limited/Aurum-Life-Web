@@ -170,10 +170,13 @@ def main():
     print(f"\n⚠️  WARNING: This will permanently delete {len(users_to_delete)} users and all their data!")
     print(f"   Only keeping: {TARGET_EMAIL}")
     
-    confirm = input("\n🤔 Are you sure you want to proceed? Type 'YES' to confirm: ")
-    if confirm.upper() != 'YES':
-        print("❌ Operation cancelled.")
-        return False
+    if not auto_confirm:
+        confirm = input("\n🤔 Are you sure you want to proceed? Type 'YES' to confirm: ")
+        if confirm.upper() != 'YES':
+            print("❌ Operation cancelled.")
+            return False
+    else:
+        print("✅ Auto-confirming deletion (--confirm flag provided)")
     
     # Step 5: Perform deletion
     print(f"\n🗑️  Starting deletion process...")
