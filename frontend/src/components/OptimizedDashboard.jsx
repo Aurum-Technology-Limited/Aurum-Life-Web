@@ -6,34 +6,51 @@ import DailyStreakTracker from './DailyStreakTracker';
 import OnboardingWizard from './OnboardingWizard';
 import { api } from '../services/api';
 
-// Memoized StatCard component
-const StatCard = React.memo(({ title, value, subtitle, icon: Icon, trend, loading = false }) => (
-  <div className="p-4 sm:p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group hover:scale-105">
-    <div className="flex items-center justify-between mb-3 sm:mb-4">
-      <div 
-        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
-        style={{ backgroundColor: '#F4B400' }}
-      >
-        {loading ? (
-          <Loader2 size={20} className="animate-spin sm:w-6 sm:h-6" style={{ color: '#0B0D14' }} />
-        ) : (
-          <Icon size={20} className="sm:w-6 sm:h-6" style={{ color: '#0B0D14' }} />
+// Memoized StatCard component with data sanitization
+const StatCard = React.memo(({ title, value, subtitle, icon: Icon, trend, loading = false }) => {
+  // Sanitize value to prevent React children errors
+  const sanitizedValue = React.useMemo(() => {
+    if (loading) return '-';
+    if (value === null || value === undefined) return '0';
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  }, [value, loading]);
+
+  // Sanitize trend to prevent errors
+  const sanitizedTrend = React.useMemo(() => {
+    if (!trend || loading) return null;
+    if (typeof trend === 'object') return null;
+    return String(trend);
+  }, [trend, loading]);
+
+  return (
+    <div className="p-4 sm:p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group hover:scale-105">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <div 
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
+          style={{ backgroundColor: '#F4B400' }}
+        >
+          {loading ? (
+            <Loader2 size={20} className="animate-spin sm:w-6 sm:h-6" style={{ color: '#0B0D14' }} />
+          ) : (
+            <Icon size={20} className="sm:w-6 sm:h-6" style={{ color: '#0B0D14' }} />
+          )}
+        </div>
+        {sanitizedTrend && (
+          <div className="flex items-center space-x-1 text-green-400">
+            <TrendingUp size={14} className="sm:w-4 sm:h-4" />
+            <span className="text-xs sm:text-sm font-medium">+{sanitizedTrend}%</span>
+          </div>
         )}
       </div>
-      {trend && !loading && (
-        <div className="flex items-center space-x-1 text-green-400">
-          <TrendingUp size={14} className="sm:w-4 sm:h-4" />
-          <span className="text-xs sm:text-sm font-medium">+{trend}%</span>
-        </div>
-      )}
+      <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">
+        {sanitizedValue}
+      </h3>
+      <p className="text-xs sm:text-sm text-gray-400">{title}</p>
+      {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
     </div>
-    <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">
-      {loading ? '-' : value}
-    </h3>
-    <p className="text-xs sm:text-sm text-gray-400">{title}</p>
-    {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
-  </div>
-));
+  );
+});
 
 // Simple AI Coach Card component
 const SimpleAiCoach = React.memo(() => {
