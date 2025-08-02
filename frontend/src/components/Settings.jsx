@@ -4,8 +4,8 @@ import NotificationSettings from './NotificationSettings';
 import GoalSettings from './GoalSettings';
 
 const Settings = ({ sectionParams }) => {
-  // Get the active sub-section from sectionParams, default to 'notifications'
-  const [activeSubSection, setActiveSubSection] = useState(sectionParams?.subSection || 'notifications');
+  // Get the active sub-section from sectionParams, default to 'goals'
+  const [activeSubSection, setActiveSubSection] = useState(sectionParams?.subSection || 'goals');
 
   const menuItems = [
     {
