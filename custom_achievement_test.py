@@ -41,7 +41,7 @@ import time
 import re
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://bc5c41e8-49fa-4e1c-8536-e71401e166ef.preview.emergentagent.com/api"
+BACKEND_URL = "https://d9c49f44-9ee9-4b2c-b085-fbd14af62532.preview.emergentagent.com/api"
 
 class CustomAchievementSystemTester:
     def __init__(self):

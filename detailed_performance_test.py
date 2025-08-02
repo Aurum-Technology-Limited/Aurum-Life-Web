@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Tuple
 
 # Configuration - Use external URL for testing
-BACKEND_URL = "https://bc5c41e8-49fa-4e1c-8536-e71401e166ef.preview.emergentagent.com"
+BACKEND_URL = "https://d9c49f44-9ee9-4b2c-b085-fbd14af62532.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class DetailedPerformanceTestSuite:
