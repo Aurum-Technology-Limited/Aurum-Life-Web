@@ -67,7 +67,6 @@ const Login = () => {
         };
 
         const result = await register(userData);
-        console.log('🔍 Registration result:', result);
         if (result.success) {
           // Clear form data and errors
           setError('');
