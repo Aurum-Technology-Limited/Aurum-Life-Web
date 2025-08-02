@@ -146,7 +146,7 @@ const SimpleAiCoach = React.memo(() => {
 });
 
 // Main Dashboard component
-const OptimizedDashboard = () => {
+const OptimizedDashboard = ({ onSectionChange }) => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
