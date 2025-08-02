@@ -70,8 +70,10 @@ const Login = () => {
 
         const result = await register(userData);
         console.log('Registration result:', result); // Debug logging
-        if (result.success) {          
+        if (result.success) {
+          console.log('🎯 About to set success message'); // Debug logging          
           setMessage('Your account has been created successfully. You can now sign in.');
+          console.log('🎯 setMessage called, waiting for re-render'); // Debug logging
           // Clear form data after successful registration
           setFormData({
             email: formData.email, // Keep email for easier login
