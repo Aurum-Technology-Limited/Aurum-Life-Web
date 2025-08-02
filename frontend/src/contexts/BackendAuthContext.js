@@ -92,17 +92,21 @@ export const AuthProvider = ({ children }) => {
 
         if (userResponse.ok) {
           const userData = await userResponse.json();
+          console.log('✅ Login successful - setting user data:', userData);
           setUser(userData);
+          setLoading(false); // Set loading false AFTER setting user
           
           return { 
             success: true, 
             message: 'Login successful!'
           };
         } else {
+          setLoading(false);
           throw new Error('Failed to get user profile');
         }
         
       } else {
+        setLoading(false);
         return { 
           success: false, 
           error: data.detail || 'Login failed' 
@@ -110,13 +114,12 @@ export const AuthProvider = ({ children }) => {
       }
       
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', error);
+      setLoading(false);
       return { 
         success: false, 
         error: 'Network error. Please try again.' 
       };
-    } finally {
-      setLoading(false);
     }
   };
 
