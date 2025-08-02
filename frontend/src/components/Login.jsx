@@ -33,6 +33,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('🚀 Form submission started - isLogin:', isLogin);
     setError(''); // Only clear errors, not success messages
     setIsSubmitting(true);
 
