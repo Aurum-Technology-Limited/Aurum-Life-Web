@@ -26,9 +26,21 @@ const AlignmentScore = ({ onSectionChange }) => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/alignment/dashboard`, {
+      // Guard clause for backend URL
+      const backendUrl = import.meta.env?.REACT_APP_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
+      if (!backendUrl) {
+        throw new Error('Backend URL not configured');
+      }
+
+      // Guard clause for authentication token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${backendUrl}/alignment/dashboard`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -38,7 +50,17 @@ const AlignmentScore = ({ onSectionChange }) => {
       }
 
       const data = await response.json();
-      setAlignmentData(data);
+      
+      // Validate response data structure with safe defaults
+      const safeData = {
+        rolling_weekly_score: data?.rolling_weekly_score || 0,
+        monthly_score: data?.monthly_score || 0,
+        monthly_goal: data?.monthly_goal || null,
+        progress_percentage: data?.progress_percentage || 0,
+        has_goal_set: data?.has_goal_set || false
+      };
+      
+      setAlignmentData(safeData);
     } catch (err) {
       console.error('Error fetching alignment data:', err);
       setError(err.message);
@@ -54,44 +76,57 @@ const AlignmentScore = ({ onSectionChange }) => {
     }
   };
 
-  // Calculate brain fill and glow intensity based on progress
-  const progressPercentage = alignmentData.progress_percentage || 0;
+  // Calculate brain fill and glow intensity based on progress with safe defaults
+  const progressPercentage = alignmentData?.progress_percentage || 0;
   const glowIntensity = Math.min(progressPercentage / 100, 1); // 0-1 scale
   const fillPercentage = Math.min(progressPercentage, 100);
 
+  // Loading state with skeleton
   if (loading) {
     return (
       <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-white">Alignment Score</h3>
         </div>
-        <div className="flex items-center justify-center h-32">
-          <div className="animate-pulse">
-            <div className="h-16 w-16 bg-gray-700 rounded-full"></div>
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mb-4"></div>
+          <div className="text-center">
+            <div className="h-8 w-16 bg-gray-700 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-32 bg-gray-700 rounded animate-pulse"></div>
           </div>
         </div>
+        <div className="h-4 bg-gray-700 rounded animate-pulse"></div>
       </div>
     );
   }
 
+  // Error state with retry option
   if (error) {
     return (
       <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-white">Alignment Score</h3>
         </div>
-        <div className="text-center text-red-400 text-sm">
-          <p>Failed to load alignment data</p>
+        <div className="text-center py-8">
+          <Brain className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-400 text-sm mb-4">
+            {error.includes('Backend URL') ? 'Configuration error' : 
+             error.includes('token') ? 'Please log in again' :
+             'Unable to load alignment data'}
+          </p>
           <button 
             onClick={fetchAlignmentData}
-            className="mt-2 text-xs text-yellow-400 hover:text-yellow-300 underline"
+            className="text-yellow-400 hover:text-yellow-300 text-sm underline"
           >
-            Retry
+            Try Again
           </button>
         </div>
       </div>
     );
   }
+
+  // New user state - no data yet
+  const isNewUser = alignmentData.rolling_weekly_score === 0 && alignmentData.monthly_score === 0;
 
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
@@ -157,7 +192,7 @@ const AlignmentScore = ({ onSectionChange }) => {
         {/* Weekly Score Display */}
         <div className="text-center">
           <div className="text-2xl font-bold text-white mb-1">
-            {alignmentData.rolling_weekly_score}
+            {alignmentData.rolling_weekly_score || 0}
           </div>
           <div className="text-sm text-gray-400">
             Weekly Alignment Score
@@ -167,7 +202,7 @@ const AlignmentScore = ({ onSectionChange }) => {
 
       {/* Goal Status and Progress */}
       <div className="space-y-3">
-        {alignmentData.has_goal_set ? (
+        {alignmentData.has_goal_set && alignmentData.monthly_goal ? (
           <>
             {/* Progress Bar */}
             <div className="space-y-2">
@@ -182,24 +217,41 @@ const AlignmentScore = ({ onSectionChange }) => {
                 />
               </div>
               <div className="flex justify-between text-xs text-gray-500">
-                <span>{alignmentData.monthly_score} points</span>
+                <span>{alignmentData.monthly_score || 0} points</span>
                 <span>{alignmentData.monthly_goal} goal</span>
               </div>
             </div>
           </>
         ) : (
-          /* Call-to-Action for Setting Goal */
+          /* Call-to-Action for Setting Goal or New User Message */
           <div className="text-center">
-            <button
-              onClick={handleSetGoal}
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-yellow-400 hover:bg-yellow-500/30 transition-colors"
-            >
-              <Settings className="w-4 h-4" />
-              <span>Set Your Monthly Goal!</span>
-            </button>
-            <p className="text-xs text-gray-500 mt-2">
-              Define your target to track progress
-            </p>
+            {isNewUser ? (
+              <>
+                <p className="text-gray-400 text-sm mb-3">
+                  Start completing tasks to see your score!
+                </p>
+                <button
+                  onClick={handleSetGoal}
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-yellow-400 hover:bg-yellow-500/30 transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Set Your Monthly Goal!</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleSetGoal}
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-yellow-400 hover:bg-yellow-500/30 transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Set Your Monthly Goal!</span>
+                </button>
+                <p className="text-xs text-gray-500 mt-2">
+                  Define your target to track progress
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>
