@@ -1459,6 +1459,35 @@ async def get_notifications(
         logger.error(f"Error getting notifications: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to get notifications")
 
+@api_router.post("/auth/complete-onboarding", response_model=dict)
+async def complete_onboarding(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Mark user onboarding as completed"""
+    try:
+        user_id = str(current_user.id)
+        
+        # Update user's onboarding status
+        from supabase_services import SupabaseUserService
+        updated_user = await SupabaseUserService.update_user(
+            user_id, 
+            {"has_completed_onboarding": True}
+        )
+        
+        if not updated_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        logger.info(f"User {user_id} completed onboarding")
+        
+        return {
+            "message": "Onboarding completed successfully",
+            "has_completed_onboarding": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error completing onboarding for user {current_user.id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to complete onboarding")
+
 # Include authentication routes under /api
 api_router.include_router(auth_router, prefix="/auth")
 
