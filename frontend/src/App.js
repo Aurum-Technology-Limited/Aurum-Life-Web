@@ -231,6 +231,7 @@ function App() {
                       {renderActiveSection()}
                     </SimpleLayout>
                   </AppWrapper>
+                  <Toaster />
                   </div>
                 </DndProvider>
               </NotificationProvider>
