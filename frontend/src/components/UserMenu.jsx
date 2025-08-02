@@ -78,7 +78,7 @@ const UserMenu = ({ onSectionChange }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 w-48 mb-2 bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-700">
+        <div className="absolute top-full right-0 w-48 mt-2 bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-700">
           <div className="px-4 py-2 border-b border-gray-700">
             <p className="text-sm font-medium text-white">
               {user.first_name && user.last_name 
