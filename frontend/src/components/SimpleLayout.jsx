@@ -100,6 +100,7 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
             </h1>
             {user && (
               <div className="flex items-center space-x-4">
+                <UserMenu onSectionChange={setActiveSection} />
               </div>
             )}
           </div>
