@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/BackendAuthContext';
 import PomodoroTimer from './PomodoroTimer';
 import TaskWhyStatements from './TaskWhyStatements';
 import TaskSearchBar from './TaskSearchBar';
-import MorningPlanningPrompt from './MorningPlanningPrompt';
+import MorningReflection from './MorningReflection';
 import EveningReflectionPrompt from './EveningReflectionPrompt';
 
 const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPomodoro, onRemove }) => {
