@@ -307,6 +307,18 @@ agent_communication:
           agent: "main"
           comment: "✅ PROFILE MENU NAVIGATION BUTTONS FIXED SUCCESSFULLY! Fixed the broken profile menu by: 1. Added proper navigation handlers (handleProfileClick, handleSettingsClick) to UserMenu.jsx, 2. Updated UserMenu to accept onSectionChange prop for navigation, 3. Updated SimpleLayout.jsx to pass setActiveSection to UserMenu as onSectionChange prop, 4. Profile button now navigates to 'profile' section, Settings button navigates to 'notification-settings' section, 5. Removed placeholder comments and implemented working click handlers. TESTING CONFIRMED: Profile menu dropdown displays correctly with Profile, Settings, and Sign out options. Profile button successfully navigates to profile page and displays user information without level/points. Both frontend UI testing and backend API testing confirmed 100% functionality."
 
+  - task: "Smart Onboarding UI Improvements"
+    implemented: false
+    working: "NA"
+    file: "frontend/src/components/OnboardingWizard.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "User requested two UI improvements for Smart Onboarding screen: 1) Remove visible scrollbar but keep scroll functionality 2) Remove grey background and make onboarding screen full screen. Will modify OnboardingWizard.jsx CSS styling to implement these changes."
+
 frontend:
   - task: "Areas CRUD Foreign Key Constraint Fixes"
     implemented: true
