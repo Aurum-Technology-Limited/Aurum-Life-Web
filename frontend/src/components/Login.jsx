@@ -78,10 +78,10 @@ const Login = () => {
             lastName: '',
             username: ''
           });
-          // Switch to login view after successful registration, but keep the message
-          setTimeout(() => {
-            setIsLogin(true);
-          }, 1500);
+          // Don't auto-switch to login - let the user see the message and manually switch
+          // setTimeout(() => {
+          //   setIsLogin(true);
+          // }, 1500);
         } else {
           console.log('Registration error:', result.error); // Debug logging
           setError(result.error || 'Registration failed');
