@@ -460,7 +460,7 @@ const Today = memo(() => {
   const [, drop] = useDrop({
     accept: 'available-task',
     drop: (item) => {
-      handleAddToToday(item.id);
+      handleAddTaskToFocus(item.task);
     },
   });
 
