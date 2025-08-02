@@ -17,10 +17,6 @@ export const useAuth = () => {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
-// Debug logging for backend URL
-console.log('BackendAuthContext - BACKEND_URL:', BACKEND_URL);
-console.log('BackendAuthContext - process.env.REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
