@@ -314,8 +314,8 @@ class ComprehensiveAlignmentScoreTester:
         
         return overall_success
 
-    def create_test_hierarchy_with_importance_8(self):
-        """Create test hierarchy: Pillar → Area (importance 8) → Project (high priority) → Task (high priority)"""
+    def create_test_hierarchy_with_importance_5(self):
+        """Create test hierarchy: Pillar → Area (importance 5) → Project (high priority) → Task (high priority)"""
         print("\n=== CREATING TEST HIERARCHY FOR SCORING VERIFICATION ===")
         
         # Create a test pillar
