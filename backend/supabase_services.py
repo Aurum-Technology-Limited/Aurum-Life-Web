@@ -57,24 +57,34 @@ class SupabaseUserService:
     
     @staticmethod
     async def update_user(user_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Update user profile in user_profiles table"""
+        """Update user profile in user_profiles table or legacy users table"""
         try:
             # Add updated_at timestamp
             update_data['updated_at'] = datetime.utcnow().isoformat()
             
-            # Try to update user_profiles table first
-            response = supabase.table('user_profiles').update(update_data).eq('id', user_id).execute()
+            # Try to update legacy users table first (which has has_completed_onboarding field)
+            try:
+                legacy_response = supabase.table('users').update(update_data).eq('id', user_id).execute()
+                
+                if legacy_response.data:
+                    logger.info(f"✅ Updated legacy user record for user: {user_id}")
+                    return legacy_response.data[0]
+            except Exception as legacy_error:
+                logger.info(f"Legacy users table update failed: {legacy_error}")
             
-            if response.data:
-                logger.info(f"✅ Updated user profile for user: {user_id}")
-                return response.data[0]
+            # If legacy update fails, try user_profiles table (but remove has_completed_onboarding if present)
+            profile_update_data = update_data.copy()
+            if 'has_completed_onboarding' in profile_update_data:
+                # user_profiles table doesn't have this field, so remove it
+                profile_update_data.pop('has_completed_onboarding')
+                logger.info(f"Removed has_completed_onboarding from user_profiles update")
             
-            # If no user_profiles record, try legacy users table
-            legacy_response = supabase.table('users').update(update_data).eq('id', user_id).execute()
-            
-            if legacy_response.data:
-                logger.info(f"✅ Updated legacy user record for user: {user_id}")
-                return legacy_response.data[0]
+            if profile_update_data:  # Only update if there's data left
+                response = supabase.table('user_profiles').update(profile_update_data).eq('id', user_id).execute()
+                
+                if response.data:
+                    logger.info(f"✅ Updated user profile for user: {user_id}")
+                    return response.data[0]
             
             logger.warning(f"No user record found for user: {user_id}")
             return None
