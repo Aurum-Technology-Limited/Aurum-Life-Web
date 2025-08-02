@@ -279,7 +279,7 @@ const Today = memo(() => {
   };
 
   useEffect(() => {
-    loadTodayView();
+    loadTodaysTasks();
   }, []);
 
   // Daily Ritual Effects and Functions (moved from DailyRitualManager)
