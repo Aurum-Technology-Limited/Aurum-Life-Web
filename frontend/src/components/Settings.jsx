@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CogIcon, BellIcon, UserIcon, ShieldCheckIcon, Target } from '@heroicons/react/outline';
+import { CogIcon, BellIcon, UserIcon, ShieldCheckIcon } from '@heroicons/react/outline';
+import { Target } from 'lucide-react';
 import NotificationSettings from './NotificationSettings';
 import GoalSettings from './GoalSettings';
 
