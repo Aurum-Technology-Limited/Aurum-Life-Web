@@ -4,6 +4,7 @@ import fixedAPI from '../services/fixedApi';
 import ErrorBoundary from './ErrorBoundary';
 import DailyStreakTracker from './DailyStreakTracker';
 import OnboardingWizard from './OnboardingWizard';
+import AlignmentScore from './AlignmentScore';
 import { api } from '../services/api';
 
 // Memoized StatCard component with data sanitization
