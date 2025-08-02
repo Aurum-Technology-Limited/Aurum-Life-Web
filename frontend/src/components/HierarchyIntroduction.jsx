@@ -3,9 +3,13 @@ import { ArrowRight, ArrowDown } from 'lucide-react';
 
 const HierarchyIntroduction = ({ onContinue }) => {
   return (
-    <div className="space-y-8 scrollbar-hide overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
+    <div className="space-y-8 overflow-y-auto" style={{ 
+      scrollbarWidth: 'none', 
+      msOverflowStyle: 'none',
+      WebkitScrollbar: { display: 'none' }
+    }}>
+      <style>{`
+        .space-y-8::-webkit-scrollbar {
           display: none;
         }
       `}</style>
