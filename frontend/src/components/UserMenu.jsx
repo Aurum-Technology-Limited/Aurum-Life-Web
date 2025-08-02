@@ -47,9 +47,9 @@ const UserMenu = ({ onSectionChange }) => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center w-full p-2 text-left text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
+        className="flex items-center p-2 text-left text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
       >
-        <div className="flex items-center min-w-0 flex-1">
+        <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
             {user.profile_picture ? (
               <img
@@ -63,15 +63,12 @@ const UserMenu = ({ onSectionChange }) => {
               </div>
             )}
           </div>
-          <div className="ml-3 overflow-hidden">
-            <p className="text-sm font-medium text-white truncate">
+          <div className="hidden sm:block">
+            <p className="text-sm font-medium text-white">
               {user.first_name && user.last_name 
                 ? `${user.first_name} ${user.last_name}`
                 : user.username || user.email
               }
-            </p>
-            <p className="text-xs text-gray-400 truncate">
-              {user.email}
             </p>
           </div>
         </div>
