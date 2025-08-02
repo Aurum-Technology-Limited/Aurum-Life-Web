@@ -154,7 +154,11 @@ function App() {
               return <ProjectTemplates {...props} />;
             case 'journal':
               console.log('📖 Rendering Journal component');
-              return <Journal {...props} />;
+              return (
+                <LazyComponentErrorBoundary componentName="Journal">
+                  <Journal {...props} />
+                </LazyComponentErrorBoundary>
+              );
             case 'tasks':
               console.log('✅ Rendering Tasks component');
               return <Tasks {...props} />;
