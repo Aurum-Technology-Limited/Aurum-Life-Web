@@ -112,7 +112,7 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
       
       // Mark onboarding as completed in backend
       try {
-        await api.post('/auth/complete-onboarding');
+        await api.post('/api/auth/complete-onboarding');
         console.log('✅ Onboarding marked as completed in backend');
       } catch (onboardingError) {
         console.error('⚠️ Failed to mark onboarding as completed:', onboardingError);
