@@ -396,9 +396,9 @@ const Login = () => {
           Welcome to your personal growth journey
         </p>
         {message && (
-          <p className="text-sm text-yellow-500 font-medium mt-2">
+          <div className="mt-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded max-w-md mx-auto">
             {message}
-          </p>
+          </div>
         )}
       </div>
     </div>
