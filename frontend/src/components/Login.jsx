@@ -70,8 +70,6 @@ const Login = () => {
         const result = await register(userData);
         console.log('🔍 Registration result:', result);
         if (result.success) {
-          console.log('✅ Registration succeeded, using force update approach');
-          
           // Clear form data and errors
           setError('');
           setFormData({
@@ -83,13 +81,11 @@ const Login = () => {
             username: ''
           });
           
-          // Set success message and force a re-render
+          // Set success message
           setMessage('Your account has been created successfully. You can now sign in.');
-          setForceUpdate(prev => prev + 1); // Force component update
           
           // Auto-switch to login tab after 3 seconds
           setTimeout(() => {
-            console.log('🔄 Auto-switching to login tab');
             setIsLogin(true);
           }, 3000);
         } else {
