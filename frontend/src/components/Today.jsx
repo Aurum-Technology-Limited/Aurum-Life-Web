@@ -542,7 +542,7 @@ const Today = memo(() => {
             <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-white">{todayData?.total_tasks || 0}</p>
+                  <p className="text-2xl font-bold text-white">{totalTasks}</p>
                   <p className="text-sm text-gray-400">Total Tasks</p>
                 </div>
                 <Calendar className="h-8 w-8 text-blue-400" />
@@ -552,7 +552,7 @@ const Today = memo(() => {
             <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-green-400">{todayData?.completed_tasks || 0}</p>
+                  <p className="text-2xl font-bold text-green-400">{completedTasks}</p>
                   <p className="text-sm text-gray-400">Completed</p>
                 </div>
                 <CheckCircle2 className="h-8 w-8 text-green-400" />
@@ -581,7 +581,7 @@ const Today = memo(() => {
             <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-purple-400">{Math.round((todayData?.estimated_duration || 0) / 60)}h</p>
+                  <p className="text-2xl font-bold text-purple-400">{Math.round(estimatedDuration / 60)}h</p>
                   <p className="text-sm text-gray-400">Est. Time</p>
                 </div>
                 <Clock className="h-8 w-8 text-purple-400" />
@@ -593,29 +593,30 @@ const Today = memo(() => {
             {/* Today's Tasks */}
             <div className="lg:col-span-2">
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                <h2 className="text-xl font-semibold text-white mb-6">Today's Tasks</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">Today's Focus</h2>
                 
-                {todayData?.tasks?.length === 0 ? (
+                {/* Search Bar for Adding Tasks */}
+                <div className="mb-6">
+                  <TaskSearchBar 
+                    onAddTask={handleAddTaskToFocus}
+                    placeholder="Search for tasks to add to today's focus..."
+                  />
+                </div>
+                
+                {todaysTasks.length === 0 ? (
                   <div
                     ref={drop}
                     className="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg"
                   >
                     <Calendar className="mx-auto h-16 w-16 text-gray-600 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-400 mb-2">No tasks for today</h3>
+                    <h3 className="text-lg font-medium text-gray-400 mb-2">No tasks selected for today</h3>
                     <p className="text-gray-500 mb-4">
-                      Drag tasks from the available list or use "Browse Available Tasks" to get started
+                      Use the search above to find and add tasks to your intentional daily focus
                     </p>
-                    <button
-                      onClick={() => setShowAvailable(true)}
-                      className="px-4 py-2 rounded-lg font-medium"
-                      style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-                    >
-                      Browse Available Tasks
-                    </button>
                   </div>
                 ) : (
                   <div ref={drop} className="space-y-4">
-                    {todayData?.tasks?.map((task, index) => (
+                    {todaysTasks.map((task, index) => (
                       <DragTaskItem
                         key={task.id}
                         task={task}
@@ -623,16 +624,16 @@ const Today = memo(() => {
                         moveTask={moveTask}
                         onToggleComplete={handleToggleTask}
                         onStartPomodoro={handleStartPomodoro}
-                        onRemove={handleRemoveFromToday}
+                        onRemove={handleRemoveFromFocus}
                       />
                     ))}
                   </div>
                 )}
                 
                 {/* Task Why Statements - Show contextual insights */}
-                {todayData?.tasks?.length > 0 && (
+                {todaysTasks.length > 0 && (
                   <TaskWhyStatements 
-                    taskIds={todayData.tasks.filter(task => !task.completed).map(task => task.id)}
+                    taskIds={todaysTasks.filter(task => !task.completed).map(task => task.id)}
                     showAll={false}
                   />
                 )}
