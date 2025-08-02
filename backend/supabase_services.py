@@ -42,7 +42,7 @@ class SupabaseSleepReflectionService:
             # Prepare data for insertion
             sleep_data = {
                 'user_id': user_id,
-                'date': reflection_data.get('date'),
+                'date': reflection_data.get('date') or datetime.now().date().isoformat(),
                 'sleep_quality': reflection_data.get('sleep_quality', 5),
                 'feeling': reflection_data.get('feeling', ''),
                 'sleep_hours': reflection_data.get('sleep_hours', ''),
