@@ -123,8 +123,16 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
       setCurrentStep(steps.length - 1);
       
       // Complete onboarding after a brief delay
-      setTimeout(() => {
-        onComplete();
+      setTimeout(async () => {
+        try {
+          console.log('🚀 Calling onComplete callback...');
+          await onComplete();
+          console.log('✅ OnComplete callback finished successfully');
+        } catch (callbackError) {
+          console.error('🚨 Error in onComplete callback:', callbackError);
+          // Still try to continue even if callback fails
+          setError('Onboarding completed but there was an error navigating. You can close this dialog.');
+        }
       }, 2000);
 
     } catch (err) {
