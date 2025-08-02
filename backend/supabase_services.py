@@ -62,7 +62,14 @@ class SupabaseUserService:
             # Add updated_at timestamp
             update_data['updated_at'] = datetime.utcnow().isoformat()
             
-            # Try to update legacy users table first (which has has_completed_onboarding field)
+            # Handle has_completed_onboarding by mapping to level field
+            # level = 1 means onboarding not completed, level = 2 means completed
+            if 'has_completed_onboarding' in update_data:
+                has_completed = update_data.pop('has_completed_onboarding')
+                update_data['level'] = 2 if has_completed else 1
+                logger.info(f"Mapped has_completed_onboarding={has_completed} to level={update_data['level']}")
+            
+            # Try to update legacy users table first
             try:
                 legacy_response = supabase.table('users').update(update_data).eq('id', user_id).execute()
                 
@@ -72,19 +79,12 @@ class SupabaseUserService:
             except Exception as legacy_error:
                 logger.info(f"Legacy users table update failed: {legacy_error}")
             
-            # If legacy update fails, try user_profiles table (but remove has_completed_onboarding if present)
-            profile_update_data = update_data.copy()
-            if 'has_completed_onboarding' in profile_update_data:
-                # user_profiles table doesn't have this field, so remove it
-                profile_update_data.pop('has_completed_onboarding')
-                logger.info(f"Removed has_completed_onboarding from user_profiles update")
+            # Try user_profiles table
+            response = supabase.table('user_profiles').update(update_data).eq('id', user_id).execute()
             
-            if profile_update_data:  # Only update if there's data left
-                response = supabase.table('user_profiles').update(profile_update_data).eq('id', user_id).execute()
-                
-                if response.data:
-                    logger.info(f"✅ Updated user profile for user: {user_id}")
-                    return response.data[0]
+            if response.data:
+                logger.info(f"✅ Updated user profile for user: {user_id}")
+                return response.data[0]
             
             logger.warning(f"No user record found for user: {user_id}")
             return None
