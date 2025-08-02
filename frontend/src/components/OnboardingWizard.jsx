@@ -131,7 +131,8 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
         } catch (callbackError) {
           console.error('🚨 Error in onComplete callback:', callbackError);
           // Still try to continue even if callback fails
-          setError('Onboarding completed but there was an error navigating. You can close this dialog.');
+          const callbackErrorMessage = 'Onboarding completed but there was an error navigating. You can close this dialog.';
+          setError(String(callbackErrorMessage));
         }
       }, 2000);
 
