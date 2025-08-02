@@ -667,18 +667,15 @@ async def update_task(
 ):
     """Update a task and calculate alignment score if completed"""
     try:
-        # Get the current task state before update
-        current_task = await SupabaseTaskService.get_task(task_id, str(current_user.id))
-        was_completed = current_task.get('completed', False) if current_task else False
+        # Check if task was just completed (we'll determine this from the update data)
+        is_now_completed = task_data.completed if hasattr(task_data, 'completed') else False
         
         # Update the task
         result = await SupabaseTaskService.update_task(task_id, str(current_user.id), task_data)
         
-        # Check if task was just completed (wasn't completed before, but is now)
-        is_now_completed = task_data.completed if hasattr(task_data, 'completed') else False
-        
-        if not was_completed and is_now_completed:
-            # Task was just completed - calculate and record alignment score
+        # If task was just completed, calculate and record alignment score
+        # Note: We're assuming the task wasn't completed before if we're setting it to completed
+        if is_now_completed:
             try:
                 alignment_service = AlignmentScoreService()
                 score_result = await alignment_service.record_task_completion(str(current_user.id), task_id)
