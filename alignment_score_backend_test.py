@@ -327,12 +327,21 @@ class AlignmentScoreAPITester:
                 )
                 return False
         else:
-            self.log_test(
-                "SET MONTHLY GOAL ENDPOINT",
-                False,
-                "Failed to set monthly goal",
-                result
-            )
+            # Check if this is a database schema issue
+            if result['status_code'] == 500:
+                self.log_test(
+                    "SET MONTHLY GOAL ENDPOINT",
+                    False,
+                    "DATABASE SCHEMA ISSUE: monthly_alignment_goal column missing from user_profiles table",
+                    result
+                )
+            else:
+                self.log_test(
+                    "SET MONTHLY GOAL ENDPOINT",
+                    False,
+                    "Failed to set monthly goal",
+                    result
+                )
             return False
 
     def create_test_hierarchy(self):
