@@ -24,8 +24,8 @@ from datetime import datetime
 from typing import Dict, List, Any
 import time
 
-# Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://d9c49f44-9ee9-4b2c-b085-fbd14af62532.preview.emergentagent.com/api"
+# Configuration - Using localhost since backend is running locally
+BACKEND_URL = "http://localhost:8001/api"
 
 class DatabaseCleanupVerificationTester:
     def __init__(self):
