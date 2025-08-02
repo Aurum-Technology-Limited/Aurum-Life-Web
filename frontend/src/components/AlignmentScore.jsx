@@ -49,7 +49,9 @@ const AlignmentScore = ({ onSectionChange }) => {
 
   const handleSetGoal = () => {
     // Navigate to Settings page with goals subsection
-    navigate('/settings', { state: { subSection: 'goals' } });
+    if (onSectionChange) {
+      onSectionChange('settings', { subSection: 'goals' });
+    }
   };
 
   // Calculate brain fill and glow intensity based on progress
