@@ -21,33 +21,12 @@ const GoalSettings = () => {
 
   const fetchCurrentGoal = async () => {
     try {
-      // Guard clause for backend URL
-      const backendUrl = import.meta.env?.REACT_APP_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
-      if (!backendUrl) {
-        console.error('Backend URL not configured');
-        return;
-      }
-
-      // Guard clause for authentication token
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No authentication token found');
-        return;
-      }
-
-      const response = await fetch(`${backendUrl}/alignment/monthly-goal`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const goalValue = data?.monthly_goal || null;
-        setCurrentGoal(goalValue);
-        setMonthlyGoal(goalValue || '');
-      }
+      // Use centralized API client instead of manual fetch
+      const response = await alignmentScoreAPI.getMonthlyGoal();
+      const data = response.data;
+      const goalValue = data?.monthly_goal || null;
+      setCurrentGoal(goalValue);
+      setMonthlyGoal(goalValue || '');
     } catch (err) {
       console.error('Error fetching current goal:', err);
     } finally {
