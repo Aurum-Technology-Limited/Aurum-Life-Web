@@ -421,7 +421,7 @@ class AlignmentScoreAPITester:
             "description": "High priority task in high priority project in high importance area",
             "project_id": project_id,
             "priority": "high",
-            "status": "To Do",
+            "status": "todo",
             "completed": False
         }
         
