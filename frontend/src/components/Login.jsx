@@ -91,7 +91,12 @@ const Login = () => {
         const result = await register(userData);
         console.log('🔍 Registration result:', result);
         if (result.success) {
-          console.log('✅ Registration succeeded, setting justRegistered to true');
+          console.log('✅ Registration succeeded, showing success message directly');
+          
+          // Set success message immediately
+          setMessage('Your account has been created successfully. You can now sign in.');
+          setError(''); // Clear any previous errors
+          
           // Clear form data after successful registration
           setFormData({
             email: formData.email, // Keep email for easier login
@@ -101,8 +106,12 @@ const Login = () => {
             lastName: '',
             username: ''
           });
-          // Trigger the useEffect to handle success message and tab switching
-          setJustRegistered(true);
+          
+          // Auto-switch to login tab after 2 seconds
+          setTimeout(() => {
+            console.log('🔄 Auto-switching to login tab');
+            setIsLogin(true);
+          }, 2000);
         } else {
           console.log('❌ Registration failed:', result.error);
           setError(result.error || 'Registration failed');
