@@ -20,6 +20,7 @@ class User(BaseDocument):
     google_id: Optional[str] = None  # Google OAuth ID
     profile_picture: Optional[str] = None  # URL to profile picture
     is_active: bool = True
+    has_completed_onboarding: bool = False  # Flag to track onboarding completion
 
 class UserCreate(BaseModel):
     username: str
