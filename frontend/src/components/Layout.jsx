@@ -114,6 +114,7 @@ const Layout = ({ children }) => {
             </h1>
             {user && (
               <div className="flex items-center space-x-4">
+                <UserMenu />
               </div>
             )}
           </div>
