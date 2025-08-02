@@ -105,10 +105,22 @@ const GoalSettings = () => {
     setMessage(null);
 
     try {
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/alignment/monthly-goal`, {
+      // Guard clause for backend URL
+      const backendUrl = import.meta.env?.REACT_APP_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
+      if (!backendUrl) {
+        throw new Error('Backend URL not configured');
+      }
+
+      // Guard clause for authentication token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${backendUrl}/alignment/monthly-goal`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ goal: parseInt(monthlyGoal) })
@@ -128,14 +140,14 @@ const GoalSettings = () => {
         const errorData = await response.json();
         setMessage({
           type: 'error',
-          text: errorData.detail || 'Failed to save goal. Please try again.'
+          text: errorData?.detail || 'Failed to save goal. Please try again.'
         });
       }
     } catch (err) {
       console.error('Error saving goal:', err);
       setMessage({
         type: 'error',
-        text: 'Failed to save goal. Please check your connection and try again.'
+        text: err.message || 'Failed to save goal. Please check your connection and try again.'
       });
     } finally {
       setSaving(false);
