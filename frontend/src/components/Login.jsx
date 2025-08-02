@@ -19,9 +19,7 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Debug logging for state changes
-  console.log('Login component render - message state:', message);
-  console.log('Login component render - isLogin state:', isLogin);
+
 
   const handleInputChange = (e) => {
     setFormData({
