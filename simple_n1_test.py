@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://b84aab6d-1bd6-4178-9176-a3c205280a1e.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://89a5bc44-c171-4189-bb43-48a9a2640899.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def test_areas_performance():

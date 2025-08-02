@@ -22,7 +22,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Configuration
-BACKEND_URL = "https://b84aab6d-1bd6-4178-9176-a3c205280a1e.preview.emergentagent.com/api"
+BACKEND_URL = "https://89a5bc44-c171-4189-bb43-48a9a2640899.preview.emergentagent.com/api"
 
 class ComprehensiveTaskSearchTester:
     def __init__(self):
