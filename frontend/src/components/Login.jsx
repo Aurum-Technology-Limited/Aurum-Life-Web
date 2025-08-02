@@ -69,11 +69,9 @@ const Login = () => {
         };
 
         const result = await register(userData);
-        console.log('Registration result:', result); // Debug logging
         if (result.success) {
-          console.log('🎯 About to set success message'); // Debug logging          
+          // Show success message immediately on the signup form
           setMessage('Your account has been created successfully. You can now sign in.');
-          console.log('🎯 setMessage called, waiting for re-render'); // Debug logging
           // Clear form data after successful registration
           setFormData({
             email: formData.email, // Keep email for easier login
@@ -83,12 +81,11 @@ const Login = () => {
             lastName: '',
             username: ''
           });
-          // Automatically switch to login tab after showing the message
+          // Switch to login tab after 2 seconds so user can see the message
           setTimeout(() => {
             setIsLogin(true);
-          }, 100); // Very short delay to ensure message renders first
+          }, 2000);
         } else {
-          console.log('Registration error:', result.error); // Debug logging
           setError(result.error || 'Registration failed');
         }
       }
