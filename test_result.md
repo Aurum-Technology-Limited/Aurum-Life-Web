@@ -119,7 +119,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Database cleanup completed: Removed all accounts and data except for marc.alleyne@aurumtechnologyltd.com. Verification needed to ensure application functionality is intact after cleanup."
+user_problem_statement: "Login authentication failing with 401 unauthorized error preventing user access. User can create account successfully but cannot login with the created credentials. Frontend shows 401 error in console."
 
 backend:
   - task: "Database Cleanup Verification"
