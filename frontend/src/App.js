@@ -14,6 +14,7 @@ import SimpleLayout from './components/SimpleLayout';
 import { Toaster } from './components/ui/toaster';
 import globalErrorHandler from './utils/globalErrorHandler'; // Import global error handler
 import ErrorBoundary from './components/ErrorBoundary';
+import LazyComponentErrorBoundary from './components/LazyComponentErrorBoundary';
 import PasswordReset from './components/PasswordReset';
 
 // Import performance test for debugging
