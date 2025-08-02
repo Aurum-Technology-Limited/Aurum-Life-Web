@@ -428,6 +428,8 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
 
   const renderCurrentStep = () => {
     switch (steps[currentStep]) {
+      case 'hierarchy-introduction':
+        return <HierarchyIntroduction onContinue={handleNext} />;
       case 'welcome':
         return renderWelcomeStep();
       case 'template-selection':
@@ -437,7 +439,7 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
       case 'applying':
         return renderApplying();
       default:
-        return renderWelcomeStep();
+        return <HierarchyIntroduction onContinue={handleNext} />;
     }
   };
 
