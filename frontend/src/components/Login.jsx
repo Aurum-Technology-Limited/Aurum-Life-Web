@@ -20,6 +20,21 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [justRegistered, setJustRegistered] = useState(false);
 
+  // Handle success message display after registration
+  useEffect(() => {
+    if (justRegistered) {
+      setMessage('Your account has been created successfully. You can now sign in.');
+      
+      // Auto-switch to login tab after 2 seconds
+      const timer = setTimeout(() => {
+        setIsLogin(true);
+        setJustRegistered(false);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [justRegistered]);
+
 
 
   const handleInputChange = (e) => {
