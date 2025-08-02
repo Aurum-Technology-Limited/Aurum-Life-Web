@@ -181,9 +181,6 @@ function App() {
               } else {
                 return <Profile {...props} />;
               }
-            case 'onboarding-test':
-              console.log('🧪 Rendering Onboarding Test component');
-              return <OnboardingTest />;
             case 'dashboard':
             default:
               console.log('🏠 Rendering Optimized Dashboard component');
