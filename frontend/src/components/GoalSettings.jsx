@@ -65,49 +65,33 @@ const GoalSettings = () => {
     setMessage(null);
 
     try {
-      // Guard clause for backend URL
-      const backendUrl = import.meta.env?.REACT_APP_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
-      if (!backendUrl) {
-        throw new Error('Backend URL not configured');
-      }
-
-      // Guard clause for authentication token
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch(`${backendUrl}/alignment/monthly-goal`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ goal: parseInt(monthlyGoal) })
+      // Use centralized API client instead of manual fetch
+      const response = await alignmentScoreAPI.setMonthlyGoal(parseInt(monthlyGoal));
+      
+      setCurrentGoal(parseInt(monthlyGoal));
+      setMessage({
+        type: 'success',
+        text: `Monthly goal successfully set to ${monthlyGoal} points!`
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentGoal(parseInt(monthlyGoal));
-        setMessage({
-          type: 'success',
-          text: `Monthly goal successfully set to ${monthlyGoal} points!`
-        });
-        
-        // Refresh alignment data to show updated progress
-        fetchAlignmentData();
-      } else {
-        const errorData = await response.json();
-        setMessage({
-          type: 'error',
-          text: errorData?.detail || 'Failed to save goal. Please try again.'
-        });
-      }
+      
+      // Refresh alignment data to show updated progress
+      fetchAlignmentData();
     } catch (err) {
       console.error('Error saving goal:', err);
+      
+      // Handle specific API error types
+      let errorMessage = 'Failed to save goal. Please try again.';
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.message.includes('Authentication failed')) {
+        errorMessage = 'Please log in again';
+      } else if (err.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please check your connection.';
+      }
+      
       setMessage({
         type: 'error',
-        text: err.message || 'Failed to save goal. Please check your connection and try again.'
+        text: errorMessage
       });
     } finally {
       setSaving(false);
