@@ -144,6 +144,7 @@ class LoginAuthenticationTester:
         
         # Register new user with specified credentials
         registration_data = {
+            "username": "testlogin",  # Required field
             "email": self.test_user_email,
             "password": self.test_user_password,
             "first_name": self.test_user_first_name,
