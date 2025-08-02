@@ -627,28 +627,7 @@ const Today = memo(() => {
             </div>
           </div>
         </div>
-        
-        {/* Debug/Manual Triggers (only for authenticated users in development) - moved from DailyRitualManager */}
-        {process.env.NODE_ENV === 'development' && user && (
-          <div className="fixed bottom-4 right-4 space-y-2 z-40">
-            <button
-              onClick={triggerMorningPrompt}
-              className="flex items-center space-x-2 px-3 py-2 bg-yellow-500 text-black text-sm rounded-lg hover:bg-yellow-600 transition-colors"
-              title="Test Morning Prompt"
-            >
-              <Sun className="w-4 h-4" />
-              <span>Morning</span>
-            </button>
-            <button
-              onClick={triggerEveningPrompt}
-              className="flex items-center space-x-2 px-3 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition-colors"
-              title="Test Evening Prompt"
-            >
-              <Moon className="w-4 h-4" />
-              <span>Evening</span>
-            </button>
-          </div>
-        )}
+
       </div>
     </DndProvider>
   );
