@@ -7,6 +7,7 @@ import { useDataContext } from '../contexts/DataContext';
 import { useAuth } from '../contexts/BackendAuthContext';
 import PomodoroTimer from './PomodoroTimer';
 import TaskWhyStatements from './TaskWhyStatements';
+import TaskSearchBar from './TaskSearchBar';
 import MorningPlanningPrompt from './MorningPlanningPrompt';
 import EveningReflectionPrompt from './EveningReflectionPrompt';
 
