@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { TrendingUp, Target, BookOpen, Trophy, Flame, Loader2 } from 'lucide-react';
 import { useDashboardQuery, usePrefetchQueries } from '../hooks/useQueries';
-import AiCoachCard from './AiCoachCard';
+import AlignmentScore from './AlignmentScore';
 import DailyStreakTracker from './DailyStreakTracker';
 
 const StatCard = memo(({ title, value, subtitle, icon: Icon, trend, loading = false }) => (
