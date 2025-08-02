@@ -10,7 +10,7 @@ from typing import Dict, Any, List
 # Test multiple URL configurations
 URLS_TO_TEST = [
     "http://localhost:8001",
-    "https://55e67447-e9b1-4184-8259-f18223824d38.preview.emergentagent.com",
+    "https://b84aab6d-1bd6-4178-9176-a3c205280a1e.preview.emergentagent.com",
     "https://smart-tasks-7.preview.emergentgent.com"
 ]
 
