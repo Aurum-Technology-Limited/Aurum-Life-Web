@@ -9,6 +9,12 @@ const Settings = ({ sectionParams }) => {
 
   const menuItems = [
     {
+      key: 'goals',
+      label: 'Goals',
+      icon: Target,
+      description: 'Set and manage your alignment goals'
+    },
+    {
       key: 'notifications',
       label: 'Notifications',
       icon: BellIcon,
