@@ -390,7 +390,7 @@ class AlignmentScoreAPITester:
             "description": "Test project with high priority for alignment testing",
             "area_id": area_id,
             "priority": "high",
-            "status": "active"
+            "status": "In Progress"
         }
         
         project_result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
