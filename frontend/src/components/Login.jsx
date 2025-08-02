@@ -35,8 +35,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
+    setError(''); // Only clear errors, not success messages
     setIsSubmitting(true);
 
     try {
