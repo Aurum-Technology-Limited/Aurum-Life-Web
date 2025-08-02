@@ -14,6 +14,7 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
 
   // Wizard steps
   const steps = [
+    'hierarchy-introduction',  // New first step
     'welcome',
     'template-selection',
     'confirmation',
