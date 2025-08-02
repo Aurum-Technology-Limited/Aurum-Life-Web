@@ -87,7 +87,6 @@ const Login = () => {
             setIsLogin(true);
           }, 3000);
         } else {
-          console.log('❌ Registration failed:', result.error);
           setError(result.error || 'Registration failed');
         }
       }
