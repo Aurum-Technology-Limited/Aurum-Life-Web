@@ -119,7 +119,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the newly implemented onboarding functionality: 1. Test the new POST /api/auth/complete-onboarding endpoint, 2. Create a new user with has_completed_onboarding=false by default, 3. Test logging in with this new user to verify the API returns the correct onboarding status, 4. Test the complete-onboarding endpoint to mark onboarding as completed. Focus on: User creation with has_completed_onboarding defaulting to false, Authentication returning the onboarding status, The complete-onboarding endpoint working correctly, Proper error handling"
+user_problem_statement: "Database cleanup completed: Removed all accounts and data except for marc.alleyne@aurumtechnologyltd.com. Verification needed to ensure application functionality is intact after cleanup."
 
 backend:
   - task: "Onboarding Functionality Testing"
