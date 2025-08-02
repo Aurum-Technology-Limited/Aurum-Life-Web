@@ -119,17 +119,23 @@ const SimpleAiCoach = React.memo(() => {
       {recommendations.length > 0 ? (
         <div className="space-y-3">
           <p className="text-gray-300 text-sm">Focus on these tasks to maximize your progress today:</p>
-          {recommendations.slice(0, 3).map((rec, index) => (
-            <div key={index} className="bg-gray-800/50 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <span className="text-yellow-400 font-bold">#{index + 1}</span>
-                <span className="text-white font-medium text-sm">{rec.title || 'Recommended Task'}</span>
+          {recommendations.slice(0, 3).map((rec, index) => {
+            // Sanitize recommendation data to prevent React children errors
+            const title = typeof rec?.title === 'string' ? rec.title : 'Recommended Task';
+            const reason = typeof rec?.reason === 'string' ? rec.reason : '';
+            
+            return (
+              <div key={index} className="bg-gray-800/50 rounded-lg p-3">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="text-yellow-400 font-bold">#{index + 1}</span>
+                  <span className="text-white font-medium text-sm">{title}</span>
+                </div>
+                {reason && (
+                  <p className="text-gray-400 text-xs">{reason}</p>
+                )}
               </div>
-              {rec.reason && (
-                <p className="text-gray-400 text-xs">{rec.reason}</p>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <p className="text-gray-400">No recommendations available right now.</p>
