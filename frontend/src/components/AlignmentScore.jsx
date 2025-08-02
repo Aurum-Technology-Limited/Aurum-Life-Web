@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Brain, Info, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/BackendAuthContext';
+import { alignmentScoreAPI } from '../services/api';
 
 const AlignmentScore = ({ onSectionChange }) => {
   const { user } = useAuth();
