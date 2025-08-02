@@ -499,10 +499,11 @@ class AlignmentScoreAPITester:
                     )
                     return False
             else:
+                # Check if this is because alignment_scores table doesn't exist
                 self.log_test(
                     "ALIGNMENT SCORE IN RESPONSE",
                     False,
-                    "Task completion response did not include alignment score data",
+                    "DATABASE SCHEMA ISSUE: alignment_scores table likely missing from database",
                     response_data
                 )
                 return False
