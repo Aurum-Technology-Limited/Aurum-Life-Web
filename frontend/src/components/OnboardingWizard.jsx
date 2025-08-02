@@ -456,7 +456,7 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
       `}</style>
       <div className="w-full h-full overflow-y-auto onboarding-scroll">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+        <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-gray-800/50 bg-gray-900/30 backdrop-blur-sm">
           <div className="flex items-center space-x-3">
             <div className="bg-yellow-500 text-black px-3 py-1 rounded-lg font-bold text-lg">
               AL
@@ -491,8 +491,10 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="p-8">
-          {renderCurrentStep()}
+        <div className="flex-1 overflow-y-auto onboarding-scroll p-8 min-h-0">
+          <div className="max-w-4xl mx-auto">
+            {renderCurrentStep()}
+          </div>
         </div>
       </div>
     </div>
