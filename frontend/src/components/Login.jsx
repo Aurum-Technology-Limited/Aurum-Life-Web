@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
+import { toast } from '../hooks/use-toast';
 
 const Login = () => {
   const { login, register, forgotPassword, loginWithGoogle, loading } = useAuth();
