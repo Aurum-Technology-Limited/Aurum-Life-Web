@@ -1563,6 +1563,78 @@ async def complete_onboarding(current_user: User = Depends(get_current_active_us
         logger.error(f"Error completing onboarding for user {current_user.id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to complete onboarding")
 
+# ================================
+# ALIGNMENT SCORE ENDPOINTS  
+# ================================
+
+@api_router.get("/alignment/dashboard")
+async def get_alignment_dashboard(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get alignment score dashboard data"""
+    try:
+        alignment_service = AlignmentScoreService()
+        dashboard_data = await alignment_service.get_alignment_dashboard_data(str(current_user.id))
+        return dashboard_data
+    except Exception as e:
+        logger.error(f"Error getting alignment dashboard: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/alignment/weekly-score")
+async def get_weekly_alignment_score(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get rolling 7-day alignment score"""
+    try:
+        alignment_service = AlignmentScoreService()
+        weekly_score = await alignment_service.get_rolling_weekly_score(str(current_user.id))
+        return {"weekly_score": weekly_score}
+    except Exception as e:
+        logger.error(f"Error getting weekly alignment score: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/alignment/monthly-score")
+async def get_monthly_alignment_score(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get current month alignment score"""
+    try:
+        alignment_service = AlignmentScoreService()
+        monthly_score = await alignment_service.get_monthly_score(str(current_user.id))
+        return {"monthly_score": monthly_score}
+    except Exception as e:
+        logger.error(f"Error getting monthly alignment score: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/alignment/monthly-goal")
+async def get_monthly_goal(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get user's monthly alignment goal"""
+    try:
+        alignment_service = AlignmentScoreService()
+        goal = await alignment_service.get_user_monthly_goal(str(current_user.id))
+        return {"monthly_goal": goal}
+    except Exception as e:
+        logger.error(f"Error getting monthly goal: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/alignment/monthly-goal")
+async def set_monthly_goal(
+    goal_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Set user's monthly alignment goal"""
+    try:
+        goal = goal_data.get('goal')
+        if not goal or not isinstance(goal, int) or goal <= 0:
+            raise HTTPException(status_code=400, detail="Goal must be a positive integer")
+        
+        alignment_service = AlignmentScoreService()
+        success = await alignment_service.set_user_monthly_goal(str(current_user.id), goal)
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to set monthly goal")
+        
+        return {"message": "Monthly goal set successfully", "goal": goal}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error setting monthly goal: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 # Include authentication routes under /api
 api_router.include_router(auth_router, prefix="/auth")
 
