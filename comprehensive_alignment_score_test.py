@@ -613,7 +613,7 @@ class ComprehensiveAlignmentScoreTester:
         print("\n=== TESTING DATABASE SCHEMA VERIFICATION ===")
         
         # Test alignment_scores table functionality by creating a test task and completing it
-        hierarchy = self.create_test_hierarchy_with_importance_8()
+        hierarchy = self.create_test_hierarchy_with_importance_5()
         if not hierarchy:
             self.log_test(
                 "DATABASE SCHEMA - ALIGNMENT_SCORES TABLE",
