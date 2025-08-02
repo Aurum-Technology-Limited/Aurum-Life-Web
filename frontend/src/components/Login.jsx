@@ -384,7 +384,7 @@ const Login = () => {
         <p className="text-sm text-gray-400">
           Welcome to your personal growth journey
         </p>
-        {message && !isLogin && (
+        {message && (
           <p className="text-sm text-yellow-500 font-medium mt-2">
             {message}
           </p>
