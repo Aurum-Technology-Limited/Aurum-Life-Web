@@ -401,6 +401,18 @@ agent_communication:
           comment: "🎉 CRITICAL ONBOARDING AUTHENTICATION FLOW TESTING COMPLETED - 100% SUCCESS RATE! Executed comprehensive testing of the critical onboarding and authentication flow as requested in review to ensure fixes work correctly: ✅ AUTHENTICATION VERIFIED: Successfully authenticated with marc.alleyne@aurumtechnologyltd.com/password credentials, JWT token generation and validation working perfectly ✅ INITIAL /api/auth/me WORKING: Retrieved user data successfully with proper has_completed_onboarding field present ✅ COMPLETE ONBOARDING ENDPOINT WORKING: POST /api/auth/complete-onboarding successfully updates user status with proper response structure and status update ✅ CRITICAL SUCCESS - ONBOARDING STATUS UPDATE: After calling complete-onboarding, subsequent calls to /api/auth/me return updated has_completed_onboarding status correctly (was False, now True) ✅ CORE API ENDPOINTS VERIFIED: All 4 core API endpoints (pillars, areas, projects, tasks) working correctly with 100% success rate - Pillars (7), Areas (29), Projects (37), Tasks (20) ✅ DATABASE CONSISTENCY FIX IMPLEMENTED: Fixed critical issue where onboarding completion was updating legacy users table but /api/auth/me was reading from user_profiles table, causing inconsistent state. Now both tables are updated ensuring data consistency. SUCCESS CRITERIA ACHIEVED: User authentication working (100%), /api/auth/me returns correct data (100%), complete-onboarding updates status properly (100%), subsequent /api/auth/me calls return updated status (100%), core APIs functional (100%). The onboarding and authentication flow is PRODUCTION-READY and the critical fixes are working perfectly!"
 
 frontend:
+  - task: "Today's Focus Search Functionality - Priority 1"
+    implemented: true
+    working: false
+    file: "frontend/src/components/Today.jsx, frontend/src/components/TaskSearchBar.jsx"
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "🎯 TODAY'S FOCUS SEARCH DEBUG - Root cause identified: REACT_APP_BACKEND_URL was pointing to external domain instead of local backend, causing API calls to fail and trigger logout during search. Fixed REACT_APP_BACKEND_URL to http://localhost:8001 and restarted services. Task search functionality should now work without authentication issues. Ready for comprehensive testing."
+
   - task: "Areas CRUD Foreign Key Constraint Fixes"
     implemented: true
     working: true
