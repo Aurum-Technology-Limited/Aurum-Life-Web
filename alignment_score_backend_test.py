@@ -215,11 +215,11 @@ class AlignmentScoreAPITester:
         
         if result['success']:
             data = result['data']
-            if 'rolling_weekly_score' in data and isinstance(data['rolling_weekly_score'], int):
+            if 'weekly_score' in data and isinstance(data['weekly_score'], int):
                 self.log_test(
                     "WEEKLY SCORE ENDPOINT",
                     True,
-                    f"Weekly score retrieved: {data['rolling_weekly_score']} points"
+                    f"Weekly score retrieved: {data['weekly_score']} points"
                 )
                 return True
             else:
