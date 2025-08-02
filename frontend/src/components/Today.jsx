@@ -484,9 +484,12 @@ const Today = memo(() => {
     );
   }
 
-  const completionPercentage = todayData?.total_tasks > 0 
-    ? (todayData.completed_tasks / todayData.total_tasks) * 100 
-    : 0;
+  const completedTasks = todaysTasks.filter(task => task.completed).length;
+  const totalTasks = todaysTasks.length;
+  const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  const estimatedDuration = todaysTasks.reduce((total, task) => {
+    return total + (task.estimated_duration || 0);
+  }, 0);
 
   return (
     <DndProvider backend={HTML5Backend}>
