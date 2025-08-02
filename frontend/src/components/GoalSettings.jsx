@@ -201,25 +201,25 @@ const GoalSettings = () => {
       </div>
 
       {/* Current Status */}
-      {alignmentData && (
+      {alignmentData && typeof alignmentData === 'object' && (
         <div className="mb-6 p-4 bg-gray-800/50 rounded-lg">
           <h3 className="text-sm font-medium text-gray-300 mb-3">Current Progress</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-lg font-bold text-yellow-400">
-                {alignmentData.rolling_weekly_score}
+                {alignmentData?.rolling_weekly_score || 0}
               </div>
               <div className="text-xs text-gray-400">Weekly Score</div>
             </div>
             <div>
               <div className="text-lg font-bold text-white">
-                {alignmentData.monthly_score}
+                {alignmentData?.monthly_score || 0}
               </div>
               <div className="text-xs text-gray-400">Monthly Score</div>
             </div>
             <div>
               <div className="text-lg font-bold text-green-400">
-                {alignmentData.progress_percentage?.toFixed(1) || 0}%
+                {alignmentData?.progress_percentage?.toFixed(1) || '0.0'}%
               </div>
               <div className="text-xs text-gray-400">Goal Progress</div>
             </div>
