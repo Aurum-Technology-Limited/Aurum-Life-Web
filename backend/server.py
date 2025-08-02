@@ -609,6 +609,22 @@ async def get_tasks(
         logger.error(f"Error getting tasks: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.get("/tasks/search", response_model=List[dict])
+async def search_tasks(
+    name: str = Query(..., description="Search query for task name"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Search tasks by name - only returns tasks with 'To Do' or 'In Progress' status"""
+    try:
+        tasks = await SupabaseTaskService.search_tasks_by_name(
+            str(current_user.id), 
+            name
+        )
+        return tasks
+    except Exception as e:
+        logger.error(f"Error searching tasks: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.put("/tasks/{task_id}", response_model=dict)
 async def update_task(
     task_id: str, 
