@@ -4,7 +4,7 @@ import Login from './Login';
 import OnboardingWizard from './OnboardingWizard';
 
 const AppWrapper = ({ children, onNavigateToSection }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
 
@@ -28,8 +28,17 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
     }
   }, [user, loading]);
 
-  const handleOnboardingComplete = () => {
-    console.log('🎉 Onboarding completed - navigating to dashboard');
+  const handleOnboardingComplete = async () => {
+    console.log('🎉 Onboarding completed - refreshing user data and navigating to dashboard');
+    
+    // Refresh user data to get updated onboarding status
+    try {
+      await refreshUser();
+      console.log('✅ User data refreshed after onboarding completion');
+    } catch (error) {
+      console.error('⚠️ Failed to refresh user data after onboarding:', error);
+    }
+    
     setShowOnboarding(false);
     
     // Navigate to dashboard
