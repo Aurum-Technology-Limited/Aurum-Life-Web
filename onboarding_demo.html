@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurum Life - Onboarding UI Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Hide scrollbar while maintaining functionality */
+        .onboarding-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .onboarding-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Custom gradient background */
+        .bg-gradient-to-br {
+            background: linear-gradient(to bottom right, #1f2937, #000000, #1f2937);
+        }
+        
+        /* Demo controls styling */
+        .demo-controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            font-family: monospace;
+        }
+        
+        .demo-button {
+            background: #f59e0b;
+            color: black;
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .demo-button:hover {
+            background: #d97706;
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Controls -->
+    <div class="demo-controls">
+        <div><strong>Onboarding UI Demo</strong></div>
+        <button class="demo-button" onclick="scrollDown()">Scroll Down</button>
+        <button class="demo-button" onclick="scrollUp()">Scroll Up</button>
+        <div style="font-size: 12px; margin-top: 5px;">✅ Full screen layout<br>✅ Hidden scrollbar<br>✅ Gradient background</div>
+    </div>
+
+    <!-- Full-Screen Onboarding Wizard -->
+    <div class="fixed inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 flex flex-col z-50">
+        <div class="w-full h-full overflow-y-auto onboarding-scroll">
+            <!-- Header -->
+            <div class="flex-shrink-0 flex items-center justify-between p-6 border-b border-gray-800/50 bg-gray-900/30 backdrop-blur-sm">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-yellow-500 text-black px-3 py-1 rounded-lg font-bold text-lg">
+                        AL
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">Smart Onboarding</h1>
+                        <p class="text-gray-400 text-sm">Step 1 of 5</p>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="flex-1 mx-6">
+                    <div class="bg-gray-700 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full transition-all duration-300" style="width: 20%"></div>
+                    </div>
+                </div>
+
+                <!-- Close button -->
+                <button class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto onboarding-scroll p-8 min-h-0">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Hierarchy Introduction Content -->
+                    <div class="space-y-8">
+                        <div class="text-center">
+                            <h2 class="text-4xl font-bold text-white mb-4">
+                                Understanding Aurum Life's System
+                            </h2>
+                            <p class="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+                                Before we set up your personal system, let's understand the foundational hierarchy that makes Aurum Life so effective.
+                            </p>
+                        </div>
+
+                        <!-- Hierarchy Visualization -->
+                        <div class="max-w-4xl mx-auto">
+                            <div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-8 border border-gray-700">
+                                <h3 class="text-2xl font-bold text-white mb-8 text-center">The Aurum Life Hierarchy</h3>
+                                
+                                <div class="space-y-6">
+                                    <!-- Pillars -->
+                                    <div class="flex items-center space-x-6">
+                                        <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <span class="text-3xl">🏛️</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-2xl font-bold text-blue-400 mb-2">Pillars</h4>
+                                            <p class="text-gray-300 text-lg leading-relaxed">
+                                                <strong>Your life-long goals and the ultimate 'Why' behind your work.</strong>
+                                                <br />
+                                                These are the fundamental areas of your life that matter most to you - like Health, Career, Relationships, or Personal Growth.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Arrow Down -->
+                                    <div class="flex justify-center">
+                                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                        </svg>
+                                    </div>
+
+                                    <!-- Areas -->
+                                    <div class="flex items-center space-x-6">
+                                        <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <span class="text-3xl">🎯</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-2xl font-bold text-green-400 mb-2">Areas</h4>
+                                            <p class="text-gray-300 text-lg leading-relaxed">
+                                                <strong>The means and systems by which you will achieve your goals (The 'How').</strong>
+                                                <br />
+                                                These are the ongoing responsibilities and systems within each pillar - like Fitness, Learning, or Networking.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Arrow Down -->
+                                    <div class="flex justify-center">
+                                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                        </svg>
+                                    </div>
+
+                                    <!-- Projects -->
+                                    <div class="flex items-center space-x-6">
+                                        <div class="w-20 h-20 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <span class="text-3xl">📁</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-2xl font-bold text-yellow-400 mb-2">Projects</h4>
+                                            <p class="text-gray-300 text-lg leading-relaxed">
+                                                <strong>The defined, realistic objectives with timeframes to achieve your goals (The 'What').</strong>
+                                                <br />
+                                                These are specific, outcome-based initiatives with clear endpoints - like "Complete Marathon Training" or "Launch Side Business".
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Arrow Down -->
+                                    <div class="flex justify-center">
+                                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                        </svg>
+                                    </div>
+
+                                    <!-- Tasks -->
+                                    <div class="flex items-center space-x-6">
+                                        <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <span class="text-3xl">✅</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-2xl font-bold text-purple-400 mb-2">Tasks</h4>
+                                            <p class="text-gray-300 text-lg leading-relaxed">
+                                                <strong>The individual, actionable steps to complete your projects.</strong>
+                                                <br />
+                                                These are the specific actions you can do right now - like "Research running shoes" or "Write business plan outline".
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Example Flow -->
+                        <div class="max-w-4xl mx-auto">
+                            <div class="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-2xl p-8 border border-yellow-800/30">
+                                <h3 class="text-2xl font-bold text-white mb-6 text-center">Example: How It All Connects</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-blue-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                            <span class="text-2xl">🏛️</span>
+                                        </div>
+                                        <h4 class="text-white font-semibold mb-2">Pillar</h4>
+                                        <p class="text-gray-300 text-sm">"Health & Fitness"</p>
+                                    </div>
+                                    
+                                    <div class="hidden md:flex justify-center">
+                                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                            <span class="text-2xl">🎯</span>
+                                        </div>
+                                        <h4 class="text-white font-semibold mb-2">Area</h4>
+                                        <p class="text-gray-300 text-sm">"Cardiovascular Training"</p>
+                                    </div>
+                                    
+                                    <div class="hidden md:flex justify-center">
+                                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-yellow-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                            <span class="text-2xl">📁</span>
+                                        </div>
+                                        <h4 class="text-white font-semibold mb-2">Project</h4>
+                                        <p class="text-gray-300 text-sm">"Run 5K in Under 25 Minutes"</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 pt-6 border-t border-yellow-800/30">
+                                    <h5 class="text-white font-semibold mb-3 text-center">Sample Tasks:</h5>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div class="bg-purple-500/10 rounded-lg p-3 text-center">
+                                            <span class="text-purple-400">✅ Buy running shoes</span>
+                                        </div>
+                                        <div class="bg-purple-500/10 rounded-lg p-3 text-center">
+                                            <span class="text-purple-400">✅ Plan weekly schedule</span>
+                                        </div>
+                                        <div class="bg-purple-500/10 rounded-lg p-3 text-center">
+                                            <span class="text-purple-400">✅ Complete first run</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Continue Button -->
+                        <div class="text-center">
+                            <button class="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold text-lg rounded-lg transition-all duration-200 mx-auto shadow-lg">
+                                <span>I Understand - Let's Build My System</span>
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Extra content to demonstrate scrolling -->
+                        <div class="max-w-4xl mx-auto">
+                            <div class="bg-gray-800/30 rounded-2xl p-8 border border-gray-700">
+                                <h3 class="text-2xl font-bold text-white mb-6 text-center">✅ UI Improvements Implemented</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="text-center">
+                                        <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                            <span class="text-green-400 text-xl">👁️</span>
+                                        </div>
+                                        <h4 class="text-white font-semibold mb-2">Hidden Scrollbar</h4>
+                                        <p class="text-gray-400 text-sm">Scrollbar is hidden but functionality preserved. Try scrolling with mouse wheel or keyboard.</p>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                            <span class="text-purple-400 text-xl">🖼️</span>
+                                        </div>
+                                        <h4 class="text-white font-semibold mb-2">Full-Screen Layout</h4>
+                                        <p class="text-gray-400 text-sm">Onboarding now fills the entire screen with beautiful gradient background instead of grey modal.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function scrollDown() {
+            const scrollContainer = document.querySelector('.onboarding-scroll');
+            scrollContainer.scrollBy({ top: 300, behavior: 'smooth' });
+        }
+
+        function scrollUp() {
+            const scrollContainer = document.querySelector('.onboarding-scroll');
+            scrollContainer.scrollBy({ top: -300, behavior: 'smooth' });
+        }
+
+        // Demonstrate scroll functionality with keyboard
+        document.addEventListener('keydown', function(e) {
+            const scrollContainer = document.querySelector('.onboarding-scroll');
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                e.preventDefault();
+                scrollContainer.scrollBy({ top: 200, behavior: 'smooth' });
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                scrollContainer.scrollBy({ top: -200, behavior: 'smooth' });
+            }
+        });
+    </script>
+</body>
+</html>
