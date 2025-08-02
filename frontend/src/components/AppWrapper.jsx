@@ -8,6 +8,16 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
 
+  // Debug: Log authentication state changes
+  useEffect(() => {
+    console.log('🔍 AppWrapper - Auth state changed:', {
+      hasUser: !!user,
+      loading,
+      userEmail: user?.email,
+      hasCompletedOnboarding: user?.has_completed_onboarding
+    });
+  }, [user, loading]);
+
   // Check onboarding status when user becomes available
   useEffect(() => {
     if (user && !loading) {
@@ -19,6 +29,9 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
       if (!hasCompletedOnboarding) {
         console.log('🎯 New user detected - showing onboarding');
         setShowOnboarding(true);
+      } else {
+        console.log('🏠 Existing user - going to dashboard');
+        setShowOnboarding(false);
       }
       
       setIsCheckingOnboarding(false);
