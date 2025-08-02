@@ -54,6 +54,34 @@ class SupabaseUserService:
         except Exception as e:
             logger.error(f"Error creating user profile: {e}")
             raise
+    
+    @staticmethod
+    async def update_user(user_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update user profile in user_profiles table"""
+        try:
+            # Add updated_at timestamp
+            update_data['updated_at'] = datetime.utcnow().isoformat()
+            
+            # Try to update user_profiles table first
+            response = supabase.table('user_profiles').update(update_data).eq('id', user_id).execute()
+            
+            if response.data:
+                logger.info(f"✅ Updated user profile for user: {user_id}")
+                return response.data[0]
+            
+            # If no user_profiles record, try legacy users table
+            legacy_response = supabase.table('users').update(update_data).eq('id', user_id).execute()
+            
+            if legacy_response.data:
+                logger.info(f"✅ Updated legacy user record for user: {user_id}")
+                return legacy_response.data[0]
+            
+            logger.warning(f"No user record found for user: {user_id}")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error updating user: {e}")
+            return None
 
 
 class SupabasePillarService:
