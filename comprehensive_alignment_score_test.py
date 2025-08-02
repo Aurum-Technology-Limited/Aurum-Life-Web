@@ -427,7 +427,7 @@ class ComprehensiveAlignmentScoreTester:
         print("\n=== TESTING TASK COMPLETION SCORING INTEGRATION ===")
         
         # Create test hierarchy
-        hierarchy = self.create_test_hierarchy_with_importance_8()
+        hierarchy = self.create_test_hierarchy_with_importance_5()
         if not hierarchy:
             return False
         
