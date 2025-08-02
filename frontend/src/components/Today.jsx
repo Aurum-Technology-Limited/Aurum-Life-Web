@@ -642,47 +642,35 @@ const Today = memo(() => {
 
             {/* Pomodoro Timer & Available Tasks */}
             <div className="space-y-6">
-              {/* Pomodoro Timer */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Pomodoro Timer</h3>
+              {/* Daily Ritual Buttons - Moved to Daily Engagement Hub */}
+              <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Daily Engagement Hub</h3>
+                
+                {/* Pomodoro Timer */}
                 <PomodoroTimer
                   taskName={activePomodoro?.name}
                   onSessionComplete={handlePomodoroComplete}
                 />
-              </div>
-
-              {/* Available Tasks */}
-              {showAvailable && (
-                <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Available Tasks</h3>
-                    <button
-                      onClick={() => setShowAvailable(false)}
-                      className="p-1 text-gray-400 hover:text-white rounded"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
+                
+                {/* Daily Ritual Buttons */}
+                <div className="mt-4 flex space-x-3">
+                  <button
+                    onClick={() => setShowMorningPrompt(true)}
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-yellow-400 hover:bg-yellow-500/30 transition-colors"
+                  >
+                    <Sun className="w-5 h-5" />
+                    <span>Morning Reflection</span>
+                  </button>
                   
-                  {availableTasks.length === 0 ? (
-                    <div className="text-center py-8">
-                      <CheckCircle2 className="mx-auto h-12 w-12 text-green-400 mb-3" />
-                      <p className="text-gray-400">All caught up!</p>
-                      <p className="text-sm text-gray-500">No more tasks to add</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {availableTasks.map((task) => (
-                        <AvailableTaskItem
-                          key={task.id}
-                          task={task}
-                          onAdd={handleAddToToday}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  <button
+                    onClick={() => setShowEveningPrompt(true)}
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-purple-500/20 border border-purple-500/30 rounded-lg text-purple-400 hover:bg-purple-500/30 transition-colors"
+                  >
+                    <Moon className="w-5 h-5" />
+                    <span>Evening Reflection</span>
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
