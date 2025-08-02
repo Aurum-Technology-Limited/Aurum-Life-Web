@@ -384,23 +384,17 @@ const Today = memo(() => {
   };
 
   const moveTask = (fromIndex, toIndex) => {
-    if (!todayData?.tasks) return;
+    if (todaysTasks.length === 0) return;
 
-    const newTasks = [...todayData.tasks];
+    const newTasks = [...todaysTasks];
     const [movedTask] = newTasks.splice(fromIndex, 1);
     newTasks.splice(toIndex, 0, movedTask);
 
-    setTodayData(prev => ({
-      ...prev,
-      tasks: newTasks
-    }));
-
-    // Update order on backend
+    setTodaysTasks(newTasks);
+    
+    // Update localStorage
     const taskIds = newTasks.map(task => task.id);
-    todayAPI.reorderDailyTasks(taskIds).catch(err => {
-      console.error('Error reordering tasks:', err);
-      loadTodayView(); // Revert on error
-    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(taskIds));
   };
 
   const handleToggleTask = async (taskId, currentCompleted) => {
@@ -409,42 +403,49 @@ const Today = memo(() => {
       await tasksAPI.updateTask(taskId, { completed: newCompleted });
       
       // Update local state
-      setTodayData(prev => ({
-        ...prev,
-        tasks: prev.tasks.map(task => 
+      setTodaysTasks(prev => 
+        prev.map(task => 
           task.id === taskId ? { ...task, completed: newCompleted } : task
-        ),
-        completed_tasks: newCompleted 
-          ? prev.completed_tasks + 1 
-          : prev.completed_tasks - 1
-      }));
+        )
+      );
       
       onDataMutation('task', 'update', { taskId, completed: newCompleted });
     } catch (err) {
       console.error('Error toggling task:', err);
+      setError('Failed to update task');
     }
   };
 
-  const handleAddToToday = async (taskId) => {
-    try {
-      await todayAPI.addTaskToToday(taskId);
-      loadTodayView(); // Refresh to get updated data
-      onDataMutation('today', 'add_task', { taskId });
-    } catch (err) {
-      console.error('Error adding task to today:', err);
-      setError('Failed to add task to today');
+  const handleAddTaskToFocus = (task) => {
+    // Check if task is already in today's focus
+    if (todaysTasks.find(t => t.id === task.id)) {
+      console.log('Task already in today\'s focus');
+      return;
     }
+    
+    console.log('🎯 Adding task to today\'s focus:', task.name);
+    
+    const updatedTasks = [...todaysTasks, task];
+    setTodaysTasks(updatedTasks);
+    
+    // Update localStorage
+    const taskIds = updatedTasks.map(t => t.id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(taskIds));
+    
+    onDataMutation('today', 'add_task', { taskId: task.id });
   };
 
-  const handleRemoveFromToday = async (taskId) => {
-    try {
-      await todayAPI.removeTaskFromToday(taskId);
-      loadTodayView(); // Refresh to get updated data
-      onDataMutation('today', 'remove_task', { taskId });
-    } catch (err) {
-      console.error('Error removing task from today:', err);
-      setError('Failed to remove task from today');
-    }
+  const handleRemoveFromFocus = (taskId) => {
+    console.log('🗑️ Removing task from today\'s focus:', taskId);
+    
+    const updatedTasks = todaysTasks.filter(task => task.id !== taskId);
+    setTodaysTasks(updatedTasks);
+    
+    // Update localStorage
+    const taskIds = updatedTasks.map(task => task.id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(taskIds));
+    
+    onDataMutation('today', 'remove_task', { taskId });
   };
 
   const handleStartPomodoro = (task) => {
