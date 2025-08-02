@@ -68,9 +68,16 @@ const Login = () => {
 
         const result = await register(userData);
         if (result.success) {
-          setMessage(result.message || 'Registration successful! Please check your email for verification.');
+          // Show success toast notification
+          toast({
+            title: "Account Created Successfully",
+            description: "Your account has been created successfully. You can now sign in.",
+            variant: "success",
+          });
+          
+          setMessage(result.message || 'Registration successful! You can now sign in.');
           // Switch to login view after successful registration
-          setTimeout(() => setIsLogin(true), 3000);
+          setTimeout(() => setIsLogin(true), 2000);
         } else {
           setError(result.error || 'Registration failed');
         }
