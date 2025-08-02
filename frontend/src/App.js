@@ -222,14 +222,14 @@ function App() {
               <NotificationProvider>
                 <DndProvider backend={HTML5Backend}>
                   <div className="App">
-                  <ProtectedRoute>
+                  <AppWrapper onNavigateToSection={handleSectionChange}>
                     <SimpleLayout 
                       activeSection={activeSection} 
                       setActiveSection={setActiveSection}
                     >
                       {renderActiveSection()}
                     </SimpleLayout>
-                  </ProtectedRoute>
+                  </AppWrapper>
                   </div>
                 </DndProvider>
               </NotificationProvider>
