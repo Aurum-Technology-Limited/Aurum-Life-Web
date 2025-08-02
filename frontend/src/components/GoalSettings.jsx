@@ -56,16 +56,36 @@ const GoalSettings = () => {
 
   const fetchAlignmentData = async () => {
     try {
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/alignment/dashboard`, {
+      // Guard clause for backend URL
+      const backendUrl = import.meta.env?.REACT_APP_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
+      if (!backendUrl) {
+        console.error('Backend URL not configured');
+        return;
+      }
+
+      // Guard clause for authentication token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const response = await fetch(`${backendUrl}/alignment/dashboard`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const data = await response.json();
-        setAlignmentData(data);
+        // Safe data assignment with defaults
+        const safeData = {
+          rolling_weekly_score: data?.rolling_weekly_score || 0,
+          monthly_score: data?.monthly_score || 0,
+          progress_percentage: data?.progress_percentage || 0
+        };
+        setAlignmentData(safeData);
       }
     } catch (err) {
       console.error('Error fetching alignment data:', err);
