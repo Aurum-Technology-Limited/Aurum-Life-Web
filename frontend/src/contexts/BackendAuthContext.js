@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }) => {
       }
       
     } catch (error) {
-      console.error('❌ Login error:', error);
+      console.error('Login error:', error);
       setLoading(false);
       return { 
         success: false, 
