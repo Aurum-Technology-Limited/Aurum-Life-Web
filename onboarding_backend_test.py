@@ -27,11 +27,11 @@ API_BASE = f"{BACKEND_URL}/api"
 
 # Test credentials as specified in the review
 TEST_USER = {
-    "email": "onboarding.test@aurumlife.com",
-    "password": "testpass123",
-    "first_name": "Onboarding",
+    "email": "nav.test@aurumlife.com",
+    "password": "testpassword123",
+    "first_name": "Navigation",
     "last_name": "Test",
-    "username": "onboarding_test"
+    "username": "nav_test"
 }
 
 class OnboardingTester:
