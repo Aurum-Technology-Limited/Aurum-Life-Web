@@ -18,28 +18,6 @@ const Login = () => {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [justRegistered, setJustRegistered] = useState(false);
-
-  // Handle success message display after registration
-  const showRegistrationSuccess = useCallback(() => {
-    console.log('🎯 showRegistrationSuccess called');
-    setMessage('Your account has been created successfully. You can now sign in.');
-    setError(''); // Clear any previous errors
-    
-    // Auto-switch to login tab after 2 seconds
-    setTimeout(() => {
-      console.log('🔄 Auto-switching to login tab');
-      setIsLogin(true);
-    }, 2000);
-  }, []);
-
-  useEffect(() => {
-    if (justRegistered) {
-      console.log('🎯 useEffect triggered - justRegistered:', justRegistered);
-      showRegistrationSuccess();
-      setJustRegistered(false); // Reset immediately to prevent multiple calls
-    }
-  }, [justRegistered, showRegistrationSuccess]);
 
 
 
