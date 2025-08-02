@@ -57,7 +57,7 @@ class SupabaseUserService:
     
     @staticmethod
     async def update_user(user_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Update user profile in user_profiles table or legacy users table"""
+        """Update user profile in both user_profiles table and legacy users table"""
         try:
             # Add updated_at timestamp
             update_data['updated_at'] = datetime.utcnow().isoformat()
@@ -69,22 +69,32 @@ class SupabaseUserService:
                 update_data['level'] = 2 if has_completed else 1
                 logger.info(f"Mapped has_completed_onboarding={has_completed} to level={update_data['level']}")
             
+            updated_record = None
+            
             # Try to update legacy users table first
             try:
                 legacy_response = supabase.table('users').update(update_data).eq('id', user_id).execute()
                 
                 if legacy_response.data:
                     logger.info(f"✅ Updated legacy user record for user: {user_id}")
-                    return legacy_response.data[0]
+                    updated_record = legacy_response.data[0]
             except Exception as legacy_error:
                 logger.info(f"Legacy users table update failed: {legacy_error}")
             
-            # Try user_profiles table
-            response = supabase.table('user_profiles').update(update_data).eq('id', user_id).execute()
+            # CRITICAL FIX: Also try to update user_profiles table to ensure consistency
+            try:
+                profile_response = supabase.table('user_profiles').update(update_data).eq('id', user_id).execute()
+                
+                if profile_response.data:
+                    logger.info(f"✅ Updated user_profiles record for user: {user_id}")
+                    # If we didn't get a record from legacy table, use this one
+                    if not updated_record:
+                        updated_record = profile_response.data[0]
+            except Exception as profile_error:
+                logger.info(f"User_profiles table update failed: {profile_error}")
             
-            if response.data:
-                logger.info(f"✅ Updated user profile for user: {user_id}")
-                return response.data[0]
+            if updated_record:
+                return updated_record
             
             logger.warning(f"No user record found for user: {user_id}")
             return None
