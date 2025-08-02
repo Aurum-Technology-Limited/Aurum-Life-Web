@@ -150,7 +150,7 @@ const Dashboard = memo(({ onSectionChange }) => {
       {/* Alignment Score & Daily Streak - Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Alignment Score - Weekly Progress */}
-        <AlignmentScore />
+        <AlignmentScore onSectionChange={onSectionChange} />
         
         {/* Daily Streak Tracker */}
         <DailyStreakTracker showReflectionPrompt={true} />
