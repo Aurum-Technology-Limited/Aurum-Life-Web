@@ -47,6 +47,7 @@ class UserResponse(BaseModel):
     first_name: str
     last_name: str
     is_active: bool
+    has_completed_onboarding: bool
     created_at: datetime
 
 class Token(BaseModel):
