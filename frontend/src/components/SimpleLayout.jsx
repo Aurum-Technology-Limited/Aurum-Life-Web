@@ -83,11 +83,6 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
             );
           })}
         </nav>
-
-        {/* User menu */}
-        <div className="p-4 border-t border-gray-700">
-          <UserMenu onSectionChange={setActiveSection} />
-        </div>
       </div>
 
       {/* Main content */}
