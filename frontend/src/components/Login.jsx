@@ -71,14 +71,12 @@ const Login = () => {
         const result = await register(userData);
         console.log('🔍 Registration result:', result);
         if (result.success) {
-          console.log('✅ Registration succeeded, triggering success message via useEffect');
+          console.log('✅ Registration succeeded, using force update approach');
           
-          // Clear any previous errors
-          setError(''); 
-          
-          // Clear form data after successful registration
+          // Clear form data and errors
+          setError('');
           setFormData({
-            email: formData.email, // Keep email for easier login
+            email: formData.email,
             password: '',
             confirmPassword: '',
             firstName: '',
@@ -86,8 +84,15 @@ const Login = () => {
             username: ''
           });
           
-          // Trigger success message via useEffect
-          setShowSuccessMessage(true);
+          // Set success message and force a re-render
+          setMessage('Your account has been created successfully. You can now sign in.');
+          setForceUpdate(prev => prev + 1); // Force component update
+          
+          // Auto-switch to login tab after 3 seconds
+          setTimeout(() => {
+            console.log('🔄 Auto-switching to login tab');
+            setIsLogin(true);
+          }, 3000);
         } else {
           console.log('❌ Registration failed:', result.error);
           setError(result.error || 'Registration failed');
