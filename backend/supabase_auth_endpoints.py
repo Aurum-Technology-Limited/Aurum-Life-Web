@@ -299,9 +299,7 @@ async def get_current_user_profile(request: Request):
                     first_name=legacy_user.get('first_name', ''),
                     last_name=legacy_user.get('last_name', ''),
                     is_active=legacy_user.get('is_active', True),
-                    level=legacy_user.get('level', 1),
-                    total_points=legacy_user.get('total_points', 0),
-                    current_streak=legacy_user.get('current_streak', 0),
+                    has_completed_onboarding=legacy_user.get('has_completed_onboarding', False),  # Default to False
                     created_at=legacy_user.get('created_at')
                 )
         except Exception as legacy_lookup_error:
