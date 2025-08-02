@@ -36,6 +36,8 @@ const Settings = ({ sectionParams }) => {
 
   const renderSubSection = () => {
     switch (activeSubSection) {
+      case 'goals':
+        return <GoalSettings />;
       case 'notifications':
         return <NotificationSettings />;
       case 'profile':
@@ -59,7 +61,7 @@ const Settings = ({ sectionParams }) => {
           </div>
         );
       default:
-        return <NotificationSettings />;
+        return <GoalSettings />;
     }
   };
 
