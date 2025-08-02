@@ -3,16 +3,7 @@ import { ArrowRight, ArrowDown } from 'lucide-react';
 
 const HierarchyIntroduction = ({ onContinue }) => {
   return (
-    <div className="space-y-8 overflow-y-auto" style={{ 
-      scrollbarWidth: 'none', 
-      msOverflowStyle: 'none',
-      WebkitScrollbar: { display: 'none' }
-    }}>
-      <style>{`
-        .space-y-8::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+    <div className="space-y-8">
       <div className="text-center">
         <h2 className="text-4xl font-bold text-white mb-4">
           Understanding Aurum Life's System
