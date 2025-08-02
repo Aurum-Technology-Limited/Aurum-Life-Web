@@ -42,6 +42,7 @@ from google_oauth import (
     UserProfileResponse
 )
 from ai_coach_mvp_service import AiCoachMvpService
+from alignment_score_service import AlignmentScoreService
 from models import (
     DailyReflectionCreate,
     DailyReflectionResponse,
