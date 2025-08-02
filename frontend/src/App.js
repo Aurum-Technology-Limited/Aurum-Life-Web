@@ -15,7 +15,6 @@ import { Toaster } from './components/ui/toaster';
 import globalErrorHandler from './utils/globalErrorHandler'; // Import global error handler
 import ErrorBoundary from './components/ErrorBoundary';
 import PasswordReset from './components/PasswordReset';
-import OnboardingTest from './OnboardingTest'; // Temporary import for testing
 
 // Import performance test for debugging
 import './services/performanceTest';
