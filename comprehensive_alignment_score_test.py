@@ -412,7 +412,7 @@ class ComprehensiveAlignmentScoreTester:
         self.log_test(
             "CREATE TEST HIERARCHY",
             True,
-            f"Successfully created test hierarchy: Pillar → Area (importance 8) → Project (high priority) → Task (high priority)"
+            f"Successfully created test hierarchy: Pillar → Area (importance 5) → Project (high priority) → Task (high priority)"
         )
         
         return {
