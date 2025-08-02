@@ -280,9 +280,7 @@ async def get_current_user_profile(request: Request):
                     first_name=user_profile.get('first_name', ''),
                     last_name=user_profile.get('last_name', ''),
                     is_active=user_profile.get('is_active', True),
-                    level=user_profile.get('level', 1),
-                    total_points=user_profile.get('total_points', 0),
-                    current_streak=user_profile.get('current_streak', 0),
+                    has_completed_onboarding=user_profile.get('has_completed_onboarding', False),  # Default to False
                     created_at=user_profile.get('created_at', '2025-01-01T00:00:00')
                 )
         except Exception as e:
