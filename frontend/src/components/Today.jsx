@@ -192,11 +192,11 @@ AvailableTaskItem.displayName = 'AvailableTaskItem';
 const Today = memo(() => {
   const { onDataMutation } = useDataContext();
   const { user } = useAuth(); // Get authenticated user for daily rituals
-  const [todayData, setTodayData] = useState(null);
-  const [availableTasks, setAvailableTasks] = useState([]);
+  
+  // Main state - using localStorage for daily task management
+  const [todaysTasks, setTodaysTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showAvailable, setShowAvailable] = useState(false);
   const [activePomodoro, setActivePomodoro] = useState(null);
 
   // Daily Ritual States (moved from DailyRitualManager)
@@ -211,40 +211,68 @@ const Today = memo(() => {
   const [lastMorningPrompt, setLastMorningPrompt] = useState(null);
   const [lastEveningPrompt, setLastEveningPrompt] = useState(null);
 
-  const loadTodayView = async () => {
+  // Local storage keys for daily task management
+  const STORAGE_KEY = 'aurum_todays_focus';
+  const STORAGE_DATE_KEY = 'aurum_todays_focus_date';
+
+  const loadTodaysTasks = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Try to load today view and available tasks
-      const promises = [
-        todayAPI.getTodayView().catch(err => {
-          console.error('Error loading today view:', err);
-          return { data: { tasks: [], priorities: [], recommendations: [], completed_tasks: 0, total_tasks: 0 } };
-        }),
-        todayAPI.getAvailableTasks().catch(err => {
-          console.error('Error loading available tasks:', err);
-          return { data: [] };
-        })
-      ];
+      const today = new Date().toDateString();
+      const storedDate = localStorage.getItem(STORAGE_DATE_KEY);
       
-      const [todayResponse, availableResponse] = await Promise.all(promises);
-      
-      setTodayData(todayResponse.data);
-      setAvailableTasks(availableResponse.data || []);
+      // Check if we need to reset for a new day
+      if (storedDate !== today) {
+        console.log('🌅 New day detected, clearing previous focus tasks');
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.setItem(STORAGE_DATE_KEY, today);
+        setTodaysTasks([]);
+      } else {
+        // Load tasks from localStorage
+        const storedTasks = localStorage.getItem(STORAGE_KEY);
+        if (storedTasks) {
+          const taskIds = JSON.parse(storedTasks);
+          
+          // Fetch fresh task data from backend
+          if (taskIds.length > 0) {
+            try {
+              const tasks = await Promise.all(
+                taskIds.map(async (taskId) => {
+                  try {
+                    const response = await tasksAPI.getTask(taskId);
+                    return response.data;
+                  } catch (err) {
+                    console.warn(`Task ${taskId} not found or unavailable`);
+                    return null;
+                  }
+                })
+              );
+              
+              // Filter out null tasks (deleted or unavailable)
+              const validTasks = tasks.filter(task => task !== null);
+              setTodaysTasks(validTasks);
+              
+              // Update localStorage to remove invalid task IDs
+              const validTaskIds = validTasks.map(task => task.id);
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(validTaskIds));
+            } catch (err) {
+              console.error('Error loading stored tasks:', err);
+              setTodaysTasks([]);
+            }
+          } else {
+            setTodaysTasks([]);
+          }
+        } else {
+          setTodaysTasks([]);
+        }
+      }
       
     } catch (err) {
-      console.error('Critical error loading today view:', err);
-      setError('Failed to load today\'s data');
-      // Set fallback data
-      setTodayData({ 
-        tasks: [], 
-        priorities: [], 
-        recommendations: [], 
-        completed_tasks: 0, 
-        total_tasks: 0 
-      });
-      setAvailableTasks([]);
+      console.error('Error loading today\'s focus:', err);
+      setError('Failed to load today\'s focus');
+      setTodaysTasks([]);
     } finally {
       setLoading(false);
     }
