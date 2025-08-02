@@ -128,6 +128,9 @@ def main():
     print("🧹 Starting Database Cleanup")
     print("="*50)
     
+    # Check for --confirm flag
+    auto_confirm = '--confirm' in sys.argv
+    
     # Step 1: Find target user
     if not get_target_user():
         return False
