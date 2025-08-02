@@ -580,5 +580,6 @@ export default {
   resources: resourcesAPI,
   googleAuth: googleAuthAPI,
   aiCoach: aiCoachAPI,
-  feedback: feedbackAPI
+  feedback: feedbackAPI,
+  alignmentScore: alignmentScoreAPI
 };
