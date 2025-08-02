@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Target, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/BackendAuthContext';
+import { alignmentScoreAPI } from '../services/api';
 
 const GoalSettings = () => {
   const { user } = useAuth();
