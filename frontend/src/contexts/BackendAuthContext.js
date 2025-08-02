@@ -69,7 +69,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      // Debug: Log the full URL being called
+      const loginUrl = `${BACKEND_URL}/api/auth/login`;
+      console.log('DEBUG - Attempting login to URL:', loginUrl);
+      
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
