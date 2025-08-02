@@ -47,7 +47,7 @@ class UserResponse(BaseModel):
     first_name: str
     last_name: str
     is_active: bool
-    has_completed_onboarding: bool
+    has_completed_onboarding: bool = False  # Default to False if not present
     created_at: datetime
 
 class Token(BaseModel):
