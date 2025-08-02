@@ -66,6 +66,7 @@ const Login = () => {
         };
 
         const result = await register(userData);
+        console.log('Registration result:', result); // Debug logging
         if (result.success) {          
           setMessage('Your account has been created successfully. You can now sign in.');
           // Clear form data after successful registration
@@ -82,6 +83,7 @@ const Login = () => {
             setIsLogin(true);
           }, 1500);
         } else {
+          console.log('Registration error:', result.error); // Debug logging
           setError(result.error || 'Registration failed');
         }
       }
