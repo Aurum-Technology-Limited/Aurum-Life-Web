@@ -17,6 +17,10 @@ export const useAuth = () => {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
+// Debug: Check what URL is actually being used
+console.log('DEBUG - Environment variable REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
+console.log('DEBUG - Final BACKEND_URL being used:', BACKEND_URL);
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
