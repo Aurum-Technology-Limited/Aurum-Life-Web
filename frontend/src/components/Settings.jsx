@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { CogIcon, BellIcon, UserIcon, ShieldCheckIcon } from '@heroicons/react/outline';
+import { CogIcon, BellIcon, UserIcon, ShieldCheckIcon, Target } from '@heroicons/react/outline';
 import NotificationSettings from './NotificationSettings';
+import GoalSettings from './GoalSettings';
 
 const Settings = ({ sectionParams }) => {
   // Get the active sub-section from sectionParams, default to 'notifications'
