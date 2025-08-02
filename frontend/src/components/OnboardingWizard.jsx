@@ -444,7 +444,7 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 flex flex-col z-50">
+    <div className="fixed inset-0 bg-[#0B0D14] flex flex-col z-50">
       <style>{`
         .onboarding-scroll::-webkit-scrollbar {
           display: none;
