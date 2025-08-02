@@ -74,6 +74,7 @@ const Login = () => {
           
           // Set success message immediately
           setMessage('Your account has been created successfully. You can now sign in.');
+          console.log('🎯 Message state set - should show success message now');
           setError(''); // Clear any previous errors
           
           // Clear form data after successful registration
@@ -86,11 +87,11 @@ const Login = () => {
             username: ''
           });
           
-          // Auto-switch to login tab after 2 seconds
+          // Auto-switch to login tab after 3 seconds (longer delay)
           setTimeout(() => {
-            console.log('🔄 Auto-switching to login tab');
+            console.log('🔄 Auto-switching to login tab after timeout');
             setIsLogin(true);
-          }, 2000);
+          }, 3000);
         } else {
           console.log('❌ Registration failed:', result.error);
           setError(result.error || 'Registration failed');
