@@ -3437,11 +3437,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Critical Foreign Key Constraint Resolution - User Registration/Data Creation Fix"
-  stuck_tasks:
-    - "Task Creation UUID Issue - Database Schema Problem"
+    - "Frontend Fix for Critical React Error During Onboarding Template Selection"
+  stuck_tasks: []
   test_all: false
-  test_priority: "high_first"
   test_priority: "high_first"
 
   - task: "Sidebar Navigation Cleanup and Profile Enhancement"
