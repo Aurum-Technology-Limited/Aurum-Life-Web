@@ -177,7 +177,7 @@ const Login = () => {
           <div className="flex mb-6">
             <button
               type="button"
-              onClick={() => {setIsLogin(true); setError(''); setMessage('');}}
+              onClick={() => {setIsLogin(true); setError(''); /* Don't clear message when switching to login */}}
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md border ${
                 isLogin
                   ? 'bg-yellow-500 text-black border-yellow-500'
