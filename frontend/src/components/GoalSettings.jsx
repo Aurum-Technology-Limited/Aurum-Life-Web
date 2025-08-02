@@ -20,17 +20,32 @@ const GoalSettings = () => {
 
   const fetchCurrentGoal = async () => {
     try {
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/alignment/monthly-goal`, {
+      // Guard clause for backend URL
+      const backendUrl = import.meta.env?.REACT_APP_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
+      if (!backendUrl) {
+        console.error('Backend URL not configured');
+        return;
+      }
+
+      // Guard clause for authentication token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const response = await fetch(`${backendUrl}/alignment/monthly-goal`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
       if (response.ok) {
         const data = await response.json();
-        setCurrentGoal(data.monthly_goal);
-        setMonthlyGoal(data.monthly_goal || '');
+        const goalValue = data?.monthly_goal || null;
+        setCurrentGoal(goalValue);
+        setMonthlyGoal(goalValue || '');
       }
     } catch (err) {
       console.error('Error fetching current goal:', err);
