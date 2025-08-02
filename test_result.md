@@ -139,7 +139,7 @@ backend:
 
 test_plan:
   current_focus:
-    - "Database Cleanup Verification - Backend API Testing"
+    - "Login Authentication 401 Error Fix - Backend API Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
