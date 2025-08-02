@@ -97,11 +97,6 @@ const Layout = ({ children }) => {
             );
           })}
         </nav>
-
-        {/* User menu */}
-        <div className="p-4 border-t border-gray-700">
-          <UserMenu />
-        </div>
       </div>
 
       {/* Main content */}
