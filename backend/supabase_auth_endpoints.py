@@ -296,6 +296,10 @@ async def get_current_user_profile(request: Request):
             
             if legacy_user:
                 logger.info("✅ Found user in legacy users table")
+                # Map level field to has_completed_onboarding (level 2 = completed, level 1 = not completed)
+                level = legacy_user.get('level', 1)
+                has_completed_onboarding = level >= 2
+                
                 return UserResponse(
                     id=legacy_user['id'],
                     username=legacy_user.get('username', ''),
@@ -303,7 +307,7 @@ async def get_current_user_profile(request: Request):
                     first_name=legacy_user.get('first_name', ''),
                     last_name=legacy_user.get('last_name', ''),
                     is_active=legacy_user.get('is_active', True),
-                    has_completed_onboarding=legacy_user.get('has_completed_onboarding', False),  # Default to False
+                    has_completed_onboarding=has_completed_onboarding,
                     created_at=legacy_user.get('created_at')
                 )
         except Exception as legacy_lookup_error:
