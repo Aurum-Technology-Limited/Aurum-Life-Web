@@ -36,37 +36,17 @@ const GoalSettings = () => {
 
   const fetchAlignmentData = async () => {
     try {
-      // Guard clause for backend URL
-      const backendUrl = import.meta.env?.REACT_APP_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
-      if (!backendUrl) {
-        console.error('Backend URL not configured');
-        return;
-      }
-
-      // Guard clause for authentication token
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No authentication token found');
-        return;
-      }
-
-      const response = await fetch(`${backendUrl}/alignment/dashboard`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Safe data assignment with defaults
-        const safeData = {
-          rolling_weekly_score: data?.rolling_weekly_score || 0,
-          monthly_score: data?.monthly_score || 0,
-          progress_percentage: data?.progress_percentage || 0
-        };
-        setAlignmentData(safeData);
-      }
+      // Use centralized API client instead of manual fetch
+      const response = await alignmentScoreAPI.getDashboardData();
+      const data = response.data;
+      
+      // Safe data assignment with defaults
+      const safeData = {
+        rolling_weekly_score: data?.rolling_weekly_score || 0,
+        monthly_score: data?.monthly_score || 0,
+        progress_percentage: data?.progress_percentage || 0
+      };
+      setAlignmentData(safeData);
     } catch (err) {
       console.error('Error fetching alignment data:', err);
     }
