@@ -461,7 +461,7 @@ class AlignmentScoreAPITester:
         # Complete the task (should trigger alignment score calculation)
         task_update_data = {
             "completed": True,
-            "status": "completed"
+            "status": "Completed"
         }
         
         result = self.make_request('PUT', f'/tasks/{task_id}', data=task_update_data, use_auth=True)
