@@ -191,7 +191,14 @@ const Login = () => {
           <div className="flex mb-6">
             <button
               type="button"
-              onClick={() => {setIsLogin(true); setError(''); /* Don't clear message when switching to login */}}
+              onClick={() => {
+                setIsLogin(true); 
+                setError(''); 
+                // Don't clear success message when switching to login manually
+                if (!justRegistered) {
+                  setMessage('');
+                }
+              }}
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md border ${
                 isLogin
                   ? 'bg-yellow-500 text-black border-yellow-500'
@@ -202,7 +209,12 @@ const Login = () => {
             </button>
             <button
               type="button"
-              onClick={() => {setIsLogin(false); setError(''); setMessage('');}}
+              onClick={() => {
+                setIsLogin(false); 
+                setError(''); 
+                setMessage(''); // Always clear message when switching to signup
+                setJustRegistered(false); // Reset registration state
+              }}
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md border-t border-r border-b ${
                 !isLogin
                   ? 'bg-yellow-500 text-black border-yellow-500'
