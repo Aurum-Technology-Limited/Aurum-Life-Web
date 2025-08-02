@@ -32,6 +32,86 @@ if not supabase_url or not supabase_anon_key:
 supabase: Client = create_client(supabase_url, supabase_service_key or supabase_anon_key)
 
 
+class SupabaseSleepReflectionService:
+    """Service for managing sleep reflection data"""
+    
+    @staticmethod
+    async def create_sleep_reflection(user_id: str, reflection_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new sleep reflection entry"""
+        try:
+            # Prepare data for insertion
+            sleep_data = {
+                'user_id': user_id,
+                'date': reflection_data.get('date'),
+                'sleep_quality': reflection_data.get('sleep_quality', 5),
+                'feeling': reflection_data.get('feeling', ''),
+                'sleep_hours': reflection_data.get('sleep_hours', ''),
+                'sleep_influences': reflection_data.get('sleep_influences', ''),
+                'today_intention': reflection_data.get('today_intention', ''),
+                'type': reflection_data.get('type', 'morning_sleep_reflection'),
+                'created_at': 'now()',
+                'updated_at': 'now()'
+            }
+            
+            # Insert into sleep_reflections table
+            response = (supabase.table('sleep_reflections')
+                       .insert(sleep_data)
+                       .execute())
+            
+            if response.data:
+                logger.info(f"✅ Created sleep reflection for user: {user_id}")
+                return response.data[0]
+            else:
+                logger.error(f"Failed to create sleep reflection: {response}")
+                raise Exception("Failed to create sleep reflection")
+                
+        except Exception as e:
+            logger.error(f"Error creating sleep reflection: {e}")
+            raise e
+    
+    @staticmethod
+    async def get_user_sleep_reflections(user_id: str, limit: int = 30) -> List[Dict[str, Any]]:
+        """Get user's sleep reflections ordered by date (most recent first)"""
+        try:
+            response = (supabase.table('sleep_reflections')
+                       .select('*')
+                       .eq('user_id', user_id)
+                       .order('date', desc=True)
+                       .limit(limit)
+                       .execute())
+            
+            reflections = response.data or []
+            
+            logger.info(f"✅ Retrieved {len(reflections)} sleep reflections for user: {user_id}")
+            return reflections
+            
+        except Exception as e:
+            logger.error(f"Error getting sleep reflections: {e}")
+            return []
+    
+    @staticmethod 
+    async def get_sleep_reflection_by_date(user_id: str, date: str) -> Dict[str, Any]:
+        """Get sleep reflection for a specific date"""
+        try:
+            response = (supabase.table('sleep_reflections')
+                       .select('*')
+                       .eq('user_id', user_id)
+                       .eq('date', date)
+                       .single()
+                       .execute())
+            
+            if response.data:
+                logger.info(f"✅ Found sleep reflection for user {user_id} on {date}")
+                return response.data
+            else:
+                logger.info(f"No sleep reflection found for user {user_id} on {date}")
+                return {}
+                
+        except Exception as e:
+            logger.error(f"Error getting sleep reflection by date: {e}")
+            return {}
+
+
 class SupabaseUserService:
     """User management with Supabase Auth"""
     
