@@ -92,7 +92,6 @@ export const AuthProvider = ({ children }) => {
 
         if (userResponse.ok) {
           const userData = await userResponse.json();
-          console.log('✅ Login successful - setting user data:', userData);
           setUser(userData);
           setLoading(false); // Set loading false AFTER setting user
           
