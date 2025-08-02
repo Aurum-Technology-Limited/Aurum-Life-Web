@@ -110,6 +110,15 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
 
       console.log('🎉 Onboarding: Template application completed successfully!');
       
+      // Mark onboarding as completed in backend
+      try {
+        await api.post('/auth/complete-onboarding');
+        console.log('✅ Onboarding marked as completed in backend');
+      } catch (onboardingError) {
+        console.error('⚠️ Failed to mark onboarding as completed:', onboardingError);
+        // Don't fail the entire onboarding for this
+      }
+      
       // Move to completion step
       setCurrentStep(steps.length - 1);
       
