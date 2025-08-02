@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """
-QUICK HEALTH CHECK - CORE API CONNECTIVITY TESTING
-Testing core APIs to ensure frontend onboarding UI improvements don't affect backend functionality.
+MORNING SLEEP REFLECTION BACKEND TESTING - PRIORITY 2
+Testing Morning Sleep Reflection backend functionality after Priority 1 fixes.
 
 FOCUS AREAS:
-1. Basic API connectivity to /api/health (if exists) or /api/auth/me endpoint
-2. Core authentication endpoints are responding correctly
-3. No new errors in backend logs
-
-This is a quick verification that frontend onboarding UI changes (hiding scrollbar and full-screen layout) 
-haven't broken any backend communication. The changes were purely CSS/UI related and should not affect API functionality.
+1. POST /api/sleep-reflections - Create new sleep reflection
+2. GET /api/sleep-reflections - Retrieve user's sleep reflections
+3. Authentication and authorization verification
+4. Data validation and error handling
+5. User data isolation
 
 TESTING CRITERIA:
-- Backend connectivity
-- Authentication endpoints working
-- Core API endpoints responding
-- No critical errors in logs
+- Both endpoints working at 100% success rate
+- Proper authentication and authorization
+- Data validation and error handling working
+- User data isolation maintained
+- Ready for frontend integration testing
+
+CREDENTIALS: marc.alleyne@aurumtechnologyltd.com / password
 """
 
 import requests
