@@ -50,9 +50,8 @@ const AlignmentScore = () => {
   };
 
   const handleSetGoal = () => {
-    // This will be handled by the Settings integration
-    // For now, we can show a message or redirect to settings
-    console.log('Redirect to settings to set monthly goal');
+    // Navigate to Settings page with goals subsection
+    navigate('/settings', { state: { subSection: 'goals' } });
   };
 
   // Calculate brain fill and glow intensity based on progress
