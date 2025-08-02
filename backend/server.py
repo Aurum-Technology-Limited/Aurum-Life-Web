@@ -25,7 +25,8 @@ from supabase_services import (
     SupabaseProjectService,
     SupabaseTaskService,
     SupabaseDashboardService,
-    SupabaseInsightsService
+    SupabaseInsightsService,
+    SupabaseSleepReflectionService
 )
 from notification_service import NotificationService
 from supabase_auth import get_current_active_user, verify_token
