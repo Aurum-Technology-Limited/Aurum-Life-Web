@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Brain, Info, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/BackendAuthContext';
 
-const AlignmentScore = () => {
+const AlignmentScore = ({ onSectionChange }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [alignmentData, setAlignmentData] = useState({
     rolling_weekly_score: 0,
     monthly_score: 0,
