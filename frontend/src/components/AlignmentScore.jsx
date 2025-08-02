@@ -27,32 +27,11 @@ const AlignmentScore = ({ onSectionChange }) => {
       setLoading(true);
       setError(null);
 
-      // Guard clause for backend URL
-      const backendUrl = import.meta.env?.REACT_APP_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
-      if (!backendUrl) {
-        throw new Error('Backend URL not configured');
-      }
-
-      // Guard clause for authentication token
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch(`${backendUrl}/alignment/dashboard`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Failed to fetch alignment data`);
-      }
-
-      const data = await response.json();
+      // Use centralized API client instead of manual fetch
+      const response = await alignmentScoreAPI.getDashboardData();
       
       // Validate response data structure with safe defaults
+      const data = response.data;
       const safeData = {
         rolling_weekly_score: data?.rolling_weekly_score || 0,
         monthly_score: data?.monthly_score || 0,
@@ -64,7 +43,16 @@ const AlignmentScore = ({ onSectionChange }) => {
       setAlignmentData(safeData);
     } catch (err) {
       console.error('Error fetching alignment data:', err);
-      setError(err.message);
+      // Handle specific error types
+      if (err.message.includes('Authentication failed')) {
+        setError('Please log in again');
+      } else if (err.message.includes('timeout')) {
+        setError('Request timed out. Please check your connection.');
+      } else if (err.message.includes('Server temporarily unavailable')) {
+        setError('Server temporarily unavailable. Please try again later.');
+      } else {
+        setError('Unable to load alignment data');
+      }
     } finally {
       setLoading(false);
     }
