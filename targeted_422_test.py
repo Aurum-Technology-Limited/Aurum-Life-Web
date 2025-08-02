@@ -31,8 +31,8 @@ class Targeted422ErrorTester:
         self.session = requests.Session()
         self.test_results = []
         self.auth_token = None
-        # Use existing test user
-        self.test_user_email = "nav.test@aurumlife.com"
+        # Use working test user
+        self.test_user_email = "test422.user@aurumlife.com"
         self.test_user_password = "testpassword123"
         self.found_422_errors = []
         
