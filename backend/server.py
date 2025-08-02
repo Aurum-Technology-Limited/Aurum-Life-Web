@@ -625,6 +625,38 @@ async def search_tasks(
         logger.error(f"Error searching tasks: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.post("/sleep-reflections", response_model=dict)
+async def create_sleep_reflection(
+    reflection_data: dict,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Create a new sleep reflection entry"""
+    try:
+        result = await SupabaseSleepReflectionService.create_sleep_reflection(
+            str(current_user.id), 
+            reflection_data
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error creating sleep reflection: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/sleep-reflections", response_model=List[dict])
+async def get_sleep_reflections(
+    limit: int = Query(30, description="Number of reflections to retrieve"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get user's sleep reflections"""
+    try:
+        reflections = await SupabaseSleepReflectionService.get_user_sleep_reflections(
+            str(current_user.id), 
+            limit=limit
+        )
+        return reflections
+    except Exception as e:
+        logger.error(f"Error getting sleep reflections: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 @api_router.put("/tasks/{task_id}", response_model=dict)
 async def update_task(
     task_id: str, 
