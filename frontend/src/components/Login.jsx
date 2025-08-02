@@ -68,8 +68,19 @@ const Login = () => {
         const result = await register(userData);
         if (result.success) {          
           setMessage('Your account has been created successfully. You can now sign in.');
-          // Switch to login view after successful registration
-          setTimeout(() => setIsLogin(true), 2000);
+          // Clear form data after successful registration
+          setFormData({
+            email: formData.email, // Keep email for easier login
+            password: '',
+            confirmPassword: '',
+            firstName: '',
+            lastName: '',
+            username: ''
+          });
+          // Switch to login view after successful registration, but keep the message
+          setTimeout(() => {
+            setIsLogin(true);
+          }, 1500);
         } else {
           setError(result.error || 'Registration failed');
         }
