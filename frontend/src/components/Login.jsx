@@ -83,10 +83,10 @@ const Login = () => {
             lastName: '',
             username: ''
           });
-          // Don't auto-switch to login - let the user see the message and manually switch
-          // setTimeout(() => {
-          //   setIsLogin(true);
-          // }, 1500);
+          // Automatically switch to login tab after showing the message
+          setTimeout(() => {
+            setIsLogin(true);
+          }, 100); // Very short delay to ensure message renders first
         } else {
           console.log('Registration error:', result.error); // Debug logging
           setError(result.error || 'Registration failed');
