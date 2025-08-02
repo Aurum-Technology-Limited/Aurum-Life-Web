@@ -18,7 +18,6 @@ const Login = () => {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [forceUpdate, setForceUpdate] = useState(0);
 
 
 
