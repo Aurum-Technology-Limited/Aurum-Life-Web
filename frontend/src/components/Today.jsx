@@ -446,7 +446,7 @@ const Today = memo(() => {
     <DndProvider backend={HTML5Backend}>
       {/* Daily Ritual Prompts (moved from DailyRitualManager) */}
       {user && showMorningPrompt && (
-        <MorningPlanningPrompt
+        <MorningReflection
           onComplete={handleMorningComplete}
           onClose={closeMorningPrompt}
         />
