@@ -319,6 +319,10 @@ async def get_current_user_profile(request: Request):
             
             if profile:
                 logger.info("✅ Found user in user_profiles table")
+                # Map level field to has_completed_onboarding (level 2 = completed, level 1 = not completed)
+                level = profile.get('level', 1)
+                has_completed_onboarding = level >= 2
+                
                 return UserResponse(
                     id=profile['id'],
                     username=profile.get('username', ''),
@@ -326,7 +330,7 @@ async def get_current_user_profile(request: Request):
                     first_name=profile.get('first_name', ''),
                     last_name=profile.get('last_name', ''),
                     is_active=profile.get('is_active', True),
-                    has_completed_onboarding=profile.get('has_completed_onboarding', False),  # Default to False
+                    has_completed_onboarding=has_completed_onboarding,
                     created_at=profile.get('created_at')
                 )
         except Exception as profile_lookup_error:
