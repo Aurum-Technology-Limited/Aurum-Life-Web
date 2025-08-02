@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """
-NOTIFICATION SETTINGS API TESTING
-Complete testing of the Notification Settings API endpoints that were just added to the backend server.
+QUICK HEALTH CHECK - CORE API CONNECTIVITY TESTING
+Testing core APIs to ensure frontend onboarding UI improvements don't affect backend functionality.
 
 FOCUS AREAS:
-1. Authentication with nav.test@aurumlife.com / testpassword123
-2. GET /api/notifications/preferences - should return notification preferences (or create default ones if none exist)
-3. PUT /api/notifications/preferences - test updating notification preferences with sample data
-4. POST /api/notifications/test - test the test notification feature
-5. GET /api/notifications - test getting notifications list
+1. Basic API connectivity to /api/health (if exists) or /api/auth/me endpoint
+2. Core authentication endpoints are responding correctly
+3. No new errors in backend logs
+
+This is a quick verification that frontend onboarding UI changes (hiding scrollbar and full-screen layout) 
+haven't broken any backend communication. The changes were purely CSS/UI related and should not affect API functionality.
 
 TESTING CRITERIA:
-- Proper authentication
-- Correct response formats
-- Error handling
-- Data validation
-- NotificationService import and database operations
+- Backend connectivity
+- Authentication endpoints working
+- Core API endpoints responding
+- No critical errors in logs
 """
 
 import requests
