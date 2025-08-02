@@ -318,9 +318,7 @@ async def get_current_user_profile(request: Request):
                     first_name=profile.get('first_name', ''),
                     last_name=profile.get('last_name', ''),
                     is_active=profile.get('is_active', True),
-                    level=profile.get('level', 1),
-                    total_points=profile.get('total_points', 0),
-                    current_streak=profile.get('current_streak', 0),
+                    has_completed_onboarding=profile.get('has_completed_onboarding', False),  # Default to False
                     created_at=profile.get('created_at')
                 )
         except Exception as profile_lookup_error:
