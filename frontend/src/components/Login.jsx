@@ -84,8 +84,6 @@ const Login = () => {
 
         const result = await register(userData);
         if (result.success) {
-          // Show success message immediately on the signup form
-          setMessage('Your account has been created successfully. You can now sign in.');
           // Clear form data after successful registration
           setFormData({
             email: formData.email, // Keep email for easier login
@@ -95,10 +93,8 @@ const Login = () => {
             lastName: '',
             username: ''
           });
-          // Switch to login tab after 2 seconds so user can see the message
-          setTimeout(() => {
-            setIsLogin(true);
-          }, 2000);
+          // Trigger the useEffect to handle success message and tab switching
+          setJustRegistered(true);
         } else {
           setError(result.error || 'Registration failed');
         }
