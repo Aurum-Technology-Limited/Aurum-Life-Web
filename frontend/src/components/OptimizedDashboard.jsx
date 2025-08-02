@@ -230,7 +230,7 @@ const OptimizedDashboard = () => {
     setShowOnboarding(false);
   };
 
-  // Memoized stats calculations
+  // Memoized stats calculations with data sanitization
   const stats = useMemo(() => {
     if (!dashboardData?.stats) {
       return {
@@ -242,11 +242,23 @@ const OptimizedDashboard = () => {
     }
 
     const { stats } = dashboardData;
+    
+    // Sanitize all stat values to ensure they're numbers
+    const sanitizeStat = (value, defaultValue = 0) => {
+      if (value === null || value === undefined) return defaultValue;
+      if (typeof value === 'number') return value;
+      if (typeof value === 'string') {
+        const parsed = parseInt(value, 10);
+        return isNaN(parsed) ? defaultValue : parsed;
+      }
+      return defaultValue;
+    };
+
     return {
-      currentStreak: stats.current_streak || 0,
-      habitsToday: stats.habits_completed_today || 0,
-      activeLearning: stats.courses_enrolled || 0,
-      achievements: stats.badges_earned || 0
+      currentStreak: sanitizeStat(stats.current_streak, 0),
+      habitsToday: sanitizeStat(stats.habits_completed_today, 0),
+      activeLearning: sanitizeStat(stats.courses_enrolled, 0),
+      achievements: sanitizeStat(stats.badges_earned, 0)
     };
   }, [dashboardData]);
 
