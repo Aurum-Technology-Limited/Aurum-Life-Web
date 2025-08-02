@@ -320,6 +320,47 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
+  const refreshUser = async () => {
+    try {
+      if (!token) {
+        console.log('No token available for user refresh');
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      console.log('🔄 Refreshing user data from backend...');
+      
+      const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        console.log('✅ User data refreshed successfully', userData);
+        return { 
+          success: true, 
+          data: userData 
+        };
+      } else {
+        console.error('Failed to refresh user data:', response.status);
+        return { 
+          success: false, 
+          error: 'Failed to refresh user data' 
+        };
+      }
+      
+    } catch (error) {
+      console.error('Refresh user error:', error);
+      return { 
+        success: false, 
+        error: 'Network error. Please try again.' 
+      };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -328,6 +369,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateProfile,
+    refreshUser,
     forgotPassword,
     loginWithGoogle,
     handleGoogleCallback
