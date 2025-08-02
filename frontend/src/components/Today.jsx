@@ -140,55 +140,6 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
 
 DragTaskItem.displayName = 'DragTaskItem';
 
-const AvailableTaskItem = memo(({ task, onAdd }) => {
-  const [{ isDragging }, drag] = useDrag({
-    type: 'available-task',
-    item: { id: task.id, task },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'text-red-400';
-      case 'medium': return 'text-yellow-400';
-      case 'low': return 'text-green-400';
-      default: return 'text-gray-400';
-    }
-  };
-
-  return (
-    <div
-      ref={drag}
-      className={`bg-gray-800/50 border border-gray-700 rounded-lg p-3 hover:border-gray-600 transition-all duration-200 cursor-move ${
-        isDragging ? 'opacity-50' : ''
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-1">
-            <h5 className="text-sm font-medium text-white truncate">{task.name}</h5>
-            <div className={`h-2 w-2 rounded-full ${getPriorityColor(task.priority).replace('text-', 'bg-')}`} />
-          </div>
-          <div className="text-xs text-gray-500">
-            {task.project_name && <span>{task.project_name}</span>}
-          </div>
-        </div>
-        <button
-          onClick={() => onAdd(task.id)}
-          className="p-1 text-gray-400 hover:text-yellow-400 transition-colors"
-          title="Add to Today"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
-});
-
-AvailableTaskItem.displayName = 'AvailableTaskItem';
-
 const Today = memo(() => {
   const { onDataMutation } = useDataContext();
   const { user } = useAuth(); // Get authenticated user for daily rituals
