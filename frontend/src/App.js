@@ -9,6 +9,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ProtectedRoute from './components/ProtectedRoute';
+import AppWrapper from './components/AppWrapper';
 import SimpleLayout from './components/SimpleLayout';
 import globalErrorHandler from './utils/globalErrorHandler'; // Import global error handler
 import ErrorBoundary from './components/ErrorBoundary';
