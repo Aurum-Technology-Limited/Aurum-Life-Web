@@ -20,7 +20,7 @@ from typing import Dict, Any
 import uuid
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://3a5afcb7-fa6e-48fa-9073-f3c58548c911.preview.emergentagent.com/api"
+BACKEND_URL = "https://55e67447-e9b1-4184-8259-f18223824d38.preview.emergentagent.com/api"
 
 class BackendHealthChecker:
     def __init__(self):
