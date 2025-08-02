@@ -137,7 +137,37 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
 
     } catch (err) {
       console.error('🚨 Onboarding: Template application failed:', err);
-      setError(err.response?.data?.detail || 'Failed to apply template. Please try again.');
+      
+      // Extract user-friendly error message from API response
+      let errorMessage = 'Failed to apply template. Please try again.';
+      
+      if (err.response?.data) {
+        const responseData = err.response.data;
+        
+        // Handle 422 validation errors (Pydantic validation response)
+        if (err.response.status === 422 && responseData.detail) {
+          if (Array.isArray(responseData.detail)) {
+            // Extract first validation error message
+            const firstError = responseData.detail[0];
+            if (firstError && firstError.msg) {
+              errorMessage = `Validation error: ${firstError.msg}`;
+            } else {
+              errorMessage = 'There was a validation error with the template data. Please try again.';
+            }
+          } else if (typeof responseData.detail === 'string') {
+            errorMessage = responseData.detail;
+          }
+        }
+        // Handle other error types
+        else if (responseData.message) {
+          errorMessage = responseData.message;
+        } else if (typeof responseData.detail === 'string') {
+          errorMessage = responseData.detail;
+        }
+      }
+      
+      // Ensure error is always a string for React rendering
+      setError(String(errorMessage));
       setIsApplying(false);
     }
   };
