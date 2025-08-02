@@ -665,9 +665,34 @@ async def update_task(
     task_data: TaskUpdate, 
     current_user: User = Depends(get_current_active_user_hybrid)
 ):
-    """Update a task"""
+    """Update a task and calculate alignment score if completed"""
     try:
+        # Get the current task state before update
+        current_task = await SupabaseTaskService.get_task(task_id, str(current_user.id))
+        was_completed = current_task.get('completed', False) if current_task else False
+        
+        # Update the task
         result = await SupabaseTaskService.update_task(task_id, str(current_user.id), task_data)
+        
+        # Check if task was just completed (wasn't completed before, but is now)
+        is_now_completed = task_data.completed if hasattr(task_data, 'completed') else False
+        
+        if not was_completed and is_now_completed:
+            # Task was just completed - calculate and record alignment score
+            try:
+                alignment_service = AlignmentScoreService()
+                score_result = await alignment_service.record_task_completion(str(current_user.id), task_id)
+                if score_result:
+                    logger.info(f"Recorded alignment score for task {task_id}: {score_result['alignment_score']['points_earned']} points")
+                    # Add alignment score info to the response
+                    result['alignment_score'] = {
+                        'points_earned': score_result['alignment_score']['points_earned'],
+                        'breakdown': score_result['breakdown']
+                    }
+            except Exception as alignment_error:
+                # Don't fail the task update if alignment scoring fails
+                logger.error(f"Failed to record alignment score for task {task_id}: {alignment_error}")
+        
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
