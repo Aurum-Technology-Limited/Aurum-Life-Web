@@ -340,13 +340,13 @@ class ComprehensiveAlignmentScoreTester:
         pillar_id = pillar_result['data']['id']
         self.created_resources.append(('pillar', pillar_id))
         
-        # Create a test area with importance 8 (should give 20 points bonus since importance 5 gives 20 points)
-        # Note: Based on the algorithm, importance 5 gives 20 points, so importance 8 should also give 20 points
+        # Create a test area with importance 5 (maximum importance that gives 20 points bonus)
+        # Note: Based on the algorithm, importance 5 gives maximum 20 points bonus
         area_data = {
-            "name": "High Importance Test Area (8/10)",
-            "description": "Test area with importance 8 for alignment testing",
+            "name": "High Importance Test Area (5/5)",
+            "description": "Test area with maximum importance for alignment testing",
             "pillar_id": pillar_id,
-            "importance": 8,
+            "importance": 5,
             "icon": "star",
             "color": "#4ECDC4"
         }
