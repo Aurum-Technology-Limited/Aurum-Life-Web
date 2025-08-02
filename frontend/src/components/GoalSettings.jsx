@@ -155,18 +155,23 @@ const GoalSettings = () => {
   };
 
   const getSuggestedGoals = () => {
-    if (!alignmentData) return [100, 300, 500, 1000];
+    // Safe defaults if no alignment data is available
+    if (!alignmentData || typeof alignmentData !== 'object') {
+      return [100, 300, 500, 1000];
+    }
     
-    const currentMonthly = alignmentData.monthly_score || 0;
-    const weeklyAvg = alignmentData.rolling_weekly_score || 0;
+    const currentMonthly = alignmentData?.monthly_score || 0;
+    const weeklyAvg = alignmentData?.rolling_weekly_score || 0;
     
-    // Suggest goals based on current performance
+    // Suggest goals based on current performance with safe calculations
     const conservative = Math.max(100, Math.round(currentMonthly * 1.2));
     const moderate = Math.max(300, Math.round(weeklyAvg * 4.5));
     const ambitious = Math.max(500, Math.round(weeklyAvg * 6));
     const stretch = Math.max(1000, Math.round(weeklyAvg * 8));
     
-    return [conservative, moderate, ambitious, stretch];
+    // Return unique, sorted values
+    const goals = Array.from(new Set([conservative, moderate, ambitious, stretch])).sort((a, b) => a - b);
+    return goals.length >= 4 ? goals : [100, 300, 500, 1000];
   };
 
   if (loading) {
