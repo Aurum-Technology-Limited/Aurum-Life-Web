@@ -3,6 +3,7 @@ import { X, ArrowRight, ArrowLeft, CheckCircle, User, Briefcase, GraduationCap, 
 import { ONBOARDING_TEMPLATES } from '../data/onboardingTemplates';
 import { api } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
+import HierarchyIntroduction from './HierarchyIntroduction';
 
 const OnboardingWizard = ({ onComplete, onClose }) => {
   const { onDataMutation } = useDataContext();
