@@ -265,15 +265,21 @@ const GoalSettings = () => {
             Suggested Goals
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {suggestedGoals.map((goal) => (
-              <button
-                key={goal}
-                onClick={() => setMonthlyGoal(goal.toString())}
-                className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-sm"
-              >
-                {goal} pts
-              </button>
-            ))}
+            {suggestedGoals && Array.isArray(suggestedGoals) && suggestedGoals.length > 0 ? (
+              suggestedGoals.map((goal) => (
+                <button
+                  key={goal}
+                  onClick={() => setMonthlyGoal(goal.toString())}
+                  className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-sm"
+                >
+                  {goal} pts
+                </button>
+              ))
+            ) : (
+              <div className="col-span-full text-gray-500 text-sm text-center py-2">
+                Complete some tasks to see personalized suggestions
+              </div>
+            )}
           </div>
         </div>
 
