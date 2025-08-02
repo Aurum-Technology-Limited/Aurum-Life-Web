@@ -18,6 +18,22 @@ const Login = () => {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // Force success message to display when showSuccessMessage is true
+  useEffect(() => {
+    if (showSuccessMessage) {
+      setMessage('Your account has been created successfully. You can now sign in.');
+      
+      // Auto-switch to login tab after 3 seconds
+      const timer = setTimeout(() => {
+        setIsLogin(true);
+        setShowSuccessMessage(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessMessage]);
 
 
 
