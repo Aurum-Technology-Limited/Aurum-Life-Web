@@ -819,6 +819,59 @@ class SupabaseTaskService:
             return []
     
     @staticmethod
+    async def search_tasks_by_name(user_id: str, search_query: str) -> List[Dict[str, Any]]:
+        """Search tasks by name - only returns tasks with 'To Do' or 'In Progress' status"""
+        try:
+            # Search for tasks matching the name query and filter by status
+            # Using ilike for case-insensitive search with wildcards
+            query = (supabase.table('tasks')
+                    .select('*, projects(name)')  # Join with projects to get project name
+                    .eq('user_id', user_id)
+                    .ilike('name', f'%{search_query}%')  # Case-insensitive partial match
+                    .in_('status', ['todo', 'in_progress'])  # Only todo and in_progress tasks
+                    .eq('completed', False)  # Exclude completed tasks
+                    .order('created_at', desc=True)  # Most recent first
+                    .limit(20))  # Limit results for performance
+            
+            response = query.execute()
+            tasks = response.data or []
+            
+            # Transform data to match expected format
+            status_reverse_mapping = {
+                'todo': 'todo',
+                'in_progress': 'in_progress',
+                'completed': 'completed',
+                'review': 'review'
+            }
+            
+            priority_reverse_mapping = {
+                'Low': 'low',
+                'Medium': 'medium', 
+                'High': 'high'
+            }
+            
+            for task in tasks:
+                task['status'] = status_reverse_mapping.get(task.get('status'), 'todo')
+                task['priority'] = priority_reverse_mapping.get(task.get('priority'), 'medium')
+                
+                # Extract project name from joined data
+                if task.get('projects') and isinstance(task['projects'], dict):
+                    task['project_name'] = task['projects'].get('name', '')
+                else:
+                    task['project_name'] = ''
+                
+                # Clean up the joined projects data
+                if 'projects' in task:
+                    del task['projects']
+            
+            logger.info(f"✅ Found {len(tasks)} tasks matching '{search_query}' for user: {user_id}")
+            return tasks
+            
+        except Exception as e:
+            logger.error(f"Error searching tasks: {e}")
+            return []
+    
+    @staticmethod
     async def update_task(task_id: str, user_id: str, task_data: TaskUpdate) -> Dict[str, Any]:
         """Update a task"""
         try:
