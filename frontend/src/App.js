@@ -11,6 +11,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppWrapper from './components/AppWrapper';
 import SimpleLayout from './components/SimpleLayout';
+import { Toaster } from './components/ui/toaster';
 import globalErrorHandler from './utils/globalErrorHandler'; // Import global error handler
 import ErrorBoundary from './components/ErrorBoundary';
 import PasswordReset from './components/PasswordReset';
