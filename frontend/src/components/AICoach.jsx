@@ -484,6 +484,26 @@ const ResponseModal = ({ isOpen, onClose, response, title }) => {
         </div>
         
         <div className="space-y-4 mb-6">
+          {/* Success Message */}
+          {response.success_message && (
+            <div className="p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
+              <p className="text-green-400 font-medium">{response.success_message}</p>
+              
+              {response.project_created && (
+                <div className="mt-3">
+                  <p className="text-sm text-gray-300">
+                    <strong>Project:</strong> {response.project_created.name}
+                  </p>
+                  {response.tasks_created && response.tasks_created.length > 0 && (
+                    <p className="text-sm text-gray-300 mt-1">
+                      <strong>Tasks Created:</strong> {response.tasks_created.length}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
           {response.suggested_project_title && (
             <div>
               <h4 className="text-sm font-semibold text-yellow-400 mb-2">Suggested Project Title:</h4>
@@ -499,7 +519,7 @@ const ResponseModal = ({ isOpen, onClose, response, title }) => {
                   <li key={index} className="flex items-start space-x-3 p-3 bg-gray-800/50 rounded-lg">
                     <span className="text-yellow-400 font-semibold text-sm mt-0.5">{index + 1}.</span>
                     <div className="flex-1">
-                      <p className="text-white">{task.name}</p>
+                      <p className="text-white">{task.name || task.title}</p>
                       {task.priority && (
                         <span className={`inline-block px-2 py-1 text-xs rounded mt-1 ${
                           task.priority === 'high' ? 'bg-red-500/20 text-red-400' :
