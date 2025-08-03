@@ -77,8 +77,11 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
   const handleOnboardingClose = async () => {
     console.log('⏩ Onboarding skipped - marking as completed');
     
-    // Set flag to prevent showing onboarding again
-    setOnboardingCompleted(true);
+    // Set local completion flag immediately
+    if (user?.id) {
+      localStorage.setItem(`onboarding_completed_${user.id}`, 'true');
+    }
+    
     setShowOnboarding(false);
     
     // Mark onboarding as completed in backend even when skipped
