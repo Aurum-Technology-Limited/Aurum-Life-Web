@@ -411,46 +411,25 @@ const AICoach = () => {
       setReviewLoading(true);
       setError(null);
       
-      // Get alignment score data and completed projects
-      const [alignmentResponse, projectsResponse] = await Promise.all([
-        api.get('/alignment/dashboard'),
-        api.get('/projects')
-      ]);
-
-      const completedProjects = projectsResponse.data.filter(p => p.status === 'Completed');
-      const alignmentData = alignmentResponse.data;
-
-      // Generate strategic review (simplified AI-like analysis)
-      const weeklyPoints = alignmentData.weekly_score || 0;
-      const monthlyGoal = alignmentData.monthly_goal || 1000;
-      const progressPercentage = Math.round((alignmentData.monthly_score / monthlyGoal) * 100);
-
-      let summary = `This week you earned ${weeklyPoints} alignment points by completing ${completedProjects.length} projects. `;
+      const response = await aiCoachAPI.getWeeklyReview();
       
-      if (progressPercentage > 75) {
-        summary += "Excellent alignment with your priorities! You're staying focused on high-impact activities. ";
-      } else if (progressPercentage > 50) {
-        summary += "Good progress on your goals. Consider focusing more on high-priority projects in important areas. ";
-      } else {
-        summary += "Your activity suggests room for better alignment. Focus on completing projects in your most important life areas. ";
-      }
-
-      if (completedProjects.length > 3) {
-        summary += "You're maintaining great project momentum. Keep this consistency for compound growth.";
-      } else {
-        summary += "Consider breaking larger goals into smaller, completable projects to build momentum.";
-      }
-
-      consumeQuota();
+      // Update quota after successful request
+      await loadQuota();
       
       setCurrentResponse({
-        weekly_summary: summary
+        weekly_summary: response.data.weekly_summary
       });
       setResponseTitle('Weekly Strategic Review');
       setResponseModalOpen(true);
       
     } catch (err) {
-      setError('Failed to generate weekly review. Please try again.');
+      if (err.response?.status === 429) {
+        setError('Too many requests. Please wait a moment before trying again.');
+      } else if (err.response?.status === 402) {
+        setError('Monthly AI interaction limit reached.');
+      } else {
+        setError('Failed to generate weekly review. Please try again.');
+      }
       console.error('Weekly review error:', err);
     } finally {
       setReviewLoading(false);
