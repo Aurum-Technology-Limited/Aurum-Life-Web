@@ -121,6 +121,18 @@
 
 user_problem_statement: "When a new user selects a template during onboarding, there's a 422 (Unprocessable Entity) status code error, which causes a React error because the frontend tries to render the raw error object."
 
+  - task: "Settings Menu Simplification - Remove Profile Option"
+    implemented: true
+    working: true
+    file: "frontend/src/components/Settings.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "🔧 SETTINGS MENU SIMPLIFICATION COMPLETED - Removed non-functional 'Profile' option from Settings page menu. Updated Settings.jsx to remove Profile item from menuItems array and renderSubSection switch statement. Settings menu now only displays 'Goals', 'Notifications', and 'Privacy & Security' as requested. Verified UserMenu.jsx already contains Profile link in user dropdown (top-right avatar) for standalone profile management. Clean surgical implementation with no other functionality affected."
+
   - task: "Alignment Score UI Text Corrections - Project-Based Scoring"
     implemented: true
     working: true
