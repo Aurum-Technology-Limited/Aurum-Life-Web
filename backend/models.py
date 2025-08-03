@@ -79,6 +79,16 @@ class UsernameChangeRecord(BaseModel):
     changed_at: datetime = Field(default_factory=datetime.utcnow)
     ip_address: Optional[str] = None
 
+class AccountDeletionConfirmation(BaseModel):
+    """Model for account deletion confirmation"""
+    confirmation_text: str
+    
+    @validator('confirmation_text')
+    def validate_confirmation_text(cls, v):
+        if v != 'DELETE':
+            raise ValueError('Confirmation text must be exactly "DELETE"')
+        return v
+
 # Password Reset Models
 class PasswordResetToken(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
