@@ -147,7 +147,6 @@ class OptimizedSupabaseClient:
             logger.error(f"Data extraction error: {e}")
             return []
     
-    @track_query_performance("optimized_select")
     async def optimized_select(
         self,
         table: str,
