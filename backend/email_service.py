@@ -102,7 +102,7 @@ class EmailService:
             user_name: User's first name or username
         """
         # Use the correct frontend URL for password reset
-        frontend_url = os.getenv('FRONTEND_URL', 'https://f4646b2e-0ec9-404e-813c-ae5666a33561.preview.emergentagent.com')
+        frontend_url = os.getenv('FRONTEND_URL', 'https://b5a62d15-d24c-4532-9cae-06d0896a435f.preview.emergentagent.com')
         reset_url = f"{frontend_url}/reset-password?token={reset_token}"
         
         subject = "Reset Your Aurum Life Password"

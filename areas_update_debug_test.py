@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 # Configuration - Use external URL from frontend/.env
-BACKEND_URL = "https://f4646b2e-0ec9-404e-813c-ae5666a33561.preview.emergentagent.com"
+BACKEND_URL = "https://b5a62d15-d24c-4532-9cae-06d0896a435f.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class AreasUpdateDebugTest:

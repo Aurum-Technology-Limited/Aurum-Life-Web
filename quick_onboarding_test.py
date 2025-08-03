@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BACKEND_URL = "https://f4646b2e-0ec9-404e-813c-ae5666a33561.preview.emergentagent.com/api"
+BACKEND_URL = "https://b5a62d15-d24c-4532-9cae-06d0896a435f.preview.emergentagent.com/api"
 TEST_USER_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_USER_PASSWORD = "password"
 

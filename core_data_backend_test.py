@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://f4646b2e-0ec9-404e-813c-ae5666a33561.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://b5a62d15-d24c-4532-9cae-06d0896a435f.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class CoreDataTestSuite:
