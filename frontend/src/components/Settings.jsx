@@ -16,6 +16,12 @@ const Settings = ({ sectionParams }) => {
       description: 'Set and manage your alignment goals'
     },
     {
+      key: 'notifications',
+      label: 'Notifications',
+      icon: BellIcon,
+      description: 'Configure notification preferences'
+    },
+    {
       key: 'privacy',
       label: 'Privacy & Security',
       icon: ShieldCheckIcon,
