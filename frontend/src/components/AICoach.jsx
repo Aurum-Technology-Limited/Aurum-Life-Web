@@ -706,22 +706,33 @@ const AICoach = () => {
       setSaveLoading(true);
       setError(null);
 
+      // Defensive check to ensure API dependency is properly injected
+      if (!api || !api.projects || !api.projects.createWithTasks) {
+        console.error('DEPENDENCY INJECTION ERROR: API service not properly injected', { 
+          api: !!api, 
+          projects: !!(api && api.projects), 
+          createWithTasks: !!(api && api.projects && api.projects.createWithTasks) 
+        });
+        throw new Error('API service not available. Please refresh the page and try again.');
+      }
+
+      console.log('Creating project with tasks...', { projectData, tasksData });
       const response = await api.projects.createWithTasks(projectData, tasksData);
 
       if (response.data.success) {
-        // Success! Close editor and clear error
+        // Success! Remove any error states and show success feedback
         setEditorModalOpen(false);
         setAiDecompositionResponse(null);
         setError(null);
         
-        // Show success toast notification
+        // Show success toast notification as required
         toast({
           title: "Success! Your new project has been added.",
           description: `Created "${projectData.title}" with ${tasksData.length} task${tasksData.length !== 1 ? 's' : ''}`,
           variant: "default",
         });
         
-        // Show success response modal as well
+        // Show success response modal
         setCurrentResponse({
           success_message: `Successfully created project "${projectData.title}" with ${tasksData.length} tasks`,
           project_created: response.data.project,
@@ -730,25 +741,31 @@ const AICoach = () => {
         setResponseTitle('Project Created Successfully!');
         setResponseModalOpen(true);
         
-        // Optional: Navigate to projects section to see the new project
-        // onSectionChange && onSectionChange('projects');
+        console.log('Project created successfully:', response.data);
       }
       
     } catch (err) {
       console.error('Save project error:', err);
       
-      if (err.response?.status === 422) {
-        setError('Please provide a project title.');
+      let errorMessage = 'Failed to save project. Please try again.';
+      
+      if (err.message && err.message.includes('API service not available')) {
+        errorMessage = err.message;
+      } else if (err.response?.status === 422) {
+        errorMessage = 'Please provide a project title.';
       } else if (err.response?.status === 401) {
-        setError('Authentication required. Please log in again.');
-      } else {
-        setError('Failed to save project. Please try again.');
+        errorMessage = 'Authentication required. Please log in again.';
       }
       
-      // Show error toast as well
+      // Remove any red "Failed to save" banner by clearing the error first
+      setError(null);
+      // Then set the new error message
+      setError(errorMessage);
+      
+      // Show error toast
       toast({
         title: "Failed to save project",
-        description: err.response?.status === 422 ? 'Please provide a project title.' : 'Please try again.',
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
