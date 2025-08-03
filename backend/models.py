@@ -60,9 +60,9 @@ class TokenData(BaseModel):
     user_id: Optional[str] = None
 
 class UserProfileUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    username: Optional[str] = None
+    first_name: str  # Mandatory field
+    last_name: str  # Mandatory field
+    username: str  # Mandatory field
 
 # Username change tracking model
 class UsernameChangeRecord(BaseModel):
