@@ -372,13 +372,10 @@ const AICoach = () => {
       setGoalLoading(true);
       setError(null);
       
-      const response = await api.post('/ai/decompose-project', {
-        project_name: goalText,
-        project_description: goalText,
-        template_type: 'general'
-      });
-
-      consumeQuota();
+      const response = await aiCoachAPI.decomposeGoal(goalText);
+      
+      // Update quota after successful request
+      await loadQuota();
       
       setCurrentResponse({
         suggested_project_title: goalText,
@@ -389,7 +386,13 @@ const AICoach = () => {
       setResponseModalOpen(true);
       
     } catch (err) {
-      setError('Failed to decompose goal. Please try again.');
+      if (err.response?.status === 429) {
+        setError('Too many requests. Please wait a moment before trying again.');
+      } else if (err.response?.status === 402) {
+        setError('Monthly AI interaction limit reached.');
+      } else {
+        setError('Failed to decompose goal. Please try again.');
+      }
       console.error('Goal decomposition error:', err);
     } finally {
       setGoalLoading(false);
