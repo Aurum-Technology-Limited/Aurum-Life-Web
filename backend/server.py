@@ -690,30 +690,14 @@ async def update_task(
     task_data: TaskUpdate, 
     current_user: User = Depends(get_current_active_user_hybrid)
 ):
-    """Update a task and calculate alignment score if completed"""
+    """Update a task (alignment scores now awarded only on project completion)"""
     try:
-        # Check if task was just completed (we'll determine this from the update data)
-        is_now_completed = task_data.completed if hasattr(task_data, 'completed') else False
-        
-        # Update the task
+        # Update the task (no alignment scoring for individual tasks anymore)
         result = await SupabaseTaskService.update_task(task_id, str(current_user.id), task_data)
         
-        # If task was just completed, calculate and record alignment score
-        # Note: We're assuming the task wasn't completed before if we're setting it to completed
-        if is_now_completed:
-            try:
-                alignment_service = AlignmentScoreService()
-                score_result = await alignment_service.record_task_completion(str(current_user.id), task_id)
-                if score_result:
-                    logger.info(f"Recorded alignment score for task {task_id}: {score_result['alignment_score']['points_earned']} points")
-                    # Add alignment score info to the response
-                    result['alignment_score'] = {
-                        'points_earned': score_result['alignment_score']['points_earned'],
-                        'breakdown': score_result['breakdown']
-                    }
-            except Exception as alignment_error:
-                # Don't fail the task update if alignment scoring fails
-                logger.error(f"Failed to record alignment score for task {task_id}: {alignment_error}")
+        # Log completion for visibility but don't award points
+        if hasattr(task_data, 'completed') and task_data.completed:
+            logger.info(f"Task {task_id} completed. Note: Alignment points are now awarded only on project completion.")
         
         return result
     except ValueError as e:
