@@ -9,7 +9,7 @@ import json
 from datetime import datetime, date, timedelta
 
 # Configuration
-BACKEND_URL = "https://2ba83010-29ce-4f25-8827-92c31097d7b1.preview.emergentagent.com/api"
+BACKEND_URL = "https://d5525f43-5dcd-48e4-b22b-982ef0b3bb33.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password"
 
