@@ -23,7 +23,7 @@ import time
 import uuid
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://b5a62d15-d24c-4532-9cae-06d0896a435f.preview.emergentagent.com/api"
+BACKEND_URL = "https://0a9c9d0c-2e17-4f34-937d-e8e0fba8eec7.preview.emergentagent.com/api"
 
 class Targeted422ErrorTester:
     def __init__(self):
