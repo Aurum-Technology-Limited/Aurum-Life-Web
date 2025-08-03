@@ -1323,10 +1323,17 @@ async def update_task(
 async def delete_task(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     """Delete a task"""
     try:
+        # IDOR Protection: Verify user owns this task
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'tasks', task_id
+        )
+        
         success = await SupabaseTaskService.delete_task(task_id, str(current_user.id))
         if not success:
             raise HTTPException(status_code=404, detail="Task not found")
         return {"message": "Task deleted successfully"}
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
     except Exception as e:
         logger.error(f"Error deleting task: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
