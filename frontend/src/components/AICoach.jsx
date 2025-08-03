@@ -725,17 +725,32 @@ const AICoach = () => {
       setSaveLoading(true);
       setError(null);
 
-      // Defensive check to ensure API dependency is properly injected
-      if (!api || !api.projects || !api.projects.createWithTasks) {
-        console.error('DEPENDENCY INJECTION ERROR: API service not properly injected', { 
-          api: !!api, 
-          projects: !!(api && api.projects), 
-          createWithTasks: !!(api && api.projects && api.projects.createWithTasks) 
-        });
+      // Bulletproof defensive check to ensure API dependency is properly injected
+      console.log('🔍 Debugging API dependency injection:', {
+        apiExists: !!api,
+        projectsExists: !!(api && api.projects),
+        createWithTasksExists: !!(api && api.projects && api.projects.createWithTasks),
+        apiType: typeof api,
+        projectsType: typeof (api && api.projects),
+        createWithTasksType: typeof (api && api.projects && api.projects.createWithTasks)
+      });
+
+      if (!api) {
+        console.error('DEPENDENCY INJECTION ERROR: API service is undefined');
         throw new Error('API service not available. Please refresh the page and try again.');
       }
 
-      console.log('Creating project with tasks...', { projectData, tasksData });
+      if (!api.projects) {
+        console.error('DEPENDENCY INJECTION ERROR: API.projects is undefined');
+        throw new Error('Projects API not available. Please refresh the page and try again.');
+      }
+
+      if (!api.projects.createWithTasks) {
+        console.error('DEPENDENCY INJECTION ERROR: API.projects.createWithTasks is undefined');
+        throw new Error('Project creation API not available. Please refresh the page and try again.');
+      }
+
+      console.log('✅ All API dependencies verified. Creating project with tasks...', { projectData, tasksData });
       const response = await api.projects.createWithTasks(projectData, tasksData);
 
       if (response.data.success) {
@@ -760,11 +775,11 @@ const AICoach = () => {
         setResponseTitle('Project Created Successfully!');
         setResponseModalOpen(true);
         
-        console.log('Project created successfully:', response.data);
+        console.log('🎉 Project created successfully:', response.data);
       }
       
     } catch (err) {
-      console.error('Save project error:', err);
+      console.error('❌ Save project error:', err);
       
       let errorMessage = 'Failed to save project. Please try again.';
       
