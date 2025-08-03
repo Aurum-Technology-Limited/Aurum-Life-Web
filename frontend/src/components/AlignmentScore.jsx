@@ -116,8 +116,8 @@ const AlignmentScore = ({ onSectionChange }) => {
     );
   }
 
-  // New user state - no data yet
-  const isNewUser = alignmentData.rolling_weekly_score === 0 && alignmentData.monthly_score === 0;
+  // New user state - no data yet - enhanced safety check
+  const isNewUser = (alignmentData?.rolling_weekly_score || 0) === 0 && (alignmentData?.monthly_score || 0) === 0;
 
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
