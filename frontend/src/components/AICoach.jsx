@@ -86,7 +86,7 @@ const GoalDecompositionModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
             <textarea
               value={goalText}
               onChange={(e) => setGoalText(e.target.value)}
-              placeholder="e.g., Learn Spanish, Launch my business, Get fit..."
+              placeholder="e.g., Learn Spanish, Launch my business, Get fit, Plan a trip to Japan..."
               className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 transition-colors resize-none"
               rows="3"
               disabled={isLoading}
@@ -107,10 +107,291 @@ const GoalDecompositionModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
               className="flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
             >
-              {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Get Breakdown'}
+              {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Generate Breakdown'}
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+};
+
+const InteractiveProjectEditor = ({ isOpen, onClose, aiResponse, onSave, isLoading }) => {
+  const [projectData, setProjectData] = useState({
+    title: '',
+    description: '',
+    area_id: null,
+    priority: 'medium',
+    status: 'Planning'
+  });
+  
+  const [tasks, setTasks] = useState([]);
+  const [availableAreas, setAvailableAreas] = useState([]);
+
+  useEffect(() => {
+    if (isOpen && aiResponse) {
+      // Initialize form with AI suggestions
+      const suggested = aiResponse.suggested_project || {};
+      setProjectData({
+        title: suggested.title || '',
+        description: suggested.description || '',
+        area_id: suggested.area_id || null,
+        priority: suggested.priority || 'medium',
+        status: suggested.status || 'Planning'
+      });
+      
+      setTasks(aiResponse.suggested_tasks || []);
+      setAvailableAreas(aiResponse.available_areas || []);
+    }
+  }, [isOpen, aiResponse]);
+
+  const addNewTask = () => {
+    setTasks([...tasks, { 
+      title: '', 
+      priority: 'medium', 
+      estimated_duration: 30 
+    }]);
+  };
+
+  const updateTask = (index, field, value) => {
+    const updatedTasks = [...tasks];
+    updatedTasks[index] = { ...updatedTasks[index], [field]: value };
+    setTasks(updatedTasks);
+  };
+
+  const removeTask = (index) => {
+    setTasks(tasks.filter((_, i) => i !== index));
+  };
+
+  const handleSave = () => {
+    // Filter out empty tasks
+    const validTasks = tasks.filter(task => task.title && task.title.trim());
+    onSave(projectData, validTasks);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-700 sticky top-0 bg-gray-900 z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
+                <Target size={20} style={{ color: '#0B0D14' }} />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-white">Edit & Save Your Project</h3>
+                <p className="text-sm text-gray-400">Review, edit, and save to add this project to your system</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className="text-gray-400 hover:text-white p-2 disabled:opacity-50"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Project Details */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-white">Project Details</h4>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Project Title*</label>
+              <input
+                type="text"
+                value={projectData.title}
+                onChange={(e) => setProjectData({...projectData, title: e.target.value})}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors"
+                placeholder="Enter project title..."
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+              <textarea
+                value={projectData.description}
+                onChange={(e) => setProjectData({...projectData, description: e.target.value})}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors resize-none"
+                rows="2"
+                placeholder="Brief description of the project..."
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Life Area</label>
+                <select
+                  value={projectData.area_id || ''}
+                  onChange={(e) => setProjectData({...projectData, area_id: e.target.value || null})}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors"
+                  disabled={isLoading}
+                >
+                  <option value="">Select an area...</option>
+                  {availableAreas.map(area => (
+                    <option key={area.id} value={area.id}>{area.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Priority</label>
+                <select
+                  value={projectData.priority}
+                  onChange={(e) => setProjectData({...projectData, priority: e.target.value})}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors"
+                  disabled={isLoading}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+                <select
+                  value={projectData.status}
+                  onChange={(e) => setProjectData({...projectData, status: e.target.value})}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors"
+                  disabled={isLoading}
+                >
+                  <option value="Planning">Planning</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="On Hold">On Hold</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Tasks */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-lg font-semibold text-white">Project Tasks</h4>
+              <button
+                onClick={addNewTask}
+                disabled={isLoading}
+                className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center space-x-1"
+              >
+                <span>+</span>
+                <span>Add Task</span>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {tasks.map((task, index) => (
+                <div key={index} className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+                    <div className="md:col-span-6">
+                      <input
+                        type="text"
+                        value={task.title}
+                        onChange={(e) => updateTask(index, 'title', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors text-sm"
+                        placeholder="Task title..."
+                        disabled={isLoading}
+                      />
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <select
+                        value={task.priority}
+                        onChange={(e) => updateTask(index, 'priority', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors text-sm"
+                        disabled={isLoading}
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-3">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="number"
+                          value={task.estimated_duration}
+                          onChange={(e) => updateTask(index, 'estimated_duration', parseInt(e.target.value) || 30)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors text-sm"
+                          min="5"
+                          max="480"
+                          disabled={isLoading}
+                        />
+                        <span className="text-xs text-gray-400 whitespace-nowrap">min</span>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-1 flex justify-center">
+                      <button
+                        onClick={() => removeTask(index)}
+                        disabled={isLoading}
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        <span className="text-sm">×</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {tasks.length === 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  <p>No tasks added yet. Click "Add Task" to create some!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-700 bg-gray-900/50 sticky bottom-0">
+          <div className="flex space-x-3">
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 py-2 px-4 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!projectData.title?.trim() || isLoading}
+              className="flex-2 py-2 px-6 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <span>💾</span>
+                  <span>Save Project & Tasks</span>
+                </>
+              )}
+            </button>
+          </div>
+          
+          {projectData.title && (
+            <div className="mt-3 text-center">
+              <p className="text-sm text-gray-400">
+                This will create: <span className="text-yellow-400 font-medium">"{projectData.title}"</span> 
+                {tasks.filter(t => t.title?.trim()).length > 0 && (
+                  <span> with {tasks.filter(t => t.title?.trim()).length} task{tasks.filter(t => t.title?.trim()).length !== 1 ? 's' : ''}</span>
+                )}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
