@@ -1291,6 +1291,18 @@ async def update_task(
 ):
     """Update a task (alignment scores now awarded only on project completion)"""
     try:
+        # IDOR Protection: Verify user owns this task
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'tasks', task_id
+        )
+        
+        # Sanitize task data to prevent XSS
+        sanitized_data = sanitize_user_input(task_data.dict(), model_type="default")
+        if 'name' in sanitized_data:
+            task_data.name = sanitized_data["name"]
+        if 'description' in sanitized_data:
+            task_data.description = sanitized_data["description"]
+        
         # Update the task (no alignment scoring for individual tasks anymore)
         result = await SupabaseTaskService.update_task(task_id, str(current_user.id), task_data)
         
@@ -1299,6 +1311,8 @@ async def update_task(
             logger.info(f"Task {task_id} completed. Note: Alignment points are now awarded only on project completion.")
         
         return result
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
