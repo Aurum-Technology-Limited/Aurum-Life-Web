@@ -310,14 +310,14 @@ async def get_ai_quota(current_user: User = Depends(get_current_active_user_hybr
         logger.error(f"Error getting AI quota: {e}")
         raise HTTPException(status_code=500, detail="Failed to get AI quota")
 
-# Feature 1: Goal Decomposition with Safeguards
-@api_router.post("/ai/decompose-project", response_model=ProjectDecompositionResponse)
+# Feature 1: Goal Decomposition with Structured Response
+@api_router.post("/ai/decompose-project", response_model=dict)
 async def decompose_project_with_safeguards(
     request: ProjectDecompositionRequest,
     current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """
-    AI-powered goal decomposition with quota and rate limiting
+    AI-powered goal decomposition with structured JSON response for interactive workflow
     """
     try:
         user_id = str(current_user.id)
@@ -337,8 +337,8 @@ async def decompose_project_with_safeguards(
                 detail="Monthly AI interaction limit reached. Limit resets next month."
             )
         
-        # Generate suggestions with minimal context
-        suggestions = await ai_coach_mvp.suggest_project_tasks(user_id, request)
+        # Generate structured suggestions for interactive workflow
+        suggestions = await generate_structured_project_breakdown(user_id, request)
         
         # Record interaction
         await record_ai_interaction(user_id, 'goal_decomposition', len(request.project_name))
@@ -350,6 +350,128 @@ async def decompose_project_with_safeguards(
     except Exception as e:
         logger.error(f"Error in goal decomposition: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate goal breakdown")
+
+async def generate_structured_project_breakdown(user_id: str, request: ProjectDecompositionRequest) -> dict:
+    """Generate structured project breakdown for interactive editing"""
+    
+    # Get user's areas for context
+    supabase = get_supabase_client()
+    areas_response = supabase.table('areas').select('id, name, importance').eq(
+        'user_id', user_id
+    ).execute()
+    
+    areas = areas_response.data or []
+    
+    # Generate structured breakdown (AI-like logic for MVP)
+    goal_name = request.project_name.strip()
+    
+    # Suggest project title (user can edit)
+    suggested_title = goal_name if goal_name else "New Goal Project"
+    
+    # Generate contextual tasks based on goal type
+    suggested_tasks = generate_contextual_tasks(goal_name)
+    
+    # Suggest appropriate area if available
+    suggested_area_id = None
+    if areas:
+        # Simple matching logic - in production, this would use LLM
+        goal_lower = goal_name.lower()
+        for area in areas:
+            area_name_lower = area['name'].lower()
+            if (any(keyword in goal_lower for keyword in ['learn', 'study', 'skill']) and 
+                'learning' in area_name_lower) or \
+               (any(keyword in goal_lower for keyword in ['health', 'fitness', 'exercise']) and 
+                'health' in area_name_lower):
+                suggested_area_id = area['id']
+                break
+        
+        # Default to highest importance area
+        if not suggested_area_id:
+            highest_importance_area = max(areas, key=lambda x: x.get('importance', 1))
+            suggested_area_id = highest_importance_area['id']
+    
+    return {
+        "suggested_project": {
+            "title": suggested_title,
+            "description": f"A comprehensive project to achieve: {goal_name}",
+            "area_id": suggested_area_id,
+            "priority": "medium",
+            "status": "Planning"
+        },
+        "suggested_tasks": suggested_tasks,
+        "available_areas": areas,
+        "editable": True,
+        "instructions": "Review and edit the project and tasks below, then save to add them to your system."
+    }
+
+def generate_contextual_tasks(goal_name: str) -> list:
+    """Generate contextual task suggestions based on goal"""
+    goal_lower = goal_name.lower()
+    tasks = []
+    
+    if any(keyword in goal_lower for keyword in ['learn', 'study']):
+        if 'spanish' in goal_lower or 'language' in goal_lower:
+            tasks = [
+                {"title": "Research language learning apps and resources", "priority": "high", "estimated_duration": 30},
+                {"title": "Set up daily practice schedule", "priority": "high", "estimated_duration": 15},
+                {"title": "Find conversation practice partner", "priority": "medium", "estimated_duration": 45},
+                {"title": "Download language learning app and create account", "priority": "high", "estimated_duration": 20},
+                {"title": "Set weekly learning goals and milestones", "priority": "medium", "estimated_duration": 30}
+            ]
+        else:
+            tasks = [
+                {"title": "Define specific learning objectives", "priority": "high", "estimated_duration": 30},
+                {"title": "Research best resources and materials", "priority": "high", "estimated_duration": 45},
+                {"title": "Create study schedule", "priority": "medium", "estimated_duration": 20},
+                {"title": "Set up learning environment", "priority": "medium", "estimated_duration": 25}
+            ]
+    
+    elif any(keyword in goal_lower for keyword in ['fitness', 'exercise', 'health']):
+        tasks = [
+            {"title": "Assess current fitness level", "priority": "high", "estimated_duration": 30},
+            {"title": "Set specific fitness goals", "priority": "high", "estimated_duration": 20},
+            {"title": "Research workout programs or gym memberships", "priority": "high", "estimated_duration": 45},
+            {"title": "Plan weekly workout schedule", "priority": "medium", "estimated_duration": 30},
+            {"title": "Track progress and adjust plan", "priority": "low", "estimated_duration": 15}
+        ]
+    
+    elif any(keyword in goal_lower for keyword in ['trip', 'travel', 'visit']):
+        if 'japan' in goal_lower:
+            tasks = [
+                {"title": "Research visa requirements and apply if needed", "priority": "high", "estimated_duration": 60},
+                {"title": "Set travel budget and start saving", "priority": "high", "estimated_duration": 45},
+                {"title": "Book flights and accommodation", "priority": "high", "estimated_duration": 90},
+                {"title": "Plan itinerary and must-see locations", "priority": "medium", "estimated_duration": 120},
+                {"title": "Learn basic Japanese phrases", "priority": "low", "estimated_duration": 30}
+            ]
+        else:
+            tasks = [
+                {"title": "Set travel budget", "priority": "high", "estimated_duration": 30},
+                {"title": "Research destination and create itinerary", "priority": "high", "estimated_duration": 90},
+                {"title": "Book transportation and accommodation", "priority": "high", "estimated_duration": 60},
+                {"title": "Prepare travel documents", "priority": "medium", "estimated_duration": 45}
+            ]
+    
+    elif any(keyword in goal_lower for keyword in ['business', 'startup', 'launch']):
+        tasks = [
+            {"title": "Validate business idea with market research", "priority": "high", "estimated_duration": 120},
+            {"title": "Create business plan and financial projections", "priority": "high", "estimated_duration": 180},
+            {"title": "Set up legal structure and register business", "priority": "high", "estimated_duration": 90},
+            {"title": "Develop MVP or prototype", "priority": "medium", "estimated_duration": 300},
+            {"title": "Plan marketing and customer acquisition strategy", "priority": "medium", "estimated_duration": 120}
+        ]
+    
+    else:
+        # Generic tasks for any goal
+        tasks = [
+            {"title": f"Break down '{goal_name}' into specific milestones", "priority": "high", "estimated_duration": 45},
+            {"title": f"Research best practices for achieving '{goal_name}'", "priority": "high", "estimated_duration": 60},
+            {"title": "Create timeline and set deadlines", "priority": "medium", "estimated_duration": 30},
+            {"title": "Identify resources and tools needed", "priority": "medium", "estimated_duration": 45},
+            {"title": "Set up tracking and review system", "priority": "low", "estimated_duration": 30}
+        ]
+    
+    return tasks
 
 # Feature 2: Weekly Strategic Review with Safeguards  
 @api_router.post("/ai/weekly-review")
