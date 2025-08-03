@@ -2,14 +2,19 @@
 Security Middleware for Aurum Life API
 Implements foundational security hardening measures including:
 - HTTP Security Headers (CSP, HSTS, X-Frame-Options, etc.)
+- CSRF Protection (Double Submit Cookie pattern)
 - Input sanitization utilities
+- IDOR (Insecure Direct Object Reference) protection utilities
 """
 
-from fastapi import Request, Response
+from fastapi import Request, Response, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from typing import Callable, Dict, Any
 import bleach
 import logging
+import secrets
+import re
+from supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
 
