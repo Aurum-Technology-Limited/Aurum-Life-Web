@@ -449,6 +449,14 @@ async def analyze_obstacle(
         
         # Get minimal project context only
         supabase = get_supabase_client()
+        
+        # Validate project_id format first
+        try:
+            import uuid
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
         project_response = supabase.table('projects').select(
             'id, name, status, priority, description'
         ).eq('user_id', user_id).eq('id', project_id).execute()
