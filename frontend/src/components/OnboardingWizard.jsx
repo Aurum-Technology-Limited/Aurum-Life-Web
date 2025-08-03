@@ -518,15 +518,14 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
             </div>
           </div>
 
-          {/* Close button only on first step */}
-          {currentStep === 0 && (
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          )}
+          {/* Close/Skip button - always available */}
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+            title={currentStep === 0 ? "Close" : "Skip Onboarding"}
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
         {/* Content */}
