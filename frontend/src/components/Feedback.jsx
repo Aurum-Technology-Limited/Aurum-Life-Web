@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { ChatAltIcon, PaperAirplaneIcon } from '@heroicons/react/outline';
+import { api } from '../services/api';
 
 const Feedback = () => {
   const { user } = useAuth();
@@ -28,17 +29,10 @@ const Feedback = () => {
     setError('');
 
     try {
-      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
-      const response = await fetch(`${backendURL}/api/feedback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
+      // Use centralized API client for authenticated requests
+      const response = await api.feedback.submitFeedback(formData);
+      
+      if (response.status === 201) {
         setSubmitted(true);
         setFormData({
           subject: '',
@@ -46,13 +40,22 @@ const Feedback = () => {
           category: 'suggestion',
           priority: 'medium'
         });
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to submit feedback');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      setError('Network error. Please try again.');
+      
+      // Handle specific error types
+      if (error.response?.status === 422) {
+        setError('Please check your input and try again.');
+      } else if (error.response?.status === 401) {
+        setError('Please log in again to submit feedback.');
+      } else if (error.response?.data?.detail) {
+        setError(error.response.data.detail);
+      } else if (error.message.includes('Network Error')) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError('Failed to submit feedback. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
