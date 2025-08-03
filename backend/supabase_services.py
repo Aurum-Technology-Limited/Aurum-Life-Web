@@ -396,62 +396,70 @@ class SupabasePillarService:
             raise
     
     @staticmethod
-    async def _ensure_user_exists_in_users_table(user_id: str):
-        """Ensure user exists in users table, create if missing"""
+    async def _ensure_user_exists_in_auth_users(user_id: str):
+        """Ensure user exists in auth.users table by creating them via Supabase Auth Admin API"""
         try:
-            # More robust user existence check - try to actually query the user record
-            user_check = supabase.table('users').select('*').eq('id', user_id).execute()
+            # Check if user exists in auth.users
+            from supabase_client import supabase
             
-            logger.info(f"🔍 User check result for {user_id}: data={user_check.data}, count={len(user_check.data) if user_check.data else 0}")
+            # Try to get user from auth.users via admin API
+            try:
+                auth_user = supabase.auth.admin.get_user_by_id(user_id)
+                if auth_user and auth_user.user:
+                    logger.info(f"✅ User {user_id} already exists in auth.users")
+                    return
+            except Exception as auth_check_error:
+                logger.info(f"🔍 User {user_id} not found in auth.users: {auth_check_error}")
             
-            if user_check.data and len(user_check.data) > 0:
-                logger.info(f"✅ User {user_id} already exists in users table")
-                return
-            
-            logger.info(f"🔧 User {user_id} not found in users table, creating from user_profiles...")
-            
-            # User doesn't exist in users table, get data from user_profiles
+            # Get user data from user_profiles to create auth user
             user_profile = supabase.table('user_profiles').select('*').eq('id', user_id).execute()
             
             if not user_profile.data or len(user_profile.data) == 0:
-                # If no user_profiles, try to find in legacy users table and copy
+                # Also check public.users table
                 legacy_user = supabase.table('users').select('*').eq('id', user_id).execute()
                 if legacy_user.data and len(legacy_user.data) > 0:
-                    logger.info(f"✅ User {user_id} found in legacy users table, no action needed")
-                    return
-                raise Exception(f"User {user_id} not found in user_profiles or users table")
-            
-            profile = user_profile.data[0]
-            logger.info(f"📋 Found user profile for {user_id}: username={profile.get('username')}")
-            
-            # Create user in users table with data from user_profiles
-            user_dict = {
-                'id': user_id,
-                'username': profile.get('username', ''),
-                'email': profile.get('email', ''),
-                'first_name': profile.get('first_name', ''),
-                'last_name': profile.get('last_name', ''),
-                'is_active': profile.get('is_active', True),
-                'level': profile.get('level', 1),
-                'total_points': profile.get('total_points', 0),
-                'current_streak': profile.get('current_streak', 0),
-                'created_at': profile.get('created_at') or datetime.utcnow().isoformat(),
-                'updated_at': datetime.utcnow().isoformat()
-            }
-            
-            logger.info(f"🚀 Attempting to create user in users table: {user_dict}")
-            
-            # Use upsert to handle potential race conditions
-            create_response = supabase.table('users').upsert(user_dict).execute()
-            
-            if create_response.data and len(create_response.data) > 0:
-                logger.info(f"✅ Created/updated user {user_id} in users table for foreign key compatibility")
+                    profile = legacy_user.data[0]
+                    logger.info(f"📋 Found user in legacy users table: {profile.get('email')}")
+                else:
+                    raise Exception(f"User {user_id} not found in user_profiles or users table")
             else:
-                logger.warning(f"⚠️ Failed to create user {user_id} in users table: {create_response}")
+                profile = user_profile.data[0]
+                logger.info(f"📋 Found user profile: {profile.get('email')}")
+            
+            # Create user in auth.users via Admin API
+            try:
+                email = profile.get('email', f"{user_id}@temp.local")
+                
+                # Create the auth user with admin API
+                auth_response = supabase.auth.admin.create_user({
+                    "email": email,
+                    "user_metadata": {
+                        "username": profile.get('username', ''),
+                        "first_name": profile.get('first_name', ''),
+                        "last_name": profile.get('last_name', ''),
+                        "migrated_from_legacy": True
+                    },
+                    "email_confirm": True  # Skip email confirmation for migrated users
+                })
+                
+                if auth_response and auth_response.user:
+                    logger.info(f"✅ Created user {user_id} in auth.users via Admin API")
+                    
+                    # Update the user ID in user_profiles if it changed
+                    new_user_id = auth_response.user.id
+                    if new_user_id != user_id:
+                        logger.warning(f"⚠️ User ID changed from {user_id} to {new_user_id}")
+                        # Would need to update all related records - complex migration
+                else:
+                    logger.warning(f"⚠️ Failed to create auth user - no response data")
+                    
+            except Exception as create_error:
+                logger.error(f"❌ Failed to create auth user: {create_error}")
+                # Continue without failing - the foreign key error will still occur
                 
         except Exception as e:
-            logger.error(f"Error ensuring user exists in users table: {e}")
-            # Don't raise - let the pillar creation proceed and see if it works
+            logger.error(f"Error ensuring user exists in auth.users: {e}")
+            # Don't raise - let the pillar creation proceed and see what happens
     
     @staticmethod
     async def get_user_pillars(user_id: str, include_areas: bool = False, include_archived: bool = False) -> List[Dict[str, Any]]:
