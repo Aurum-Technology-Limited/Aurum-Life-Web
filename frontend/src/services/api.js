@@ -568,17 +568,6 @@ export const aiCoachAPI = {
   getTodaysPriorities: () => apiClient.get('/api/ai/task-why-statements')
 };
 
-// Enhanced Projects API for Goal Decomposition Integration
-const projectsAPI = {
-  // ... existing methods ...
-  
-  // Create project with tasks from Goal Decomposition workflow
-  createWithTasks: (projectData, tasksData) => apiClient.post('/api/projects/create-with-tasks', {
-    project: projectData,
-    tasks: tasksData
-  })
-};
-
 // Feedback API
 export const feedbackAPI = {
   submitFeedback: (feedbackData) => apiClient.post('/feedback', feedbackData)
