@@ -232,6 +232,61 @@ async def logout_user(token: str = Depends(HTTPBearer())):
         # Still return success even if there's an error - user should be logged out
         return {"message": "Logged out"}
 
+@api_router.put("/auth/profile", response_model=dict)
+async def update_user_profile(
+    profile_data: UserProfileUpdate,
+    request: Request,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Update user profile with username change rate limiting (7 days between changes)"""
+    try:
+        # Get client IP address for tracking
+        client_ip = request.client.host if request.client else None
+        
+        # Sanitize profile data to prevent XSS
+        sanitized_data = sanitize_user_input(profile_data.dict(), model_type="default")
+        
+        # IDOR Protection: Users can only update their own profile
+        user_id = str(current_user.id)
+        
+        # Update profile using the service with rate limiting
+        updated_user = await SupabaseUserService.update_user_profile(
+            user_id, 
+            sanitized_data, 
+            ip_address=client_ip
+        )
+        
+        if not updated_user:
+            raise HTTPException(status_code=404, detail="User profile not found")
+        
+        # Return updated user data
+        return {
+            "id": updated_user.get('id'),
+            "username": updated_user.get('username'),
+            "email": updated_user.get('email'),
+            "first_name": updated_user.get('first_name', ''),
+            "last_name": updated_user.get('last_name', ''),
+            "message": "Profile updated successfully"
+        }
+        
+    except Exception as e:
+        error_message = str(e)
+        
+        # Handle specific rate limiting error
+        if "Username can only be changed" in error_message:
+            raise HTTPException(status_code=429, detail=error_message)
+        
+        # Handle username already taken error
+        if "Username is already taken" in error_message:
+            raise HTTPException(status_code=409, detail=error_message)
+        
+        # Handle user not found error
+        if "User not found" in error_message:
+            raise HTTPException(status_code=404, detail=error_message)
+        
+        logger.error(f"Error updating profile for user {current_user.id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update profile")
+
 # ================================
 # AI COACH MVP FEATURES ENDPOINTS WITH SAFEGUARDS
 # ================================
