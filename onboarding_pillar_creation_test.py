@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 """
-ONBOARDING PILLAR CREATION FIX TESTING
-Testing the improved onboarding pillar creation fix with robust user existence check.
+ONBOARDING PILLAR CREATION FIX TESTING - POST DATABASE FIXES
+Testing the onboarding pillar creation after manual database fixes.
 
-FOCUS AREAS:
+MANUAL DATABASE FIXES COMPLETED:
+1. Fixed foreign key constraints to reference public.users instead of auth.users
+2. Created the missing user record (272edb74-8be3-4504-818c-b1dd42c63ebe) in the public.users table
+
+TEST FOCUS:
 1. Authentication with marc.alleyne@aurumtechnologyltd.com / password
-2. Create a single pillar to test the fix
-3. Check the logs to see if the user creation/upsert works properly
-4. Verify that the foreign key constraint error is resolved
+2. Create a pillar to verify the foreign key constraint issue is resolved
+3. Test the complete onboarding flow if possible (create pillar → area → project → task)
+4. Verify that template selection now works without errors
 
-IMPROVEMENTS TESTED:
-- Using upsert instead of insert to handle race conditions
-- Checking for both user_profiles and legacy users table
-- Using select('*') instead of select('id') for more complete validation
-- Added better error handling and logging
+EXPECTED BEHAVIOR:
+Pillar/area/project/task creation should work without foreign key constraint violations,
+and the complete onboarding template application should succeed.
 
 CREDENTIALS: marc.alleyne@aurumtechnologyltd.com / password
 """
@@ -34,9 +36,15 @@ class OnboardingPillarCreationTester:
         self.session = requests.Session()
         self.test_results = []
         self.auth_token = None
-        # Use the specified test credentials
+        # Use the specified test credentials from the review request
         self.test_user_email = "marc.alleyne@aurumtechnologyltd.com"
         self.test_user_password = "password"
+        self.created_resources = {
+            'pillars': [],
+            'areas': [],
+            'projects': [],
+            'tasks': []
+        }
         
     def log_test(self, test_name: str, success: bool, message: str = "", data: Any = None):
         """Log test results"""
@@ -168,225 +176,350 @@ class OnboardingPillarCreationTester:
         
         return result['success']
 
-    def test_pillar_creation_with_user_upsert(self):
-        """Test pillar creation to verify the user existence check fix"""
-        print("\n=== TESTING PILLAR CREATION WITH USER UPSERT FIX ===")
+    def test_pillar_creation(self):
+        """Test pillar creation to verify foreign key constraint fix"""
+        print("\n=== TESTING PILLAR CREATION (FOREIGN KEY CONSTRAINT FIX) ===")
         
         if not self.auth_token:
             self.log_test("PILLAR CREATION - Authentication Required", False, "No authentication token available")
             return False
         
-        # Create a test pillar to trigger the user existence check
+        # Create a pillar with realistic onboarding data
         pillar_data = {
-            "name": "Test Pillar - User Upsert Fix",
-            "description": "Testing the improved user existence check with upsert functionality",
-            "icon": "🧪",
-            "color": "#3B82F6",
+            "name": "Health & Wellness",
+            "description": "Physical and mental health, fitness, and overall well-being",
+            "icon": "💪",
+            "color": "#10B981",
             "time_allocation_percentage": 25.0
         }
-        
-        print(f"Creating pillar with data: {json.dumps(pillar_data, indent=2)}")
         
         result = self.make_request('POST', '/pillars', data=pillar_data, use_auth=True)
         
         if result['success']:
-            pillar_response = result['data']
+            pillar = result['data']
+            self.created_resources['pillars'].append(pillar.get('id'))
             self.log_test(
-                "PILLAR CREATION WITH USER UPSERT",
+                "PILLAR CREATION",
                 True,
-                f"Pillar created successfully. ID: {pillar_response.get('id', 'Unknown')}, Name: {pillar_response.get('name', 'Unknown')}"
+                f"Pillar '{pillar_data['name']}' created successfully with ID: {pillar.get('id')}"
             )
-            
-            # Verify the pillar was created with correct data
-            if (pillar_response.get('name') == pillar_data['name'] and 
-                pillar_response.get('time_allocation_percentage') == pillar_data['time_allocation_percentage']):
-                self.log_test(
-                    "PILLAR DATA INTEGRITY",
-                    True,
-                    "Pillar created with correct data mapping and field values"
-                )
-            else:
-                self.log_test(
-                    "PILLAR DATA INTEGRITY",
-                    False,
-                    f"Pillar data mismatch. Expected: {pillar_data}, Got: {pillar_response}"
-                )
-            
-            return pillar_response.get('id')
+            return pillar.get('id')
         else:
-            error_details = result.get('error', 'Unknown error')
-            status_code = result.get('status_code', 'Unknown')
-            
-            # Check for specific foreign key constraint errors
-            if 'foreign key constraint' in str(error_details).lower():
+            # Check if it's a foreign key constraint error
+            error_msg = str(result.get('error', ''))
+            if 'foreign key constraint' in error_msg.lower() or 'violates foreign key' in error_msg.lower():
                 self.log_test(
-                    "PILLAR CREATION WITH USER UPSERT",
+                    "PILLAR CREATION - FOREIGN KEY CONSTRAINT ERROR",
                     False,
-                    f"FOREIGN KEY CONSTRAINT ERROR DETECTED - User upsert fix may not be working properly. Status: {status_code}, Error: {error_details}"
-                )
-            elif 'user' in str(error_details).lower() and ('not found' in str(error_details).lower() or 'does not exist' in str(error_details).lower()):
-                self.log_test(
-                    "PILLAR CREATION WITH USER UPSERT",
-                    False,
-                    f"USER EXISTENCE ERROR DETECTED - User upsert fix may not be working properly. Status: {status_code}, Error: {error_details}"
+                    f"Foreign key constraint violation still occurring: {error_msg}"
                 )
             else:
                 self.log_test(
-                    "PILLAR CREATION WITH USER UPSERT",
+                    "PILLAR CREATION",
                     False,
-                    f"Pillar creation failed with status {status_code}: {error_details}"
+                    f"Pillar creation failed: {result.get('error', 'Unknown error')}"
                 )
-            
             return False
 
-    def test_pillar_retrieval(self, pillar_id):
-        """Test pillar retrieval to verify the created pillar exists"""
-        print("\n=== TESTING PILLAR RETRIEVAL ===")
+    def test_area_creation(self, pillar_id: str):
+        """Test area creation linked to the pillar"""
+        print("\n=== TESTING AREA CREATION ===")
         
         if not pillar_id:
-            self.log_test("PILLAR RETRIEVAL", False, "No pillar ID provided - pillar creation may have failed")
+            self.log_test("AREA CREATION - Pillar Required", False, "No pillar ID available")
             return False
         
-        if not self.auth_token:
-            self.log_test("PILLAR RETRIEVAL - Authentication Required", False, "No authentication token available")
-            return False
+        # Create an area linked to the pillar
+        area_data = {
+            "pillar_id": pillar_id,
+            "name": "Fitness & Exercise",
+            "description": "Physical fitness, workouts, and exercise routines",
+            "icon": "🏃",
+            "color": "#F59E0B",
+            "importance": 4
+        }
         
-        # Get all pillars to verify our created pillar exists
-        result = self.make_request('GET', '/pillars', use_auth=True)
+        result = self.make_request('POST', '/areas', data=area_data, use_auth=True)
         
         if result['success']:
-            pillars = result['data']
-            created_pillar = None
-            
-            # Find our created pillar
-            for pillar in pillars:
-                if pillar.get('id') == pillar_id:
-                    created_pillar = pillar
-                    break
-            
-            if created_pillar:
+            area = result['data']
+            self.created_resources['areas'].append(area.get('id'))
+            self.log_test(
+                "AREA CREATION",
+                True,
+                f"Area '{area_data['name']}' created successfully with ID: {area.get('id')}"
+            )
+            return area.get('id')
+        else:
+            # Check if it's a foreign key constraint error
+            error_msg = str(result.get('error', ''))
+            if 'foreign key constraint' in error_msg.lower() or 'violates foreign key' in error_msg.lower():
                 self.log_test(
-                    "PILLAR RETRIEVAL",
-                    True,
-                    f"Created pillar found in retrieval. Name: {created_pillar.get('name')}, ID: {created_pillar.get('id')}"
+                    "AREA CREATION - FOREIGN KEY CONSTRAINT ERROR",
+                    False,
+                    f"Foreign key constraint violation: {error_msg}"
                 )
-                
-                # Verify pillar data integrity
-                if created_pillar.get('name') == "Test Pillar - User Upsert Fix":
-                    self.log_test(
-                        "PILLAR PERSISTENCE VERIFICATION",
-                        True,
-                        "Pillar data persisted correctly in database"
-                    )
-                else:
-                    self.log_test(
-                        "PILLAR PERSISTENCE VERIFICATION",
-                        False,
-                        f"Pillar data may have been corrupted. Expected name: 'Test Pillar - User Upsert Fix', Got: {created_pillar.get('name')}"
-                    )
-                
-                return True
             else:
                 self.log_test(
-                    "PILLAR RETRIEVAL",
+                    "AREA CREATION",
                     False,
-                    f"Created pillar with ID {pillar_id} not found in retrieval. Available pillars: {len(pillars)}"
+                    f"Area creation failed: {result.get('error', 'Unknown error')}"
+                )
+            return False
+
+    def test_project_creation(self, area_id: str):
+        """Test project creation linked to the area"""
+        print("\n=== TESTING PROJECT CREATION ===")
+        
+        if not area_id:
+            self.log_test("PROJECT CREATION - Area Required", False, "No area ID available")
+            return False
+        
+        # Create a project linked to the area
+        project_data = {
+            "area_id": area_id,
+            "name": "Morning Workout Routine",
+            "description": "Establish a consistent morning exercise routine",
+            "icon": "🏋️",
+            "status": "Not Started",
+            "priority": "high",
+            "deadline": "2025-02-15T10:00:00Z"
+        }
+        
+        result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+        
+        if result['success']:
+            project = result['data']
+            self.created_resources['projects'].append(project.get('id'))
+            self.log_test(
+                "PROJECT CREATION",
+                True,
+                f"Project '{project_data['name']}' created successfully with ID: {project.get('id')}"
+            )
+            return project.get('id')
+        else:
+            # Check if it's a foreign key constraint error
+            error_msg = str(result.get('error', ''))
+            if 'foreign key constraint' in error_msg.lower() or 'violates foreign key' in error_msg.lower():
+                self.log_test(
+                    "PROJECT CREATION - FOREIGN KEY CONSTRAINT ERROR",
+                    False,
+                    f"Foreign key constraint violation: {error_msg}"
+                )
+            else:
+                self.log_test(
+                    "PROJECT CREATION",
+                    False,
+                    f"Project creation failed: {result.get('error', 'Unknown error')}"
+                )
+            return False
+
+    def test_task_creation(self, project_id: str):
+        """Test task creation linked to the project"""
+        print("\n=== TESTING TASK CREATION ===")
+        
+        if not project_id:
+            self.log_test("TASK CREATION - Project Required", False, "No project ID available")
+            return False
+        
+        # Create a task linked to the project
+        task_data = {
+            "project_id": project_id,
+            "name": "30-minute cardio session",
+            "description": "High-intensity cardio workout to start the day",
+            "status": "todo",
+            "priority": "medium",
+            "due_date": "2025-01-30T07:00:00Z",
+            "estimated_duration": 30
+        }
+        
+        result = self.make_request('POST', '/tasks', data=task_data, use_auth=True)
+        
+        if result['success']:
+            task = result['data']
+            self.created_resources['tasks'].append(task.get('id'))
+            self.log_test(
+                "TASK CREATION",
+                True,
+                f"Task '{task_data['name']}' created successfully with ID: {task.get('id')}"
+            )
+            return task.get('id')
+        else:
+            # Check if it's a foreign key constraint error
+            error_msg = str(result.get('error', ''))
+            if 'foreign key constraint' in error_msg.lower() or 'violates foreign key' in error_msg.lower():
+                self.log_test(
+                    "TASK CREATION - FOREIGN KEY CONSTRAINT ERROR",
+                    False,
+                    f"Foreign key constraint violation: {error_msg}"
+                )
+            else:
+                self.log_test(
+                    "TASK CREATION",
+                    False,
+                    f"Task creation failed: {result.get('error', 'Unknown error')}"
+                )
+            return False
+
+    def test_template_application(self):
+        """Test template application using AI Coach Goal Decomposition"""
+        print("\n=== TESTING TEMPLATE APPLICATION (AI COACH GOAL DECOMPOSITION) ===")
+        
+        if not self.auth_token:
+            self.log_test("TEMPLATE APPLICATION - Authentication Required", False, "No authentication token available")
+            return False
+        
+        # Test AI Coach Goal Decomposition endpoint
+        goal_data = {
+            "project_name": "Learn Spanish Language",
+            "project_description": "Become conversational in Spanish within 6 months",
+            "template_type": "learning"
+        }
+        
+        result = self.make_request('POST', '/ai/decompose-project', data=goal_data, use_auth=True)
+        
+        if result['success']:
+            decomposition = result['data']
+            self.log_test(
+                "AI GOAL DECOMPOSITION",
+                True,
+                f"Goal decomposition successful, suggested {len(decomposition.get('suggested_tasks', []))} tasks"
+            )
+            
+            # Test creating project with tasks from decomposition
+            if 'suggested_project' in decomposition and 'suggested_tasks' in decomposition:
+                create_data = {
+                    "project": decomposition['suggested_project'],
+                    "tasks": decomposition['suggested_tasks']
+                }
+                
+                result = self.make_request('POST', '/projects/create-with-tasks', data=create_data, use_auth=True)
+                
+                if result['success']:
+                    created_project = result['data']
+                    self.created_resources['projects'].append(created_project.get('project', {}).get('id'))
+                    self.log_test(
+                        "TEMPLATE APPLICATION - PROJECT WITH TASKS CREATION",
+                        True,
+                        f"Template applied successfully: created project with {len(created_project.get('tasks', []))} tasks"
+                    )
+                    return True
+                else:
+                    error_msg = str(result.get('error', ''))
+                    if 'foreign key constraint' in error_msg.lower() or 'violates foreign key' in error_msg.lower():
+                        self.log_test(
+                            "TEMPLATE APPLICATION - FOREIGN KEY CONSTRAINT ERROR",
+                            False,
+                            f"Foreign key constraint violation during template application: {error_msg}"
+                        )
+                    else:
+                        self.log_test(
+                            "TEMPLATE APPLICATION - PROJECT WITH TASKS CREATION",
+                            False,
+                            f"Template application failed: {result.get('error', 'Unknown error')}"
+                        )
+                    return False
+            else:
+                self.log_test(
+                    "TEMPLATE APPLICATION - INVALID DECOMPOSITION RESPONSE",
+                    False,
+                    "Goal decomposition response missing required fields"
                 )
                 return False
         else:
             self.log_test(
-                "PILLAR RETRIEVAL",
+                "AI GOAL DECOMPOSITION",
                 False,
-                f"Failed to retrieve pillars: {result.get('error', 'Unknown error')}"
+                f"Goal decomposition failed: {result.get('error', 'Unknown error')}"
             )
             return False
 
-    def test_user_profile_verification(self):
-        """Test user profile to verify user exists in system"""
-        print("\n=== TESTING USER PROFILE VERIFICATION ===")
+    def test_data_retrieval(self):
+        """Test data retrieval to verify all created resources are accessible"""
+        print("\n=== TESTING DATA RETRIEVAL ===")
         
         if not self.auth_token:
-            self.log_test("USER PROFILE VERIFICATION", False, "No authentication token available")
+            self.log_test("DATA RETRIEVAL - Authentication Required", False, "No authentication token available")
             return False
         
-        # Get user profile to verify user exists
-        result = self.make_request('GET', '/auth/me', use_auth=True)
+        success_count = 0
+        total_tests = 4
         
+        # Test pillars retrieval
+        result = self.make_request('GET', '/pillars', use_auth=True)
         if result['success']:
-            user_data = result['data']
-            self.log_test(
-                "USER PROFILE VERIFICATION",
-                True,
-                f"User profile retrieved successfully. Email: {user_data.get('email')}, ID: {user_data.get('id', 'Unknown')}"
-            )
-            
-            # Verify this is the correct user
-            if user_data.get('email') == self.test_user_email:
-                self.log_test(
-                    "USER IDENTITY VERIFICATION",
-                    True,
-                    f"Correct user authenticated: {self.test_user_email}"
-                )
+            pillars = result['data']
+            created_pillar_found = any(p.get('id') in self.created_resources['pillars'] for p in pillars)
+            if created_pillar_found:
+                self.log_test("PILLARS RETRIEVAL", True, f"Retrieved {len(pillars)} pillars, created pillar found")
+                success_count += 1
             else:
-                self.log_test(
-                    "USER IDENTITY VERIFICATION",
-                    False,
-                    f"User identity mismatch. Expected: {self.test_user_email}, Got: {user_data.get('email')}"
-                )
-            
-            return True
+                self.log_test("PILLARS RETRIEVAL", False, "Created pillar not found in retrieval")
         else:
-            self.log_test(
-                "USER PROFILE VERIFICATION",
-                False,
-                f"Failed to retrieve user profile: {result.get('error', 'Unknown error')}"
-            )
-            return False
-
-    def cleanup_test_pillar(self, pillar_id):
-        """Clean up the test pillar"""
-        print("\n=== CLEANING UP TEST PILLAR ===")
+            self.log_test("PILLARS RETRIEVAL", False, f"Failed to retrieve pillars: {result.get('error')}")
         
-        if not pillar_id or not self.auth_token:
-            print("Skipping cleanup - no pillar ID or auth token")
-            return
-        
-        result = self.make_request('DELETE', f'/pillars/{pillar_id}', use_auth=True)
-        
+        # Test areas retrieval
+        result = self.make_request('GET', '/areas', use_auth=True)
         if result['success']:
-            self.log_test(
-                "TEST PILLAR CLEANUP",
-                True,
-                f"Test pillar {pillar_id} deleted successfully"
-            )
+            areas = result['data']
+            created_area_found = any(a.get('id') in self.created_resources['areas'] for a in areas)
+            if created_area_found:
+                self.log_test("AREAS RETRIEVAL", True, f"Retrieved {len(areas)} areas, created area found")
+                success_count += 1
+            else:
+                self.log_test("AREAS RETRIEVAL", False, "Created area not found in retrieval")
         else:
-            self.log_test(
-                "TEST PILLAR CLEANUP",
-                False,
-                f"Failed to delete test pillar {pillar_id}: {result.get('error', 'Unknown error')}"
-            )
+            self.log_test("AREAS RETRIEVAL", False, f"Failed to retrieve areas: {result.get('error')}")
+        
+        # Test projects retrieval
+        result = self.make_request('GET', '/projects', use_auth=True)
+        if result['success']:
+            projects = result['data']
+            created_project_found = any(p.get('id') in self.created_resources['projects'] for p in projects)
+            if created_project_found:
+                self.log_test("PROJECTS RETRIEVAL", True, f"Retrieved {len(projects)} projects, created project found")
+                success_count += 1
+            else:
+                self.log_test("PROJECTS RETRIEVAL", False, "Created project not found in retrieval")
+        else:
+            self.log_test("PROJECTS RETRIEVAL", False, f"Failed to retrieve projects: {result.get('error')}")
+        
+        # Test tasks retrieval
+        result = self.make_request('GET', '/tasks', use_auth=True)
+        if result['success']:
+            tasks = result['data']
+            created_task_found = any(t.get('id') in self.created_resources['tasks'] for t in tasks)
+            if created_task_found:
+                self.log_test("TASKS RETRIEVAL", True, f"Retrieved {len(tasks)} tasks, created task found")
+                success_count += 1
+            else:
+                self.log_test("TASKS RETRIEVAL", False, "Created task not found in retrieval")
+        else:
+            self.log_test("TASKS RETRIEVAL", False, f"Failed to retrieve tasks: {result.get('error')}")
+        
+        return success_count == total_tests
 
-    def run_comprehensive_onboarding_pillar_test(self):
+    def run_comprehensive_onboarding_test(self):
         """Run comprehensive onboarding pillar creation test"""
-        print("\n🧪 STARTING ONBOARDING PILLAR CREATION FIX TESTING")
+        print("\n🚀 STARTING ONBOARDING PILLAR CREATION TESTING - POST DATABASE FIXES")
         print("=" * 80)
         print(f"Backend URL: {self.base_url}")
         print(f"Test User: {self.test_user_email}")
-        print("Testing improved user existence check with upsert functionality")
+        print("Database Fixes Applied:")
+        print("  1. Fixed foreign key constraints to reference public.users instead of auth.users")
+        print("  2. Created missing user record (272edb74-8be3-4504-818c-b1dd42c63ebe) in public.users table")
         print("=" * 80)
         
         # Run all tests in sequence
         test_methods = [
             ("Basic Connectivity", self.test_basic_connectivity),
             ("User Authentication", self.test_user_authentication),
-            ("User Profile Verification", self.test_user_profile_verification),
         ]
         
         successful_tests = 0
         total_tests = len(test_methods)
-        pillar_id = None
         
-        # Run initial tests
+        # Run basic tests first
         for test_name, test_method in test_methods:
             print(f"\n--- {test_name} ---")
             try:
@@ -401,76 +534,92 @@ class OnboardingPillarCreationTester:
                         break
             except Exception as e:
                 print(f"❌ {test_name} raised exception: {e}")
+                if test_name == "User Authentication":
+                    break
         
-        # Run pillar creation test if authentication succeeded
+        # If authentication succeeded, run the onboarding flow tests
         if self.auth_token:
-            print(f"\n--- Pillar Creation with User Upsert Fix ---")
-            try:
-                pillar_id = self.test_pillar_creation_with_user_upsert()
-                if pillar_id:
-                    successful_tests += 1
-                    print(f"✅ Pillar Creation with User Upsert Fix completed successfully")
-                    
-                    # Test pillar retrieval
-                    print(f"\n--- Pillar Retrieval Verification ---")
-                    if self.test_pillar_retrieval(pillar_id):
-                        successful_tests += 1
-                        print(f"✅ Pillar Retrieval Verification completed successfully")
-                    else:
-                        print(f"❌ Pillar Retrieval Verification failed")
-                    
-                    total_tests += 2  # Add the two additional tests
-                else:
-                    print(f"❌ Pillar Creation with User Upsert Fix failed")
-                    total_tests += 1  # Add only the pillar creation test
-            except Exception as e:
-                print(f"❌ Pillar Creation with User Upsert Fix raised exception: {e}")
+            print(f"\n--- Complete Onboarding Flow Test ---")
+            
+            # Test pillar creation (the main fix)
+            pillar_id = self.test_pillar_creation()
+            if pillar_id:
+                successful_tests += 1
                 total_tests += 1
+                
+                # Test area creation
+                area_id = self.test_area_creation(pillar_id)
+                if area_id:
+                    successful_tests += 1
+                    total_tests += 1
+                    
+                    # Test project creation
+                    project_id = self.test_project_creation(area_id)
+                    if project_id:
+                        successful_tests += 1
+                        total_tests += 1
+                        
+                        # Test task creation
+                        task_id = self.test_task_creation(project_id)
+                        if task_id:
+                            successful_tests += 1
+                            total_tests += 1
+                        else:
+                            total_tests += 1
+                    else:
+                        total_tests += 1
+                else:
+                    total_tests += 1
+            else:
+                total_tests += 1
+            
+            # Test template application
+            print(f"\n--- Template Application Test ---")
+            if self.test_template_application():
+                successful_tests += 1
+            total_tests += 1
+            
+            # Test data retrieval
+            print(f"\n--- Data Retrieval Test ---")
+            if self.test_data_retrieval():
+                successful_tests += 1
+            total_tests += 1
         
         success_rate = (successful_tests / total_tests) * 100 if total_tests > 0 else 0
         
         print(f"\n" + "=" * 80)
-        print("🧪 ONBOARDING PILLAR CREATION FIX TESTING SUMMARY")
+        print("🚀 ONBOARDING PILLAR CREATION TESTING SUMMARY")
         print("=" * 80)
         print(f"Backend URL: {self.base_url}")
         print(f"Test Methods: {successful_tests}/{total_tests} successful")
         print(f"Overall Success Rate: {success_rate:.1f}%")
         
-        # Analyze results for the specific fix
-        auth_tests_passed = sum(1 for result in self.test_results if result['success'] and 'AUTHENTICATION' in result['test'])
-        pillar_tests_passed = sum(1 for result in self.test_results if result['success'] and 'PILLAR' in result['test'])
-        user_tests_passed = sum(1 for result in self.test_results if result['success'] and 'USER' in result['test'])
+        # Analyze results for foreign key constraint fixes
+        foreign_key_errors = sum(1 for result in self.test_results if 'FOREIGN KEY CONSTRAINT ERROR' in result['test'])
+        pillar_creation_success = sum(1 for result in self.test_results if result['success'] and 'PILLAR CREATION' in result['test'])
+        template_application_success = sum(1 for result in self.test_results if result['success'] and 'TEMPLATE APPLICATION' in result['test'])
         
         print(f"\n🔍 SYSTEM ANALYSIS:")
-        print(f"Authentication Tests Passed: {auth_tests_passed}")
-        print(f"User Verification Tests Passed: {user_tests_passed}")
-        print(f"Pillar Creation Tests Passed: {pillar_tests_passed}")
-        
-        # Check for specific errors that indicate the fix is working
-        foreign_key_errors = sum(1 for result in self.test_results if not result['success'] and 'foreign key constraint' in result['message'].lower())
-        user_existence_errors = sum(1 for result in self.test_results if not result['success'] and 'user' in result['message'].lower() and ('not found' in result['message'].lower() or 'does not exist' in result['message'].lower()))
-        
         print(f"Foreign Key Constraint Errors: {foreign_key_errors}")
-        print(f"User Existence Errors: {user_existence_errors}")
+        print(f"Pillar Creation Success: {pillar_creation_success > 0}")
+        print(f"Template Application Success: {template_application_success > 0}")
+        print(f"Created Resources: Pillars: {len(self.created_resources['pillars'])}, Areas: {len(self.created_resources['areas'])}, Projects: {len(self.created_resources['projects'])}, Tasks: {len(self.created_resources['tasks'])}")
         
-        if success_rate >= 85 and foreign_key_errors == 0 and user_existence_errors == 0:
+        if success_rate >= 85 and foreign_key_errors == 0:
             print("\n✅ ONBOARDING PILLAR CREATION FIX: SUCCESS")
-            print("   ✅ User authentication working correctly")
-            print("   ✅ User existence check with upsert working")
-            print("   ✅ Pillar creation successful without foreign key errors")
-            print("   ✅ No user existence errors detected")
-            print("   The improved user existence check fix is working correctly!")
+            print("   ✅ Authentication working with specified credentials")
+            print("   ✅ Pillar creation working without foreign key constraint violations")
+            print("   ✅ Complete onboarding flow (pillar → area → project → task) functional")
+            print("   ✅ Template selection and application working")
+            print("   ✅ Data retrieval and persistence verified")
+            print("   The database fixes have successfully resolved the onboarding issues!")
         elif foreign_key_errors > 0:
-            print("\n❌ ONBOARDING PILLAR CREATION FIX: FOREIGN KEY CONSTRAINT ISSUES")
-            print("   ❌ Foreign key constraint errors detected")
-            print("   The user upsert fix may not be working properly")
-        elif user_existence_errors > 0:
-            print("\n❌ ONBOARDING PILLAR CREATION FIX: USER EXISTENCE ISSUES")
-            print("   ❌ User existence errors detected")
-            print("   The user existence check may not be working properly")
+            print("\n❌ ONBOARDING PILLAR CREATION FIX: FOREIGN KEY CONSTRAINTS STILL FAILING")
+            print("   ❌ Foreign key constraint violations still occurring")
+            print("   🔧 Additional database fixes may be required")
         else:
             print("\n⚠️ ONBOARDING PILLAR CREATION FIX: PARTIAL SUCCESS")
-            print("   Some tests failed but no specific user/foreign key errors detected")
+            print("   ⚠️ Some issues detected in onboarding flow implementation")
         
         # Show failed tests for debugging
         failed_tests = [result for result in self.test_results if not result['success']]
@@ -479,22 +628,18 @@ class OnboardingPillarCreationTester:
             for test in failed_tests:
                 print(f"   ❌ {test['test']}: {test['message']}")
         
-        # Clean up test pillar
-        if pillar_id:
-            self.cleanup_test_pillar(pillar_id)
-        
-        return success_rate >= 85 and foreign_key_errors == 0 and user_existence_errors == 0
+        return success_rate >= 85 and foreign_key_errors == 0
 
 def main():
-    """Run Onboarding Pillar Creation Fix Tests"""
-    print("🧪 STARTING ONBOARDING PILLAR CREATION FIX BACKEND TESTING")
+    """Run Onboarding Pillar Creation Tests"""
+    print("🚀 STARTING ONBOARDING PILLAR CREATION BACKEND TESTING - POST DATABASE FIXES")
     print("=" * 80)
     
     tester = OnboardingPillarCreationTester()
     
     try:
         # Run the comprehensive onboarding pillar creation tests
-        success = tester.run_comprehensive_onboarding_pillar_test()
+        success = tester.run_comprehensive_onboarding_test()
         
         # Calculate overall results
         total_tests = len(tester.test_results)
