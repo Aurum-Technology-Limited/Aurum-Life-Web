@@ -652,16 +652,25 @@ async def create_project_with_tasks(
         if not project_data.get('title'):
             raise HTTPException(status_code=422, detail="Project title is required")
         
+        # Sanitize project data
+        sanitized_project = sanitize_user_input(project_data, model_type="default")
+        
+        # Sanitize tasks data
+        sanitized_tasks = []
+        for task in tasks_data:
+            sanitized_task = sanitize_user_input(task, model_type="default")
+            sanitized_tasks.append(sanitized_task)
+        
         supabase = get_supabase_client()
         
         # Create the project
         project_record = {
             'user_id': user_id,
-            'name': project_data['title'],
-            'description': project_data.get('description', ''),
-            'area_id': project_data.get('area_id'),
-            'priority': project_data.get('priority', 'medium'),
-            'status': project_data.get('status', 'Not Started'),
+            'name': sanitized_project['title'],
+            'description': sanitized_project.get('description', ''),
+            'area_id': sanitized_project.get('area_id'),
+            'priority': sanitized_project.get('priority', 'medium'),
+            'status': sanitized_project.get('status', 'Not Started'),
             'created_at': datetime.utcnow().isoformat(),
             'updated_at': datetime.utcnow().isoformat()
         }
