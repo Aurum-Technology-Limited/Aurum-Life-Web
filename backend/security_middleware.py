@@ -200,6 +200,16 @@ class InputSanitizer:
             return text
         
         try:
+            # First, remove dangerous protocols like javascript:, data:, vbscript:
+            dangerous_protocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:']
+            text_lower = text.lower()
+            for protocol in dangerous_protocols:
+                if protocol in text_lower:
+                    # Remove the dangerous protocol and anything after it up to the next space or end
+                    import re
+                    pattern = re.compile(re.escape(protocol) + r'[^\s]*', re.IGNORECASE)
+                    text = pattern.sub('', text)
+            
             if allow_html:
                 # For rich text content, allow basic formatting tags
                 sanitized = bleach.clean(
