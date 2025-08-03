@@ -69,7 +69,6 @@ class OptimizedSupabaseClient:
             return wrapper
         return decorator
     
-    @track_query_performance("batch_select")
     async def batch_select_all_user_data(self, user_id: str) -> Dict[str, List[Dict]]:
         """
         Optimized batch operation to fetch ALL user data in parallel
