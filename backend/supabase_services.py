@@ -136,6 +136,87 @@ class SupabaseUserService:
             raise
     
     @staticmethod
+    async def update_user_profile(user_id: str, profile_data: Dict[str, Any], ip_address: str = None) -> Optional[Dict[str, Any]]:
+        """
+        Update user profile with username change rate limiting (7 days between changes)
+        """
+        try:
+            # Check if username is being changed
+            username_change = profile_data.get('username')
+            if username_change:
+                # Get current user data to check existing username
+                current_user = await SupabaseUserService.get_user_profile(user_id)
+                if not current_user:
+                    raise Exception("User not found")
+                
+                current_username = current_user.get('username')
+                
+                # Only check rate limiting if username is actually changing
+                if current_username != username_change:
+                    # Check if user has changed username in the last 7 days
+                    seven_days_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
+                    
+                    # Check username_change_records table
+                    try:
+                        response = supabase.table('username_change_records')\
+                            .select('*')\
+                            .eq('user_id', user_id)\
+                            .gte('changed_at', seven_days_ago)\
+                            .order('changed_at', desc=True)\
+                            .limit(1)\
+                            .execute()
+                        
+                        if response.data and len(response.data) > 0:
+                            last_change = response.data[0]
+                            last_change_date = datetime.fromisoformat(last_change['changed_at'].replace('Z', '+00:00'))
+                            days_since_change = (datetime.utcnow() - last_change_date.replace(tzinfo=None)).days
+                            days_remaining = 7 - days_since_change
+                            
+                            if days_remaining > 0:
+                                raise Exception(f"Username can only be changed once every 7 days. Please wait {days_remaining} more day(s).")
+                    
+                    except Exception as e:
+                        if "Username can only be changed" in str(e):
+                            raise e
+                        # If table doesn't exist or other error, continue (first time setup)
+                        logger.warning(f"Username change tracking table not accessible: {str(e)}")
+                    
+                    # Check if username is already taken
+                    existing_user = supabase.table('user_profiles')\
+                        .select('id')\
+                        .eq('username', username_change)\
+                        .neq('id', user_id)\
+                        .limit(1)\
+                        .execute()
+                    
+                    if existing_user.data and len(existing_user.data) > 0:
+                        raise Exception("Username is already taken")
+                    
+                    # Record the username change
+                    try:
+                        change_record = {
+                            'id': str(uuid.uuid4()),
+                            'user_id': user_id,
+                            'old_username': current_username or '',
+                            'new_username': username_change,
+                            'changed_at': datetime.utcnow().isoformat(),
+                            'ip_address': ip_address
+                        }
+                        
+                        supabase.table('username_change_records').insert(change_record).execute()
+                        logger.info(f"Recorded username change for user {user_id}: {current_username} -> {username_change}")
+                    
+                    except Exception as e:
+                        logger.warning(f"Failed to record username change: {str(e)} - continuing with update")
+            
+            # Proceed with profile update
+            return await SupabaseUserService.update_user(user_id, profile_data)
+            
+        except Exception as e:
+            logger.error(f"Error updating user profile: {e}")
+            raise
+    
+    @staticmethod
     async def update_user(user_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update user profile in both user_profiles table and legacy users table"""
         try:
