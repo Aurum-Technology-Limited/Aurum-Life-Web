@@ -327,8 +327,8 @@ async def get_current_user_profile(request: Request):
                     id=profile['id'],
                     username=profile.get('username', ''),
                     email=getattr(current_user, 'email', ''),
-                    first_name=profile.get('first_name', ''),
-                    last_name=profile.get('last_name', ''),
+                    first_name=profile.get('first_name') or '',
+                    last_name=profile.get('last_name') or '',
                     is_active=profile.get('is_active', True),
                     has_completed_onboarding=has_completed_onboarding,
                     created_at=profile.get('created_at')
