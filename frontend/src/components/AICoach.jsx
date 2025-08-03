@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bot, Target, TrendingUp, AlertTriangle, Loader2, AlertCircle, Brain, ChevronRight, Clock, Zap } from 'lucide-react';
-import { api, aiCoachAPI } from '../services/api';
+import api, { aiCoachAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
 const FeatureCard = ({ icon: Icon, title, description, buttonText, onClick, disabled = false, isLoading = false }) => (
