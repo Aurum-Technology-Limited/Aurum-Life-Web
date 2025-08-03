@@ -26,11 +26,27 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
+  // Add CSRF token for state-changing requests
+  if (['post', 'put', 'delete', 'patch'].includes(config.method.toLowerCase())) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      config.headers['X-CSRF-Token'] = csrfToken;
+    }
+  }
+  
   // Add performance headers
   config.headers['Cache-Control'] = 'no-cache';
   
   return config;
 });
+
+// Helper function to get CSRF token from cookie
+function getCsrfToken() {
+  const cookieValue = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('csrf_token='));
+  return cookieValue ? cookieValue.split('=')[1] : null;
+}
 
 // Add response interceptor for error handling and performance tracking
 apiClient.interceptors.response.use(
