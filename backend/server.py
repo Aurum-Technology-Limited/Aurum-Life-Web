@@ -73,8 +73,9 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-# Security middleware - Add security headers to all responses
+# Security middleware - Add security headers and CSRF protection to all responses
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(CSRFProtectionMiddleware)
 
 # Create API router
 api_router = APIRouter(prefix="/api")
