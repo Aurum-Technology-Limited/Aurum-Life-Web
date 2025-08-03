@@ -185,7 +185,7 @@ export const projectsAPI = {
   reorderProjectTasks: (projectId, taskIds) => apiClient.put(`/projects/${projectId}/tasks/reorder`, { task_ids: taskIds }),
   
   // Create project with tasks from Goal Decomposition workflow
-  createWithTasks: (projectData, tasksData) => apiClient.post('/api/projects/create-with-tasks', {
+  createWithTasks: (projectData, tasksData) => apiClient.post('/projects/create-with-tasks', {
     project: projectData,
     tasks: tasksData
   })
