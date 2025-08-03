@@ -17,7 +17,8 @@ const AlignmentScore = ({ onSectionChange }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    // Only fetch data if user is loaded and available
+    if (user && Object.keys(user).length > 0) {
       fetchAlignmentData();
     }
   }, [user]);
@@ -30,25 +31,25 @@ const AlignmentScore = ({ onSectionChange }) => {
       // Use centralized API client instead of manual fetch
       const response = await alignmentScoreAPI.getDashboardData();
       
-      // Validate response data structure with safe defaults
-      const data = response.data;
+      // Enhanced validation with defensive programming for response data structure
+      const data = response?.data || {};
       const safeData = {
-        rolling_weekly_score: data?.rolling_weekly_score || 0,
-        monthly_score: data?.monthly_score || 0,
-        monthly_goal: data?.monthly_goal || null,
-        progress_percentage: data?.progress_percentage || 0,
-        has_goal_set: data?.has_goal_set || false
+        rolling_weekly_score: typeof data.rolling_weekly_score === 'number' ? data.rolling_weekly_score : 0,
+        monthly_score: typeof data.monthly_score === 'number' ? data.monthly_score : 0,
+        monthly_goal: data.monthly_goal || null,
+        progress_percentage: typeof data.progress_percentage === 'number' ? data.progress_percentage : 0,
+        has_goal_set: Boolean(data.has_goal_set)
       };
       
       setAlignmentData(safeData);
     } catch (err) {
       console.error('Error fetching alignment data:', err);
       // Handle specific error types
-      if (err.message.includes('Authentication failed')) {
+      if (err?.message?.includes('Authentication failed')) {
         setError('Please log in again');
-      } else if (err.message.includes('timeout')) {
+      } else if (err?.message?.includes('timeout')) {
         setError('Request timed out. Please check your connection.');
-      } else if (err.message.includes('Server temporarily unavailable')) {
+      } else if (err?.message?.includes('Server temporarily unavailable')) {
         setError('Server temporarily unavailable. Please try again later.');
       } else {
         setError('Unable to load alignment data');
