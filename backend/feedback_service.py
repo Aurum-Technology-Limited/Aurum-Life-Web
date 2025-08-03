@@ -121,7 +121,8 @@ class FeedbackService:
         category_label = category_labels.get(feedback_record['category'], 'Feedback')
         priority_label = feedback_record['priority'].title()
         
-        subject = f"Aurum Life Feedback: {category_label} - {feedback_record['subject']}"
+        # Optimize subject line for Outlook (avoid spam triggers)
+        subject = f"[Aurum Life] {category_label}: {feedback_record['subject']}"
         
         # Create HTML email content
         html_content = f"""
