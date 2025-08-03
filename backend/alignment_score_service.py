@@ -74,12 +74,12 @@ class AlignmentScoreService:
             # Calculate points using new project-based algorithm
             score_data = self.calculate_project_points(project_data, area_data)
             
-            # Record the alignment score with project_id (not task_id)
+            # Record the alignment score - use task_id column for project_id (backwards compatibility)
             alignment_record = {
                 'user_id': user_id,
-                'project_id': project_id,  # Changed from task_id to project_id
+                'task_id': project_id,  # Use existing task_id column to store project_id
                 'points_earned': score_data['total_points'],
-                'project_priority': score_data['project_priority'],
+                'task_priority': score_data['project_priority'],  # Use existing task_priority column
                 'area_importance': score_data['area_importance']
             }
             
