@@ -337,7 +337,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
             subtitle="days of consistency"
             icon={Flame}
             trend={12}
-            loading={loading}
+            loading={loading || isLoading}
           />
           <StatCard
             title="Habits Today"
@@ -345,21 +345,21 @@ const OptimizedDashboard = ({ onSectionChange }) => {
             subtitle="0% complete"
             icon={Target}
             trend={8}
-            loading={loading}
+            loading={loading || isLoading}
           />
           <StatCard
             title="Active Learning"
             value={stats.activeLearning}
             subtitle="courses in progress"
             icon={BookOpen}
-            loading={loading}
+            loading={loading || isLoading}
           />
           <StatCard
             title="Achievements"
             value={stats.achievements}
             subtitle="badges earned"
             icon={Trophy}
-            loading={loading}
+            loading={loading || isLoading}
           />
         </div>
 
