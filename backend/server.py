@@ -998,8 +998,22 @@ async def update_pillar(
 ):
     """Update a pillar"""
     try:
+        # IDOR Protection: Verify user owns this pillar
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'pillars', pillar_id
+        )
+        
+        # Sanitize pillar data to prevent XSS
+        sanitized_data = sanitize_user_input(pillar_data.dict(), model_type="default")
+        if 'name' in sanitized_data:
+            pillar_data.name = sanitized_data["name"]
+        if 'description' in sanitized_data:
+            pillar_data.description = sanitized_data["description"]
+        
         result = await SupabasePillarService.update_pillar(pillar_id, str(current_user.id), pillar_data)
         return result
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
