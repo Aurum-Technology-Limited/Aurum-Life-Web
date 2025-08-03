@@ -2588,6 +2588,161 @@ async def get_user_feedback(
         logger.error(f"Error getting user feedback: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve feedback")
 
+# ================================
+# ULTRA-PERFORMANCE ENDPOINTS
+# Target: <200ms response times
+# ================================
+
+@api_router.get("/ultra/pillars", response_model=List[PillarResponse])
+async def get_ultra_performance_pillars(
+    include_areas: bool = Query(False, description="Include area data in response"),
+    include_archived: bool = Query(False, description="Include archived pillars"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Ultra-high performance pillar retrieval - Target: <150ms"""
+    try:
+        user_id = str(current_user.id)
+        logger.info(f"🚀 Ultra-performance pillars request for user: {user_id}")
+        
+        pillars = await UltraPerformancePillarService.get_user_pillars(
+            user_id, include_areas, include_archived
+        )
+        
+        logger.info(f"✅ Ultra-performance pillars completed: {len(pillars)} pillars")
+        return pillars
+        
+    except Exception as e:
+        logger.error(f"Ultra-performance pillars error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get pillars")
+
+@api_router.get("/ultra/areas", response_model=List[AreaResponse])
+async def get_ultra_performance_areas(
+    include_projects: bool = Query(False, description="Include project data in response"),
+    include_archived: bool = Query(False, description="Include archived areas"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Ultra-high performance area retrieval - Target: <120ms"""
+    try:
+        user_id = str(current_user.id)
+        logger.info(f"🚀 Ultra-performance areas request for user: {user_id}")
+        
+        areas = await UltraPerformanceAreaService.get_user_areas(
+            user_id, include_projects, include_archived
+        )
+        
+        logger.info(f"✅ Ultra-performance areas completed: {len(areas)} areas")
+        return areas
+        
+    except Exception as e:
+        logger.error(f"Ultra-performance areas error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get areas")
+
+@api_router.get("/ultra/projects", response_model=List[ProjectResponse])
+async def get_ultra_performance_projects(
+    area_id: Optional[str] = Query(None, description="Filter by area ID"),
+    include_archived: bool = Query(False, description="Include archived projects"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Ultra-high performance project retrieval - Target: <100ms"""
+    try:
+        user_id = str(current_user.id)
+        logger.info(f"🚀 Ultra-performance projects request for user: {user_id}")
+        
+        projects = await UltraPerformanceProjectService.get_user_projects(
+            user_id, area_id, include_archived
+        )
+        
+        logger.info(f"✅ Ultra-performance projects completed: {len(projects)} projects")
+        return projects
+        
+    except Exception as e:
+        logger.error(f"Ultra-performance projects error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get projects")
+
+@api_router.get("/ultra/dashboard", response_model=UserDashboard)
+async def get_ultra_performance_dashboard(
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Ultra-high performance dashboard - Target: <150ms"""
+    try:
+        user_id = str(current_user.id)
+        logger.info(f"🚀 Ultra-performance dashboard request for user: {user_id}")
+        
+        dashboard_data = await UltraPerformanceDashboardService.get_dashboard_data(user_id)
+        
+        logger.info(f"✅ Ultra-performance dashboard completed")
+        return dashboard_data
+        
+    except Exception as e:
+        logger.error(f"Ultra-performance dashboard error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get dashboard data")
+
+@api_router.get("/ultra/insights")
+async def get_ultra_performance_insights(
+    date_range: str = Query("all_time", description="Date range for insights"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Ultra-high performance insights - Target: <200ms"""
+    try:
+        user_id = str(current_user.id)
+        logger.info(f"🚀 Ultra-performance insights request for user: {user_id}")
+        
+        insights = await UltraPerformanceInsightsService.get_comprehensive_insights(
+            user_id, date_range
+        )
+        
+        logger.info(f"✅ Ultra-performance insights completed")
+        return insights
+        
+    except Exception as e:
+        logger.error(f"Ultra-performance insights error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get insights")
+
+@api_router.get("/ultra/performance-stats")
+async def get_performance_statistics(
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get comprehensive performance statistics"""
+    try:
+        stats = get_ultra_performance_stats()
+        return {
+            "message": "Performance statistics retrieved successfully",
+            "stats": stats,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Performance stats error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get performance stats")
+
+# ================================
+# PERFORMANCE MONITORING ENDPOINTS
+# ================================
+
+@api_router.get("/performance/monitor")
+async def get_performance_monitor_data():
+    """Get current performance monitoring data"""
+    try:
+        from performance_monitor import perf_monitor
+        summary = perf_monitor.get_performance_summary()
+        return {
+            "performance_summary": summary,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Performance monitor error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get performance data")
+
+@api_router.post("/performance/reset")
+async def reset_performance_metrics():
+    """Reset performance metrics (for testing/development)"""
+    try:
+        from performance_monitor import perf_monitor
+        perf_monitor.reset_metrics()
+        return {"message": "Performance metrics reset successfully"}
+    except Exception as e:
+        logger.error(f"Performance reset error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reset performance metrics")
+
 # Include authentication routes under /api
 api_router.include_router(auth_router, prefix="/auth")
 
