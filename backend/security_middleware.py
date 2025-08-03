@@ -26,13 +26,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, *args, **kwargs):
         super().__init__(app, *args, **kwargs)
         
-        # Define security headers
+        # Define security headers with hardened CSP
         self.security_headers = {
-            # Content Security Policy - Strict policy to prevent XSS
+            # Hardened Content Security Policy - More restrictive
             "Content-Security-Policy": (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com; "
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "script-src 'self' https://accounts.google.com https://apis.google.com; "
+                "style-src 'self' https://fonts.googleapis.com; "
                 "font-src 'self' https://fonts.gstatic.com; "
                 "img-src 'self' data: https:; "
                 "connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://www.googleapis.com https://7b39a747-36d6-44f7-9408-a498365475ba.preview.emergentagent.com; "
@@ -86,6 +86,74 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers[header_name] = header_value
         
         return response
+
+
+class CSRFProtectionMiddleware(BaseHTTPMiddleware):
+    """
+    CSRF Protection using Double Submit Cookie pattern
+    """
+    
+    def __init__(self, app, *args, **kwargs):
+        super().__init__(app, *args, **kwargs)
+        # State-changing methods that require CSRF protection
+        self.protected_methods = {"POST", "PUT", "DELETE", "PATCH"}
+        # Endpoints that don't need CSRF protection (like login)
+        self.exempt_paths = {
+            "/api/auth/login",
+            "/api/auth/register", 
+            "/api/auth/refresh",
+            "/"  # Root endpoint
+        }
+    
+    def generate_csrf_token(self) -> str:
+        """Generate a secure CSRF token"""
+        return secrets.token_urlsafe(32)
+    
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        """
+        Process request and validate CSRF tokens for state-changing operations
+        """
+        request_path = request.url.path
+        request_method = request.method
+        
+        # Skip CSRF protection for non-protected methods or exempt paths
+        if request_method not in self.protected_methods or request_path in self.exempt_paths:
+            response = await call_next(request)
+            
+            # For login endpoint, set CSRF token in cookie
+            if request_path == "/api/auth/login" and request_method == "POST":
+                csrf_token = self.generate_csrf_token()
+                response.set_cookie(
+                    key="csrf_token",
+                    value=csrf_token,
+                    httponly=False,  # JavaScript needs to read this
+                    secure=True,     # HTTPS only in production
+                    samesite="strict"
+                )
+                logger.info("CSRF token generated and set in cookie")
+            
+            return response
+        
+        # Validate CSRF token for protected requests
+        csrf_cookie = request.cookies.get("csrf_token")
+        csrf_header = request.headers.get("X-CSRF-Token")
+        
+        if not csrf_cookie or not csrf_header:
+            logger.warning(f"CSRF protection: Missing token - Cookie: {bool(csrf_cookie)}, Header: {bool(csrf_header)}")
+            raise HTTPException(
+                status_code=403,
+                detail="CSRF token missing. This request requires CSRF protection."
+            )
+        
+        if csrf_cookie != csrf_header:
+            logger.warning("CSRF protection: Token mismatch")
+            raise HTTPException(
+                status_code=403,
+                detail="CSRF token mismatch. Invalid request."
+            )
+        
+        logger.debug("CSRF protection: Token validated successfully")
+        return await call_next(request)
 
 
 class InputSanitizer:
