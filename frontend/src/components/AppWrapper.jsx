@@ -34,6 +34,10 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
   const handleOnboardingComplete = async () => {
     console.log('🎉 Onboarding completed - refreshing user data and navigating to dashboard');
     
+    // Set flag to prevent showing onboarding again during refresh
+    setOnboardingCompleted(true);
+    setShowOnboarding(false);
+    
     // Refresh user data to get updated onboarding status
     try {
       await refreshUser();
@@ -41,8 +45,6 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
     } catch (error) {
       console.error('⚠️ Failed to refresh user data after onboarding:', error);
     }
-    
-    setShowOnboarding(false);
     
     // Navigate to dashboard
     if (onNavigateToSection) {
