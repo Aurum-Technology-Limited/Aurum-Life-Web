@@ -304,8 +304,8 @@ async def get_current_user_profile(request: Request):
                     id=legacy_user['id'],
                     username=legacy_user.get('username', ''),
                     email=legacy_user.get('email', ''),
-                    first_name=legacy_user.get('first_name', ''),
-                    last_name=legacy_user.get('last_name', ''),
+                    first_name=legacy_user.get('first_name') or '',
+                    last_name=legacy_user.get('last_name') or '',
                     is_active=legacy_user.get('is_active', True),
                     has_completed_onboarding=has_completed_onboarding,
                     created_at=legacy_user.get('created_at')
