@@ -1025,6 +1025,11 @@ async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current
 async def create_area(area_data: AreaCreate, current_user: User = Depends(get_current_active_user_hybrid)):
     """Create a new area"""
     try:
+        # Sanitize area data to prevent XSS
+        sanitized_data = sanitize_user_input(area_data.dict(), model_type="default")
+        area_data.name = sanitized_data["name"]
+        area_data.description = sanitized_data["description"]
+        
         result = await SupabaseAreaService.create_area(str(current_user.id), area_data)
         return result
     except ValueError as e:
