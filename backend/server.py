@@ -1132,6 +1132,18 @@ async def update_project(
 ):
     """Update a project and calculate alignment score if completed"""
     try:
+        # IDOR Protection: Verify user owns this project
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'projects', project_id
+        )
+        
+        # Sanitize project data to prevent XSS
+        sanitized_data = sanitize_user_input(project_data.dict(), model_type="default")
+        if 'name' in sanitized_data:
+            project_data.name = sanitized_data["name"]
+        if 'description' in sanitized_data:
+            project_data.description = sanitized_data["description"]
+        
         # Check if project was just completed (status changed to 'Completed')
         is_now_completed = False
         if hasattr(project_data, 'status') and project_data.status:
