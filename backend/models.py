@@ -63,6 +63,12 @@ class UserProfileUpdate(BaseModel):
     first_name: str  # Mandatory field
     last_name: str  # Mandatory field
     username: str  # Mandatory field
+    
+    @validator('first_name', 'last_name', 'username')
+    def validate_non_empty_strings(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Field cannot be empty')
+        return v.strip()
 
 # Username change tracking model
 class UsernameChangeRecord(BaseModel):
