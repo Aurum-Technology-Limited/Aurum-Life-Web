@@ -356,10 +356,6 @@ const AICoach = () => {
     return true;
   };
 
-  const consumeQuota = () => {
-    setQuota(prev => ({ ...prev, remaining: Math.max(0, prev.remaining - 1) }));
-  };
-
   // Feature 1: Goal Decomposition
   const handleGoalDecomposition = async (goalText) => {
     if (!await checkRateLimit()) return;
