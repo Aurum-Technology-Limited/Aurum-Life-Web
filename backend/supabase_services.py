@@ -251,6 +251,111 @@ class SupabaseUserService:
         except Exception as e:
             logger.error(f"Error updating user: {e}")
             return None
+    
+    @staticmethod
+    async def delete_user_account(user_id: str, user_email: str, ip_address: str = None) -> Dict[str, Any]:
+        """
+        Delete user account and ALL associated data - IRREVERSIBLE operation
+        This method deletes:
+        1. All user data from Supabase tables (most cascade from auth.users)
+        2. Feedback data from feedback table
+        3. Finally deletes the auth.users record (which cascades remaining data)
+        """
+        try:
+            deletion_summary = {
+                'success': False,
+                'tables_cleaned': [],
+                'errors': [],
+                'deleted_at': datetime.utcnow().isoformat()
+            }
+            
+            # Log deletion attempt for audit trail
+            logger.warning(f"🚨 Starting account deletion for user: {user_email} (ID: {user_id}) from IP: {ip_address}")
+            
+            # Tables to explicitly clean (some may not cascade properly)
+            tables_to_clean = [
+                'feedback',  # Feedback data
+                'username_change_records',  # Username change history
+                'ai_interactions',  # AI usage tracking
+                'alignment_scores',  # User scoring data
+                'sleep_reflections',  # Sleep tracking
+                'daily_reflections',  # Daily reflections
+                'password_reset_tokens',  # Password reset tokens
+                'notification_preferences',  # Notification settings
+                'notifications',  # User notifications
+                'resources',  # File attachments
+                'journal_entries',  # Journal entries
+                'journal_templates',  # Journal templates
+                'task_templates',  # Task templates
+                'project_templates',  # Project templates
+                'user_stats',  # User statistics
+                'tasks',  # User tasks
+                'projects',  # User projects
+                'areas',  # User areas
+                'pillars',  # User pillars
+                'user_profiles',  # User profile data
+            ]
+            
+            # Delete data from each table explicitly
+            for table_name in tables_to_clean:
+                try:
+                    response = supabase.table(table_name).delete().eq('user_id', user_id).execute()
+                    deleted_count = len(response.data) if response.data else 0
+                    
+                    if deleted_count > 0:
+                        deletion_summary['tables_cleaned'].append(f"{table_name}: {deleted_count} records")
+                        logger.info(f"✅ Deleted {deleted_count} records from {table_name}")
+                    else:
+                        deletion_summary['tables_cleaned'].append(f"{table_name}: 0 records")
+                        
+                except Exception as table_error:
+                    # Log error but continue with other tables
+                    error_msg = f"Error deleting from {table_name}: {str(table_error)}"
+                    deletion_summary['errors'].append(error_msg)
+                    logger.warning(f"⚠️ {error_msg}")
+            
+            # Finally, delete the user from auth.users (this will cascade any remaining data)
+            try:
+                # Use Supabase Admin API to delete user from auth
+                auth_response = supabase.auth.admin.delete_user(user_id)
+                
+                if auth_response:
+                    deletion_summary['tables_cleaned'].append("auth.users: 1 record (cascaded remaining data)")
+                    logger.warning(f"✅ Deleted auth.users record for {user_email} - cascaded remaining data")
+                else:
+                    deletion_summary['errors'].append("Failed to delete auth.users record")
+                    logger.error(f"❌ Failed to delete auth.users record for {user_email}")
+                    
+            except Exception as auth_error:
+                error_msg = f"Error deleting auth.users record: {str(auth_error)}"
+                deletion_summary['errors'].append(error_msg)
+                logger.error(f"❌ {error_msg}")
+            
+            # Determine if deletion was successful
+            auth_deleted = any("auth.users" in entry for entry in deletion_summary['tables_cleaned'])
+            has_data_deleted = len(deletion_summary['tables_cleaned']) > 0
+            
+            deletion_summary['success'] = auth_deleted or (has_data_deleted and len(deletion_summary['errors']) == 0)
+            
+            # Final audit log
+            if deletion_summary['success']:
+                logger.warning(f"🎉 ACCOUNT DELETION SUCCESSFUL - User: {user_email} (ID: {user_id})")
+                logger.info(f"Deletion summary: {len(deletion_summary['tables_cleaned'])} tables cleaned, {len(deletion_summary['errors'])} errors")
+            else:
+                logger.error(f"💥 ACCOUNT DELETION FAILED - User: {user_email} (ID: {user_id})")
+                logger.error(f"Errors: {deletion_summary['errors']}")
+            
+            return deletion_summary
+            
+        except Exception as e:
+            logger.error(f"💥 CRITICAL ERROR during account deletion for {user_email}: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'tables_cleaned': [],
+                'errors': [f"Critical error: {str(e)}"],
+                'deleted_at': datetime.utcnow().isoformat()
+            }
 
 
 class SupabasePillarService:
