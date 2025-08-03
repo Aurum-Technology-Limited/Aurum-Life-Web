@@ -686,7 +686,7 @@ async def create_project_with_tasks(
         
         # Create associated tasks
         created_tasks = []
-        for task_data in tasks_data:
+        for task_data in sanitized_tasks:
             if not task_data.get('title'):
                 continue  # Skip empty tasks
                 
