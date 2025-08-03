@@ -260,12 +260,11 @@ const GoalSettings = () => {
       <div className="mt-6 p-4 bg-gray-800/30 rounded-lg">
         <h4 className="text-sm font-medium text-gray-300 mb-2">How Points Are Earned</h4>
         <div className="text-xs text-gray-400 space-y-1">
-          <div>• Base Points: <span className="text-white">+5</span> for any completed task</div>
-          <div>• Task Priority: <span className="text-white">+10</span> for high priority tasks</div>
-          <div>• Project Priority: <span className="text-white">+15</span> for tasks in high priority projects</div>
-          <div>• Area Importance: <span className="text-white">+20</span> for tasks in top importance areas (5/5)</div>
+          <div>• Base Points: <span className="text-white">+50</span> for any completed project</div>
+          <div>• Project Priority: <span className="text-white">+25</span> for high priority projects</div>
+          <div>• Area Importance: <span className="text-white">+50</span> for projects in top importance areas (5/5)</div>
           <div className="pt-2 border-t border-gray-700">
-            <strong className="text-yellow-400">Maximum: 50 points</strong> per perfectly aligned task
+            <strong className="text-yellow-400">Maximum: 125 points</strong> per completed project
           </div>
         </div>
       </div>
