@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { ChatAltIcon, PaperAirplaneIcon } from '@heroicons/react/outline';
-import { api } from '../services/api';
+import api from '../services/api';
 
 const Feedback = () => {
   const { user } = useAuth();
