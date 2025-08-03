@@ -448,24 +448,28 @@ const AICoach = () => {
       setObstacleLoading(true);
       setError(null);
       
-      // Get project details
-      const project = projects.find(p => p.id === projectId);
-      if (!project) throw new Error('Project not found');
-
-      // Generate obstacle analysis suggestions (simplified AI-like logic)
-      const suggestions = generateObstacleSuggestions(problemDescription, project);
-
-      consumeQuota();
+      const response = await aiCoachAPI.analyzeObstacle(projectId, problemDescription);
+      
+      // Update quota after successful request
+      await loadQuota();
       
       setCurrentResponse({
-        suggestions: suggestions
+        suggestions: response.data.suggestions
       });
-      setResponseTitle(`Obstacle Analysis: ${project.name}`);
+      setResponseTitle(`Obstacle Analysis: ${response.data.project_name}`);
       setObstacleModalOpen(false);
       setResponseModalOpen(true);
       
     } catch (err) {
-      setError('Failed to analyze obstacle. Please try again.');
+      if (err.response?.status === 429) {
+        setError('Too many requests. Please wait a moment before trying again.');
+      } else if (err.response?.status === 402) {
+        setError('Monthly AI interaction limit reached.');
+      } else if (err.response?.status === 404) {
+        setError('Project not found. Please select a valid project.');
+      } else {
+        setError('Failed to analyze obstacle. Please try again.');
+      }
       console.error('Obstacle analysis error:', err);
     } finally {
       setObstacleLoading(false);
