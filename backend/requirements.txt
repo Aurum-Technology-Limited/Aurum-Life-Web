@@ -43,3 +43,7 @@ emergentintegrations
 google-auth-oauthlib
 google-auth-httplib2
 requests
+
+# Security dependencies
+bleach>=6.2.0
+pip-audit>=2.6.0
