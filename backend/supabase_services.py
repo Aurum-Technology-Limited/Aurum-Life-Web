@@ -139,12 +139,13 @@ class SupabaseUserService:
     async def update_user_profile(user_id: str, profile_data: Dict[str, Any], ip_address: str = None) -> Optional[Dict[str, Any]]:
         """
         Update user profile with username change rate limiting (7 days between changes)
+        Uses profile_data JSON field to store username change timestamps
         """
         try:
             # Check if username is being changed
             username_change = profile_data.get('username')
             if username_change:
-                # Get current user data to check existing username and last username change
+                # Get current user data to check existing username and profile_data
                 current_user_response = supabase.table('user_profiles')\
                     .select('*')\
                     .eq('id', user_id)\
@@ -156,11 +157,13 @@ class SupabaseUserService:
                 
                 current_user = current_user_response.data[0]
                 current_username = current_user.get('username')
-                last_username_change = current_user.get('last_username_change')
+                current_profile_data = current_user.get('profile_data') or {}
                 
                 # Only check rate limiting if username is actually changing
                 if current_username != username_change:
                     # Check if user has changed username in the last 7 days
+                    last_username_change = current_profile_data.get('last_username_change')
+                    
                     if last_username_change:
                         try:
                             # Parse the last change date
@@ -191,8 +194,11 @@ class SupabaseUserService:
                     if existing_user.data and len(existing_user.data) > 0:
                         raise Exception("Username is already taken")
                     
-                    # Add the username change timestamp to the profile data
-                    profile_data['last_username_change'] = datetime.utcnow().isoformat()
+                    # Update profile_data with username change timestamp
+                    updated_profile_data = current_profile_data.copy()
+                    updated_profile_data['last_username_change'] = datetime.utcnow().isoformat()
+                    profile_data['profile_data'] = updated_profile_data
+                    
                     logger.info(f"Recording username change for user {user_id}: {current_username} -> {username_change}")
             
             # Proceed with profile update
