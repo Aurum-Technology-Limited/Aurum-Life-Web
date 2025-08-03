@@ -8,28 +8,47 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
   const { user, loading, refreshUser } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false); // Track if onboarding was just completed
 
   // Check onboarding status when user becomes available
   useEffect(() => {
     if (user && !loading) {
       setIsCheckingOnboarding(true);
       
-      // Check if user has completed onboarding
+      // Check if user has completed onboarding from backend data
       const hasCompletedOnboarding = user.has_completed_onboarding;
       
-      // Don't override onboarding completion if it was just completed
-      if (!hasCompletedOnboarding && !onboardingCompleted) {
+      // Also check localStorage for client-side completion flag
+      const localCompletionFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
+      const isLocallyCompleted = localCompletionFlag === 'true';
+      
+      // Show onboarding only if BOTH backend and local storage indicate not completed
+      if (!hasCompletedOnboarding && !isLocallyCompleted) {
         console.log('🎯 New user detected - showing onboarding');
         setShowOnboarding(true);
       } else {
-        console.log('🏠 Existing user or onboarding just completed - going to dashboard');
+        console.log('🏠 User has completed onboarding (backend or locally) - going to dashboard');
         setShowOnboarding(false);
+        
+        // If locally completed but backend hasn't updated yet, sync with backend
+        if (isLocallyCompleted && !hasCompletedOnboarding) {
+          console.log('🔄 Syncing local completion with backend...');
+          syncOnboardingCompletion();
+        }
       }
       
       setIsCheckingOnboarding(false);
     }
-  }, [user, loading, onboardingCompleted]);
+  }, [user, loading]);
+
+  const syncOnboardingCompletion = async () => {
+    try {
+      await api.post('/api/auth/complete-onboarding');
+      await refreshUser();
+      console.log('✅ Local completion synced with backend');
+    } catch (error) {
+      console.error('⚠️ Failed to sync completion with backend:', error);
+    }
+  };
 
   const handleOnboardingComplete = async () => {
     console.log('🎉 Onboarding completed - refreshing user data and navigating to dashboard');
