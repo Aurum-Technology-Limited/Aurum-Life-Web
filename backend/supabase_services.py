@@ -819,6 +819,9 @@ class SupabaseProjectService:
     async def create_project(user_id: str, project_data: ProjectCreate) -> Dict[str, Any]:
         """Create a new project"""
         try:
+            # Ensure user exists in users table (fix for foreign key constraint)
+            await SupabasePillarService._ensure_user_exists_in_users_table(user_id)
+            
             project_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
