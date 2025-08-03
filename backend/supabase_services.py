@@ -365,8 +365,8 @@ class SupabasePillarService:
     async def create_pillar(user_id: str, pillar_data: PillarCreate) -> Dict[str, Any]:
         """Create a new pillar"""
         try:
-            # Ensure user exists in users table (fix for foreign key constraint)
-            await SupabasePillarService._ensure_user_exists_in_users_table(user_id)
+            # Ensure user exists in auth.users table (fix for foreign key constraint)
+            await SupabasePillarService._ensure_user_exists_in_auth_users(user_id)
             
             pillar_dict = {
                 'id': str(uuid.uuid4()),
