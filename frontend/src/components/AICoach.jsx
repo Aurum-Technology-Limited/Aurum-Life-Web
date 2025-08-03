@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bot, Target, TrendingUp, AlertTriangle, Loader2, AlertCircle, Brain, ChevronRight, Clock, Zap } from 'lucide-react';
 import { api, aiCoachAPI } from '../services/api';
+import { useToast } from '../hooks/use-toast';
 
 const FeatureCard = ({ icon: Icon, title, description, buttonText, onClick, disabled = false, isLoading = false }) => (
   <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group">
