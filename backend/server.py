@@ -1073,6 +1073,11 @@ async def delete_area(area_id: str, current_user: User = Depends(get_current_act
 async def create_project(project_data: ProjectCreate, current_user: User = Depends(get_current_active_user_hybrid)):
     """Create a new project"""
     try:
+        # Sanitize project data to prevent XSS
+        sanitized_data = sanitize_user_input(project_data.dict(), model_type="default")
+        project_data.name = sanitized_data["name"]
+        project_data.description = sanitized_data["description"]
+        
         result = await SupabaseProjectService.create_project(str(current_user.id), project_data)
         return result
     except ValueError as e:
