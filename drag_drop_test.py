@@ -13,7 +13,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://0a9c9d0c-2e17-4f34-937d-e8e0fba8eec7.preview.emergentagent.com/api"
+BACKEND_URL = "https://7b39a747-36d6-44f7-9408-a498365475ba.preview.emergentagent.com/api"
 
 class DragDropTester:
     def __init__(self):
