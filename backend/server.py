@@ -555,9 +555,34 @@ async def update_project(
     project_data: ProjectUpdate, 
     current_user: User = Depends(get_current_active_user_hybrid)
 ):
-    """Update a project"""
+    """Update a project and calculate alignment score if completed"""
     try:
+        # Check if project was just completed (status changed to 'Completed')
+        is_now_completed = False
+        if hasattr(project_data, 'status') and project_data.status:
+            is_now_completed = project_data.status.lower() == 'completed'
+        
+        # Update the project
         result = await SupabaseProjectService.update_project(project_id, str(current_user.id), project_data)
+        
+        # If project was just completed, calculate and record alignment score
+        if is_now_completed:
+            try:
+                alignment_service = AlignmentScoreService()
+                score_result = await alignment_service.record_project_completion(str(current_user.id), project_id)
+                if score_result:
+                    logger.info(f"Recorded alignment score for project {project_id}: {score_result['alignment_score']['points_earned']} points")
+                    # Add alignment score info to the response
+                    result['alignment_score'] = {
+                        'points_earned': score_result['alignment_score']['points_earned'],
+                        'breakdown': score_result['breakdown']
+                    }
+                else:
+                    logger.warning(f"Project {project_id} completed but no alignment score recorded")
+            except Exception as alignment_error:
+                # Don't fail the project update if alignment scoring fails
+                logger.error(f"Failed to record alignment score for project {project_id}: {alignment_error}")
+        
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
