@@ -21,7 +21,7 @@ class FeedbackService:
         
         self.supabase: Client = create_client(supabase_url, supabase_key)
 
-    async def create_feedback(self, user_id: str, user_email: str, user_name: str, feedback_data: Dict) -> Dict:
+    async def create_feedback(self, user_id: str, user_email: str, user_name: str, feedback_data) -> Dict:
         """
         Create a new feedback entry and send email notification
         """
@@ -31,10 +31,10 @@ class FeedbackService:
                 'user_id': user_id,
                 'user_email': user_email,
                 'user_name': user_name,
-                'category': feedback_data['category'],
-                'priority': feedback_data['priority'],
-                'subject': feedback_data['subject'],
-                'message': feedback_data['message'],
+                'category': feedback_data.category,
+                'priority': feedback_data.priority,
+                'subject': feedback_data.subject,
+                'message': feedback_data.message,
                 'status': 'open',
                 'email_sent': False,
                 'created_at': datetime.utcnow().isoformat(),
