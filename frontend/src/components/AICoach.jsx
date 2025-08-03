@@ -273,4 +273,371 @@ const ResponseModal = ({ isOpen, onClose, response, title }) => {
   );
 };
 
+const AICoach = () => {
+  // State management for the MVP AI Coach
+  const [quota, setQuota] = useState({ remaining: 10, total: 10 });
+  const [rateLimited, setRateLimited] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Modal states
+  const [goalModalOpen, setGoalModalOpen] = useState(false);
+  const [obstacleModalOpen, setObstacleModalOpen] = useState(false);
+  const [responseModalOpen, setResponseModalOpen] = useState(false);
+  
+  // Loading states for each feature
+  const [goalLoading, setGoalLoading] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [obstacleLoading, setObstacleLoading] = useState(false);
+  
+  // Response data
+  const [currentResponse, setCurrentResponse] = useState(null);
+  const [responseTitle, setResponseTitle] = useState('');
+  
+  // Projects data for obstacle analysis
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    initializeCoach();
+  }, []);
+
+  const initializeCoach = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load user's AI interaction quota
+      await loadQuota();
+      
+      // Load user's projects for obstacle analysis
+      await loadProjects();
+      
+    } catch (err) {
+      setError('Failed to initialize AI Coach');
+      console.error('AI Coach initialization error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadQuota = async () => {
+    try {
+      // TODO: Implement actual quota endpoint
+      // For now, use mock data
+      setQuota({ remaining: 7, total: 10 });
+    } catch (err) {
+      console.error('Error loading quota:', err);
+    }
+  };
+
+  const loadProjects = async () => {
+    try {
+      const response = await api.get('/projects');
+      setProjects(response.data.filter(project => project.status !== 'Completed'));
+    } catch (err) {
+      console.error('Error loading projects:', err);
+      setProjects([]);
+    }
+  };
+
+  const checkRateLimit = async () => {
+    // Simple client-side rate limiting
+    const lastRequest = localStorage.getItem('aiCoachLastRequest');
+    const now = Date.now();
+    
+    if (lastRequest && now - parseInt(lastRequest) < 20000) { // 20 seconds
+      setRateLimited(true);
+      setTimeout(() => setRateLimited(false), 20000 - (now - parseInt(lastRequest)));
+      return false;
+    }
+    
+    localStorage.setItem('aiCoachLastRequest', now.toString());
+    return true;
+  };
+
+  const consumeQuota = () => {
+    setQuota(prev => ({ ...prev, remaining: Math.max(0, prev.remaining - 1) }));
+  };
+
+  // Feature 1: Goal Decomposition
+  const handleGoalDecomposition = async (goalText) => {
+    if (!await checkRateLimit()) return;
+    if (quota.remaining <= 0) {
+      setError('You have reached your monthly AI interaction limit.');
+      return;
+    }
+
+    try {
+      setGoalLoading(true);
+      setError(null);
+      
+      const response = await api.post('/ai/decompose-project', {
+        project_name: goalText,
+        project_description: goalText,
+        template_type: 'general'
+      });
+
+      consumeQuota();
+      
+      setCurrentResponse({
+        suggested_project_title: goalText,
+        suggested_tasks: response.data.suggested_tasks
+      });
+      setResponseTitle('Goal Breakdown');
+      setGoalModalOpen(false);
+      setResponseModalOpen(true);
+      
+    } catch (err) {
+      setError('Failed to decompose goal. Please try again.');
+      console.error('Goal decomposition error:', err);
+    } finally {
+      setGoalLoading(false);
+    }
+  };
+
+  // Feature 2: Weekly Strategic Review
+  const handleWeeklyReview = async () => {
+    if (!await checkRateLimit()) return;
+    if (quota.remaining <= 0) {
+      setError('You have reached your monthly AI interaction limit.');
+      return;
+    }
+
+    try {
+      setReviewLoading(true);
+      setError(null);
+      
+      // Get alignment score data and completed projects
+      const [alignmentResponse, projectsResponse] = await Promise.all([
+        api.get('/alignment/dashboard'),
+        api.get('/projects')
+      ]);
+
+      const completedProjects = projectsResponse.data.filter(p => p.status === 'Completed');
+      const alignmentData = alignmentResponse.data;
+
+      // Generate strategic review (simplified AI-like analysis)
+      const weeklyPoints = alignmentData.weekly_score || 0;
+      const monthlyGoal = alignmentData.monthly_goal || 1000;
+      const progressPercentage = Math.round((alignmentData.monthly_score / monthlyGoal) * 100);
+
+      let summary = `This week you earned ${weeklyPoints} alignment points by completing ${completedProjects.length} projects. `;
+      
+      if (progressPercentage > 75) {
+        summary += "Excellent alignment with your priorities! You're staying focused on high-impact activities. ";
+      } else if (progressPercentage > 50) {
+        summary += "Good progress on your goals. Consider focusing more on high-priority projects in important areas. ";
+      } else {
+        summary += "Your activity suggests room for better alignment. Focus on completing projects in your most important life areas. ";
+      }
+
+      if (completedProjects.length > 3) {
+        summary += "You're maintaining great project momentum. Keep this consistency for compound growth.";
+      } else {
+        summary += "Consider breaking larger goals into smaller, completable projects to build momentum.";
+      }
+
+      consumeQuota();
+      
+      setCurrentResponse({
+        weekly_summary: summary
+      });
+      setResponseTitle('Weekly Strategic Review');
+      setResponseModalOpen(true);
+      
+    } catch (err) {
+      setError('Failed to generate weekly review. Please try again.');
+      console.error('Weekly review error:', err);
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  // Feature 3: Obstacle Analysis
+  const handleObstacleAnalysis = async (projectId, problemDescription) => {
+    if (!await checkRateLimit()) return;
+    if (quota.remaining <= 0) {
+      setError('You have reached your monthly AI interaction limit.');
+      return;
+    }
+
+    try {
+      setObstacleLoading(true);
+      setError(null);
+      
+      // Get project details
+      const project = projects.find(p => p.id === projectId);
+      if (!project) throw new Error('Project not found');
+
+      // Generate obstacle analysis suggestions (simplified AI-like logic)
+      const suggestions = generateObstacleSuggestions(problemDescription, project);
+
+      consumeQuota();
+      
+      setCurrentResponse({
+        suggestions: suggestions
+      });
+      setResponseTitle(`Obstacle Analysis: ${project.name}`);
+      setObstacleModalOpen(false);
+      setResponseModalOpen(true);
+      
+    } catch (err) {
+      setError('Failed to analyze obstacle. Please try again.');
+      console.error('Obstacle analysis error:', err);
+    } finally {
+      setObstacleLoading(false);
+    }
+  };
+
+  const generateObstacleSuggestions = (problem, project) => {
+    const problemLower = problem.toLowerCase();
+    const suggestions = [];
+
+    if (problemLower.includes('motivation') || problemLower.includes('stuck')) {
+      suggestions.push("Break the next step into a 15-minute task and commit to just starting.");
+      suggestions.push("Connect this project to a deeper 'why' - what larger goal does it serve?");
+      suggestions.push("Change your environment or time of day when working on this project.");
+    } else if (problemLower.includes('planning') || problemLower.includes('don\'t know')) {
+      suggestions.push("Spend 20 minutes researching what others have done for similar projects.");
+      suggestions.push("Create a simple 3-step mini-plan for just the next phase.");
+      suggestions.push("Identify one person who could give you advice and reach out to them.");
+    } else if (problemLower.includes('time') || problemLower.includes('busy')) {
+      suggestions.push("Schedule one specific 30-minute block this week for this project.");
+      suggestions.push("Identify what you can eliminate or delegate to make space for this priority.");
+      suggestions.push("Break the project into smaller tasks that can be done in 15-minute chunks.");
+    } else {
+      suggestions.push("Clarify exactly what the next single action is and when you'll do it.");
+      suggestions.push("Consider if this project needs to be redefined or broken down differently.");
+      suggestions.push("Ask yourself: what's the smallest possible step I can take today?");
+    }
+
+    return suggestions.slice(0, 3);
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={48} className="animate-spin text-yellow-400" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center">
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-yellow-400 flex items-center justify-center">
+            <Brain size={32} style={{ color: '#0B0D14' }} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white">AI Growth Coach</h1>
+            <p className="text-gray-400">Strategic guidance for your personal OS</p>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Interaction Quota */}
+      <QuotaDisplay remaining={quota.remaining} total={quota.total} />
+      
+      {/* Rate Limit Warning */}
+      <RateLimitWarning show={rateLimited} />
+
+      {/* Error Display */}
+      {error && (
+        <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
+          <AlertCircle size={20} className="text-red-400" />
+          <span className="text-red-400">{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto text-red-400 hover:text-red-300"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* MVP Features */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Feature 1: Goal Decomposition */}
+        <FeatureCard
+          icon={Target}
+          title="Goal Decomposition"
+          description="Break down a large goal into a structured project with actionable tasks to get started."
+          buttonText="Break Down Goal"
+          onClick={() => setGoalModalOpen(true)}
+          disabled={quota.remaining === 0 || rateLimited}
+          isLoading={goalLoading}
+        />
+
+        {/* Feature 2: Weekly Strategic Review */}
+        <FeatureCard
+          icon={TrendingUp}
+          title="Weekly Strategic Review"
+          description="Get insights on how well your completed projects aligned with your stated priorities."
+          buttonText="Generate Review"
+          onClick={handleWeeklyReview}
+          disabled={quota.remaining === 0 || rateLimited}
+          isLoading={reviewLoading}
+        />
+
+        {/* Feature 3: Obstacle Analysis */}
+        <FeatureCard
+          icon={AlertTriangle}
+          title="Obstacle Analysis"
+          description="Get concrete suggestions for the next action when you're stuck on a specific project."
+          buttonText="Get Unstuck"
+          onClick={() => setObstacleModalOpen(true)}
+          disabled={quota.remaining === 0 || rateLimited || projects.length === 0}
+          isLoading={obstacleLoading}
+        />
+      </div>
+
+      {/* Usage Guidelines */}
+      <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+        <h3 className="text-lg font-semibold text-white mb-4">How to Get the Most from Your AI Coach</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="p-4 bg-gray-800/50 rounded-lg">
+            <h4 className="font-semibold text-yellow-400 mb-2">🎯 Goal Decomposition</h4>
+            <p className="text-gray-300">Best for: New goals, unclear next steps, blank slate syndrome. Be specific about what you want to achieve.</p>
+          </div>
+          <div className="p-4 bg-gray-800/50 rounded-lg">
+            <h4 className="font-semibold text-yellow-400 mb-2">📊 Weekly Review</h4>
+            <p className="text-gray-300">Best used once per week to reflect on completed projects and alignment with your priorities.</p>
+          </div>
+          <div className="p-4 bg-gray-800/50 rounded-lg">
+            <h4 className="font-semibold text-yellow-400 mb-2">🚧 Obstacle Analysis</h4>
+            <p className="text-gray-300">Best for: When you're stuck, procrastinating, or unsure of the next action on an existing project.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <GoalDecompositionModal
+        isOpen={goalModalOpen}
+        onClose={() => setGoalModalOpen(false)}
+        onSubmit={handleGoalDecomposition}
+        isLoading={goalLoading}
+      />
+
+      <ObstacleAnalysisModal
+        isOpen={obstacleModalOpen}
+        onClose={() => setObstacleModalOpen(false)}
+        onSubmit={handleObstacleAnalysis}
+        projects={projects}
+        isLoading={obstacleLoading}
+      />
+
+      <ResponseModal
+        isOpen={responseModalOpen}
+        onClose={() => setResponseModalOpen(false)}
+        response={currentResponse}
+        title={responseTitle}
+      />
+    </div>
+  );
+};
+
 export default AICoach;
