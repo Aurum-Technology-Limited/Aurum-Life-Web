@@ -3,6 +3,7 @@ import { CogIcon, BellIcon, ShieldCheckIcon } from '@heroicons/react/outline';
 import { Target } from 'lucide-react';
 import NotificationSettings from './NotificationSettings';
 import GoalSettings from './GoalSettings';
+import DeleteAccountSection from './DeleteAccountSection';
 
 const Settings = ({ sectionParams }) => {
   // Get the active sub-section from sectionParams, default to 'goals'
