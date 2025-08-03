@@ -32,7 +32,7 @@ from typing import Dict, List, Any
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "http://localhost:8001/api"
+BACKEND_URL = "https://2add7c3c-bc98-404b-af7c-7c73ee7f9c41.preview.emergentagent.com/api"
 
 class NotificationSettingsAPITester:
     def __init__(self):
