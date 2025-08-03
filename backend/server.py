@@ -225,11 +225,309 @@ async def logout_user(token: str = Depends(HTTPBearer())):
         return {"message": "Logged out"}
 
 # ================================
-# AI COACH MVP FEATURES ENDPOINTS
+# AI COACH MVP FEATURES ENDPOINTS WITH SAFEGUARDS
 # ================================
 
 # Initialize AI Coach MVP service
 ai_coach_mvp = AiCoachMvpService()
+
+# In-memory rate limiting storage (in production, use Redis)
+rate_limit_storage = {}
+
+def check_rate_limit(user_id: str) -> bool:
+    """Check if user is rate limited (max 3 requests per minute)"""
+    now = datetime.utcnow()
+    user_requests = rate_limit_storage.get(user_id, [])
+    
+    # Remove requests older than 1 minute
+    user_requests = [req_time for req_time in user_requests if now - req_time < timedelta(minutes=1)]
+    
+    # Check if under limit
+    if len(user_requests) >= 3:
+        return False
+    
+    # Add current request
+    user_requests.append(now)
+    rate_limit_storage[user_id] = user_requests
+    
+    return True
+
+async def get_user_ai_quota(user_id: str) -> dict:
+    """Get user's AI interaction quota for the current month"""
+    try:
+        supabase = get_supabase_client()
+        
+        # Get current month start
+        now = datetime.utcnow()
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Count AI interactions this month from alignment_scores table (repurpose for AI tracking)
+        response = supabase.table('ai_interactions').select('*').eq(
+            'user_id', user_id
+        ).gte('created_at', month_start.isoformat()).execute()
+        
+        used_quota = len(response.data or [])
+        remaining_quota = max(0, 10 - used_quota)  # 10 interactions per month
+        
+        return {
+            'total': 10,
+            'used': used_quota,
+            'remaining': remaining_quota,
+            'resets_at': (month_start + timedelta(days=32)).replace(day=1).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting AI quota: {e}")
+        # Return default quota on error
+        return {'total': 10, 'used': 0, 'remaining': 10, 'resets_at': None}
+
+async def record_ai_interaction(user_id: str, interaction_type: str, context_size: int):
+    """Record an AI interaction for quota tracking"""
+    try:
+        supabase = get_supabase_client()
+        
+        interaction_record = {
+            'user_id': user_id,
+            'interaction_type': interaction_type,
+            'context_size': context_size,
+            'created_at': datetime.utcnow().isoformat()
+        }
+        
+        # Store in repurposed table or create new tracking
+        supabase.table('ai_interactions').insert(interaction_record).execute()
+        
+    except Exception as e:
+        logger.error(f"Error recording AI interaction: {e}")
+
+@api_router.get("/ai/quota")
+async def get_ai_quota(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get user's AI interaction quota"""
+    try:
+        user_id = current_user.id
+        quota = await get_user_ai_quota(str(user_id))
+        return quota
+    except Exception as e:
+        logger.error(f"Error getting AI quota: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get AI quota")
+
+# Feature 1: Goal Decomposition with Safeguards
+@api_router.post("/ai/decompose-project", response_model=ProjectDecompositionResponse)
+async def decompose_project_with_safeguards(
+    request: ProjectDecompositionRequest,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """
+    AI-powered goal decomposition with quota and rate limiting
+    """
+    try:
+        user_id = str(current_user.id)
+        
+        # Check rate limit
+        if not check_rate_limit(user_id):
+            raise HTTPException(
+                status_code=429, 
+                detail="Rate limit exceeded. Maximum 3 requests per minute."
+            )
+        
+        # Check quota
+        quota = await get_user_ai_quota(user_id)
+        if quota['remaining'] <= 0:
+            raise HTTPException(
+                status_code=402,  # Payment Required - quota exceeded
+                detail="Monthly AI interaction limit reached. Limit resets next month."
+            )
+        
+        # Generate suggestions with minimal context
+        suggestions = await ai_coach_mvp.suggest_project_tasks(user_id, request)
+        
+        # Record interaction
+        await record_ai_interaction(user_id, 'goal_decomposition', len(request.project_name))
+        
+        return suggestions
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in goal decomposition: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate goal breakdown")
+
+# Feature 2: Weekly Strategic Review with Safeguards  
+@api_router.post("/ai/weekly-review")
+async def generate_weekly_review(current_user: User = Depends(get_current_active_user_hybrid)):
+    """
+    Generate weekly strategic review based on alignment data
+    """
+    try:
+        user_id = str(current_user.id)
+        
+        # Check rate limit
+        if not check_rate_limit(user_id):
+            raise HTTPException(
+                status_code=429, 
+                detail="Rate limit exceeded. Maximum 3 requests per minute."
+            )
+        
+        # Check quota
+        quota = await get_user_ai_quota(user_id)
+        if quota['remaining'] <= 0:
+            raise HTTPException(
+                status_code=402,
+                detail="Monthly AI interaction limit reached. Limit resets next month."
+            )
+        
+        # Get minimal context - only alignment data from last 7 days
+        alignment_service = AlignmentScoreService()
+        alignment_data = await alignment_service.get_dashboard_data(user_id)
+        
+        # Get completed projects from last 7 days (minimal context)
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        supabase = get_supabase_client()
+        
+        projects_response = supabase.table('projects').select(
+            'id, name, status, priority, area_id, updated_at'
+        ).eq('user_id', user_id).eq('status', 'Completed').gte(
+            'updated_at', week_ago.isoformat()
+        ).execute()
+        
+        completed_projects = projects_response.data or []
+        
+        # Generate strategic review (simplified AI-like logic)
+        weekly_points = alignment_data.get('weekly_score', 0)
+        monthly_goal = alignment_data.get('monthly_goal', 1000)
+        progress_percentage = (alignment_data.get('monthly_score', 0) / monthly_goal) * 100 if monthly_goal > 0 else 0
+        
+        review = generate_strategic_review_summary(weekly_points, completed_projects, progress_percentage)
+        
+        # Record interaction
+        context_size = len(completed_projects) * 20  # Rough context size calculation
+        await record_ai_interaction(user_id, 'weekly_review', context_size)
+        
+        return {
+            'weekly_summary': review,
+            'projects_completed': len(completed_projects),
+            'weekly_points': weekly_points,
+            'alignment_percentage': round(progress_percentage, 1)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in weekly review: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate weekly review")
+
+# Feature 3: Obstacle Analysis with Safeguards
+@api_router.post("/ai/obstacle-analysis")  
+async def analyze_obstacle(
+    request: dict,  # {project_id: str, problem_description: str}
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """
+    Analyze project obstacle and provide suggestions
+    """
+    try:
+        user_id = str(current_user.id)
+        project_id = request.get('project_id')
+        problem_description = request.get('problem_description')
+        
+        if not project_id or not problem_description:
+            raise HTTPException(status_code=422, detail="project_id and problem_description are required")
+        
+        # Check rate limit
+        if not check_rate_limit(user_id):
+            raise HTTPException(
+                status_code=429, 
+                detail="Rate limit exceeded. Maximum 3 requests per minute."
+            )
+        
+        # Check quota
+        quota = await get_user_ai_quota(user_id)
+        if quota['remaining'] <= 0:
+            raise HTTPException(
+                status_code=402,
+                detail="Monthly AI interaction limit reached. Limit resets next month."
+            )
+        
+        # Get minimal project context only
+        supabase = get_supabase_client()
+        project_response = supabase.table('projects').select(
+            'id, name, status, priority, description'
+        ).eq('user_id', user_id).eq('id', project_id).execute()
+        
+        if not project_response.data:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        project = project_response.data[0]
+        
+        # Generate obstacle analysis suggestions
+        suggestions = generate_obstacle_suggestions(problem_description, project)
+        
+        # Record interaction
+        context_size = len(problem_description) + len(project.get('description', ''))
+        await record_ai_interaction(user_id, 'obstacle_analysis', context_size)
+        
+        return {
+            'project_name': project['name'],
+            'suggestions': suggestions,
+            'problem_analyzed': problem_description
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in obstacle analysis: {e}")
+        raise HTTPException(status_code=500, detail="Failed to analyze obstacle")
+
+def generate_strategic_review_summary(weekly_points: int, completed_projects: list, progress_percentage: float) -> str:
+    """Generate strategic review summary"""
+    
+    summary = f"This week you earned {weekly_points} alignment points by completing {len(completed_projects)} projects. "
+    
+    if progress_percentage > 75:
+        summary += "Excellent alignment with your priorities! You're staying focused on high-impact activities. "
+    elif progress_percentage > 50:
+        summary += "Good progress on your goals. Consider focusing more on high-priority projects in important areas. "
+    else:
+        summary += "Your activity suggests room for better alignment. Focus on completing projects in your most important life areas. "
+    
+    if len(completed_projects) > 3:
+        summary += "You're maintaining great project momentum. Keep this consistency for compound growth."
+    elif len(completed_projects) > 0:
+        summary += "Good project completion rate. Consider breaking larger goals into smaller, completable projects."
+    else:
+        summary += "Focus on completing at least one project this week to build momentum and alignment."
+    
+    return summary
+
+def generate_obstacle_suggestions(problem: str, project: dict) -> list:
+    """Generate obstacle analysis suggestions"""
+    problem_lower = problem.lower()
+    suggestions = []
+    
+    if 'motivation' in problem_lower or 'stuck' in problem_lower:
+        suggestions.extend([
+            "Break the next step into a 15-minute task and commit to just starting.",
+            "Connect this project to a deeper 'why' - what larger goal does it serve?",
+            "Change your environment or time of day when working on this project."
+        ])
+    elif 'planning' in problem_lower or 'don\'t know' in problem_lower:
+        suggestions.extend([
+            "Spend 20 minutes researching what others have done for similar projects.",
+            "Create a simple 3-step mini-plan for just the next phase.",
+            "Identify one person who could give you advice and reach out to them."
+        ])
+    elif 'time' in problem_lower or 'busy' in problem_lower:
+        suggestions.extend([
+            "Schedule one specific 30-minute block this week for this project.",
+            "Identify what you can eliminate or delegate to make space for this priority.",
+            "Break the project into smaller tasks that can be done in 15-minute chunks."
+        ])
+    else:
+        suggestions.extend([
+            "Clarify exactly what the next single action is and when you'll do it.",
+            "Consider if this project needs to be redefined or broken down differently.",
+            "Ask yourself: what's the smallest possible step I can take today?"
+        ])
+    
+    return suggestions[:3]  # Return max 3 suggestions
 
 # Feature 1: Contextual "Why" Statements
 @api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse)
