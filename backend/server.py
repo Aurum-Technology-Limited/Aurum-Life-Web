@@ -628,7 +628,89 @@ def generate_strategic_review_summary(weekly_points: int, completed_projects: li
     
     return summary
 
-def generate_obstacle_suggestions(problem: str, project: dict) -> list:
+# New endpoint for Goal Decomposition integration
+@api_router.post("/projects/create-with-tasks")
+async def create_project_with_tasks(
+    request: dict,  # {"project": {...}, "tasks": [...]}
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """
+    Create a project with associated tasks from Goal Decomposition workflow
+    This endpoint does NOT consume AI quota - only the initial generation does
+    """
+    try:
+        user_id = str(current_user.id)
+        project_data = request.get('project', {})
+        tasks_data = request.get('tasks', [])
+        
+        if not project_data.get('title'):
+            raise HTTPException(status_code=422, detail="Project title is required")
+        
+        supabase = get_supabase_client()
+        
+        # Create the project
+        project_record = {
+            'user_id': user_id,
+            'name': project_data['title'],
+            'description': project_data.get('description', ''),
+            'area_id': project_data.get('area_id'),
+            'priority': project_data.get('priority', 'medium'),
+            'status': project_data.get('status', 'Planning'),
+            'created_at': datetime.utcnow().isoformat(),
+            'updated_at': datetime.utcnow().isoformat()
+        }
+        
+        # Insert project
+        project_response = supabase.table('projects').insert(project_record).execute()
+        
+        if not project_response.data:
+            raise HTTPException(status_code=500, detail="Failed to create project")
+        
+        created_project = project_response.data[0]
+        project_id = created_project['id']
+        
+        # Create associated tasks
+        created_tasks = []
+        for task_data in tasks_data:
+            if not task_data.get('title'):
+                continue  # Skip empty tasks
+                
+            task_record = {
+                'user_id': user_id,
+                'project_id': project_id,
+                'name': task_data['title'],
+                'description': task_data.get('description', ''),
+                'priority': task_data.get('priority', 'medium'),
+                'status': 'Not Started',
+                'estimated_duration': task_data.get('estimated_duration', 30),
+                'created_at': datetime.utcnow().isoformat(),
+                'updated_at': datetime.utcnow().isoformat()
+            }
+            
+            task_response = supabase.table('tasks').insert(task_record).execute()
+            
+            if task_response.data:
+                created_tasks.append(task_response.data[0])
+        
+        # Update alignment score for project creation
+        alignment_service = AlignmentScoreService()
+        try:
+            await alignment_service.calculate_project_alignment_score(user_id, project_id)
+        except Exception as e:
+            logger.warning(f"Could not calculate alignment score: {e}")
+        
+        return {
+            "success": True,
+            "project": created_project,
+            "tasks": created_tasks,
+            "message": f"Successfully created project '{project_data['title']}' with {len(created_tasks)} tasks"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating project with tasks: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create project and tasks")
     """Generate obstacle analysis suggestions"""
     problem_lower = problem.lower()
     suggestions = []
