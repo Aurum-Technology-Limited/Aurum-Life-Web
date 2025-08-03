@@ -1101,7 +1101,8 @@ async def fix_foreign_key_constraints(current_user: dict = Depends(get_current_a
                 logger.info(f"⚙️ Executing statement {i}: {statement[:80]}...")
                 
                 # Execute raw SQL using supabase client
-                from supabase_client import supabase
+                from supabase_client import get_supabase_client
+                supabase = get_supabase_client()
                 
                 # For DDL operations, we need to use a different approach
                 # Since Supabase doesn't allow direct SQL execution via REST API,
