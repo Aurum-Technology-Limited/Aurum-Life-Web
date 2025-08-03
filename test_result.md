@@ -3755,10 +3755,11 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Frontend Fix for Critical React Error During Onboarding Template Selection"
-  stuck_tasks: []
+    - "Mandatory Profile Fields Implementation - Frontend Testing"
+  stuck_tasks:
+    - "Mandatory Profile Fields Implementation - Frontend Testing"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
   - task: "Sidebar Navigation Cleanup and Profile Enhancement"
     implemented: true
