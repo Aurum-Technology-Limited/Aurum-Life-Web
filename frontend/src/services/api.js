@@ -391,6 +391,11 @@ export const googleAuthAPI = {
   authenticate: (token) => apiClient.post('/auth/google', { token })
 };
 
+// Auth API for account management
+export const authAPI = {
+  deleteAccount: (confirmationData) => apiClient.delete('/auth/account', { data: confirmationData })
+};
+
 // Resources API for File Management
 export const resourcesAPI = {
   // Basic CRUD operations
