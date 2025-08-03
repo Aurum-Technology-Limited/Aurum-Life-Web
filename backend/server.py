@@ -1160,6 +1160,11 @@ async def delete_project(project_id: str, current_user: User = Depends(get_curre
 async def create_task(task_data: TaskCreate, current_user: User = Depends(get_current_active_user_hybrid)):
     """Create a new task"""
     try:
+        # Sanitize task data to prevent XSS
+        sanitized_data = sanitize_user_input(task_data.dict(), model_type="default")
+        task_data.name = sanitized_data["name"]
+        task_data.description = sanitized_data["description"]
+        
         result = await SupabaseTaskService.create_task(str(current_user.id), task_data)
         return result
     except ValueError as e:
