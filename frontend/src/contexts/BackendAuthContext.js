@@ -218,9 +218,33 @@ export const AuthProvider = ({ children }) => {
           message: 'Profile updated successfully!' 
         };
       } else {
+        // Handle different error types properly
+        let errorMessage = 'Profile update failed';
+        
+        if (response.status === 422 && data.detail && Array.isArray(data.detail)) {
+          // Parse Pydantic validation errors
+          const validationErrors = data.detail.map(err => {
+            const field = Array.isArray(err.loc) ? err.loc[err.loc.length - 1] : 'field';
+            const fieldName = field === 'username' ? 'Username' 
+                            : field === 'first_name' ? 'First Name'
+                            : field === 'last_name' ? 'Last Name' 
+                            : field;
+            return `${fieldName}: ${err.msg || 'Invalid value'}`;
+          });
+          errorMessage = validationErrors.join(', ');
+        } else if (response.status === 429) {
+          // Rate limiting error
+          errorMessage = data.detail || 'Username can only be changed once every 7 days';
+        } else if (response.status === 409) {
+          // Username already taken
+          errorMessage = data.detail || 'Username is already taken';
+        } else if (typeof data.detail === 'string') {
+          errorMessage = data.detail;
+        }
+        
         return { 
           success: false, 
-          error: data.detail || 'Profile update failed' 
+          error: errorMessage 
         };
       }
       
