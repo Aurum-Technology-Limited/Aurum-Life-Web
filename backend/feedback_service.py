@@ -354,7 +354,10 @@ class FeedbackService:
             
             logger.info(f"SendGrid response status: {response.status_code}")
             if hasattr(response, 'headers'):
-                logger.info(f"SendGrid response headers: {dict(response.headers)}")
+                try:
+                    logger.info(f"SendGrid response headers: {response.headers}")
+                except Exception as header_error:
+                    logger.warning(f"Could not log headers: {header_error}")
             
             if response.status_code == 202:
                 logger.info(f"Feedback email sent successfully to {to} with Outlook optimization")
