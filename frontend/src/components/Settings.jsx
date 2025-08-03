@@ -29,16 +29,6 @@ const Settings = ({ sectionParams }) => {
         return <GoalSettings />;
       case 'notifications':
         return <NotificationSettings />;
-      case 'profile':
-        return (
-          <div className="text-center py-12">
-            <div className="text-gray-400">
-              <UserIcon className="h-16 w-16 mx-auto mb-4 text-gray-500" />
-              <h3 className="text-lg font-medium mb-2 text-white">Profile Settings</h3>
-              <p>Profile settings will be available here in a future update.</p>
-            </div>
-          </div>
-        );
       case 'privacy':
         return (
           <div className="text-center py-12">
