@@ -69,10 +69,10 @@ const Feedback = () => {
             <ChatAltIcon className="h-12 w-12 mx-auto" />
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">
-            Thank you for your feedback!
+            Thank you, your feedback has been sent!
           </h2>
           <p className="text-green-300 mb-4">
-            We've received your message and will review it carefully.
+            We've received your message and our team will review it carefully. You should also receive an email confirmation shortly.
           </p>
           <button
             onClick={() => {
