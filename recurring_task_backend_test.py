@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://2add7c3c-bc98-404b-af7c-7c73ee7f9c41.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://2ba83010-29ce-4f25-8827-92c31097d7b1.preview.emergentagent.com')
 API_BASE_URL = f"{BACKEND_URL}/api"
 
 class RecurringTaskBackendTester:

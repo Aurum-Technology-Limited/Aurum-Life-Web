@@ -29,7 +29,7 @@ from typing import Dict, List, Any
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://2add7c3c-bc98-404b-af7c-7c73ee7f9c41.preview.emergentagent.com/api"
+BACKEND_URL = "https://2ba83010-29ce-4f25-8827-92c31097d7b1.preview.emergentagent.com/api"
 
 class AICoachGoalDecompositionTester:
     def __init__(self):
