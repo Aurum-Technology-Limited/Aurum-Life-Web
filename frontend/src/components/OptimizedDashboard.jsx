@@ -152,6 +152,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
   const [error, setError] = useState('');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingNewUser, setCheckingNewUser] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Add explicit loading state
 
   // Check if user is new (has no data)
   const checkNewUser = useCallback(async () => {
@@ -196,6 +197,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
     try {
       console.log('🏠 Loading dashboard data...');
       setLoading(true);
+      setIsLoading(true); // Set explicit loading state
       setError('');
       
       const response = await fixedAPI.getDashboard();
@@ -206,6 +208,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
+      setIsLoading(false); // Clear explicit loading state
     }
   }, []);
 
