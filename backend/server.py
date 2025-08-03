@@ -1112,10 +1112,17 @@ async def update_area(
 async def delete_area(area_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     """Delete an area"""
     try:
+        # IDOR Protection: Verify user owns this area
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'areas', area_id
+        )
+        
         success = await SupabaseAreaService.delete_area(area_id, str(current_user.id))
         if not success:
             raise HTTPException(status_code=404, detail="Area not found")
         return {"message": "Area deleted successfully"}
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
     except Exception as e:
         logger.error(f"Error deleting area: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
