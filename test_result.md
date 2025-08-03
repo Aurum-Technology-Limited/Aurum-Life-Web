@@ -121,9 +121,33 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "When a new user selects a template during onboarding, there's a 422 (Unprocessable Entity) status code error, which causes a React error because the frontend tries to render the raw error object."
+user_problem_statement: "Add a delete account option within the privacy and security tab that deletes the user and all their associated data"
 
 backend:
+  - task: "Account Deletion Backend Implementation"
+    implemented: true
+    working: false
+    file: "backend/server.py, backend/supabase_services.py, backend/models.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "🚀 ACCOUNT DELETION BACKEND COMPLETED - Implemented comprehensive account deletion system. Added DELETE /api/auth/account endpoint with confirmation validation, comprehensive data deletion from all Supabase tables (user_profiles, pillars, areas, projects, tasks, journal_entries, resources, notifications, ai_interactions, alignment_scores, daily_reflections, sleep_reflections, username_change_records, feedback, etc.), auth.users cascade deletion, audit logging, and error handling. Created AccountDeletionConfirmation model with validation. Backend ready for testing."
+
+frontend:
+  - task: "Privacy & Security Settings with Delete Account Option"
+    implemented: true
+    working: false
+    file: "frontend/src/components/Settings.jsx, frontend/src/components/DeleteAccountSection.jsx, frontend/src/services/api.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "🚀 DELETE ACCOUNT FRONTEND COMPLETED - Enhanced Privacy & Security tab in Settings with comprehensive UI including data export section and danger zone. Created DeleteAccountSection component with 2-step confirmation flow (warning + text confirmation), proper authentication integration, error handling, and automatic logout/redirect after deletion. Added authAPI to services with deleteAccount method. Complete user-friendly interface with proper warnings about irreversible data loss."
   - task: "AI Coach Goal Decomposition - Save Project Dependency Injection Fix"
     implemented: true
     working: true
