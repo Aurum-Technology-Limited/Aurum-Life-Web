@@ -55,6 +55,10 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
   const handleOnboardingClose = async () => {
     console.log('⏩ Onboarding skipped - marking as completed');
     
+    // Set flag to prevent showing onboarding again
+    setOnboardingCompleted(true);
+    setShowOnboarding(false);
+    
     // Mark onboarding as completed in backend even when skipped
     try {
       await api.post('/api/auth/complete-onboarding');
@@ -63,8 +67,6 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
     } catch (error) {
       console.error('⚠️ Failed to mark onboarding as completed:', error);
     }
-    
-    setShowOnboarding(false);
   };
 
   // Loading state
