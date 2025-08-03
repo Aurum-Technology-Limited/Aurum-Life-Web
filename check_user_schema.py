@@ -6,7 +6,7 @@ Check User Schema
 import requests
 import json
 
-BACKEND_URL = "https://f0a50716-337f-44d1-8fc0-56cc66936b59.preview.emergentagent.com/api"
+BACKEND_URL = "https://2add7c3c-bc98-404b-af7c-7c73ee7f9c41.preview.emergentagent.com/api"
 
 def check_schema():
     # Login
