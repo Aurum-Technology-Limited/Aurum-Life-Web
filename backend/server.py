@@ -1454,8 +1454,15 @@ async def remove_task_from_today(
 ):
     """Remove a task from today's list"""
     try:
+        # IDOR Protection: Verify user owns this task
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'tasks', task_id
+        )
+        
         # For now, just return success - can be enhanced with actual today list management
         return {"message": "Task removed from today's list", "task_id": task_id}
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
     except Exception as e:
         logger.error(f"Error removing task from today: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
