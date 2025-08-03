@@ -543,7 +543,7 @@ export const aiCoachAPI = {
   // Get user's AI interaction quota
   getQuota: () => apiClient.get('/api/ai/quota'),
   
-  // Feature 1: Goal Decomposition
+  // Feature 1: Goal Decomposition (Enhanced Interactive Workflow)
   decomposeGoal: (goalText) => apiClient.post('/api/ai/decompose-project', {
     project_name: goalText,
     project_description: goalText,
@@ -566,6 +566,17 @@ export const aiCoachAPI = {
     template_type: 'general'
   }),
   getTodaysPriorities: () => apiClient.get('/api/ai/task-why-statements')
+};
+
+// Enhanced Projects API for Goal Decomposition Integration
+const projectsAPI = {
+  // ... existing methods ...
+  
+  // Create project with tasks from Goal Decomposition workflow
+  createWithTasks: (projectData, tasksData) => apiClient.post('/api/projects/create-with-tasks', {
+    project: projectData,
+    tasks: tasksData
+  })
 };
 
 // Feedback API
