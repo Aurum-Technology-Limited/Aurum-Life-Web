@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration - Use frontend's configured URL
-FRONTEND_BACKEND_URL = "https://b865cdae-a7eb-4f1f-b4e2-f43f21dbfd26.preview.emergentagent.com"
+FRONTEND_BACKEND_URL = "https://f0a50716-337f-44d1-8fc0-56cc66936b59.preview.emergentagent.com"
 API_BASE = f"{FRONTEND_BACKEND_URL}/api"
 
 class FrontendUrlDebugSuite:

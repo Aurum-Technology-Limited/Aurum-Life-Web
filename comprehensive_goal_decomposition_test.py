@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://b865cdae-a7eb-4f1f-b4e2-f43f21dbfd26.preview.emergentagent.com/api"
+BACKEND_URL = "https://f0a50716-337f-44d1-8fc0-56cc66936b59.preview.emergentagent.com/api"
 
 class ComprehensiveGoalDecompositionTester:
     def __init__(self):
