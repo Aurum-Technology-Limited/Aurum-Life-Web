@@ -3,6 +3,12 @@ import { Bot, Target, TrendingUp, AlertTriangle, Loader2, AlertCircle, Brain, Ch
 import api, { aiCoachAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
+// Defensive check to ensure API dependency injection is working
+if (!api) {
+  console.error('CRITICAL ERROR: API service is not available on import');
+  throw new Error('API service dependency injection failed');
+}
+
 const FeatureCard = ({ icon: Icon, title, description, buttonText, onClick, disabled = false, isLoading = false }) => (
   <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group">
     <div className="flex items-center space-x-3 mb-4">
