@@ -84,7 +84,7 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
               icon: projectData.icon,
               priority: projectData.priority,
               importance: projectData.importance,
-              status: 'not_started',
+              status: 'Not Started',
               area_id: areaId
             });
             
