@@ -1,7 +1,7 @@
-"""
+/*
 Frontend Performance API Client
 Optimized API client with intelligent caching, request batching, and performance monitoring
-"""
+*/
 
 import axios from 'axios';
 
