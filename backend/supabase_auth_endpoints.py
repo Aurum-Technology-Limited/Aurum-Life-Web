@@ -279,7 +279,7 @@ async def get_current_user_profile(request: Request):
                 
                 return UserResponse(
                     id=user_profile['id'],
-                    username=user_profile.get('username', ''),
+                    username=user_profile.get('username') or '',
                     email='',  # We'll need to get this from auth or legacy table
                     first_name=user_profile.get('first_name') or '',
                     last_name=user_profile.get('last_name') or '',
