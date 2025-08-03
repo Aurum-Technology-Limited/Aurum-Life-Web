@@ -312,6 +312,10 @@ class FeedbackService:
         api_key = os.getenv('SENDGRID_API_KEY')
         sender_email = os.getenv('SENDER_EMAIL')
         
+        logger.info(f"Attempting to send email to {to} with subject: {subject}")
+        logger.info(f"API Key configured: {'Yes' if api_key and api_key != 'your_sendgrid_api_key_here' else 'No'}")
+        logger.info(f"Sender email: {sender_email}")
+        
         if not api_key or api_key == 'your_sendgrid_api_key_here':
             # Mock mode for development
             logger.info(f"[MOCK EMAIL] To: {to}")
@@ -345,18 +349,26 @@ class FeedbackService:
             # Set content type explicitly
             message.content_type = "text/html"
             
+            logger.info("Sending email via SendGrid...")
             response = client.send(message)
+            
+            logger.info(f"SendGrid response status: {response.status_code}")
+            if hasattr(response, 'headers'):
+                logger.info(f"SendGrid response headers: {dict(response.headers)}")
             
             if response.status_code == 202:
                 logger.info(f"Feedback email sent successfully to {to} with Outlook optimization")
                 return True
             else:
                 logger.error(f"SendGrid returned status {response.status_code}")
-                logger.error(f"Response body: {response.body}")
+                if hasattr(response, 'body'):
+                    logger.error(f"Response body: {response.body}")
                 return False
                 
         except Exception as e:
             logger.error(f"Failed to send email to {to}: {str(e)}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
 
     async def get_user_feedback(self, user_id: str, limit: int = 50) -> List[Dict]:
