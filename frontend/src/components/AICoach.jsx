@@ -896,20 +896,26 @@ const AICoach = () => {
 
       {/* Usage Guidelines */}
       <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-        <h3 className="text-lg font-semibold text-white mb-4">How to Get the Most from Your AI Coach</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">Enhanced AI Coach Features</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="p-4 bg-gray-800/50 rounded-lg">
             <h4 className="font-semibold text-yellow-400 mb-2">🎯 Goal Decomposition</h4>
-            <p className="text-gray-300">Best for: New goals, unclear next steps, blank slate syndrome. Be specific about what you want to achieve.</p>
+            <p className="text-gray-300">AI generates suggestions → You edit and approve → Automatically creates project and tasks in your system. Perfect for new goals!</p>
           </div>
           <div className="p-4 bg-gray-800/50 rounded-lg">
             <h4 className="font-semibold text-yellow-400 mb-2">📊 Weekly Review</h4>
-            <p className="text-gray-300">Best used once per week to reflect on completed projects and alignment with your priorities.</p>
+            <p className="text-gray-300">Analyzes your completed projects and alignment data to provide strategic insights on your priority alignment.</p>
           </div>
           <div className="p-4 bg-gray-800/50 rounded-lg">
             <h4 className="font-semibold text-yellow-400 mb-2">🚧 Obstacle Analysis</h4>
-            <p className="text-gray-300">Best for: When you're stuck, procrastinating, or unsure of the next action on an existing project.</p>
+            <p className="text-gray-300">Get specific next actions when stuck on existing projects. Provides concrete breakthrough suggestions.</p>
           </div>
+        </div>
+        
+        <div className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+          <p className="text-blue-400 text-sm">
+            <strong>💡 Pro Tip:</strong> Goal Decomposition now creates real projects in your system! AI quota is only used for generation - editing and saving is unlimited.
+          </p>
         </div>
       </div>
 
@@ -919,6 +925,17 @@ const AICoach = () => {
         onClose={() => setGoalModalOpen(false)}
         onSubmit={handleGoalDecomposition}
         isLoading={goalLoading}
+      />
+
+      <InteractiveProjectEditor
+        isOpen={editorModalOpen}
+        onClose={() => {
+          setEditorModalOpen(false);
+          setAiDecompositionResponse(null);
+        }}
+        aiResponse={aiDecompositionResponse}
+        onSave={handleSaveProject}
+        isLoading={saveLoading}
       />
 
       <ObstacleAnalysisModal
