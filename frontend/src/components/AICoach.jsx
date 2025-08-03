@@ -62,313 +62,212 @@ const RateLimitWarning = ({ show }) => {
   );
 };
 
-const AICoach = () => {
-  const [messages, setMessages] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [userStats, setUserStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const messagesEndRef = useRef(null);
-  const chatContainerRef = useRef(null);
+const GoalDecompositionModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
+  const [goalText, setGoalText] = useState('');
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
-    initializeChat();
-  }, []);
-
-  const initializeChat = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Load user stats for insights
-      const statsResponse = await statsAPI.getUserStats();
-      setUserStats(statsResponse.data);
-      
-      // Add welcome message if no messages exist
-      if (messages.length === 0) {
-        const welcomeMessage = {
-          id: Date.now(),
-          content: "Hello! I'm your AI Growth Coach. I'm here to help you with insights, motivation, and guidance on your personal development journey. How can I assist you today?",
-          message_type: 'ai',
-          timestamp: new Date().toISOString()
-        };
-        setMessages([welcomeMessage]);
-      }
-    } catch (err) {
-      setError(handleApiError(err, 'Failed to initialize chat'));
-    } finally {
-      setLoading(false);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (goalText.trim()) {
+      onSubmit(goalText.trim());
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
-
-    const userMessage = {
-      id: Date.now(),
-      content: inputValue,
-      message_type: 'user',
-      timestamp: new Date().toISOString()
-    };
-
-    // Add user message to the chat immediately
-    setMessages(prev => [...prev, userMessage]);
-    
-    try {
-      setIsTyping(true);
-      setInputValue('');
-      
-      // Send message to AI Coach API
-      const response = await aiCoachAPI.chatWithCoach(inputValue);
-      
-      // Create AI response message
-      const aiMessage = {
-        id: Date.now() + 1,
-        content: response.data.response,
-        message_type: 'ai',
-        timestamp: response.data.timestamp
-      };
-      
-      // Add AI response to messages
-      setMessages(prev => [...prev, aiMessage]);
-      
-    } catch (err) {
-      setError(handleApiError(err, 'Failed to send message'));
-      
-      // Add error message to chat
-      const errorMessage = {
-        id: Date.now() + 1,
-        content: "I apologize, but I'm having trouble responding right now. Please try again in a moment.",
-        message_type: 'ai',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsTyping(false);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleQuickPrompt = (prompt) => {
-    setInputValue(prompt);
-  };
-
-  const quickPrompts = [
-    "How can I stay motivated?",
-    "Help me set better goals",
-    "I'm feeling stuck lately",
-    "Tips for better focus"
-  ];
-
-  if (loading) {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 size={48} className="animate-spin text-yellow-400" />
-        </div>
-      </div>
-    );
-  }
+  if (!isOpen) return null;
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">AI Growth Coach</h1>
-        <p className="text-gray-400 max-w-2xl mx-auto">
-          Get personalized guidance, insights, and motivation from your AI-powered personal development coach
-        </p>
-      </div>
-
-      {error && (
-        <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
-          <AlertCircle size={20} className="text-red-400" />
-          <span className="text-red-400">{error}</span>
-          <button
-            onClick={initializeChat}
-            className="ml-auto px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Chat Area */}
-        <div className="lg:col-span-2">
-          <div className="h-96 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-xl border border-gray-800 flex flex-col">
-            {/* Chat Header */}
-            <div className="p-4 border-b border-gray-700">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
-                  <Bot size={20} style={{ color: '#0B0D14' }} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">AI Coach</h3>
-                  <p className="text-sm text-gray-400">Your personal growth assistant</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div 
-              ref={chatContainerRef}
-              className="flex-1 p-4 overflow-y-auto"
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md mx-4">
+        <h3 className="text-xl font-semibold text-white mb-4">Goal Decomposition</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Describe your goal:
+            </label>
+            <textarea
+              value={goalText}
+              onChange={(e) => setGoalText(e.target.value)}
+              placeholder="e.g., Learn Spanish, Launch my business, Get fit..."
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 transition-colors resize-none"
+              rows="3"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 py-2 px-4 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
-              {messages.map((message) => (
-                <Message
-                  key={message.id}
-                  message={message}
-                  isUser={message.message_type === 'user'}
-                />
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!goalText.trim() || isLoading}
+              className="flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+            >
+              {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Get Breakdown'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const ObstacleAnalysisModal = ({ isOpen, onClose, onSubmit, projects, isLoading }) => {
+  const [selectedProject, setSelectedProject] = useState('');
+  const [problemDescription, setProblemDescription] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (selectedProject && problemDescription.trim()) {
+      onSubmit(selectedProject, problemDescription.trim());
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md mx-4">
+        <h3 className="text-xl font-semibold text-white mb-4">Obstacle Analysis</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Select Project:
+            </label>
+            <select
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-400 transition-colors"
+              disabled={isLoading}
+            >
+              <option value="">Choose a project...</option>
+              {projects.map(project => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
               ))}
-              
-              {isTyping && (
-                <div className="flex items-start space-x-3 mb-6">
-                  <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                    <Bot size={16} className="text-yellow-400" />
-                  </div>
-                  <div className="bg-gray-800 text-white border border-gray-700 px-4 py-3 rounded-lg">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              What's the problem?
+            </label>
+            <textarea
+              value={problemDescription}
+              onChange={(e) => setProblemDescription(e.target.value)}
+              placeholder="e.g., I'm stuck on the planning phase, Can't find motivation to continue..."
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 transition-colors resize-none"
+              rows="3"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 py-2 px-4 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!selectedProject || !problemDescription.trim() || isLoading}
+              className="flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+            >
+              {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Get Help'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const ResponseModal = ({ isOpen, onClose, response, title }) => {
+  if (!isOpen || !response) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
+            <Brain size={20} style={{ color: '#0B0D14' }} />
+          </div>
+          <h3 className="text-xl font-semibold text-white">{title}</h3>
+        </div>
+        
+        <div className="space-y-4 mb-6">
+          {response.suggested_project_title && (
+            <div>
+              <h4 className="text-sm font-semibold text-yellow-400 mb-2">Suggested Project Title:</h4>
+              <p className="text-white font-medium">{response.suggested_project_title}</p>
+            </div>
+          )}
+          
+          {response.suggested_tasks && response.suggested_tasks.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-yellow-400 mb-2">Action Steps:</h4>
+              <ul className="space-y-2">
+                {response.suggested_tasks.map((task, index) => (
+                  <li key={index} className="flex items-start space-x-3 p-3 bg-gray-800/50 rounded-lg">
+                    <span className="text-yellow-400 font-semibold text-sm mt-0.5">{index + 1}.</span>
+                    <div className="flex-1">
+                      <p className="text-white">{task.name}</p>
+                      {task.priority && (
+                        <span className={`inline-block px-2 py-1 text-xs rounded mt-1 ${
+                          task.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                          task.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-green-500/20 text-green-400'
+                        }`}>
+                          {task.priority} priority
+                        </span>
+                      )}
+                      {task.estimated_duration && (
+                        <span className="inline-block ml-2 px-2 py-1 text-xs rounded mt-1 bg-blue-500/20 text-blue-400">
+                          ~{task.estimated_duration}min
+                        </span>
+                      )}
                     </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="p-4 border-t border-gray-700">
-              <div className="flex space-x-2">
-                <textarea
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Share your thoughts, challenges, or goals..."
-                  className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 transition-colors resize-none"
-                  rows="1"
-                  style={{ minHeight: '40px' }}
-                  disabled={isTyping}
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isTyping}
-                  className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-                >
-                  {isTyping ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <Send size={18} />
-                  )}
-                </button>
-              </div>
-              
-              {/* Quick Prompts */}
-              <div className="flex flex-wrap gap-2 mt-3">
-                {quickPrompts.map((prompt, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuickPrompt(prompt)}
-                    className="px-3 py-1 text-xs bg-gray-700 text-gray-300 rounded-full hover:bg-gray-600 transition-colors"
-                    disabled={isTyping}
-                  >
-                    {prompt}
-                  </button>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
-          </div>
+          )}
+          
+          {response.weekly_summary && (
+            <div>
+              <h4 className="text-sm font-semibold text-yellow-400 mb-2">Weekly Review:</h4>
+              <p className="text-gray-300 leading-relaxed">{response.weekly_summary}</p>
+            </div>
+          )}
+          
+          {response.suggestions && response.suggestions.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-yellow-400 mb-2">Next Actions:</h4>
+              <ul className="space-y-2">
+                {response.suggestions.map((suggestion, index) => (
+                  <li key={index} className="p-3 bg-gray-800/50 rounded-lg">
+                    <p className="text-white">{suggestion}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-
-        {/* Insights Panel */}
-        <div className="space-y-6">
-          {/* Today's Insights */}
-          <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-            <h3 className="text-lg font-semibold text-white mb-4">Today's Insights</h3>
-            <div className="space-y-4">
-              {userStats && (
-                <>
-                  <InsightCard
-                    icon={Lightbulb}
-                    title="Progress Recognition"
-                    description={`You've completed ${userStats.habits_completed_today} out of ${userStats.total_habits} habits today!`}
-                    action="View habit details →"
-                    onClick={() => handleQuickPrompt("Tell me about my habit progress")}
-                  />
-                  <InsightCard
-                    icon={Target}
-                    title="Goal Alignment"
-                    description={`You have ${userStats.total_tasks} tasks and ${userStats.courses_enrolled} courses in progress.`}
-                    action="Explore learning →"
-                    onClick={() => handleQuickPrompt("How can I better manage my learning goals?")}
-                  />
-                  <InsightCard
-                    icon={TrendingUp}
-                    title="Growth Journey"
-                    description={`You've written ${userStats.total_journal_entries} journal entries for reflection.`}
-                    action="See insights →"
-                    onClick={() => handleQuickPrompt("What patterns do you see in my growth journey?")}
-                  />
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-            <h3 className="text-lg font-semibold text-white mb-4">Your Journey</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Chat sessions</span>
-                <span className="text-white font-medium">{messages.length > 0 ? Math.ceil(messages.length / 4) : 0}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Goals discussed</span>
-                <span className="text-white font-medium">{userStats?.total_tasks || 0}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Growth score</span>
-                <span className="text-yellow-400 font-medium">
-                  {userStats ? Math.min(87 + (userStats.habits_completed_today * 5), 100) : 87}/100
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Coach Tips */}
-          <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-            <h3 className="text-lg font-semibold text-white mb-4">Coach Tips</h3>
-            <div className="space-y-3 text-sm">
-              <div className="p-3 bg-gray-800/50 rounded-lg">
-                <p className="text-gray-300">💡 <strong>Be specific:</strong> The more detailed your questions, the better I can help you.</p>
-              </div>
-              <div className="p-3 bg-gray-800/50 rounded-lg">
-                <p className="text-gray-300">🎯 <strong>Set intentions:</strong> Share your goals and I'll help you create actionable plans.</p>
-              </div>
-              <div className="p-3 bg-gray-800/50 rounded-lg">
-                <p className="text-gray-300">📈 <strong>Track progress:</strong> Regular check-ins help maintain momentum and accountability.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        
+        <button
+          onClick={onClose}
+          className="w-full py-2 px-4 rounded-lg font-medium transition-all duration-200"
+          style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+        >
+          Close
+        </button>
       </div>
     </div>
   );
