@@ -357,6 +357,10 @@ class FeedbackService:
             
         except Exception as e:
             logger.error(f"Error fetching user feedback: {e}")
+            # If table doesn't exist, return empty list for testing
+            if 'does not exist' in str(e):
+                logger.info("Feedback table does not exist, returning empty list")
+                return []
             return []
 
     async def get_all_feedback(self, status: Optional[str] = None, category: Optional[str] = None, limit: int = 100) -> List[Dict]:
