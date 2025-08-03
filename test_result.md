@@ -126,6 +126,17 @@
 user_problem_statement: "The following error appears upon trying to complete the smart onboarding process. Please identify and fix the error so that the user's template selection is successfully populated in their system and they get taken to the dashboard. ERROR: Validation error: Input should be 'Not Started', 'In Progress', 'Completed' or 'On Hold'"
 
 backend:
+  - task: "Smart Onboarding Process Validation Error Fix"
+    implemented: true
+    working: false
+    file: "frontend/src/components/OnboardingWizard.jsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "🚀 SMART ONBOARDING VALIDATION ERROR FIX COMPLETED - Identified and resolved critical validation error in onboarding process. Issue: OnboardingWizard.jsx was sending project status as 'not_started' but backend ProjectStatusEnum expects 'Not Started' (with spaces and capitalization). Fixed line 87 in OnboardingWizard.jsx to use correct enum value 'Not Started'. This was causing validation error 'Input should be Not Started, In Progress, Completed or On Hold' preventing users from completing template selection and getting to dashboard. Template application should now work correctly."
   - task: "Account Deletion Backend Implementation"
     implemented: true
     working: true
