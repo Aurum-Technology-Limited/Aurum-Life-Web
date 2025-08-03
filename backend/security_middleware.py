@@ -285,3 +285,108 @@ def sanitize_user_input(data: Dict[str, Any], model_type: str = "default") -> Di
     allow_html_fields = html_allowed_fields.get(model_type, set())
     
     return InputSanitizer.sanitize_dict(data, allow_html_fields)
+
+
+# IDOR Protection Utilities
+class IDORProtection:
+    """
+    Utility class for protecting against Insecure Direct Object Reference attacks
+    """
+    
+    @staticmethod
+    async def verify_resource_ownership(
+        user_id: str, 
+        resource_type: str, 
+        resource_id: str, 
+        supabase_client=None
+    ) -> bool:
+        """
+        Verify that a user owns a specific resource
+        
+        Args:
+            user_id: The authenticated user's ID
+            resource_type: Type of resource (projects, tasks, areas, pillars, etc.)
+            resource_id: The ID of the resource to check
+            supabase_client: Supabase client instance
+            
+        Returns:
+            True if user owns the resource, False otherwise
+        """
+        if not supabase_client:
+            supabase_client = get_supabase_client()
+        
+        try:
+            # Map resource types to table names
+            table_mapping = {
+                'project': 'projects',
+                'projects': 'projects',
+                'task': 'tasks', 
+                'tasks': 'tasks',
+                'area': 'areas',
+                'areas': 'areas',
+                'pillar': 'pillars',
+                'pillars': 'pillars',
+                'journal': 'journal_entries',
+                'journal_entry': 'journal_entries',
+                'project_template': 'project_templates',
+                'journal_template': 'journal_templates'
+            }
+            
+            table_name = table_mapping.get(resource_type.lower())
+            if not table_name:
+                logger.error(f"Unknown resource type for IDOR check: {resource_type}")
+                return False
+            
+            # Query the resource to check ownership
+            response = supabase_client.table(table_name)\
+                .select('id')\
+                .eq('id', resource_id)\
+                .eq('user_id', user_id)\
+                .limit(1)\
+                .execute()
+            
+            exists = len(response.data) > 0
+            
+            if not exists:
+                logger.warning(f"IDOR attempt detected: User {user_id} tried to access {resource_type} {resource_id} without ownership")
+            else:
+                logger.debug(f"IDOR check passed: User {user_id} owns {resource_type} {resource_id}")
+                
+            return exists
+            
+        except Exception as e:
+            logger.error(f"Error in IDOR ownership check: {str(e)}")
+            return False
+    
+    @staticmethod
+    async def verify_ownership_or_404(
+        user_id: str,
+        resource_type: str, 
+        resource_id: str,
+        supabase_client=None
+    ):
+        """
+        Verify resource ownership or raise 404 exception
+        
+        This follows the security requirement to return 404 (not 403) 
+        to prevent resource enumeration attacks
+        
+        Args:
+            user_id: The authenticated user's ID
+            resource_type: Type of resource 
+            resource_id: The ID of the resource to check
+            supabase_client: Supabase client instance
+            
+        Raises:
+            HTTPException: 404 if user doesn't own the resource
+        """
+        owns_resource = await IDORProtection.verify_resource_ownership(
+            user_id, resource_type, resource_id, supabase_client
+        )
+        
+        if not owns_resource:
+            # Return 404 to prevent resource enumeration (security requirement)
+            raise HTTPException(
+                status_code=404,
+                detail="Resource not found"
+            )
