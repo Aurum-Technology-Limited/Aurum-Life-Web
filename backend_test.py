@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 """
-FEEDBACK SYSTEM BACKEND TESTING - COMPREHENSIVE TESTING
-Testing the new Feedback System backend endpoint implementation.
+SMART ONBOARDING VALIDATION FIX TESTING - COMPREHENSIVE TESTING
+Testing the Smart Onboarding process validation fix for project creation.
 
 FOCUS AREAS:
-1. POST /api/feedback - Submit feedback with different categories and priorities
-2. GET /api/feedback - Retrieve user's feedback history
-3. Email notification system integration
-4. Authentication and authorization verification
-5. Data validation and error handling
-6. Database verification and user data isolation
+1. POST /api/projects endpoint - Verify project creation with status 'Not Started' works correctly
+2. Test that old incorrect value 'not_started' would fail validation
+3. Verify that other project status values like 'In Progress', 'Completed', 'On Hold' are accepted
+4. Authentication with existing test credentials
 
 TESTING CRITERIA:
-- Feedback submission working with all categories (suggestion, bug_report, feature_request, question, complaint, compliment)
-- Different priorities (low, medium, high, urgent) supported
-- Email notification sent after successful submission
-- Feedback retrieval working with proper user isolation
-- Validation tests for missing/invalid data
-- Database records created with correct structure
+- Project creation with status 'Not Started' should succeed
+- Project creation with status 'not_started' should fail with validation error 422
+- Other valid status values ('In Progress', 'Completed', 'On Hold') should be accepted
+- Invalid status values should return validation error 422
+
+Backend ProjectStatusEnum values:
+- not_started = "Not Started"
+- in_progress = "In Progress" 
+- completed = "Completed"
+- on_hold = "On Hold"
 
 CREDENTIALS: marc.alleyne@aurumtechnologyltd.com / password
 """
