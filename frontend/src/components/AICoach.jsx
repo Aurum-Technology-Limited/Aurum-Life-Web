@@ -472,30 +472,7 @@ const AICoach = () => {
     }
   };
 
-  const generateObstacleSuggestions = (problem, project) => {
-    const problemLower = problem.toLowerCase();
-    const suggestions = [];
 
-    if (problemLower.includes('motivation') || problemLower.includes('stuck')) {
-      suggestions.push("Break the next step into a 15-minute task and commit to just starting.");
-      suggestions.push("Connect this project to a deeper 'why' - what larger goal does it serve?");
-      suggestions.push("Change your environment or time of day when working on this project.");
-    } else if (problemLower.includes('planning') || problemLower.includes('don\'t know')) {
-      suggestions.push("Spend 20 minutes researching what others have done for similar projects.");
-      suggestions.push("Create a simple 3-step mini-plan for just the next phase.");
-      suggestions.push("Identify one person who could give you advice and reach out to them.");
-    } else if (problemLower.includes('time') || problemLower.includes('busy')) {
-      suggestions.push("Schedule one specific 30-minute block this week for this project.");
-      suggestions.push("Identify what you can eliminate or delegate to make space for this priority.");
-      suggestions.push("Break the project into smaller tasks that can be done in 15-minute chunks.");
-    } else {
-      suggestions.push("Clarify exactly what the next single action is and when you'll do it.");
-      suggestions.push("Consider if this project needs to be redefined or broken down differently.");
-      suggestions.push("Ask yourself: what's the smallest possible step I can take today?");
-    }
-
-    return suggestions.slice(0, 3);
-  };
 
   if (loading) {
     return (
