@@ -7,8 +7,8 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from supabase import create_client, Client
 import logging
-from models import Feedback, FeedbackCreate, FeedbackResponse
-from email_service import email_service
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 logger = logging.getLogger(__name__)
 
