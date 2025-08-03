@@ -1309,3 +1309,59 @@ class CustomAchievementResponse(BaseModel):
     # Contextual information
     target_name: Optional[str] = None  # Name of target project/course etc.
     estimated_completion: Optional[datetime] = None  # Based on current progress
+
+# Feedback System Models
+class FeedbackCategoryEnum(str, Enum):
+    suggestion = "suggestion"
+    bug_report = "bug_report"
+    feature_request = "feature_request"
+    question = "question"
+    complaint = "complaint"
+    compliment = "compliment"
+
+class FeedbackPriorityEnum(str, Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+    urgent = "urgent"
+
+class Feedback(BaseDocument):
+    """User feedback and support requests"""
+    user_id: str
+    user_email: str
+    user_name: str
+    category: FeedbackCategoryEnum
+    priority: FeedbackPriorityEnum
+    subject: str
+    message: str
+    
+    # Status tracking
+    status: str = "open"  # open, in_progress, resolved, closed
+    admin_response: Optional[str] = None
+    resolved_at: Optional[datetime] = None
+    resolved_by: Optional[str] = None
+    
+    # Email tracking
+    email_sent: bool = False
+    email_sent_at: Optional[datetime] = None
+    email_error: Optional[str] = None
+
+class FeedbackCreate(BaseModel):
+    category: FeedbackCategoryEnum
+    priority: FeedbackPriorityEnum
+    subject: str
+    message: str
+
+class FeedbackResponse(BaseModel):
+    id: str
+    user_id: str
+    user_email: str
+    user_name: str
+    category: FeedbackCategoryEnum
+    priority: FeedbackPriorityEnum
+    subject: str
+    message: str
+    status: str
+    email_sent: bool
+    created_at: datetime
+    updated_at: datetime
