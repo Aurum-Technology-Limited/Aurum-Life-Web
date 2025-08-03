@@ -281,6 +281,43 @@ class FeedbackService:
         
         logger.info(f"Feedback notification email sent to {admin_email}")
 
+    def _send_email(self, to: str, subject: str, html_content: str, plain_text_content: Optional[str] = None) -> bool:
+        """
+        Send email via SendGrid or mock for development
+        """
+        api_key = os.getenv('SENDGRID_API_KEY')
+        sender_email = os.getenv('SENDER_EMAIL')
+        
+        if not api_key or api_key == 'your_sendgrid_api_key_here':
+            # Mock mode for development
+            logger.info(f"[MOCK EMAIL] To: {to}")
+            logger.info(f"[MOCK EMAIL] Subject: {subject}")
+            logger.info(f"[MOCK EMAIL] Content Preview: {html_content[:100]}...")
+            return True
+        
+        try:
+            client = SendGridAPIClient(api_key)
+            message = Mail(
+                from_email=sender_email,
+                to_emails=to,
+                subject=subject,
+                html_content=html_content,
+                plain_text_content=plain_text_content
+            )
+            
+            response = client.send(message)
+            
+            if response.status_code == 202:
+                logger.info(f"Feedback email sent successfully to {to}")
+                return True
+            else:
+                logger.error(f"SendGrid returned status {response.status_code}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Failed to send email to {to}: {str(e)}")
+            return False
+
     async def get_user_feedback(self, user_id: str, limit: int = 50) -> List[Dict]:
         """
         Get user's feedback history
