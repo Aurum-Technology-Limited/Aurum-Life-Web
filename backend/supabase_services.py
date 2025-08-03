@@ -1023,8 +1023,8 @@ class SupabaseTaskService:
     async def create_task(user_id: str, task_data: TaskCreate) -> Dict[str, Any]:
         """Create a new task"""
         try:
-            # Ensure user exists in users table (fix for foreign key constraint)
-            await SupabasePillarService._ensure_user_exists_in_users_table(user_id)
+            # Ensure user exists in auth.users table (fix for foreign key constraint)
+            await SupabasePillarService._ensure_user_exists_in_auth_users(user_id)
             
             # Validate project_id exists for the user
             try:
