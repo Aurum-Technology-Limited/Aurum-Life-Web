@@ -1,5 +1,6 @@
 """
 Alignment Score Service - Manages the point calculation and tracking system
+STRATEGIC SHIFT: Project-Based Scoring (Outcomes over Activities)
 """
 import os
 from datetime import datetime, timedelta
@@ -18,81 +19,66 @@ class AlignmentScoreService:
         
         self.supabase: Client = create_client(supabase_url, supabase_key)
 
-    def calculate_task_points(self, task_data: Dict, project_data: Optional[Dict] = None, area_data: Optional[Dict] = None) -> Dict:
+    def calculate_project_points(self, project_data: Dict, area_data: Optional[Dict] = None) -> Dict:
         """
-        Calculate points for a completed task using additive scoring system
+        Calculate points for a completed project using new project-based scoring system
         
-        Algorithm:
-        - Base Points: +5 for any completed task
-        - Task Priority Bonus: +10 for "High" priority task  
-        - Project Priority Bonus: +15 for task in "High" priority project
-        - Area Importance Bonus: +20 for task in top-level importance Area (5/5)
+        NEW PROJECT-BASED ALGORITHM:
+        - Base Points: +50 points for any completed Project
+        - Project Priority Bonus: +25 points for "High" priority Project  
+        - Area Importance Bonus: +50 points if Project is within top-level importance Area (5/5)
         
-        Maximum possible: 50 points (5+10+15+20)
+        Maximum possible: 125 points (50+25+50)
         """
-        points = 5  # Base points
-        breakdown = {'base': 5}
-        
-        # Task Priority Bonus
-        task_priority = task_data.get('priority', '').lower()
-        if task_priority == 'high':
-            points += 10
-            breakdown['task_priority'] = 10
+        points = 50  # Base points for any completed project
+        breakdown = {'base': 50}
         
         # Project Priority Bonus
-        if project_data and project_data.get('priority', '').lower() == 'high':
-            points += 15
-            breakdown['project_priority'] = 15
+        project_priority = project_data.get('priority', '').lower()
+        if project_priority == 'high':
+            points += 25
+            breakdown['project_priority'] = 25
         
-        # Area Importance Bonus  
+        # Area Importance Bonus - top-level importance (5/5)
         if area_data and area_data.get('importance') == 5:
-            points += 20
-            breakdown['area_importance'] = 20
+            points += 50
+            breakdown['area_importance'] = 50
         
         return {
             'total_points': points,
             'breakdown': breakdown,
-            'task_priority': task_priority,
-            'project_priority': project_data.get('priority') if project_data else None,
+            'project_priority': project_priority,
             'area_importance': area_data.get('importance') if area_data else None
         }
 
-    async def record_task_completion(self, user_id: str, task_id: str) -> Optional[Dict]:
+    async def record_project_completion(self, user_id: str, project_id: str) -> Optional[Dict]:
         """
-        Record points for a completed task by fetching task hierarchy and calculating scores
+        Record points for a completed project by fetching project hierarchy and calculating scores
         """
         try:
-            # Fetch task details
-            task_response = self.supabase.table('tasks').select('*').eq('id', task_id).single().execute()
-            if not task_response.data:
-                logger.error(f"Task {task_id} not found")
+            # Fetch project details
+            project_response = self.supabase.table('projects').select('*').eq('id', project_id).single().execute()
+            if not project_response.data:
+                logger.error(f"Project {project_id} not found")
                 return None
             
-            task_data = task_response.data
-            project_data = None
+            project_data = project_response.data
             area_data = None
             
-            # Fetch project details if task has project_id
-            if task_data.get('project_id'):
-                project_response = self.supabase.table('projects').select('*').eq('id', task_data['project_id']).single().execute()
-                if project_response.data:
-                    project_data = project_response.data
-                    
-                    # Fetch area details if project has area_id
-                    if project_data.get('area_id'):
-                        area_response = self.supabase.table('areas').select('*').eq('id', project_data['area_id']).single().execute()
-                        if area_response.data:
-                            area_data = area_response.data
+            # Fetch area details if project has area_id
+            if project_data.get('area_id'):
+                area_response = self.supabase.table('areas').select('*').eq('id', project_data['area_id']).single().execute()
+                if area_response.data:
+                    area_data = area_response.data
             
-            # Calculate points
-            score_data = self.calculate_task_points(task_data, project_data, area_data)
+            # Calculate points using new project-based algorithm
+            score_data = self.calculate_project_points(project_data, area_data)
             
-            # Record the alignment score
+            # Record the alignment score with project_id (not task_id)
             alignment_record = {
                 'user_id': user_id,
-                'task_id': task_id,
+                'project_id': project_id,  # Changed from task_id to project_id
                 'points_earned': score_data['total_points'],
-                'task_priority': score_data['task_priority'],
                 'project_priority': score_data['project_priority'],
                 'area_importance': score_data['area_importance']
             }
@@ -100,7 +86,7 @@ class AlignmentScoreService:
             response = self.supabase.table('alignment_scores').insert(alignment_record).execute()
             
             if response.data:
-                logger.info(f"Recorded {score_data['total_points']} points for task {task_id} by user {user_id}")
+                logger.info(f"Recorded {score_data['total_points']} points for project {project_id} by user {user_id}")
                 return {
                     'alignment_score': response.data[0],
                     'breakdown': score_data['breakdown']
@@ -110,12 +96,35 @@ class AlignmentScoreService:
                 return None
                 
         except Exception as e:
-            logger.error(f"Error recording task completion: {e}")
+            logger.error(f"Error recording project completion: {e}")
             return None
+
+    # DEPRECATED: Task-based scoring methods (keeping for backwards compatibility)
+    def calculate_task_points(self, task_data: Dict, project_data: Optional[Dict] = None, area_data: Optional[Dict] = None) -> Dict:
+        """
+        DEPRECATED: Task-based scoring algorithm (replaced by project-based scoring)
+        This method is kept for backwards compatibility but should not be used.
+        """
+        logger.warning("DEPRECATED: Task-based scoring is disabled. Use project-based scoring instead.")
+        return {
+            'total_points': 0,
+            'breakdown': {'deprecated': 'Task-based scoring disabled'},
+            'task_priority': task_data.get('priority') if task_data else None,
+            'project_priority': project_data.get('priority') if project_data else None,
+            'area_importance': area_data.get('importance') if area_data else None
+        }
+
+    async def record_task_completion(self, user_id: str, task_id: str) -> Optional[Dict]:
+        """
+        DEPRECATED: Task completion scoring (replaced by project completion scoring)
+        This method is kept for backwards compatibility but no longer awards points.
+        """
+        logger.warning(f"DEPRECATED: Task completion scoring disabled for task {task_id}. Points now awarded only on project completion.")
+        return None
 
     async def get_rolling_weekly_score(self, user_id: str) -> int:
         """
-        Get user's rolling 7-day alignment score
+        Get user's rolling 7-day alignment score from project completions
         """
         try:
             seven_days_ago = datetime.now() - timedelta(days=7)
@@ -137,7 +146,7 @@ class AlignmentScoreService:
 
     async def get_monthly_score(self, user_id: str) -> int:
         """
-        Get user's current month alignment score
+        Get user's current month alignment score from project completions
         """
         try:
             # Get first day of current month
