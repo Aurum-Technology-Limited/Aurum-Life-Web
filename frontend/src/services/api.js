@@ -538,12 +538,34 @@ export const resourcesAPI = {
 };
 
 // AI Coach API
+// AI Coach MVP API with Safeguards
 export const aiCoachAPI = {
-  getTodaysPriorities: () => apiClient.get('/api/ai/task-why-statements'),
+  // Get user's AI interaction quota
+  getQuota: () => apiClient.get('/api/ai/quota'),
+  
+  // Feature 1: Goal Decomposition
+  decomposeGoal: (goalText) => apiClient.post('/api/ai/decompose-project', {
+    project_name: goalText,
+    project_description: goalText,
+    template_type: 'general'
+  }),
+  
+  // Feature 2: Weekly Strategic Review
+  getWeeklyReview: () => apiClient.post('/api/ai/weekly-review'),
+  
+  // Feature 3: Obstacle Analysis
+  analyzeObstacle: (projectId, problemDescription) => apiClient.post('/api/ai/obstacle-analysis', {
+    project_id: projectId,
+    problem_description: problemDescription
+  }),
+  
+  // Legacy support (for existing code)
   chatWithCoach: (message) => apiClient.post('/api/ai/decompose-project', {
     project_name: message,
+    project_description: message,
     template_type: 'general'
-  })
+  }),
+  getTodaysPriorities: () => apiClient.get('/api/ai/task-why-statements')
 };
 
 // Feedback API
