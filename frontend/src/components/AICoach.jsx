@@ -641,7 +641,7 @@ const AICoach = () => {
 
   const loadProjects = async () => {
     try {
-      const response = await api.get('/projects');
+      const response = await api.projects.getProjects();
       setProjects(response.data.filter(project => project.status !== 'Completed'));
     } catch (err) {
       console.error('Error loading projects:', err);
