@@ -1633,12 +1633,15 @@ async def create_journal_entry(
 ):
     """Create a new journal entry"""
     try:
-        entry_id = f"entry-{hash(entry_data.get('title', '')) % 10000}"
+        # Sanitize journal entry data (allow basic HTML for rich content)
+        sanitized_data = sanitize_user_input(entry_data, model_type="journal")
+        
+        entry_id = f"entry-{hash(sanitized_data.get('title', '')) % 10000}"
         
         response = {
             "id": entry_id,
             "message": "Journal entry created successfully",
-            **entry_data,
+            **sanitized_data,
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         }
