@@ -47,8 +47,18 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
     }
   };
 
-  const handleOnboardingClose = () => {
-    console.log('⏩ Onboarding skipped');
+  const handleOnboardingClose = async () => {
+    console.log('⏩ Onboarding skipped - marking as completed');
+    
+    // Mark onboarding as completed in backend even when skipped
+    try {
+      await api.post('/api/auth/complete-onboarding');
+      console.log('✅ Onboarding marked as completed (skipped) in backend');
+      await refreshUser();
+    } catch (error) {
+      console.error('⚠️ Failed to mark onboarding as completed:', error);
+    }
+    
     setShowOnboarding(false);
   };
 
