@@ -302,7 +302,7 @@ async def get_current_user_profile(request: Request):
                 
                 return UserResponse(
                     id=legacy_user['id'],
-                    username=legacy_user.get('username', ''),
+                    username=legacy_user.get('username') or '',
                     email=legacy_user.get('email', ''),
                     first_name=legacy_user.get('first_name') or '',
                     last_name=legacy_user.get('last_name') or '',
