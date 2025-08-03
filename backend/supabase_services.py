@@ -144,42 +144,41 @@ class SupabaseUserService:
             # Check if username is being changed
             username_change = profile_data.get('username')
             if username_change:
-                # Get current user data to check existing username
-                current_user = await SupabaseUserService.get_user_profile(user_id)
-                if not current_user:
+                # Get current user data to check existing username and last username change
+                current_user_response = supabase.table('user_profiles')\
+                    .select('*')\
+                    .eq('id', user_id)\
+                    .limit(1)\
+                    .execute()
+                
+                if not current_user_response.data:
                     raise Exception("User not found")
                 
+                current_user = current_user_response.data[0]
                 current_username = current_user.get('username')
+                last_username_change = current_user.get('last_username_change')
                 
                 # Only check rate limiting if username is actually changing
                 if current_username != username_change:
                     # Check if user has changed username in the last 7 days
-                    seven_days_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
-                    
-                    # Check username_change_records table
-                    try:
-                        response = supabase.table('username_change_records')\
-                            .select('*')\
-                            .eq('user_id', user_id)\
-                            .gte('changed_at', seven_days_ago)\
-                            .order('changed_at', desc=True)\
-                            .limit(1)\
-                            .execute()
-                        
-                        if response.data and len(response.data) > 0:
-                            last_change = response.data[0]
-                            last_change_date = datetime.fromisoformat(last_change['changed_at'].replace('Z', '+00:00'))
-                            days_since_change = (datetime.utcnow() - last_change_date.replace(tzinfo=None)).days
-                            days_remaining = 7 - days_since_change
+                    if last_username_change:
+                        try:
+                            # Parse the last change date
+                            if isinstance(last_username_change, str):
+                                last_change_date = datetime.fromisoformat(last_username_change.replace('Z', '+00:00'))
+                            else:
+                                last_change_date = last_username_change
                             
-                            if days_remaining > 0:
+                            # Calculate days since last change
+                            days_since_change = (datetime.utcnow() - last_change_date.replace(tzinfo=None)).days
+                            
+                            if days_since_change < 7:
+                                days_remaining = 7 - days_since_change
                                 raise Exception(f"Username can only be changed once every 7 days. Please wait {days_remaining} more day(s).")
-                    
-                    except Exception as e:
-                        if "Username can only be changed" in str(e):
-                            raise e
-                        # If table doesn't exist or other error, continue (first time setup)
-                        logger.warning(f"Username change tracking table not accessible: {str(e)}")
+                                
+                        except ValueError as e:
+                            # If date parsing fails, allow the change (first time setup)
+                            logger.warning(f"Failed to parse last username change date: {str(e)}")
                     
                     # Check if username is already taken
                     existing_user = supabase.table('user_profiles')\
@@ -192,22 +191,9 @@ class SupabaseUserService:
                     if existing_user.data and len(existing_user.data) > 0:
                         raise Exception("Username is already taken")
                     
-                    # Record the username change
-                    try:
-                        change_record = {
-                            'id': str(uuid.uuid4()),
-                            'user_id': user_id,
-                            'old_username': current_username or '',
-                            'new_username': username_change,
-                            'changed_at': datetime.utcnow().isoformat(),
-                            'ip_address': ip_address
-                        }
-                        
-                        supabase.table('username_change_records').insert(change_record).execute()
-                        logger.info(f"Recorded username change for user {user_id}: {current_username} -> {username_change}")
-                    
-                    except Exception as e:
-                        logger.warning(f"Failed to record username change: {str(e)} - continuing with update")
+                    # Add the username change timestamp to the profile data
+                    profile_data['last_username_change'] = datetime.utcnow().isoformat()
+                    logger.info(f"Recording username change for user {user_id}: {current_username} -> {username_change}")
             
             # Proceed with profile update
             return await SupabaseUserService.update_user(user_id, profile_data)
