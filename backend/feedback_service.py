@@ -269,7 +269,7 @@ class FeedbackService:
         """
         
         # Send email
-        success = email_service.send_email(
+        success = self._send_email(
             to=admin_email,
             subject=subject,
             html_content=html_content,
