@@ -958,6 +958,11 @@ async def should_show_daily_prompt(
 async def create_pillar(pillar_data: PillarCreate, current_user: User = Depends(get_current_active_user_hybrid)):
     """Create a new pillar"""
     try:
+        # Sanitize pillar data to prevent XSS
+        sanitized_data = sanitize_user_input(pillar_data.dict(), model_type="default")
+        pillar_data.name = sanitized_data["name"]
+        pillar_data.description = sanitized_data["description"]
+        
         result = await SupabasePillarService.create_pillar(str(current_user.id), pillar_data)
         return result
     except ValueError as e:
