@@ -25,11 +25,9 @@ const DeleteAccountSection = ({ onBack }) => {
       });
 
       if (response.data.success) {
-        // Account deleted successfully - logout and show success message
+        // Account deleted successfully - logout user
+        // The auth system will automatically redirect to login
         await logout();
-        // Redirect to login page using window.location since we don't have React Router
-        window.location.href = '/';
-        // Note: We could also use a callback or state management to show success message
       }
     } catch (error) {
       console.error('Error deleting account:', error);
