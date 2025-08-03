@@ -325,7 +325,7 @@ async def get_current_user_profile(request: Request):
                 
                 return UserResponse(
                     id=profile['id'],
-                    username=profile.get('username', ''),
+                    username=profile.get('username') or '',
                     email=getattr(current_user, 'email', ''),
                     first_name=profile.get('first_name') or '',
                     last_name=profile.get('last_name') or '',
