@@ -365,6 +365,9 @@ class SupabasePillarService:
     async def create_pillar(user_id: str, pillar_data: PillarCreate) -> Dict[str, Any]:
         """Create a new pillar"""
         try:
+            # Ensure user exists in users table (fix for foreign key constraint)
+            await SupabasePillarService._ensure_user_exists_in_users_table(user_id)
+            
             pillar_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
@@ -391,6 +394,51 @@ class SupabasePillarService:
         except Exception as e:
             logger.error(f"Error creating pillar: {e}")
             raise
+    
+    @staticmethod
+    async def _ensure_user_exists_in_users_table(user_id: str):
+        """Ensure user exists in users table, create if missing"""
+        try:
+            # Check if user exists in users table
+            user_check = supabase.table('users').select('id').eq('id', user_id).execute()
+            
+            if user_check.data:
+                logger.info(f"✅ User {user_id} already exists in users table")
+                return
+            
+            # User doesn't exist in users table, get data from user_profiles
+            user_profile = supabase.table('user_profiles').select('*').eq('id', user_id).execute()
+            
+            if not user_profile.data:
+                raise Exception(f"User {user_id} not found in user_profiles table")
+            
+            profile = user_profile.data[0]
+            
+            # Create user in users table with data from user_profiles
+            user_dict = {
+                'id': user_id,
+                'username': profile.get('username', ''),
+                'email': profile.get('email', ''),
+                'first_name': profile.get('first_name', ''),
+                'last_name': profile.get('last_name', ''),
+                'is_active': profile.get('is_active', True),
+                'level': profile.get('level', 1),
+                'total_points': profile.get('total_points', 0),
+                'current_streak': profile.get('current_streak', 0),
+                'created_at': profile.get('created_at') or datetime.utcnow().isoformat(),
+                'updated_at': datetime.utcnow().isoformat()
+            }
+            
+            create_response = supabase.table('users').insert(user_dict).execute()
+            
+            if create_response.data:
+                logger.info(f"✅ Created user {user_id} in users table for foreign key compatibility")
+            else:
+                logger.warning(f"⚠️ Failed to create user {user_id} in users table")
+                
+        except Exception as e:
+            logger.error(f"Error ensuring user exists in users table: {e}")
+            # Don't raise - let the pillar creation proceed and handle the constraint error
     
     @staticmethod
     async def get_user_pillars(user_id: str, include_areas: bool = False, include_archived: bool = False) -> List[Dict[str, Any]]:
