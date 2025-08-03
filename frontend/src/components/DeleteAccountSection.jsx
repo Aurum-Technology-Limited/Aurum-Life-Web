@@ -5,7 +5,6 @@ import api from '../services/api';
 
 const DeleteAccountSection = ({ onBack }) => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: Warning, 2: Confirmation, 3: Processing
   const [confirmationText, setConfirmationText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
