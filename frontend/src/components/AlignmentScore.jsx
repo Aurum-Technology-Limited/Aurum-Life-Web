@@ -66,10 +66,11 @@ const AlignmentScore = ({ onSectionChange }) => {
     }
   };
 
-  // Calculate brain fill and glow intensity based on progress with safe defaults
+  // Calculate brain fill and glow intensity based on progress with enhanced safety checks
   const progressPercentage = alignmentData?.progress_percentage || 0;
-  const glowIntensity = Math.min(progressPercentage / 100, 1); // 0-1 scale
-  const fillPercentage = Math.min(progressPercentage, 100);
+  const safeProgressPercentage = typeof progressPercentage === 'number' && !isNaN(progressPercentage) ? progressPercentage : 0;
+  const glowIntensity = Math.min(Math.max(safeProgressPercentage / 100, 0), 1); // Ensure 0-1 scale
+  const fillPercentage = Math.min(Math.max(safeProgressPercentage, 0), 100); // Ensure 0-100 range
 
   // Loading state with skeleton
   if (loading) {
