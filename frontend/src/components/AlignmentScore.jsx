@@ -193,18 +193,18 @@ const AlignmentScore = ({ onSectionChange }) => {
 
       {/* Goal Status and Progress */}
       <div className="space-y-3">
-        {alignmentData.has_goal_set && alignmentData.monthly_goal ? (
+        {alignmentData.has_goal_set && alignmentData.monthly_goal && typeof alignmentData.monthly_goal === 'number' ? (
           <>
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Monthly Progress</span>
-                <span className="text-yellow-400">{Math.round(progressPercentage)}%</span>
+                <span className="text-yellow-400">{Math.round(safeProgressPercentage)}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div 
                   className="bg-gradient-to-r from-yellow-500 to-yellow-400 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                  style={{ width: `${Math.min(safeProgressPercentage, 100)}%` }}
                 />
               </div>
               <div className="flex justify-between text-xs text-gray-500">
