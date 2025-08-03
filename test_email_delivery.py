@@ -85,11 +85,10 @@ Aurum Life System
     )
     
     # Add Outlook-friendly headers
-    message.header = {
-        "X-Priority": "3",
-        "X-Mailer": "Aurum Life Test",
-        "Precedence": "bulk"
-    }
+    from sendgrid.helpers.mail import Header
+    message.add_header(Header("X-Priority", "3"))
+    message.add_header(Header("X-Mailer", "Aurum Life Test"))
+    message.add_header(Header("Precedence", "bulk"))
     
     try:
         response = client.send(message)
