@@ -740,6 +740,36 @@ async def create_project_with_tasks(
             "Ask yourself: what's the smallest possible step I can take today?"
         ])
     
+def generate_obstacle_suggestions(problem: str, project: dict) -> list:
+    """Generate obstacle analysis suggestions"""
+    problem_lower = problem.lower()
+    suggestions = []
+    
+    if 'motivation' in problem_lower or 'stuck' in problem_lower:
+        suggestions.extend([
+            "Break the next step into a 15-minute task and commit to just starting.",
+            "Connect this project to a deeper 'why' - what larger goal does it serve?",
+            "Change your environment or time of day when working on this project."
+        ])
+    elif 'planning' in problem_lower or 'don\'t know' in problem_lower:
+        suggestions.extend([
+            "Spend 20 minutes researching what others have done for similar projects.",
+            "Create a simple 3-step mini-plan for just the next phase.",
+            "Identify one person who could give you advice and reach out to them."
+        ])
+    elif 'time' in problem_lower or 'busy' in problem_lower:
+        suggestions.extend([
+            "Schedule one specific 30-minute block this week for this project.",
+            "Identify what you can eliminate or delegate to make space for this priority.",
+            "Break the project into smaller tasks that can be done in 15-minute chunks."
+        ])
+    else:
+        suggestions.extend([
+            "Clarify exactly what the next single action is and when you'll do it.",
+            "Consider if this project needs to be redefined or broken down differently.",
+            "Ask yourself: what's the smallest possible step I can take today?"
+        ])
+    
     return suggestions[:3]  # Return max 3 suggestions
 
 # Feature 1: Contextual "Why" Statements
