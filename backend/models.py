@@ -60,6 +60,16 @@ class TokenData(BaseModel):
 class UserProfileUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    username: Optional[str] = None
+
+# Username change tracking model
+class UsernameChangeRecord(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    old_username: str
+    new_username: str
+    changed_at: datetime = Field(default_factory=datetime.utcnow)
+    ip_address: Optional[str] = None
 
 # Password Reset Models
 class PasswordResetToken(BaseModel):
