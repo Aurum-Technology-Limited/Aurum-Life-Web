@@ -1,53 +1,66 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {Send, Bot, User, Lightbulb, Target, TrendingUp, Loader2, AlertCircle} from 'lucide-react';
-import { aiCoachAPI, statsAPI, handleApiError } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { Bot, Target, TrendingUp, AlertTriangle, Loader2, AlertCircle, Brain, ChevronRight, Clock, Zap } from 'lucide-react';
+import { api } from '../services/api';
 
-const Message = ({ message, isUser }) => (
-  <div className={`flex items-start space-x-3 mb-6 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-      isUser ? 'bg-yellow-400' : 'bg-gray-700'
-    }`}>
-      {isUser ? (
-        <User size={16} style={{ color: '#0B0D14' }} />
-      ) : (
-        <Bot size={16} className="text-yellow-400" />
-      )}
-    </div>
-    <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-      isUser 
-        ? 'bg-yellow-400 text-gray-900' 
-        : 'bg-gray-800 text-white border border-gray-700'
-    }`}>
-      <p className="text-sm leading-relaxed">{message.content}</p>
-      <p className="text-xs mt-2 opacity-70">
-        {new Date(message.timestamp).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit'
-        })}
-      </p>
-    </div>
-  </div>
-);
-
-const InsightCard = ({ icon: Icon, title, description, action, onClick }) => (
-  <div 
-    className="p-4 rounded-lg border border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 transition-colors cursor-pointer"
-    onClick={onClick}
-  >
-    <div className="flex items-center space-x-3 mb-3">
-      <div className="w-8 h-8 rounded-lg bg-yellow-400 flex items-center justify-center">
-        <Icon size={16} style={{ color: '#0B0D14' }} />
+const FeatureCard = ({ icon: Icon, title, description, buttonText, onClick, disabled = false, isLoading = false }) => (
+  <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group">
+    <div className="flex items-center space-x-3 mb-4">
+      <div className="w-12 h-12 rounded-lg bg-yellow-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+        <Icon size={24} style={{ color: '#0B0D14' }} />
       </div>
-      <h3 className="font-semibold text-white">{title}</h3>
+      <div>
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+      </div>
     </div>
-    <p className="text-sm text-gray-400 mb-3">{description}</p>
-    {action && (
-      <p className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
-        {action}
-      </p>
-    )}
+    <p className="text-gray-400 mb-6 leading-relaxed">{description}</p>
+    <button
+      onClick={onClick}
+      disabled={disabled || isLoading}
+      className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+      style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+    >
+      {isLoading ? (
+        <Loader2 size={18} className="animate-spin" />
+      ) : (
+        <>
+          <span>{buttonText}</span>
+          <ChevronRight size={16} />
+        </>
+      )}
+    </button>
   </div>
 );
+
+const QuotaDisplay = ({ remaining, total }) => (
+  <div className="flex items-center space-x-3 p-4 rounded-lg bg-gray-800/50 border border-gray-700">
+    <div className="w-10 h-10 rounded-lg bg-yellow-400/20 flex items-center justify-center">
+      <Zap size={20} className="text-yellow-400" />
+    </div>
+    <div className="flex-1">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-sm text-gray-400">AI Interactions This Month</span>
+        <span className="text-sm font-semibold text-white">{remaining}/{total}</span>
+      </div>
+      <div className="w-full bg-gray-700 rounded-full h-2">
+        <div 
+          className="bg-yellow-400 h-2 rounded-full transition-all duration-500"
+          style={{ width: `${(remaining / total) * 100}%` }}
+        />
+      </div>
+    </div>
+  </div>
+);
+
+const RateLimitWarning = ({ show }) => {
+  if (!show) return null;
+  
+  return (
+    <div className="p-3 rounded-lg bg-orange-900/20 border border-orange-500/30 flex items-center space-x-2 mb-4">
+      <Clock size={16} className="text-orange-400" />
+      <span className="text-orange-400 text-sm">Please wait a moment before making another request</span>
+    </div>
+  );
+};
 
 const AICoach = () => {
   const [messages, setMessages] = useState([]);
