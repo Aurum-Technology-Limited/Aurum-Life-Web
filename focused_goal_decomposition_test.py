@@ -161,7 +161,7 @@ class FocusedGoalDecompositionTester:
                 "description": "Testing the new create-with-tasks endpoint",
                 "area_id": area_id,
                 "priority": "medium",
-                "status": "Planning"
+                "status": "Not Started"
             },
             "tasks": [
                 {
