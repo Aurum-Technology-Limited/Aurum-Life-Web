@@ -15,7 +15,12 @@ def test_sendgrid_setup():
     """Test SendGrid configuration"""
     print("🔍 Testing SendGrid Configuration...")
     
-    load_dotenv()
+    # Load from backend directory
+    import os
+    from pathlib import Path
+    backend_env = Path(__file__).parent / 'backend' / '.env'
+    load_dotenv(backend_env)
+    
     api_key = os.getenv('SENDGRID_API_KEY')
     sender_email = os.getenv('SENDER_EMAIL')
     
