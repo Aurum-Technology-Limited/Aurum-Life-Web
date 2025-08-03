@@ -402,9 +402,11 @@ class SupabasePillarService:
             # Check if user exists in users table
             user_check = supabase.table('users').select('id').eq('id', user_id).execute()
             
-            if user_check.data:
+            if user_check.data and len(user_check.data) > 0:
                 logger.info(f"✅ User {user_id} already exists in users table")
                 return
+            
+            logger.info(f"🔧 User {user_id} not found in users table, creating from user_profiles...")
             
             # User doesn't exist in users table, get data from user_profiles
             user_profile = supabase.table('user_profiles').select('*').eq('id', user_id).execute()
