@@ -121,6 +121,18 @@
 
 user_problem_statement: "When a new user selects a template during onboarding, there's a 422 (Unprocessable Entity) status code error, which causes a React error because the frontend tries to render the raw error object."
 
+  - task: "Alignment Score UI Text Corrections - Project-Based Scoring"
+    implemented: true
+    working: true
+    file: "frontend/src/components/AlignmentScore.jsx, frontend/src/components/GoalSettings.jsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "🔧 SURGICAL UI TEXT CORRECTIONS COMPLETED - User directive implemented to remove all incorrect task-based logic and UI text. Updated AlignmentScore.jsx tooltip from 'completing tasks' to 'completing projects'. Completely rewrote GoalSettings.jsx scoring section with correct project-based metrics: Base +50, Project Priority +25, Area Importance +50, Max 125 points per project. UI now correctly reflects project-based scoring algorithm emphasizing outcomes over activities."
+
 backend:
   - task: "Database Cleanup Verification"
     implemented: true
