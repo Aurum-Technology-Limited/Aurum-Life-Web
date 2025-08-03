@@ -681,7 +681,7 @@ async def create_project_with_tasks(
                 'name': task_data['title'],
                 'description': task_data.get('description', ''),
                 'priority': task_data.get('priority', 'medium'),
-                'status': 'Not Started',
+                'status': 'todo',
                 'estimated_duration': task_data.get('estimated_duration', 30),
                 'created_at': datetime.utcnow().isoformat(),
                 'updated_at': datetime.utcnow().isoformat()
