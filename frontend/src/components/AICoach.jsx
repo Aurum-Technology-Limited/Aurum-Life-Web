@@ -709,13 +709,21 @@ const AICoach = () => {
       const response = await api.projects.createWithTasks(projectData, tasksData);
 
       if (response.data.success) {
-        // Success! Close editor and show success message
+        // Success! Close editor and clear error
         setEditorModalOpen(false);
         setAiDecompositionResponse(null);
+        setError(null);
         
-        // Show success response
+        // Show success toast notification
+        toast({
+          title: "Success! Your new project has been added.",
+          description: `Created "${projectData.title}" with ${tasksData.length} task${tasksData.length !== 1 ? 's' : ''}`,
+          variant: "default",
+        });
+        
+        // Show success response modal as well
         setCurrentResponse({
-          success_message: response.data.message,
+          success_message: `Successfully created project "${projectData.title}" with ${tasksData.length} tasks`,
           project_created: response.data.project,
           tasks_created: response.data.tasks
         });
@@ -727,12 +735,22 @@ const AICoach = () => {
       }
       
     } catch (err) {
+      console.error('Save project error:', err);
+      
       if (err.response?.status === 422) {
         setError('Please provide a project title.');
+      } else if (err.response?.status === 401) {
+        setError('Authentication required. Please log in again.');
       } else {
         setError('Failed to save project. Please try again.');
       }
-      console.error('Save project error:', err);
+      
+      // Show error toast as well
+      toast({
+        title: "Failed to save project",
+        description: err.response?.status === 422 ? 'Please provide a project title.' : 'Please try again.',
+        variant: "destructive",
+      });
     } finally {
       setSaveLoading(false);
     }
