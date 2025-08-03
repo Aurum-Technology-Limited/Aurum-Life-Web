@@ -234,9 +234,10 @@ const OptimizedDashboard = ({ onSectionChange }) => {
     setShowOnboarding(false);
   };
 
-  // Memoized stats calculations with data sanitization
+  // Memoized stats calculations with enhanced data sanitization and defensive programming
   const stats = useMemo(() => {
-    if (!dashboardData?.stats) {
+    // Return safe defaults if data is not loaded yet
+    if (!dashboardData || !dashboardData.stats || loading || isLoading) {
       return {
         currentStreak: 0,
         habitsToday: 0,
@@ -247,14 +248,15 @@ const OptimizedDashboard = ({ onSectionChange }) => {
 
     const { stats } = dashboardData;
     
-    // Sanitize all stat values to ensure they're numbers
+    // Enhanced sanitization to ensure they're numbers and handle all edge cases
     const sanitizeStat = (value, defaultValue = 0) => {
       if (value === null || value === undefined) return defaultValue;
-      if (typeof value === 'number') return value;
+      if (typeof value === 'number' && !isNaN(value)) return value;
       if (typeof value === 'string') {
         const parsed = parseInt(value, 10);
         return isNaN(parsed) ? defaultValue : parsed;
       }
+      if (typeof value === 'object') return defaultValue;
       return defaultValue;
     };
 
@@ -264,7 +266,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
       activeLearning: sanitizeStat(stats.courses_enrolled, 0),
       achievements: sanitizeStat(stats.badges_earned, 0)
     };
-  }, [dashboardData]);
+  }, [dashboardData, loading, isLoading]); // Add isLoading to dependencies
 
   // Show onboarding wizard if user is new
   if (showOnboarding) {
