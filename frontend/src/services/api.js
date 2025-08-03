@@ -183,6 +183,12 @@ export const projectsAPI = {
   getProjectTasks: (projectId) => apiClient.get(`/projects/${projectId}/tasks`),
   getKanbanBoard: (projectId) => apiClient.get(`/projects/${projectId}/kanban`),
   reorderProjectTasks: (projectId, taskIds) => apiClient.put(`/projects/${projectId}/tasks/reorder`, { task_ids: taskIds }),
+  
+  // Create project with tasks from Goal Decomposition workflow
+  createWithTasks: (projectData, tasksData) => apiClient.post('/api/projects/create-with-tasks', {
+    project: projectData,
+    tasks: tasksData
+  })
 };
 
 // Enhanced Tasks API with Sub-task support
