@@ -28,6 +28,7 @@ from supabase_services import (
     SupabaseInsightsService,
     SupabaseSleepReflectionService
 )
+from supabase_client import get_supabase_client
 from notification_service import NotificationService
 from supabase_auth import get_current_active_user, verify_token
 from supabase_auth_endpoints import auth_router
