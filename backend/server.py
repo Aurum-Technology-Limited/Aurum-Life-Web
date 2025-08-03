@@ -377,7 +377,7 @@ async def generate_weekly_review(current_user: User = Depends(get_current_active
         
         # Get minimal context - only alignment data from last 7 days
         alignment_service = AlignmentScoreService()
-        alignment_data = await alignment_service.get_dashboard_data(user_id)
+        alignment_data = await alignment_service.get_alignment_dashboard_data(user_id)
         
         # Get completed projects from last 7 days (minimal context)
         week_ago = datetime.utcnow() - timedelta(days=7)
