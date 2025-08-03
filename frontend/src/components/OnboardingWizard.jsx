@@ -322,13 +322,21 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
       </div>
 
       <div className="flex justify-between">
-        <button
-          onClick={handleBack}
-          className="flex items-center space-x-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={handleBack}
+            className="flex items-center space-x-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back</span>
+          </button>
+          <button
+            onClick={onClose}
+            className="flex items-center space-x-2 px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
+          >
+            <span>Skip Onboarding</span>
+          </button>
+        </div>
         
         <button
           onClick={handleNext}
