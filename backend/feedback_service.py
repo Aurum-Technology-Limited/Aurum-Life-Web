@@ -332,13 +332,12 @@ class FeedbackService:
             )
             
             # Add headers to improve Outlook deliverability
-            message.header = {
-                "X-Priority": "3",  # Normal priority
-                "X-Mailer": "Aurum Life Application",
-                "X-Auto-Response-Suppress": "All",  # Prevents auto-replies
-                "Precedence": "bulk",  # Identifies as transactional
-                "List-Unsubscribe": f"<mailto:{sender_email}?subject=Unsubscribe>",  # Required for bulk emails
-            }
+            from sendgrid.helpers.mail import Header
+            message.add_header(Header("X-Priority", "3"))  # Normal priority
+            message.add_header(Header("X-Mailer", "Aurum Life Application"))
+            message.add_header(Header("X-Auto-Response-Suppress", "All"))  # Prevents auto-replies
+            message.add_header(Header("Precedence", "bulk"))  # Identifies as transactional
+            message.add_header(Header("List-Unsubscribe", f"<mailto:{sender_email}?subject=Unsubscribe>"))  # Required for bulk emails
             
             # Add categories for SendGrid analytics
             message.category = ["feedback", "aurum-life"]
