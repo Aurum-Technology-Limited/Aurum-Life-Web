@@ -576,6 +576,19 @@ const ResponseModal = ({ isOpen, onClose, response, title }) => {
 };
 
 const AICoach = () => {
+  // Defensive check for proper API dependency injection
+  React.useEffect(() => {
+    if (!api || !api.projects || !api.projects.createWithTasks) {
+      console.error('CRITICAL DEPENDENCY INJECTION ERROR: API service not properly injected', { 
+        api: !!api, 
+        projects: !!(api && api.projects), 
+        createWithTasks: !!(api && api.projects && api.projects.createWithTasks) 
+      });
+    } else {
+      console.log('✅ API dependency injection verified successfully');
+    }
+  }, []);
+  
   // Toast hook for success notifications
   const { toast } = useToast();
   
