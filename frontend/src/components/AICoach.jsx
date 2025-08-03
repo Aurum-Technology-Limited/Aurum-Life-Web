@@ -322,11 +322,12 @@ const AICoach = () => {
 
   const loadQuota = async () => {
     try {
-      // TODO: Implement actual quota endpoint
-      // For now, use mock data
-      setQuota({ remaining: 7, total: 10 });
+      const response = await aiCoachAPI.getQuota();
+      setQuota(response.data);
     } catch (err) {
       console.error('Error loading quota:', err);
+      // Use mock data if API fails
+      setQuota({ remaining: 10, total: 10 });
     }
   };
 
