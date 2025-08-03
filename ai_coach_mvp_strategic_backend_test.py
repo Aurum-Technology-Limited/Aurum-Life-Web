@@ -167,7 +167,7 @@ class AiCoachMvpStrategicTester:
                     data = response.json()
                     
                     # Validate response structure
-                    required_fields = ["suggested_project_title", "suggested_tasks"]
+                    required_fields = ["project_name", "template_type", "suggested_tasks", "total_tasks"]
                     missing_fields = [field for field in required_fields if field not in data]
                     
                     if missing_fields:
