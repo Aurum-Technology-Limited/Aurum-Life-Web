@@ -8,6 +8,7 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
   const { user, loading, refreshUser } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false); // Track if onboarding was just completed
 
   // Check onboarding status when user becomes available
   useEffect(() => {
@@ -17,17 +18,18 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
       // Check if user has completed onboarding
       const hasCompletedOnboarding = user.has_completed_onboarding;
       
-      if (!hasCompletedOnboarding) {
+      // Don't override onboarding completion if it was just completed
+      if (!hasCompletedOnboarding && !onboardingCompleted) {
         console.log('🎯 New user detected - showing onboarding');
         setShowOnboarding(true);
       } else {
-        console.log('🏠 Existing user - going to dashboard');
+        console.log('🏠 Existing user or onboarding just completed - going to dashboard');
         setShowOnboarding(false);
       }
       
       setIsCheckingOnboarding(false);
     }
-  }, [user, loading]);
+  }, [user, loading, onboardingCompleted]);
 
   const handleOnboardingComplete = async () => {
     console.log('🎉 Onboarding completed - refreshing user data and navigating to dashboard');
