@@ -55,7 +55,8 @@ from models import (
     ProjectDecompositionResponse,
     TaskWhyStatementResponse,
     FeedbackCreate,
-    FeedbackResponse
+    FeedbackResponse,
+    UserProfileUpdate
 )
 
 ROOT_DIR = Path(__file__).parent
