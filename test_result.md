@@ -123,7 +123,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Add a delete account option within the privacy and security tab that deletes the user and all their associated data"
+user_problem_statement: "The following error appears upon trying to complete the smart onboarding process. Please identify and fix the error so that the user's template selection is successfully populated in their system and they get taken to the dashboard. ERROR: Validation error: Input should be 'Not Started', 'In Progress', 'Completed' or 'On Hold'"
 
 backend:
   - task: "Account Deletion Backend Implementation"
