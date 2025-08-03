@@ -548,7 +548,7 @@ export const aiCoachAPI = {
 
 // Feedback API
 export const feedbackAPI = {
-  submitFeedback: (feedbackData) => apiClient.post('/feedback', feedbackData)
+  submitFeedback: (feedbackData) => apiClient.post('/api/feedback', feedbackData)
 };
 
 // Alignment Score API
