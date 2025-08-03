@@ -400,7 +400,8 @@ class SupabasePillarService:
         """Ensure user exists in auth.users table by creating them via Supabase Auth Admin API"""
         try:
             # Check if user exists in auth.users
-            from supabase_client import supabase
+            from supabase_client import get_supabase_client
+            supabase = get_supabase_client()
             
             # Try to get user from auth.users via admin API
             try:
