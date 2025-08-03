@@ -51,10 +51,13 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
   };
 
   const handleOnboardingComplete = async () => {
-    console.log('🎉 Onboarding completed - refreshing user data and navigating to dashboard');
+    console.log('🎉 Onboarding completed - setting local flag and refreshing user data');
     
-    // Set flag to prevent showing onboarding again during refresh
-    setOnboardingCompleted(true);
+    // Immediately set local completion flag to prevent race conditions
+    if (user?.id) {
+      localStorage.setItem(`onboarding_completed_${user.id}`, 'true');
+    }
+    
     setShowOnboarding(false);
     
     // Refresh user data to get updated onboarding status
