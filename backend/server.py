@@ -1181,10 +1181,17 @@ async def update_project(
 async def delete_project(project_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     """Delete a project"""
     try:
+        # IDOR Protection: Verify user owns this project
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'projects', project_id
+        )
+        
         success = await SupabaseProjectService.delete_project(project_id, str(current_user.id))
         if not success:
             raise HTTPException(status_code=404, detail="Project not found")
         return {"message": "Project deleted successfully"}
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
     except Exception as e:
         logger.error(f"Error deleting project: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
