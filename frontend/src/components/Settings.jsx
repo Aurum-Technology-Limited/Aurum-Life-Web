@@ -37,14 +37,65 @@ const Settings = ({ sectionParams }) => {
         return <NotificationSettings />;
       case 'privacy':
         return (
-          <div className="text-center py-12">
-            <div className="text-gray-400">
-              <ShieldCheckIcon className="h-16 w-16 mx-auto mb-4 text-gray-500" />
-              <h3 className="text-lg font-medium mb-2 text-white">Privacy & Security</h3>
-              <p>Privacy and security settings will be available here in a future update.</p>
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+            <div className="space-y-8">
+              {/* Privacy & Security Header */}
+              <div className="border-b border-gray-700 pb-4">
+                <div className="flex items-center mb-2">
+                  <ShieldCheckIcon className="h-6 w-6 text-yellow-400 mr-2" />
+                  <h2 className="text-xl font-semibold text-white">Privacy & Security</h2>
+                </div>
+                <p className="text-gray-400">
+                  Manage your account security and privacy settings.
+                </p>
+              </div>
+
+              {/* Account Data Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-white">Account Data</h3>
+                <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="text-white font-medium mb-1">Export Data</h4>
+                      <p className="text-gray-400 text-sm mb-3">
+                        Download a copy of your personal data including tasks, projects, journal entries, and preferences.
+                      </p>
+                      <button className="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors text-sm">
+                        Request Data Export
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-red-400">Danger Zone</h3>
+                <div className="bg-red-900/20 border border-red-800 rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="text-red-400 font-medium mb-1">Delete Account</h4>
+                      <p className="text-gray-400 text-sm mb-3">
+                        Permanently delete your account and all associated data. This action cannot be undone.
+                      </p>
+                      <p className="text-red-300 text-xs mb-4 font-medium">
+                        ⚠️ This will delete: All tasks, projects, areas, pillars, journal entries, AI interactions, and personal data.
+                      </p>
+                      <button 
+                        onClick={() => setActiveSubSection('delete-account')}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors text-sm"
+                      >
+                        Delete Account
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
+      case 'delete-account':
+        return <DeleteAccountSection onBack={() => setActiveSubSection('privacy')} />;
       default:
         return <GoalSettings />;
     }
