@@ -16,6 +16,9 @@ import uuid
 from datetime import timedelta, datetime
 from typing import List, Optional, Dict, Any
 
+# Import security middleware
+from security_middleware import SecurityHeadersMiddleware, sanitize_user_input
+
 # Import our models and Supabase services
 from models import *
 from supabase_services import (
