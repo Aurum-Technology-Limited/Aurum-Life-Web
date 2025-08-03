@@ -22,11 +22,11 @@ const DeleteAccountSection = ({ onBack }) => {
     setError('');
 
     try {
-      const response = await api.delete('/auth/account', {
+      const response = await api.auth.deleteAccount({
         confirmation_text: confirmationText
       });
 
-      if (response.success) {
+      if (response.data.success) {
         // Account deleted successfully - logout and redirect
         await logout();
         navigate('/login', { 
