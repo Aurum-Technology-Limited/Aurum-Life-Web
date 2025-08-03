@@ -22,6 +22,7 @@ class User(BaseDocument):
     is_active: bool = True
     has_completed_onboarding: bool = False  # Flag to track onboarding completion
     profile_data: Optional[Dict[str, Any]] = None  # JSON field for additional profile data
+    last_username_change: Optional[datetime] = None  # Track last username change for rate limiting
 
 class UserCreate(BaseModel):
     username: str
