@@ -335,19 +335,34 @@ class FeedbackService:
                 plain_text_content=plain_text_content
             )
             
+            logger.info("Message created successfully")
+            
             # Add headers to improve Outlook deliverability
-            from sendgrid.helpers.mail import Header
-            message.add_header(Header("X-Priority", "3"))  # Normal priority
-            message.add_header(Header("X-Mailer", "Aurum Life Application"))
-            message.add_header(Header("X-Auto-Response-Suppress", "All"))  # Prevents auto-replies
-            message.add_header(Header("Precedence", "bulk"))  # Identifies as transactional
-            message.add_header(Header("List-Unsubscribe", f"<mailto:{sender_email}?subject=Unsubscribe>"))  # Required for bulk emails
+            try:
+                from sendgrid.helpers.mail import Header
+                message.add_header(Header("X-Priority", "3"))  # Normal priority
+                message.add_header(Header("X-Mailer", "Aurum Life Application"))
+                message.add_header(Header("X-Auto-Response-Suppress", "All"))  # Prevents auto-replies
+                message.add_header(Header("Precedence", "bulk"))  # Identifies as transactional
+                message.add_header(Header("List-Unsubscribe", f"<mailto:{sender_email}?subject=Unsubscribe>"))  # Required for bulk emails
+                
+                logger.info("Headers added successfully")
+            except Exception as header_error:
+                logger.warning(f"Could not add headers: {header_error}")
             
             # Add categories for SendGrid analytics
-            message.category = ["feedback", "aurum-life"]
+            try:
+                message.category = ["feedback", "aurum-life"]
+                logger.info("Categories added successfully")
+            except Exception as category_error:
+                logger.warning(f"Could not add categories: {category_error}")
             
             # Set content type explicitly
-            message.content_type = "text/html"
+            try:
+                message.content_type = "text/html"
+                logger.info("Content type set successfully")
+            except Exception as content_error:
+                logger.warning(f"Could not set content type: {content_error}")
             
             logger.info("Sending email via SendGrid...")
             response = client.send(message)
