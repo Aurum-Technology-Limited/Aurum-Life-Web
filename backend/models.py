@@ -13,10 +13,10 @@ class BaseDocument(BaseModel):
 # User models
 class User(BaseDocument):
     email: str
-    username: Optional[str] = None  # Optional to handle legacy data
+    username: str  # Mandatory field
     password_hash: Optional[str] = None  # Optional for Google OAuth users
-    first_name: Optional[str] = None  # Optional to handle legacy data
-    last_name: Optional[str] = None  # Optional to handle legacy data
+    first_name: str  # Mandatory field
+    last_name: str  # Mandatory field
     google_id: Optional[str] = None  # Google OAuth ID
     profile_picture: Optional[str] = None  # URL to profile picture
     is_active: bool = True
