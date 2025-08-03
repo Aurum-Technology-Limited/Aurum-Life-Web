@@ -1024,10 +1024,17 @@ async def update_pillar(
 async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     """Delete a pillar"""
     try:
+        # IDOR Protection: Verify user owns this pillar
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'pillars', pillar_id
+        )
+        
         success = await SupabasePillarService.delete_pillar(pillar_id, str(current_user.id))
         if not success:
             raise HTTPException(status_code=404, detail="Pillar not found")
         return {"message": "Pillar deleted successfully"}
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
     except Exception as e:
         logger.error(f"Error deleting pillar: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
