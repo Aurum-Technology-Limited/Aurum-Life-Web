@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
-import { useNavigate } from 'react-router-dom';
 import { ExclamationTriangleIcon, ArrowLeftIcon, TrashIcon } from '@heroicons/react/outline';
 import api from '../services/api';
 
