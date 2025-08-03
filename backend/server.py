@@ -1644,6 +1644,68 @@ async def set_monthly_goal(
         logger.error(f"Error setting monthly goal: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+# ================================
+# FEEDBACK ENDPOINTS
+# ================================
+
+@api_router.post("/feedback", response_model=dict, status_code=201)
+async def submit_feedback(
+    feedback_data: FeedbackCreate,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Submit user feedback and send email notification"""
+    try:
+        user_id = str(current_user.id)
+        user_email = current_user.email
+        user_name = f"{current_user.first_name} {current_user.last_name}".strip()
+        
+        # Use username or email if name is not available
+        if not user_name:
+            user_name = current_user.username or user_email
+        
+        # Create feedback record and send email
+        feedback_record = await feedback_service.create_feedback(
+            user_id=user_id,
+            user_email=user_email,
+            user_name=user_name,
+            feedback_data=feedback_data
+        )
+        
+        if not feedback_record:
+            logger.error(f"Failed to create feedback record for user {user_id}")
+            raise HTTPException(status_code=500, detail="Failed to submit feedback")
+        
+        # Log successful submission
+        logger.info(f"Feedback submitted by user {user_id} ({user_email}): {feedback_data.category} - {feedback_data.subject}")
+        
+        # Return success response
+        return {
+            "message": "Feedback submitted successfully",
+            "feedback_id": feedback_record['id'],
+            "status": "submitted",
+            "email_sent": feedback_record.get('email_sent', False)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to submit feedback")
+
+@api_router.get("/feedback", response_model=List[dict])
+async def get_user_feedback(
+    limit: int = Query(50, description="Number of feedback entries to retrieve"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Get user's feedback history"""
+    try:
+        user_id = str(current_user.id)
+        feedback_list = await feedback_service.get_user_feedback(user_id, limit)
+        return feedback_list
+    except Exception as e:
+        logger.error(f"Error getting user feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve feedback")
+
 # Include authentication routes under /api
 api_router.include_router(auth_router, prefix="/auth")
 
