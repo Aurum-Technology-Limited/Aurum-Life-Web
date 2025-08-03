@@ -640,7 +640,7 @@ const AICoach = () => {
     return true;
   };
 
-  // Feature 1: Goal Decomposition
+  // Feature 1: Goal Decomposition (Enhanced Interactive Workflow)
   const handleGoalDecomposition = async (goalText) => {
     if (!await checkRateLimit()) return;
     if (quota.remaining <= 0) {
@@ -657,13 +657,10 @@ const AICoach = () => {
       // Update quota after successful request
       await loadQuota();
       
-      setCurrentResponse({
-        suggested_project_title: goalText,
-        suggested_tasks: response.data.suggested_tasks
-      });
-      setResponseTitle('Goal Breakdown');
+      // Store AI response and show interactive editor
+      setAiDecompositionResponse(response.data);
       setGoalModalOpen(false);
-      setResponseModalOpen(true);
+      setEditorModalOpen(true);
       
     } catch (err) {
       if (err.response?.status === 429) {
@@ -676,6 +673,44 @@ const AICoach = () => {
       console.error('Goal decomposition error:', err);
     } finally {
       setGoalLoading(false);
+    }
+  };
+
+  // Save project and tasks to user's system (does NOT consume AI quota)
+  const handleSaveProject = async (projectData, tasksData) => {
+    try {
+      setSaveLoading(true);
+      setError(null);
+
+      const response = await api.projects.createWithTasks(projectData, tasksData);
+
+      if (response.data.success) {
+        // Success! Close editor and show success message
+        setEditorModalOpen(false);
+        setAiDecompositionResponse(null);
+        
+        // Show success response
+        setCurrentResponse({
+          success_message: response.data.message,
+          project_created: response.data.project,
+          tasks_created: response.data.tasks
+        });
+        setResponseTitle('Project Created Successfully!');
+        setResponseModalOpen(true);
+        
+        // Optional: Navigate to projects section to see the new project
+        // onSectionChange && onSectionChange('projects');
+      }
+      
+    } catch (err) {
+      if (err.response?.status === 422) {
+        setError('Please provide a project title.');
+      } else {
+        setError('Failed to save project. Please try again.');
+      }
+      console.error('Save project error:', err);
+    } finally {
+      setSaveLoading(false);
     }
   };
 
