@@ -785,8 +785,8 @@ const AICoach = () => {
         throw new Error('Project creation API not available. Please refresh the page and try again.');
       }
 
-      console.log('✅ All API dependencies verified. Creating project with tasks...', { projectData, tasksData });
-      const response = await api.projects.createWithTasks(projectData, tasksData);
+      console.log('✅ All API dependencies verified. Creating project with tasks...');
+      const response = await safeCreateProjectWithTasks(projectData, tasksData);
 
       if (response.data.success) {
         // Success! Remove any error states and show success feedback
