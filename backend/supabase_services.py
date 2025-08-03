@@ -635,8 +635,8 @@ class SupabaseAreaService:
     async def create_area(user_id: str, area_data: AreaCreate) -> Dict[str, Any]:
         """Create a new area"""
         try:
-            # Ensure user exists in users table (fix for foreign key constraint)
-            await SupabasePillarService._ensure_user_exists_in_users_table(user_id)
+            # Ensure user exists in auth.users table (fix for foreign key constraint)
+            await SupabasePillarService._ensure_user_exists_in_auth_users(user_id)
             
             # Validate pillar_id exists if provided
             if area_data.pillar_id:
