@@ -19,6 +19,16 @@ from typing import List, Optional, Dict, Any
 # Import security middleware
 from security_middleware import SecurityHeadersMiddleware, CSRFProtectionMiddleware, sanitize_user_input, IDORProtection
 
+# Import ultra-performance services
+from ultra_performance_services import (
+    UltraPerformancePillarService,
+    UltraPerformanceAreaService, 
+    UltraPerformanceProjectService,
+    UltraPerformanceDashboardService,
+    UltraPerformanceInsightsService,
+    get_ultra_performance_stats
+)
+
 # Import our models and Supabase services
 from models import *
 from supabase_services import (
