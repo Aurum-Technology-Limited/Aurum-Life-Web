@@ -165,6 +165,10 @@ class ProfileUpdateAPITester:
         token_data = result['data']
         self.auth_token = token_data.get('access_token')
         
+        # Debug: Print token info
+        print(f"DEBUG: Token received: {self.auth_token[:50] if self.auth_token else 'None'}...")
+        print(f"DEBUG: Full token data: {token_data}")
+        
         # Verify token works
         result = self.make_request('GET', '/auth/me', use_auth=True)
         self.log_test(
@@ -172,6 +176,9 @@ class ProfileUpdateAPITester:
             result['success'],
             f"Token validated successfully, user: {result['data'].get('email', 'Unknown')}" if result['success'] else f"Token validation failed: {result.get('error', 'Unknown error')}"
         )
+        
+        # Debug: Print auth/me response
+        print(f"DEBUG: Auth/me response: {result}")
         
         return result['success']
 
