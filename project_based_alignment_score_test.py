@@ -53,8 +53,8 @@ from datetime import datetime
 from typing import Dict, List, Any
 import time
 
-# Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://f4646b2e-0ec9-404e-813c-ae5666a33561.preview.emergentagent.com/api"
+# Configuration - Using localhost since external URL is not accessible
+BACKEND_URL = "http://localhost:8001/api"
 
 class ProjectBasedAlignmentScoreTestSuite:
     def __init__(self):
