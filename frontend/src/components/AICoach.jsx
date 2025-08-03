@@ -576,6 +576,9 @@ const ResponseModal = ({ isOpen, onClose, response, title }) => {
 };
 
 const AICoach = () => {
+  // Toast hook for success notifications
+  const { toast } = useToast();
+  
   // State management for the MVP AI Coach
   const [quota, setQuota] = useState({ remaining: 10, total: 10 });
   const [rateLimited, setRateLimited] = useState(false);
