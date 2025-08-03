@@ -288,6 +288,49 @@ async def update_user_profile(
         logger.error(f"Error updating profile for user {current_user.id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to update profile")
 
+@api_router.delete("/auth/account", response_model=dict)
+async def delete_user_account(
+    confirmation: dict,
+    request: Request,
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Delete user account and all associated data - IRREVERSIBLE"""
+    try:
+        # Check confirmation text
+        if not confirmation.get('confirmation_text') or confirmation.get('confirmation_text') != 'DELETE':
+            raise HTTPException(
+                status_code=400, 
+                detail="Account deletion requires exact confirmation text 'DELETE'"
+            )
+        
+        # Get client IP address for audit logging
+        client_ip = request.client.host if request.client else None
+        user_id = str(current_user.id)
+        user_email = current_user.email
+        
+        logger.warning(f"🚨 ACCOUNT DELETION INITIATED - User: {user_email} (ID: {user_id}) from IP: {client_ip}")
+        
+        # Delete all user data using the service
+        deletion_result = await SupabaseUserService.delete_user_account(user_id, user_email, client_ip)
+        
+        if not deletion_result.get('success'):
+            logger.error(f"❌ Account deletion failed for user {user_email}: {deletion_result.get('error')}")
+            raise HTTPException(status_code=500, detail="Failed to delete account")
+        
+        logger.warning(f"✅ ACCOUNT DELETION COMPLETED - User: {user_email} (ID: {user_id}) - All data removed")
+        
+        return {
+            "success": True,
+            "message": "Account successfully deleted. All your data has been permanently removed.",
+            "deleted_at": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting account for user {current_user.id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete account")
+
 # ================================
 # AI COACH MVP FEATURES ENDPOINTS WITH SAFEGUARDS
 # ================================
