@@ -565,15 +565,18 @@ const AICoach = () => {
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [obstacleModalOpen, setObstacleModalOpen] = useState(false);
   const [responseModalOpen, setResponseModalOpen] = useState(false);
+  const [editorModalOpen, setEditorModalOpen] = useState(false);  // New editor modal
   
   // Loading states for each feature
   const [goalLoading, setGoalLoading] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [obstacleLoading, setObstacleLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);  // New save loading state
   
   // Response data
   const [currentResponse, setCurrentResponse] = useState(null);
   const [responseTitle, setResponseTitle] = useState('');
+  const [aiDecompositionResponse, setAiDecompositionResponse] = useState(null);  // New state for AI response
   
   // Projects data for obstacle analysis
   const [projects, setProjects] = useState([]);
