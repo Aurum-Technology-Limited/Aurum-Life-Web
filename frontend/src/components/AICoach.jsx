@@ -582,17 +582,35 @@ const ResponseModal = ({ isOpen, onClose, response, title }) => {
 };
 
 const AICoach = () => {
-  // Defensive check for proper API dependency injection
+  // Enhanced defensive check for proper API dependency injection
   React.useEffect(() => {
-    if (!api || !api.projects || !api.projects.createWithTasks) {
-      console.error('CRITICAL DEPENDENCY INJECTION ERROR: API service not properly injected', { 
-        api: !!api, 
-        projects: !!(api && api.projects), 
-        createWithTasks: !!(api && api.projects && api.projects.createWithTasks) 
-      });
-    } else {
-      console.log('✅ API dependency injection verified successfully');
+    console.log('🔍 Runtime API dependency verification:', {
+      apiExists: !!api,
+      apiType: typeof api,
+      projectsExists: !!(api && api.projects),
+      projectsType: typeof (api && api.projects),
+      createWithTasksExists: !!(api && api.projects && api.projects.createWithTasks),
+      createWithTasksType: typeof (api && api.projects && api.projects.createWithTasks),
+      allProjectsMethods: api && api.projects ? Object.keys(api.projects) : null
+    });
+
+    if (!api) {
+      console.error('🚨 CRITICAL DEPENDENCY INJECTION ERROR: API service is undefined');
+      return;
     }
+
+    if (!api.projects) {
+      console.error('🚨 CRITICAL DEPENDENCY INJECTION ERROR: API.projects is undefined');
+      return;
+    }
+
+    if (!api.projects.createWithTasks) {
+      console.error('🚨 CRITICAL DEPENDENCY INJECTION ERROR: API.projects.createWithTasks is undefined');
+      console.error('Available methods:', Object.keys(api.projects));
+      return;
+    }
+
+    console.log('✅ API dependency injection verified successfully - All required methods available');
   }, []);
   
   // Toast hook for success notifications
