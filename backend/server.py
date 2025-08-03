@@ -1086,8 +1086,22 @@ async def update_area(
 ):
     """Update an area"""
     try:
+        # IDOR Protection: Verify user owns this area
+        await IDORProtection.verify_ownership_or_404(
+            str(current_user.id), 'areas', area_id
+        )
+        
+        # Sanitize area data to prevent XSS
+        sanitized_data = sanitize_user_input(area_data.dict(), model_type="default")
+        if 'name' in sanitized_data:
+            area_data.name = sanitized_data["name"]
+        if 'description' in sanitized_data:
+            area_data.description = sanitized_data["description"]
+        
         result = await SupabaseAreaService.update_area(area_id, str(current_user.id), area_data)
         return result
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
