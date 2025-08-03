@@ -396,7 +396,7 @@ async def generate_structured_project_breakdown(user_id: str, request: ProjectDe
             "description": f"A comprehensive project to achieve: {goal_name}",
             "area_id": suggested_area_id,
             "priority": "medium",
-            "status": "Planning"
+            "status": "Not Started"
         },
         "suggested_tasks": suggested_tasks,
         "available_areas": areas,
