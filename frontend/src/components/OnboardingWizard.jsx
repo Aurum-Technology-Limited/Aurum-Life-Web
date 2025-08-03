@@ -246,7 +246,13 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
         </div>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center space-x-4">
+        <button
+          onClick={onClose}
+          className="flex items-center space-x-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+        >
+          <span>Skip Onboarding</span>
+        </button>
         <button
           onClick={handleNext}
           className="flex items-center space-x-2 px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg transition-colors"
