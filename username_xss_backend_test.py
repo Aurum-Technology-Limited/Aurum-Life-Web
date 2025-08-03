@@ -195,6 +195,15 @@ class UsernameRateLimitXSSTestSuite:
         
         result = self.make_request('PUT', '/auth/profile', data=profile_data, use_auth=True)
         
+        # Check if this is the database schema issue
+        if result['status_code'] == 500 and 'last_username_change' in str(result.get('data', {})):
+            self.log_test(
+                "FIRST USERNAME CHANGE - DATABASE SCHEMA ISSUE",
+                False,
+                "Database schema missing 'last_username_change' field - this is the root cause of the 500 errors"
+            )
+            return False
+        
         success = result['success'] and result['status_code'] == 200
         self.log_test(
             "FIRST USERNAME CHANGE",
