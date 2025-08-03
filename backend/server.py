@@ -2210,6 +2210,11 @@ async def submit_feedback(
         if not user_name:
             user_name = current_user.username or user_email
         
+        # Sanitize feedback data to prevent XSS
+        sanitized_data = sanitize_user_input(feedback_data.dict(), model_type="feedback")
+        feedback_data.subject = sanitized_data["subject"]
+        feedback_data.message = sanitized_data["message"]
+        
         # Create feedback record and send email
         feedback_record = await feedback_service.create_feedback(
             user_id=user_id,
