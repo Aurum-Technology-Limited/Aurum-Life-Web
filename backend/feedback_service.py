@@ -306,7 +306,7 @@ class FeedbackService:
 
     def _send_email(self, to: str, subject: str, html_content: str, plain_text_content: Optional[str] = None) -> bool:
         """
-        Send email via SendGrid or mock for development
+        Send email via SendGrid with Outlook-optimized settings
         """
         api_key = os.getenv('SENDGRID_API_KEY')
         sender_email = os.getenv('SENDER_EMAIL')
@@ -320,6 +320,8 @@ class FeedbackService:
         
         try:
             client = SendGridAPIClient(api_key)
+            
+            # Create message with Outlook-friendly settings
             message = Mail(
                 from_email=sender_email,
                 to_emails=to,
@@ -328,13 +330,29 @@ class FeedbackService:
                 plain_text_content=plain_text_content
             )
             
+            # Add headers to improve Outlook deliverability
+            message.header = {
+                "X-Priority": "3",  # Normal priority
+                "X-Mailer": "Aurum Life Application",
+                "X-Auto-Response-Suppress": "All",  # Prevents auto-replies
+                "Precedence": "bulk",  # Identifies as transactional
+                "List-Unsubscribe": f"<mailto:{sender_email}?subject=Unsubscribe>",  # Required for bulk emails
+            }
+            
+            # Add categories for SendGrid analytics
+            message.category = ["feedback", "aurum-life"]
+            
+            # Set content type explicitly
+            message.content_type = "text/html"
+            
             response = client.send(message)
             
             if response.status_code == 202:
-                logger.info(f"Feedback email sent successfully to {to}")
+                logger.info(f"Feedback email sent successfully to {to} with Outlook optimization")
                 return True
             else:
                 logger.error(f"SendGrid returned status {response.status_code}")
+                logger.error(f"Response body: {response.body}")
                 return False
                 
         except Exception as e:
