@@ -9,6 +9,23 @@ if (!api) {
   throw new Error('API service dependency injection failed');
 }
 
+// Bulletproof wrapper function to prevent any createProject vs createWithTasks confusion
+const safeCreateProjectWithTasks = async (projectData, tasksData) => {
+  // Triple-check the method exists
+  if (!api || !api.projects) {
+    throw new Error('API or projects service not available');
+  }
+  
+  // Check for the correct method name
+  if (typeof api.projects.createWithTasks !== 'function') {
+    console.error('Available projects methods:', Object.keys(api.projects));
+    throw new Error('createWithTasks method not available on projects API');
+  }
+  
+  // Call the method safely
+  return await api.projects.createWithTasks(projectData, tasksData);
+};
+
 const FeatureCard = ({ icon: Icon, title, description, buttonText, onClick, disabled = false, isLoading = false }) => (
   <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30 hover:border-yellow-400/30 transition-all duration-300 group">
     <div className="flex items-center space-x-3 mb-4">
