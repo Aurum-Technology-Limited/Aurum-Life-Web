@@ -281,8 +281,8 @@ async def get_current_user_profile(request: Request):
                     id=user_profile['id'],
                     username=user_profile.get('username', ''),
                     email='',  # We'll need to get this from auth or legacy table
-                    first_name=user_profile.get('first_name', ''),
-                    last_name=user_profile.get('last_name', ''),
+                    first_name=user_profile.get('first_name') or '',
+                    last_name=user_profile.get('last_name') or '',
                     is_active=user_profile.get('is_active', True),
                     has_completed_onboarding=has_completed_onboarding,
                     created_at=user_profile.get('created_at', '2025-01-01T00:00:00')
