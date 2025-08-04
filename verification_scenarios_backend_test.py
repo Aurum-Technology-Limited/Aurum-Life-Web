@@ -551,7 +551,9 @@ class VerificationScenariosTestSuite:
             '/dashboard/stats',
             '/dashboard',
             '/insights',
-            '/alignment/insights'
+            '/alignment/insights',
+            '/alignment/weekly-score',
+            '/alignment/monthly-score'
         ]
         
         calculation_endpoint_found = False
