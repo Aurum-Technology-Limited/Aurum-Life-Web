@@ -101,7 +101,7 @@ const ProjectCard = memo(({ project, onEdit, onDelete, onViewTasks, onUpdateStat
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-400">
           <span className="hover:text-yellow-400 transition-colors">
-            {project.tasks ? `${project.tasks.length} tasks` : '0 tasks'}
+            {project.task_count ? `${project.task_count} tasks` : '0 tasks'}
           </span>
         </div>
         
