@@ -31,7 +31,7 @@ class AuthenticationFixesTester:
         self.auth_token = None
         # Test credentials as specified in review request
         self.test_user_email = "marc.alleyne@aurumtechnologyltd.com"
-        self.correct_password = "password"
+        self.correct_password = "password123"
         self.wrong_password = "wrongpassword123"
         
     def log_test(self, test_name: str, success: bool, message: str = "", data: Any = None):
