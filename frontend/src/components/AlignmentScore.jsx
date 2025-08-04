@@ -60,20 +60,24 @@ const AlignmentScore = ({ onSectionChange }) => {
   };
 
   const handleSetGoal = () => {
-    // Use window.location for direct navigation to settings page
+    console.log('🎯 AlignmentScore: Navigating to Goals settings...');
+    
+    // Use the provided onSectionChange callback for proper navigation
     try {
-      // First try the direct route approach
       if (onSectionChange) {
+        console.log('✅ Using onSectionChange to navigate to settings/goals');
         onSectionChange('settings', { subSection: 'goals' });
       } else {
-        // Fallback: use window location hash navigation 
-        window.location.hash = '#/settings/goals';
-        // Or try direct path navigation
-        window.location.pathname = '/settings/goals';
+        console.warn('⚠️ onSectionChange not available, using fallback navigation');
+        // Fallback approaches
+        if (window.location.hash) {
+          window.location.hash = '#/settings/goals';
+        } else {
+          window.location.pathname = '/settings/goals';
+        }
       }
     } catch (error) {
-      console.error('Navigation failed:', error);
-      // Last resort: alert the user
+      console.error('🚨 Navigation failed:', error);
       alert('Please navigate to Settings > Goals to set your monthly goal');
     }
   };
