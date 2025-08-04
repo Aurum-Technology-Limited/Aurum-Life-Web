@@ -388,7 +388,8 @@ class UltraPerformanceDashboardService:
                 if not user_data:
                     # Second fallback: try to get from users table (for legacy users)
                     try:
-                        from supabase_client import supabase
+                        from supabase_client import get_supabase_client
+                        supabase = get_supabase_client()
                         response = supabase.table('users').select('*').eq('id', user_id).single().execute()
                         user_data = response.data
                     except Exception as e:
