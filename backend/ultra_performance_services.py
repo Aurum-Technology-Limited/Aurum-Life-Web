@@ -369,7 +369,7 @@ class UltraPerformanceDashboardService:
             if not user:
                 # Fallback: try to get user data from regular service
                 from supabase_services import SupabaseUserService
-                user_data = await SupabaseUserService.get_user_by_id(user_id)
+                user_data = await SupabaseUserService.get_user_profile(user_id)
                 if not user_data:
                     raise ValueError("User not found")
                 user = user_data
