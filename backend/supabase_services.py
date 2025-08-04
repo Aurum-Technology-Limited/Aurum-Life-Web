@@ -715,9 +715,10 @@ class SupabaseAreaService:
             area_ids = [area['id'] for area in areas]
             pillar_ids = [area['pillar_id'] for area in areas if area.get('pillar_id')]
             
-            # Batch fetch all projects for all areas in one query (if needed)
+            # Batch fetch all projects for all areas (needed for counts)
             projects_by_area = {}
-            if include_projects and area_ids:
+            project_ids = []
+            if area_ids:
                 projects_response = supabase.table('projects').select('*').in_('area_id', area_ids).execute()
                 all_projects = projects_response.data or []
                 
@@ -727,6 +728,20 @@ class SupabaseAreaService:
                     if area_id not in projects_by_area:
                         projects_by_area[area_id] = []
                     projects_by_area[area_id].append(project)
+                    project_ids.append(project['id'])
+            
+            # Batch fetch tasks for all projects (needed for counts)
+            tasks_by_project = {}
+            if project_ids:
+                tasks_response = supabase.table('tasks').select('*').in_('project_id', project_ids).execute()
+                all_tasks = tasks_response.data or []
+                
+                for task in all_tasks:
+                    project_id = task.get('project_id')
+                    if project_id:
+                        if project_id not in tasks_by_project:
+                            tasks_by_project[project_id] = []
+                        tasks_by_project[project_id].append(task)
             
             # Batch fetch all pillar names in one query (if needed)
             pillars_by_id = {}
