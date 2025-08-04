@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
 import Login from './Login';
 import OnboardingWizard from './OnboardingWizard';
-import api from '../services/api';
+import { api } from '../services/api';
 
 const AppWrapper = ({ children, onNavigateToSection }) => {
   const { user, loading, refreshUser } = useAuth();
