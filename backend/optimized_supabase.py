@@ -233,7 +233,6 @@ class OptimizedSupabaseClient:
             logger.error(f"Batch insert error: {e}")
             raise
     
-    @track_query_performance("batch_update")
     async def batch_update(self, table: str, updates: List[Dict]) -> List[Dict]:
         """
         Optimized batch update operation
