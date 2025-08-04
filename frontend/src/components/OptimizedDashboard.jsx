@@ -162,8 +162,8 @@ const OptimizedDashboard = ({ onSectionChange }) => {
       
       // Check for existing data across all main entities using ULTRA-PERFORMANCE endpoints
       const [pillarsResponse, areasResponse, projectsResponse] = await Promise.all([
-        api.get('/ultra/pillars'),
-        api.get('/ultra/areas'), 
+        api.get('/ultra/pillars?include_areas=true'), // Include areas for consistency with Pillars component
+        api.get('/ultra/areas?include_projects=true'), // Include projects for consistency with Areas component
         api.get('/ultra/projects')
       ]);
 
