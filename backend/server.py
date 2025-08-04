@@ -2624,7 +2624,7 @@ async def get_ultra_performance_areas(
     """Ultra-high performance area retrieval - Target: <120ms"""
     try:
         user_id = str(current_user.id)
-        logger.info(f"🚀 Ultra-performance areas request for user: {user_id}")
+        logger.info(f"🚀 Ultra-performance areas request for user: {user_id}, include_projects={include_projects}, include_archived={include_archived}")
         
         areas = await UltraPerformanceAreaService.get_user_areas(
             user_id, include_projects, include_archived
