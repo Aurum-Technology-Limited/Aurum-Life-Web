@@ -337,7 +337,23 @@ class UltraPerformanceProjectService:
         
         # Instant overdue check
         if project_response.deadline and project_response.status != "Completed":
-            project_response.is_overdue = project_response.deadline < datetime.utcnow()
+            try:
+                # Handle timezone-aware vs timezone-naive datetime comparison
+                now = datetime.utcnow()
+                deadline = project_response.deadline
+                
+                # If deadline is timezone-aware, make now timezone-aware too
+                if hasattr(deadline, 'tzinfo') and deadline.tzinfo is not None:
+                    from datetime import timezone
+                    now = now.replace(tzinfo=timezone.utc)
+                # If deadline is timezone-naive but now is timezone-aware, make deadline timezone-aware
+                elif hasattr(now, 'tzinfo') and now.tzinfo is not None:
+                    deadline = deadline.replace(tzinfo=timezone.utc) if deadline.tzinfo is None else deadline
+                
+                project_response.is_overdue = deadline < now
+            except Exception as e:
+                logger.warning(f"Error comparing deadline dates: {e}")
+                project_response.is_overdue = False
         
         return project_response
 
