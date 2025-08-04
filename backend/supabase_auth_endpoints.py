@@ -376,31 +376,35 @@ async def get_current_user_profile(request: Request):
                 created_at=user_profile.get('created_at', '2025-01-01T00:00:00')
             )
         
-        # Fallback: try to get user from legacy users table  
-        try:
-            legacy_user = await supabase_manager.find_document("users", {"id": user_id})
-            logger.info(f"🔍 LEGACY USERS QUERY: SELECT * FROM users WHERE id = '{user_id}'")
-            
-            if legacy_user:
-                logger.info(f"✅ Found user in legacy users table: {legacy_user.get('username')} (ID: {legacy_user.get('id')})")
-                # Map level field to has_completed_onboarding (level 2 = completed, level 1 = not completed)
-                level = legacy_user.get('level', 1)
-                has_completed_onboarding = level >= 2
+        # Fallback: try to get user from legacy users table if not found above 
+        if not legacy_user and not user_profile:
+            try:
+                legacy_user = await supabase_manager.find_document("users", {"id": user_id})
+                logger.info(f"🔍 LEGACY USERS QUERY: SELECT * FROM users WHERE id = '{user_id}'")
                 
-                return UserResponse(
-                    id=legacy_user['id'],
-                    username=legacy_user.get('username') or '',
-                    email=legacy_user.get('email', ''),
-                    first_name=legacy_user.get('first_name') or '',
-                    last_name=legacy_user.get('last_name') or '',
-                    is_active=legacy_user.get('is_active', True),
-                    has_completed_onboarding=has_completed_onboarding,
-                    created_at=legacy_user.get('created_at')
-                )
-            else:
-                logger.info(f"❌ No user found in legacy users table for ID: {user_id}")
-        except Exception as legacy_lookup_error:
-            logger.error(f"Legacy user lookup failed: {legacy_lookup_error}")
+                if legacy_user:
+                    logger.info(f"✅ Found user in legacy users table: {legacy_user.get('username')} (ID: {legacy_user.get('id')})")
+                else:
+                    logger.info(f"❌ No user found in legacy users table for ID: {user_id}")
+            except Exception as legacy_lookup_error:
+                logger.error(f"Legacy user lookup failed: {legacy_lookup_error}")
+        
+        # Return legacy user if found
+        if legacy_user:
+            # Map level field to has_completed_onboarding (level 2 = completed, level 1 = not completed)
+            level = legacy_user.get('level', 1)
+            has_completed_onboarding = level >= 2
+            
+            return UserResponse(
+                id=legacy_user['id'],
+                username=legacy_user.get('username') or '',
+                email=legacy_user.get('email', ''),
+                first_name=legacy_user.get('first_name') or '',
+                last_name=legacy_user.get('last_name') or '',
+                is_active=legacy_user.get('is_active', True),
+                has_completed_onboarding=has_completed_onboarding,
+                created_at=legacy_user.get('created_at')
+            )
         
         # Fallback to user_profiles table
         try:
