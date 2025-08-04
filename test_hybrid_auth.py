@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://1b0a62f2-f882-476f-afb6-6747b2b238a1.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://51a61c8b-3644-464b-a47b-b402cddf7d0a.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def create_test_user_and_verify_auth():
