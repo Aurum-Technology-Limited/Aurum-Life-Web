@@ -61,7 +61,7 @@ const DeleteAccountSection = ({ onBack }) => {
         {/* Warning Content */}
         <div className="bg-red-900/20 border border-red-800 rounded-lg p-6">
           <div className="flex items-start space-x-3">
-            <ExclamationTriangleIcon className="h-8 w-8 text-red-400 flex-shrink-0 mt-0.5" />
+            <ExclamationIcon className="h-8 w-8 text-red-400 flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="text-red-400 font-semibold text-lg mb-2">
                 This action cannot be undone
