@@ -374,7 +374,8 @@ class UltraPerformanceDashboardService:
                     raise ValueError("User not found")
                 user = user_data
             
-            user_obj = User(**user)
+            # Don't create User object, just use the profile data directly
+            user_obj = user
             
             # Ultra-fast stats calculation with list comprehensions
             stats_data = {
