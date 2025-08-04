@@ -188,10 +188,16 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     ? allAreas.filter(area => area.pillar_id === activePillarId)
     : allAreas;
   
+  // Get basic pillars data for filtering (separate from main pillars page)
   const { 
     data: pillars = [], 
     isLoading: pillarsLoading 
-  } = usePillarsQuery(false, false, false); // Don't include sub-pillars or areas
+  } = useQuery({
+    queryKey: ['pillars', 'basic'], // Different query key to avoid cache conflicts
+    queryFn: () => pillarsAPI.getPillars(false, false, false), // Basic pillars without counts
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
   
   // Create mutations for area operations
   const updateAreaMutation = useMutation({
