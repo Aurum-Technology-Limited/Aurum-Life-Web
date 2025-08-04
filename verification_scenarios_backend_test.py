@@ -197,15 +197,9 @@ class VerificationScenariosTestSuite:
                 print("\n--- Step 2: Test Smart Onboarding Template Application ---")
                 
                 # Check if complete-onboarding endpoint exists
-                onboarding_data = {
-                    "template_type": "professional",
-                    "preferences": {
-                        "focus_areas": ["career", "health", "learning"]
-                    }
-                }
+                onboarding_data = {}  # The endpoint doesn't expect any data
                 
                 headers = {"Authorization": f"Bearer {new_user_token}"}
-                onboarding_result = self.make_request('POST', '/auth/complete-onboarding', data=onboarding_data, use_auth=False)
                 
                 # Manually set auth header for this request
                 url = f"{self.base_url}/auth/complete-onboarding"
