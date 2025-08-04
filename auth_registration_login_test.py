@@ -453,10 +453,10 @@ class AuthRegistrationLoginTester:
         error_tests_passed = 0
         total_error_tests = 0
         
-        # Test 1: Duplicate registration
+        # Test 1: Duplicate registration (using existing user)
         total_error_tests += 1
         duplicate_registration_data = {
-            "email": self.test_user_email,  # Same email as already registered
+            "email": self.test_user_email,  # Existing user email
             "password": "differentpassword",
             "first_name": "Different",
             "last_name": "User",
