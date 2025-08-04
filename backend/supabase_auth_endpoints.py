@@ -345,17 +345,26 @@ async def get_current_user_profile(request: Request):
         # Method 2: If not found by ID or mismatch detected, try to find by email
         if not user_profile and user_email:
             try:
-                # Try to find user profile by email
-                user_profile = await supabase_manager.find_document("user_profiles", {"email": user_email})
-                if not user_profile:
-                    # Also try legacy users table by email
-                    legacy_user = await supabase_manager.find_document("users", {"email": user_email})
-                    
                 logger.info(f"🔍 EMAIL-BASED LOOKUP: Looking for email {user_email}")
-                if user_profile:
-                    logger.info(f"✅ Found user profile by email: {user_profile.get('username')} (ID: {user_profile.get('id')})")
-                elif legacy_user:
+                
+                # Try legacy users table by email (user_profiles doesn't have email column)
+                legacy_user = await supabase_manager.find_document("users", {"email": user_email})
+                
+                if legacy_user:
                     logger.info(f"✅ Found legacy user by email: {legacy_user.get('username')} (ID: {legacy_user.get('id')})")
+                    
+                    # Also check if there's a corresponding user_profiles record with the correct ID
+                    try:
+                        correct_profile = await supabase_manager.find_document("user_profiles", {"id": legacy_user['id']})
+                        if correct_profile:
+                            logger.info(f"✅ Found corresponding user_profiles record: {correct_profile.get('username')} (ID: {correct_profile.get('id')})")
+                            user_profile = correct_profile
+                        else:
+                            logger.info(f"⚠️ No user_profiles record found for correct user ID: {legacy_user['id']}")
+                    except Exception as profile_lookup_error:
+                        logger.error(f"Failed to lookup user_profiles by correct ID: {profile_lookup_error}")
+                else:
+                    logger.info(f"❌ No user found by email {user_email}")
             except Exception as e:
                 logger.error(f"Email-based user lookup failed: {e}")
         
