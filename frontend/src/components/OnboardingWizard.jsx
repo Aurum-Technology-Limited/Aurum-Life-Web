@@ -40,6 +40,12 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
   ];
 
   const applyTemplate = async (templateData) => {
+    // Prevent race conditions - return early if already applying
+    if (isApplying) {
+      console.log('🚫 Template application already in progress, ignoring duplicate call');
+      return;
+    }
+    
     try {
       setIsApplying(true);
       setError('');
