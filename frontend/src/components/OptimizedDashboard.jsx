@@ -200,7 +200,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
       setIsLoading(true); // Set explicit loading state
       setError('');
       
-      const response = await fixedAPI.getDashboard();
+      const response = await fixedAPI.getUltraDashboard();
       setDashboardData(response.data);
       console.log('🏠 Dashboard loaded successfully');
     } catch (err) {
