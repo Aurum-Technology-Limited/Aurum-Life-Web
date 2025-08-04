@@ -202,25 +202,16 @@ class UltraPerformanceAreaService:
             areas.sort(key=lambda x: x.get("sort_order", 0))
             
             if include_projects:
-                logger.info(f"🔍 Building areas WITH projects calculation for user {user_id}")
                 pillars = all_data['pillars']
                 projects = all_data['projects']
                 tasks = all_data['tasks']
                 
-                logger.info(f"🔍 Raw data counts: {len(areas)} areas, {len(projects)} projects, {len(tasks)} tasks")
-                
-                area_responses = [
+                return [
                     UltraPerformanceAreaService._build_area_response_ultra_fast(
                         area, projects, tasks, include_projects=True, pillars=pillars
                     )
                     for area in areas
                 ]
-                
-                # Log the calculated counts for debugging
-                for ar in area_responses:
-                    logger.info(f"🔍 Area '{ar.name}': project_count={ar.project_count}, completed_project_count={ar.completed_project_count}, total_task_count={ar.total_task_count}")
-                
-                return area_responses
             else:
                 return [AreaResponse(**area) for area in areas]
                 
