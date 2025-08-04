@@ -554,7 +554,10 @@ class VerificationScenariosTestSuite:
         calculation_endpoints = [
             '/alignment/calculate',
             '/alignment/score',
-            '/dashboard/stats'
+            '/dashboard/stats',
+            '/dashboard',
+            '/insights',
+            '/alignment/insights'
         ]
         
         calculation_endpoint_found = False
