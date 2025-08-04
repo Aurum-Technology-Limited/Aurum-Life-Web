@@ -386,7 +386,14 @@ class UltraPerformanceDashboardService:
                 from supabase_services import SupabaseUserService
                 user_data = await SupabaseUserService.get_user_profile(user_id)
                 if not user_data:
-                    raise ValueError("User not found")
+                    # Second fallback: try to get from users table (for legacy users)
+                    try:
+                        from supabase_client import supabase
+                        response = supabase.table('users').select('*').eq('id', user_id).single().execute()
+                        user_data = response.data
+                    except Exception as e:
+                        logger.error(f"Failed to get user from users table: {e}")
+                        raise ValueError("User not found")
                 user = user_data
             
             # Create proper User object with required fields
