@@ -52,7 +52,7 @@ const DeleteAccountSection = ({ onBack }) => {
               <ArrowLeftIcon className="h-5 w-5 text-gray-400" />
             </button>
             <div className="flex items-center">
-              <ExclamationTriangleIcon className="h-6 w-6 text-red-400 mr-2" />
+              <ExclamationIcon className="h-6 w-6 text-red-400 mr-2" />
               <h2 className="text-xl font-semibold text-white">Delete Account</h2>
             </div>
           </div>
