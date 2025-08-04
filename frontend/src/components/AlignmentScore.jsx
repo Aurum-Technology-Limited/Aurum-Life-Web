@@ -224,6 +224,17 @@ const AlignmentScore = ({ onSectionChange }) => {
                 <span>{alignmentData.monthly_goal} goal</span>
               </div>
             </div>
+            
+            {/* Update Goal Button */}
+            <div className="text-center pt-2">
+              <button
+                onClick={handleSetGoal}
+                className="inline-flex items-center space-x-2 px-3 py-1.5 bg-gray-700/50 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-600/50 hover:text-yellow-400 transition-colors text-sm"
+              >
+                <Settings className="w-3 h-3" />
+                <span>Update Goal</span>
+              </button>
+            </div>
           </>
         ) : (
           /* Call-to-Action for Setting Goal or New User Message */
