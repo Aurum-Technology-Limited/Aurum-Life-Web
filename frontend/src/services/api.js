@@ -138,7 +138,7 @@ export const pillarsAPI = {
       const startTime = Date.now();
       const response = await apiClient.get('/ultra/pillars', {
         params: {
-          include_sub_pillars: includeSubPillars,
+          // Ultra endpoint only supports include_areas and include_archived
           include_areas: includeAreas,
           include_archived: includeArchived
         }
@@ -148,7 +148,7 @@ export const pillarsAPI = {
       return response;
     } catch (error) {
       console.warn('⚠️ Ultra pillars failed, falling back to regular endpoint:', error.message);
-      // Fallback to regular endpoint
+      // Fallback to regular endpoint with all parameters
       return apiClient.get('/pillars', {
         params: {
           include_sub_pillars: includeSubPillars,
