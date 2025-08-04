@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import {Plus, Edit2, Trash2, AlertCircle, X, Save, Layers, Archive, ArchiveRestore, Eye, EyeOff, Mountain} from 'lucide-react';
-import { areasAPI, api } from '../services/api';
+import { areasAPI, api, pillarsAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import {useAreasQuery, usePillarsQuery} from '../hooks/useQueries';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
