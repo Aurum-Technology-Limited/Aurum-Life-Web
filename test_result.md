@@ -4348,7 +4348,7 @@ agent_communication:
 
   - task: "Hierarchy Item Counts Fix for Pillars and Areas Endpoints"
     implemented: true
-    working: true
+    working: false
     file: "backend/supabase_services.py"
     stuck_count: 0
     priority: "high"
