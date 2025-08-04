@@ -73,13 +73,52 @@ const buildUrl = (endpoint) => {
 
 // Ultra-simplified API methods
 export const fixedAPI = {
-  // Authentication
+  // Ultra-Fast Authentication with Performance Optimization
   login: async (credentials) => {
-    const url = buildUrl('/api/auth/login');
-    return safeFetch(url, {
-      method: 'POST',
-      body: JSON.stringify(credentials)
-    });
+    console.log('🚀 Starting ultra-fast login process...');
+    const startTime = Date.now();
+    
+    try {
+      const url = buildUrl('/api/auth/login');
+      
+      // Optimized login with reduced timeout for faster failure detection
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout for login
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const loginTime = Date.now() - startTime;
+      
+      console.log(`✅ Ultra-fast login completed in ${loginTime}ms`);
+      
+      // Performance target check
+      if (loginTime > 500) {
+        console.warn(`⚠️ Login time ${loginTime}ms exceeds 500ms target`);
+      } else {
+        console.log(`🎯 Login performance target achieved: ${loginTime}ms < 500ms`);
+      }
+      
+      return { data };
+      
+    } catch (error) {
+      const failTime = Date.now() - startTime;
+      console.error(`❌ Login failed after ${failTime}ms:`, error.message);
+      throw error;
+    }
   },
   
   // Current user
