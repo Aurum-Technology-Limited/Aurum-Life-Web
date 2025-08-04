@@ -5,7 +5,6 @@ import { alignmentScoreAPI } from '../services/api';
 
 const AlignmentScore = ({ onSectionChange }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [alignmentData, setAlignmentData] = useState({
     rolling_weekly_score: 0,
     monthly_score: 0,
