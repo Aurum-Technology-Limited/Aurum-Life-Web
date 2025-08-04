@@ -291,9 +291,9 @@ export const fixedAPI = {
     });
   },
   
-  // Insights (simplified)
-  getInsights: async (dateRange = 'all_time') => {
-    const cacheKey = `insights_${dateRange}`;
+  // Ultra-Performance Insights
+  getUltraInsights: async (dateRange = 'all_time') => {
+    const cacheKey = `ultra_insights_${dateRange}`;
     
     // Check cache
     if (apiCache.has(cacheKey)) {
@@ -306,7 +306,7 @@ export const fixedAPI = {
     const token = getAuthToken();
     if (!token) throw new Error('No auth token');
     
-    const url = buildUrl(`/api/insights?date_range=${dateRange}`);
+    const url = buildUrl(`/api/ultra/insights?date_range=${dateRange}`);
     const result = await safeFetch(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -318,6 +318,41 @@ export const fixedAPI = {
     });
     
     return result;
+  },
+  
+  // Insights (with ultra fallback)
+  getInsights: async (dateRange = 'all_time') => {
+    try {
+      return await fixedAPI.getUltraInsights(dateRange);
+    } catch (error) {
+      console.warn('Ultra insights failed, falling back to regular insights:', error);
+      
+      const cacheKey = `insights_${dateRange}`;
+      
+      // Check cache
+      if (apiCache.has(cacheKey)) {
+        const cached = apiCache.get(cacheKey);
+        if (Date.now() - cached.timestamp < CACHE_TTL) {
+          return cached.data;
+        }
+      }
+      
+      const token = getAuthToken();
+      if (!token) throw new Error('No auth token');
+      
+      const url = buildUrl(`/api/insights?date_range=${dateRange}`);
+      const result = await safeFetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Cache result
+      apiCache.set(cacheKey, {
+        data: result,
+        timestamp: Date.now()
+      });
+      
+      return result;
+    }
   },
   
   // Areas
