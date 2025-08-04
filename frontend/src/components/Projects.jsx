@@ -410,10 +410,18 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     });
   };
 
-  if (loading) {
+  if (loading || areasLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-gray-400">Loading projects...</div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-red-400">Error loading projects: {projectsError?.message}</div>
       </div>
     );
   }
