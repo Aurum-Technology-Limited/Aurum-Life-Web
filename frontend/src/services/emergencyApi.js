@@ -93,10 +93,24 @@ const queuedApiCall = (requestFn, cacheKey) => {
   return promise;
 };
 
-// Emergency API methods with request queuing
+// Emergency API methods with request queuing and ultra-performance optimization
 export const emergencyAPI = {
   dashboard: () => queuedApiCall(
-    () => apiClient.get('/api/dashboard'),
+    async () => {
+      try {
+        // Try ultra-performance endpoint first
+        console.log('🚀 Emergency API: Attempting ultra-performance dashboard...');
+        const startTime = Date.now();
+        const response = await apiClient.get('/api/ultra/dashboard');
+        const duration = Date.now() - startTime;
+        console.log(`✅ Emergency API: Ultra dashboard completed in ${duration}ms`);
+        return response;
+      } catch (error) {
+        console.warn('⚠️ Emergency API: Ultra dashboard failed, falling back to regular endpoint:', error.message);
+        // Fallback to regular endpoint
+        return apiClient.get('/api/dashboard');
+      }
+    },
     'dashboard'
   ),
   
