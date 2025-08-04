@@ -25,10 +25,10 @@ class QueryOptimizer:
         # Only select essential fields to reduce data transfer
         essential_fields = {
             'pillars': 'id, user_id, name, description, color, icon, sort_order, archived, created_at, updated_at, date_created, time_allocation_percentage',
-            'areas': 'id, user_id, pillar_id, name, description, color, icon, importance, sort_order, archived, created_at, updated_at',
+            'areas': 'id, user_id, pillar_id, name, description, color, icon, importance, sort_order, archived, created_at, updated_at, date_created',
             'projects': 'id, user_id, area_id, name, description, status, priority, deadline, archived, sort_order, created_at, updated_at',
             'tasks': 'id, user_id, project_id, name, description, status, priority, due_date, completed, completed_at, sort_order, created_at, updated_at',
-            'user_profiles': 'id, username, first_name, last_name, has_completed_onboarding, created_at, updated_at'
+            'user_profiles': 'id, username, first_name, last_name, created_at, updated_at, is_active'
         }
         
         return essential_fields
