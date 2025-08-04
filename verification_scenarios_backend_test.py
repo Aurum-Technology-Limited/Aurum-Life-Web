@@ -164,6 +164,7 @@ class VerificationScenariosTestSuite:
         registration_data = {
             "email": new_user_email,
             "password": new_user_password,
+            "username": f"testuser{unique_id}",
             "first_name": "Test",
             "last_name": "User"
         }
