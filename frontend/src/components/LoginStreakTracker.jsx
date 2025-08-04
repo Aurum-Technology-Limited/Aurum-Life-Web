@@ -107,6 +107,11 @@ const LoginStreakTracker = () => {
     return date.toDateString() === new Date().toDateString();
   };
 
+  const isFutureDay = (date) => {
+    if (!date) return false;
+    return date > new Date();
+  };
+
   const monthDays = getCurrentMonthDays();
   const monthName = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
