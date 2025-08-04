@@ -86,7 +86,7 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
     
     // Mark onboarding as completed in backend even when skipped
     try {
-      await api.post('/api/auth/complete-onboarding');
+      await api.client.post('/auth/complete-onboarding');
       console.log('✅ Onboarding marked as completed (skipped) in backend');
       await refreshUser();
     } catch (error) {
