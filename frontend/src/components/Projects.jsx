@@ -330,115 +330,16 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     }
   }, [activeAreaId]);
 
-  // Load projects and areas
-  useEffect(() => {
-    if (user) {
-      loadProjects();
-      loadAreas();
-    }
-  }, [user]);
-
-  // Set area name when activeAreaId changes
-  useEffect(() => {
-    if (activeAreaId && areas.length > 0) {
-      const area = areas.find(a => a.id === activeAreaId);
-      if (area) {
-        // Update the sectionParams to include area name for display
-        const updatedParams = { ...sectionParams, areaName: area.name };
-        // Note: We don't call onSectionChange here to avoid infinite loop
-      }
-    }
-  }, [activeAreaId, areas, sectionParams]);
-
-  const loadProjects = async () => {
-    try {
-      console.log('🚀 Projects component: Using projectsAPI service with ultra-performance...');
-      
-      // Use the projectsAPI service which includes ultra-performance optimization
-      const response = await projectsAPI.getProjects(null, false); // null for areaId, false for includeArchived
-      
-      console.log('✅ Projects component: Successfully fetched via projectsAPI service');
-      setProjects(response.data || []);
-      setError(null);
-    } catch (error) {
-      console.error('❌ Projects component: Failed to fetch projects:', error);
-      setError('Network error loading projects');
-      setProjects([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadAreas = async () => {
-    try {
-      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
-      const response = await fetch(`${backendURL}/api/areas`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAreas(data || []);
-      }
-    } catch (error) {
-      console.error('Error loading areas:', error);
-    }
-  };
-
   const handleCreateProject = async (e) => {
     e.preventDefault();
     setError('');
 
-    try {
-      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
-      const projectData = {
-        ...newProject,
-        due_date: newProject.due_date ? new Date(newProject.due_date).toISOString() : null
-      };
+    const projectData = {
+      ...newProject,
+      due_date: newProject.due_date ? new Date(newProject.due_date).toISOString() : null
+    };
 
-      const response = await fetch(`${backendURL}/api/projects`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
-        },
-        body: JSON.stringify(projectData),
-      });
-
-      if (response.ok) {
-        const createdProject = await response.json();
-        setProjects(prev => [...prev, createdProject]);
-        
-        // Store the created project for potential decomposition
-        setNewProjectForDecomposition(createdProject);
-        
-        // Reset form
-        setNewProject({
-          name: '',
-          description: '',
-          area_id: '',
-          status: 'not_started',
-          priority: 'medium',
-          color: '#F59E0B',
-          icon: 'FolderOpen',
-          due_date: ''
-        });
-        setShowCreateForm(false);
-        
-        // Ask user if they want to break down the project
-        if (window.confirm('Project created successfully! Would you like to break it down into tasks using AI suggestions?')) {
-          setShowDecompositionHelper(true);
-        }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to create project');
-      }
-    } catch (error) {
-      console.error('Error creating project:', error);
-      setError('Network error creating project');
-    }
+    createProjectMutation.mutate(projectData);
   };
 
   const handleTasksCreated = async (suggestedTasks) => {
