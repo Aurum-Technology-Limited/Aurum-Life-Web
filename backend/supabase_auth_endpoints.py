@@ -167,6 +167,16 @@ async def login_user(user_credentials: UserLogin):
                 legacy_user = await supabase_manager.find_document("users", {"email": user_credentials.email})
                 
                 if legacy_user:
+                    # CRITICAL SECURITY FIX: Verify password for legacy users
+                    if legacy_user.get('password_hash'):
+                        from auth import verify_password
+                        if not verify_password(user_credentials.password, legacy_user['password_hash']):
+                            logger.warning(f"Invalid password for legacy user {user_credentials.email}")
+                            raise HTTPException(
+                                status_code=401,
+                                detail="Invalid credentials"
+                            )
+                    
                     # Get Supabase Auth user ID for this email
                     auth_user_id = await get_supabase_auth_user_id(user_credentials.email)
                     
