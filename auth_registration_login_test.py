@@ -568,9 +568,10 @@ class AuthRegistrationLoginTester:
         # Run all tests in sequence
         test_methods = [
             ("Backend Connectivity", self.test_backend_connectivity),
+            ("Existing User Login", self.test_existing_user_login),
+            ("Token Verification", self.test_token_verification),
             ("New User Registration", self.test_new_user_registration),
             ("Login After Registration", self.test_login_after_registration),
-            ("Token Verification", self.test_token_verification),
             ("User Data Persistence", self.test_user_data_persistence),
             ("Error Scenarios", self.test_error_scenarios)
         ]
