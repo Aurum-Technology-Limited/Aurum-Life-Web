@@ -22,7 +22,7 @@ class QueryOptimizer:
         Generate optimized queries with proper indexing hints and field selection
         """
         
-        # Only select essential fields to reduce data transfer
+        # Only select essential fields to reduce data transfer (fixed to match actual database schema)
         essential_fields = {
             'pillars': 'id, user_id, name, description, color, icon, sort_order, archived, created_at, updated_at, date_created, time_allocation_percentage',
             'areas': 'id, user_id, pillar_id, name, description, color, icon, importance, sort_order, archived, created_at, updated_at, date_created',
