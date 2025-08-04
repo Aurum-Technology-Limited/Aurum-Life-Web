@@ -127,7 +127,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "The following error appears upon trying to complete the smart onboarding process. Please identify and fix the error so that the user's template selection is successfully populated in their system and they get taken to the dashboard. ERROR: Validation error: Input should be 'Not Started', 'In Progress', 'Completed' or 'On Hold'"
+user_problem_statement: "Objective: Restore Core Functionality and Data Integrity - The goal is to fix the data duplication during onboarding, ensure the UI accurately reflects the system's state, and repair broken UI navigation. Issues: 1) Smart Onboarding Duplication - template creates multiple instances of each Pillar, Area, and Project 2) Inaccurate Hierarchy Counts - UI displaying '0' for all counts 3) Non-Functional 'Set Monthly Goal' Button - broken navigation on Alignment Score widget"
 
 backend:
   - task: "Auth.Users Creation Fix for Onboarding Pillar Creation"
