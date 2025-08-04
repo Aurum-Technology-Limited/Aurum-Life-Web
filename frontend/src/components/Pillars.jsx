@@ -18,16 +18,6 @@ const Pillars = memo(({ onSectionChange }) => {
     refetch 
   } = usePillarsQuery(true, true, false); // includeSubPillars=true, includeAreas=true (REQUIRED for counts), includeArchived=false
   
-  // DEBUG: Log the actual data received
-  React.useEffect(() => {
-    if (pillars && pillars.length > 0) {
-      console.log('🔍 Pillars component received data:', pillars);
-      pillars.forEach((pillar, index) => {
-        console.log(`🔍 Pillar ${index}: ${pillar.name} - area_count=${pillar.area_count}, project_count=${pillar.project_count}, task_count=${pillar.task_count}`);
-      });
-    }
-  }, [pillars]);
-  
   const [showModal, setShowModal] = useState(false);
   const [editingPillar, setEditingPillar] = useState(null);
   const [formData, setFormData] = useState({
