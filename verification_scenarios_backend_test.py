@@ -225,6 +225,101 @@ class VerificationScenariosTestSuite:
         
         return scenario_success
 
+    def _test_onboarding_with_user(self, user_token: str, user_email: str):
+        """Helper method to test onboarding with a given user"""
+        scenario_success = True
+        
+        # Step 2: Test Smart Onboarding template application
+        print("\n--- Step 2: Test Smart Onboarding Template Application ---")
+        
+        # Check if complete-onboarding endpoint exists
+        onboarding_data = {}  # The endpoint doesn't expect any data
+        
+        headers = {"Authorization": f"Bearer {user_token}"}
+        
+        # Manually set auth header for this request
+        url = f"{self.base_url}/auth/complete-onboarding"
+        try:
+            response = self.session.post(url, json=onboarding_data, headers={**headers, "Content-Type": "application/json"}, timeout=30)
+            onboarding_result = {
+                'success': response.status_code < 400,
+                'status_code': response.status_code,
+                'data': response.json() if response.content else {},
+            }
+        except:
+            onboarding_result = {'success': False, 'error': 'Request failed'}
+        
+        if onboarding_result['success']:
+            self.log_test(
+                "SMART ONBOARDING COMPLETION",
+                True,
+                "Onboarding endpoint working correctly"
+            )
+            
+            # Step 3: Verify no data duplication
+            print("\n--- Step 3: Verify No Data Duplication ---")
+            
+            # Check pillars for duplicates
+            pillars_result = self.session.get(f"{self.base_url}/pillars", headers=headers, timeout=30)
+            if pillars_result.status_code == 200:
+                pillars_data = pillars_result.json()
+                pillar_names = [p.get('name', '') for p in pillars_data]
+                unique_pillar_names = set(pillar_names)
+                
+                no_pillar_duplicates = len(pillar_names) == len(unique_pillar_names)
+                self.log_test(
+                    "NO PILLAR DUPLICATION",
+                    no_pillar_duplicates,
+                    f"Found {len(pillars_data)} pillars, {len(unique_pillar_names)} unique names" if no_pillar_duplicates else f"DUPLICATE PILLARS DETECTED: {len(pillars_data)} pillars but only {len(unique_pillar_names)} unique names"
+                )
+                
+                if not no_pillar_duplicates:
+                    scenario_success = False
+            
+            # Check areas for duplicates
+            areas_result = self.session.get(f"{self.base_url}/areas", headers=headers, timeout=30)
+            if areas_result.status_code == 200:
+                areas_data = areas_result.json()
+                area_names = [a.get('name', '') for a in areas_data]
+                unique_area_names = set(area_names)
+                
+                no_area_duplicates = len(area_names) == len(unique_area_names)
+                self.log_test(
+                    "NO AREA DUPLICATION",
+                    no_area_duplicates,
+                    f"Found {len(areas_data)} areas, {len(unique_area_names)} unique names" if no_area_duplicates else f"DUPLICATE AREAS DETECTED: {len(areas_data)} areas but only {len(unique_area_names)} unique names"
+                )
+                
+                if not no_area_duplicates:
+                    scenario_success = False
+            
+            # Check projects for duplicates
+            projects_result = self.session.get(f"{self.base_url}/projects", headers=headers, timeout=30)
+            if projects_result.status_code == 200:
+                projects_data = projects_result.json()
+                project_names = [p.get('name', '') for p in projects_data]
+                unique_project_names = set(project_names)
+                
+                no_project_duplicates = len(project_names) == len(unique_project_names)
+                self.log_test(
+                    "NO PROJECT DUPLICATION",
+                    no_project_duplicates,
+                    f"Found {len(projects_data)} projects, {len(unique_project_names)} unique names" if no_project_duplicates else f"DUPLICATE PROJECTS DETECTED: {len(projects_data)} projects but only {len(unique_project_names)} unique names"
+                )
+                
+                if not no_project_duplicates:
+                    scenario_success = False
+            
+        else:
+            self.log_test(
+                "SMART ONBOARDING COMPLETION",
+                False,
+                f"Onboarding failed: {onboarding_result.get('error', 'Unknown error')}"
+            )
+            scenario_success = False
+        
+        return scenario_success
+
     def test_scenario_2_hierarchy_count_accuracy(self):
         """SCENARIO 2: Hierarchy Count Accuracy"""
         print("\n" + "="*80)
