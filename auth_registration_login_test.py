@@ -266,19 +266,19 @@ class AuthRegistrationLoginTester:
             return False
 
     def test_login_after_registration(self):
-        """Test 3: Login After Registration - Immediately after successful registration, try to login"""
+        """Test 3: Login After Registration - Test login with newly registered user if registration succeeded"""
         print("\n=== TESTING LOGIN AFTER REGISTRATION ===")
         
         # Wait a moment for registration to be processed
         time.sleep(2)
         
-        # Login with the same credentials used for registration
+        # Login with the new user credentials
         login_data = {
-            "email": self.test_user_email,
-            "password": self.test_user_password
+            "email": self.new_user_email,
+            "password": self.new_user_password
         }
         
-        print(f"Attempting login for: {self.test_user_email}")
+        print(f"Attempting login for newly registered user: {self.new_user_email}")
         
         result = self.make_request('POST', '/auth/login', data=login_data)
         
@@ -287,11 +287,11 @@ class AuthRegistrationLoginTester:
             
             # Check if we got an access token
             if 'access_token' in token_data:
-                self.auth_token = token_data['access_token']
+                new_user_token = token_data['access_token']
                 self.log_test(
                     "LOGIN AFTER REGISTRATION",
                     True,
-                    f"Login successful for {self.test_user_email}. Token received."
+                    f"Login successful for newly registered user {self.new_user_email}. Token received."
                 )
                 
                 # Verify token structure
@@ -299,7 +299,7 @@ class AuthRegistrationLoginTester:
                 expires_in = token_data.get('expires_in', 'unknown')
                 
                 self.log_test(
-                    "LOGIN TOKEN STRUCTURE",
+                    "NEW USER LOGIN TOKEN STRUCTURE",
                     True,
                     f"Token type: {token_type}, Expires in: {expires_in}"
                 )
@@ -313,12 +313,21 @@ class AuthRegistrationLoginTester:
                 )
                 return False
         else:
-            self.log_test(
-                "LOGIN AFTER REGISTRATION",
-                False,
-                f"Login failed: {result.get('error', 'Unknown error')}",
-                result.get('data', {})
-            )
+            # Check if this is expected due to registration failure
+            error_msg = result.get('error', 'Unknown error')
+            if 'Invalid credentials' in error_msg:
+                self.log_test(
+                    "LOGIN AFTER REGISTRATION",
+                    False,
+                    f"Login failed for newly registered user - this may be due to registration failure or user creation issues: {error_msg}"
+                )
+            else:
+                self.log_test(
+                    "LOGIN AFTER REGISTRATION",
+                    False,
+                    f"Login failed: {error_msg}",
+                    result.get('data', {})
+                )
             return False
 
     def test_token_verification(self):
