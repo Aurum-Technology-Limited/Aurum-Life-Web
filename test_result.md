@@ -127,7 +127,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Objective: Restore Core Functionality and Data Integrity - The goal is to fix the data duplication during onboarding, ensure the UI accurately reflects the system's state, and repair broken UI navigation. Issues: 1) Smart Onboarding Duplication - template creates multiple instances of each Pillar, Area, and Project 2) Inaccurate Hierarchy Counts - UI displaying '0' for all counts 3) Non-Functional 'Set Monthly Goal' Button - broken navigation on Alignment Score widget"
+user_problem_statement: "VERIFICATION-ONLY TESTING TASK - Three Specific Test Scenarios: 1) New User Onboarding and Data Integrity - Verify new user onboarding without data duplication and proper dashboard navigation 2) Hierarchy Count Accuracy - Verify UI displays correct, non-zero counts for all child elements in Pillars and Areas pages 3) Alignment Score Navigation - Verify 'Set Monthly Goal' button navigates to /settings/goals. CONSTRAINT: This is verification-only, no code changes authorized. Report success/failure of each scenario."
 
 backend:
   - task: "User Registration and Login Authentication System"
