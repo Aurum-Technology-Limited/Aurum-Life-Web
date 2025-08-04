@@ -94,8 +94,6 @@ class UltraPerformancePillarService:
                 projects = all_data['projects']
                 tasks = all_data['tasks']
                 
-                logger.info(f"🔍 PILLAR COUNT DEBUG - Raw data: {len(pillars)} pillars, {len(areas)} areas, {len(projects)} projects, {len(tasks)} tasks")
-                
                 return [
                     UltraPerformancePillarService._build_pillar_response_ultra_fast(
                         pillar, areas, projects, tasks, include_areas=True
