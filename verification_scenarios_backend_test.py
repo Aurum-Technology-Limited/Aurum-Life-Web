@@ -478,7 +478,9 @@ class VerificationScenariosTestSuite:
             '/goals',
             '/alignment/goals',
             '/settings/goals',
-            '/user/goals'
+            '/user/goals',
+            '/alignment/set-goal',
+            '/alignment/monthly-goal'
         ]
         
         goal_endpoint_found = False
