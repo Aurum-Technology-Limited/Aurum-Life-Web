@@ -42,7 +42,7 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
 
   const syncOnboardingCompletion = async () => {
     try {
-      await api.post('/api/auth/complete-onboarding');
+      await api.client.post('/auth/complete-onboarding');
       await refreshUser();
       console.log('✅ Local completion synced with backend');
     } catch (error) {
