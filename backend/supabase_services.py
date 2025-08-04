@@ -750,7 +750,7 @@ class SupabaseAreaService:
                 pillars_data = pillars_response.data or []
                 pillars_by_id = {pillar['id']: pillar['name'] for pillar in pillars_data}
             
-            # Transform data to match expected format - OPTIMIZED
+            # Transform data to match expected format - OPTIMIZED WITH COUNTS
             # Process areas with batch-fetched data
             for area in areas:
                 area['is_active'] = not area.get('archived', False)  # Transform archived to is_active
@@ -758,9 +758,30 @@ class SupabaseAreaService:
                 if 'importance' in area and area['importance'] is not None:
                     area['importance'] = int(area['importance'])  # Ensure it's an integer
                 
+                # Calculate statistics for this area
+                area_projects = projects_by_area.get(area['id'], [])
+                area['project_count'] = len(area_projects)
+                
+                # Count tasks across all projects of this area
+                area_tasks = []
+                for project in area_projects:
+                    project_tasks = tasks_by_project.get(project['id'], [])
+                    area_tasks.extend(project_tasks)
+                
+                area['task_count'] = len(area_tasks)
+                
+                # Calculate completion statistics
+                completed_tasks = [task for task in area_tasks if task.get('completed', False)]
+                area['completed_task_count'] = len(completed_tasks)
+                
+                if area_tasks:
+                    area['progress_percentage'] = (len(completed_tasks) / len(area_tasks)) * 100
+                else:
+                    area['progress_percentage'] = 0.0
+                
                 # Add projects if requested (already batch-fetched)
                 if include_projects:
-                    area['projects'] = projects_by_area.get(area['id'], [])
+                    area['projects'] = area_projects
                 
                 # Add pillar name if available (already batch-fetched)
                 if area.get('pillar_id') and area['pillar_id'] in pillars_by_id:
