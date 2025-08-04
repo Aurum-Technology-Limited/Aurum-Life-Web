@@ -86,7 +86,7 @@ async def test_notification_email_template():
         task_name=sample_reminder.task_name,
         project_name=sample_reminder.project_name,
         priority="high",
-        action_url="https://51a61c8b-3644-464b-a47b-b402cddf7d0a.preview.emergentagent.com/tasks"
+        action_url="https://8f43b565-3ef8-487e-92ed-bb0b1b3a1936.preview.emergentagent.com/tasks"
     )
     
     print("✅ Email template generated successfully")
@@ -113,7 +113,7 @@ def test_send_sample_notification_email():
         task_name="Set up Email Notifications",
         project_name="Aurum Life Configuration",
         priority="high",
-        action_url="https://51a61c8b-3644-464b-a47b-b402cddf7d0a.preview.emergentagent.com/tasks"
+        action_url="https://8f43b565-3ef8-487e-92ed-bb0b1b3a1936.preview.emergentagent.com/tasks"
     )
     
     try:

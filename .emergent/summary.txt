@@ -1,60 +1,51 @@
 <analysis>
-The previous AI engineer focused on bringing the Aurum Life application to a production-ready state. Initial efforts addressed critical issues like a persistent Smart Onboarding loop, achieved by using  to manage  status in . This involved fixing enum mismatches in  and , stabilizing dashboards, and resolving complex Supabase foreign key issues through manual SQL commands.
+The previous AI engineer successfully transitioned the Aurum Life application from MVP to a production-ready state, primarily focusing on stability, performance, and critical bug fixes. Initially, efforts concentrated on resolving a Smart Onboarding loop by managing  status in  and correcting enum mismatches, alongside stabilizing dashboards and fixing complex Supabase foreign key issues via manual SQL.
 
-The work then transitioned to extensive performance optimization, targeting sub-200ms API response times. This involved implementing Redis caching (), database connection pooling (), query optimization (), and new ultra-performance services (), along with frontend integration using React Query (). Initial frontend testing revealed a critical regression due to Redis connection failures and database schema errors in optimized queries, leading to 19x worse performance.
+A major undertaking was comprehensive performance optimization to achieve sub-200ms API response times. This involved implementing Redis caching, database connection pooling, query optimization, and new ultra-performance services in the backend, integrated with React Query on the frontend. After initial setbacks due to Redis connection and schema errors, these were resolved, leading to significant performance gains and 100% frontend integration.
 
-Upon fixing the backend Redis and schema issues, backend tests confirmed significant performance improvements. Frontend integration of these ultra-performance endpoints then became the focus. The engineer updated , , and , and components like , , , , and  to utilize the new endpoints, achieving a 100% success rate for ultra-performance integration.
+Subsequently, four critical UX regressions were addressed: restoring project card drill-down in , fixing hierarchy item counts by modifying , refactoring the Dashboard Streak Widget to , and correcting Set Monthly Goal button navigation in . All these UX fixes were validated.
 
-Subsequently, the engineer addressed four critical UX regressions: restoring project card drill-down functionality (), fixing broken hierarchy item counts (modifying  in  and ), refactoring the Dashboard Streak Widget to a Login Streak Tracker (, creating ), and fixing the 'Set Monthly Goal' button navigation (). All these UX fixes were confirmed with a 100% success rate in the final comprehensive frontend test.
+The immediate past work involved fixing newly reported critical issues: Smart Onboarding data duplication, inaccurate hierarchy counts, and a non-functional Set Monthly Goal button. This led to a deeper investigation revealing an  import error in , potential race conditions in onboarding template application, and confirming backend already provides hierarchy counts. After these fixes, a severe 401 error during new account login/registration emerged. Investigation uncovered Supabase rate limiting, a user profile mapping bug where login returned incorrect user data, and a security vulnerability allowing invalid passwords in fallback authentication. The engineer successfully fixed the password vulnerability and, after extensive debugging, resolved the complex user profile mapping issue by refining lookup logic to correctly match user IDs, achieving 100% success on the backend. The next step is to initiate frontend testing for the most recent fixes.
 </analysis>
 
 <product_requirements>
-The Aurum Life application is a personal growth web platform with a dark theme, focusing on hierarchical task management, journaling, and learning. Its core objective is to be a performant and robust personal development tool with a target of sub-200ms API response times. Initial features included a Smart Onboarding Wizard, Daily Rituals (Morning Planning, Evening Reflection, Streak Tracking), and AI Coach integration.
+The Aurum Life application is a personal growth web platform with a dark theme, designed to be a performant and robust personal development tool. Its core objective is to achieve sub-200ms API response times. Key features include a Smart Onboarding Wizard, Daily Rituals (Morning Planning, Evening Reflection, Streak Tracking), and AI Coach integration. Recent enhancements expanded to an Alignment Score widget, simplified Settings, a comprehensive Feedback System (MongoDB, SendGrid), refined AI Coach capabilities, route-based code splitting, and security hardening. Mandatory profile fields, username changes, and secure account deletion were also implemented.
 
-Recent developments expanded functionality to include an Alignment Score widget, simplified Settings, a comprehensive Feedback System (MongoDB, SendGrid), refined AI Coach capabilities (stateless, Goal Decomposition, Weekly Strategic Review, Obstacle Analysis with API quota), route-based code splitting, and security hardening (HTTP headers, input sanitization, IDOR, CSRF). Mandatory profile fields, username change, and secure Account Deletion were also implemented.
-
-The immediate past focus was on fixing the Smart Onboarding process to ensure user-selected templates populate correctly and users are navigated to the dashboard without errors. This was completed. The subsequent primary objective was comprehensive performance optimization to achieve consistent sub-200ms API response times, which involved significant backend and frontend refactoring, including caching and query optimization. Following this, critical UX regressions related to project card navigation, hierarchy item counts, the daily streak widget, and goal setting navigation were identified and fixed.
+The previous work focused on fixing the Smart Onboarding process to ensure correct template population and dashboard navigation. This was followed by a comprehensive performance optimization drive. Recently, the focus shifted to fixing critical UX regressions including project card navigation, hierarchy item counts, streak widget refactoring, and goal setting navigation. All these have been reported as fixed. The most recent explicit requests from the user were to fix onboarding data duplication, inaccurate hierarchy counts (displaying 0), and a non-functional Set Monthly Goal button. Subsequently, a critical 401 Unauthorized error during new user login/registration was reported and addressed.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack Development**: React.js (Frontend), FastAPI (Backend), Supabase (PostgreSQL, Auth), MongoDB (Feedback).
--   **Performance Optimization**: Redis Caching, Database Connection Pooling, Query Optimization, React Query, API Batching.
--   **Authentication**: Google OAuth 2.0, JWT, Supabase Auth.
+-   **Full-stack Development**: React.js, FastAPI, Supabase (PostgreSQL, Auth), MongoDB (Feedback).
+-   **Performance Optimization**: Redis Caching, Database Connection Pooling, Query Optimization, React Query.
+-   **Authentication**: Google OAuth 2.0, JWT, Supabase Auth, Hybrid Auth.
 -   **Architecture**: Service Layer, React Context API, Middleware, Environment Variables.
--   **Database**: PostgreSQL foreign keys, schema management, data aggregation.
--   **Frontend State Management**: , , .
+-   **Data Integrity**: PostgreSQL foreign keys, schema management, data aggregation, user ID mapping.
 </key_technical_concepts>
 
 <code_architecture>
-The application features a React.js frontend and a FastAPI backend. Core user and authentication data reside in Supabase (PostgreSQL), while feedback is stored in MongoDB.
+The application uses a React.js frontend and a FastAPI backend. Supabase (PostgreSQL) handles core user and authentication data, while feedback is stored in MongoDB.
 
 
 
-**Key Files and Modifications During Trajectory:**
-
--   ****: Handles initial user setup. Corrected project  from  to  for backend compatibility, fixing an onboarding bug.
--   ****: Defines Pydantic data models. Confirmed  expects , ensuring data consistency with frontend enum fixes.
--   ****: Main dashboard component. Enhanced with  state, optional chaining, defensive programming, and later updated to utilize new ultra-performance API endpoints to display core user data. Modified to use  instead of .
--   ****: Displays alignment score. Added robust defensive programming, similar to . Modified to ensure the Set your monthly goal button navigates correctly to  by adding  and later reverting to  based navigation, finally adding an Update Goal button always visible.
--   ****: Business logic for Supabase interactions. Initial complex programmatic attempts to resolve foreign key issues were made here but later reverted.  was modified to include  and  aggregation, fixing broken hierarchy counts.  was confirmed to already calculate these counts.
--   ****: Core FastAPI application. Modified to include new , , and crucially, the  endpoint. Updated to integrate new ultra-performance API endpoints for optimized data retrieval, and ensure count aggregation for areas.
--   ****: Centralized Axios API client. Configured with . Modified to use ultra-performance endpoints for Dashboard, Pillars, Areas, Projects, and Insights.
--   ****: Documentation for testing results and problems. Continuously updated to track onboarding fixes, dashboard stabilization, AI Coach status, account deletion, comprehensive performance optimization plan, its findings, backend fixes, frontend integration, and UX regression fixes.
--   ****: High-level component for conditional onboarding display. Modified to fix the onboarding loop by persisting  status in  to prevent race conditions.
--   ****: Provided to the user to fix persistent Supabase foreign key issues, synchronize user IDs between  and , and insert missing user records into .
--   ****: *Newly created* for implementing an advanced caching layer using Redis. Modified to handle Redis connection failures gracefully.
--   ****: *Newly created* for database connection pooling and optimized Supabase interactions.
--   ****: *Newly created* to house performance-enhanced services, integrating caching and optimized queries. Modified to fix user model issues and integrate the , and ensure correct column selection.
--   ****: *Newly created* for frontend integration with React Query for performance.
--   ****: Modified to include  for Redis support.
--   ****: *Newly created* for optimized database query logic. Modified to correct database schema errors (selecting non-existent columns).
--   ****: *Newly created* for database connection pooling configuration.
--   ****: *Newly created* for memory-efficient data processing.
--   ****: Modified to integrate new ultra-performance endpoints and optimize the login process and  method.
--   ****: Modified to remove the three dots menu, re-implement the card's main  handler to navigate to the detailed view, and add a dedicated Edit icon/button for the project edit modal. Updated to use  service.
--   ****: *Newly created* component to track and display user's consecutive daily login streak with a calendar view.
--   ****: Modified to remove the Daily Check-in card and integrate .
--   ****: Modified to replace direct fetch calls with the  service for better performance integration.
+-   ****: Manages the display of onboarding. Initially fixed onboarding loop by persisting  status in .
+    -   **Changes**: Modified  call for  to  due to an incorrect API client import/usage. Further refined for proper API call handling.
+-   ****: Handles initial user setup and template application.
+    -   **Changes**: Corrected project  enum. Added a guard clause using  state at the start of  to prevent multiple simultaneous template applications and subsequent data duplication. Reverted an unnecessary change to  call as it was already correct.
+-   ****: Core FastAPI application, defines API routes.
+    -   **Changes**: Integrated new ultra-performance API endpoints. No direct changes for hierarchy counts as  and  already handled aggregation.
+-   ****: Contains business logic for Supabase interactions.
+    -   **Changes**:  was previously modified to include  and  aggregation.  was confirmed to already calculate these.
+-   ****: Displays alignment score and Set Monthly Goal button.
+    -   **Changes**: Added robust defensive programming. Enhanced  function with logging, and verified navigation to  using .
+-   ****: Manages user registration and login with Supabase.
+    -   **Changes**:
+        -   **Security Fix**: Implemented  call from  in the legacy authentication fallback to reject invalid passwords.
+        -   **Error Handling**: Enhanced registration function to better handle Supabase email rate limiting errors (HTTP 400).
+        -   **User Profile Mapping Fix**: Debugged and fixed a critical bug where Supabase Auth user IDs mismatched with  table IDs. Improved user lookup logic to correctly map user profiles based on email, falling back to the  table for legacy cases. Added extensive debug logging to token decoding and creation processes to trace the user ID mapping issue.
+-   ****: Contains authentication utilities like password verification.
+    -   **Changes**:  function was leveraged to fix a security vulnerability in .
+-   ****: Used for tracking test results and problem statements.
+    -   **Changes**: Continuously updated to reflect the status of onboarding fixes, performance optimizations, UX regression fixes, and most recently, the login/authentication system bug fixes, including detailed debugging steps and outcomes.
 </code_architecture>
 
 <pending_tasks>
@@ -63,22 +54,21 @@ The application features a React.js frontend and a FastAPI backend. Core user an
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer completed resolving a critical bug preventing the successful completion of the Smart Onboarding process, ensuring users were correctly navigated to the dashboard. This involved fixing a project status enum mismatch, stabilizing dashboards, resolving complex Supabase foreign key and user ID mismatches via manual SQL, and fixing an onboarding completion loop using .
+Immediately prior to this summary, the AI engineer was focused on resolving a critical authentication issue reported by the user: a 401 (Unauthorized) error occurring when creating new accounts and attempting to log in.
 
-The main current work phase shifted to comprehensive performance optimization, aiming for sub-200ms API response times. This involved:
-1.  **Backend Implementation**: Creation of  (Redis),  (connection pooling),  (enhanced services), , and .  was updated to expose new endpoints and  to include .
-2.  **Backend Debugging**: Initial backend tests revealed issues with Redis connection failures and  attempting to select non-existent columns. These were debugged by examining  and  and  were fixed to handle these gracefully and select correct fields. Backend tests showed significant improvements.
-3.  **Frontend Integration**: Frontend components like , , , , , and  were updated to utilize the new ultra-performance API endpoints, and , ,  were modified for integration.
-4.  **Frontend Validation**: After initial frontend integration, an 80% success rate was achieved. The remaining issues involved  and  still using direct fetch calls. These were subsequently updated to use their respective  and  services.
-5.  **UX Regression Fixes**: After 100% performance integration, a new set of critical UX regressions were addressed:
-    *   **Project Card Drill-Down**:  was refactored to remove the three-dot menu, restore direct card click navigation to project tasks, and add a dedicated Edit icon.
-    *   **Hierarchy Item Counts**:  was updated to include  and  aggregation in the  for areas, mirroring the existing pillar service logic.
-    *   **Dashboard Streak Widget Refactor**: The Daily Check-in card was removed from . A new component, , was created to track daily login streaks with a calendar view, replacing the old .
-    *   **'Set Monthly Goal' Button Navigation**:  was modified to ensure the Set your monthly goal button navigates correctly to  and an Update Goal button was added.
+The investigation revealed three root causes:
+1.  **Supabase Rate Limiting**: New user registration was failing with HTTP 400 email rate limit exceeded from Supabase Auth.
+2.  **User Profile Mapping Bug**: The authentication system had a critical bug where login would succeed but return incorrect user profile data, indicating a mismatch between Supabase Auth IDs and the application's user profiles.
+3.  **Security Vulnerability**: Invalid passwords were being accepted in a legacy authentication fallback mechanism.
 
-All performance integration and UX regression fixes have been successfully implemented and verified with a 100% success rate. The application is now fully optimized and core UX flows are restored.
+The following fixes were implemented:
+-   **Security Fix**: In , the legacy authentication fallback was updated to utilize the  function from , ensuring that only valid passwords grant access.
+-   **Rate Limiting Error Handling**: The registration function in  was enhanced to include more robust error handling for Supabase's email rate limiting, providing a clearer response in such cases.
+-   **User Profile Mapping Fix**: This was the most complex issue. Debugging involved adding extensive logging to  and  to trace JWT token creation and decoding, specifically focusing on user ID propagation. It was determined that Supabase Auth was sometimes returning an incorrect user ID, leading to mapping issues with the  table. The fix involved improving the user lookup logic in  to first attempt a match by email in the  table, and then, crucially, to use the legacy  table as a fallback since the  table lacked an email column for direct lookup.
+
+All these backend authentication fixes have been successfully implemented and verified with a 100% success rate through backend testing. The application's authentication flow for new registrations and logins is now stable and secure on the backend.
 </current_work>
 
 <optional_next_step>
-The current explicit tasks have been successfully completed. Awaiting further instructions or new feature requests.
+Ask the user for permission to proceed with frontend testing of the recently implemented authentication fixes.
 </optional_next_step>
