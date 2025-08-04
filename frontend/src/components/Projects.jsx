@@ -139,19 +139,38 @@ ProjectCard.displayName = 'ProjectCard';
 
 const Projects = memo(({ onSectionChange, sectionParams }) => {
   const { user } = useAuth();
-  const [projects, setProjects] = useState([]);
-  const [areas, setAreas] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { invalidateProjects, invalidateTasks } = useInvalidateQueries();
+  
+  // Extract area filter from section params
+  const activeAreaId = sectionParams?.areaId || null;
+  const activeAreaName = sectionParams?.areaName || null;
+  
+  // Use React Query for projects data
+  const { 
+    data: projects = [], 
+    isLoading: loading, 
+    error: projectsError, 
+    isError 
+  } = useProjectsQuery(activeAreaId, false); // areaId, includeArchived=false
+  
+  // Use React Query for areas data
+  const { 
+    data: areas = [], 
+    isLoading: areasLoading 
+  } = useQuery({
+    queryKey: ['areas', 'basic'], // Different key to avoid cache conflicts
+    queryFn: () => areasAPI.getAreas(false, false), // Basic areas without projects
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
+
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [showDecompositionHelper, setShowDecompositionHelper] = useState(false);
   const [newProjectForDecomposition, setNewProjectForDecomposition] = useState(null);
   const [error, setError] = useState('');
-  
-  // Extract area filter from section params
-  const activeAreaId = sectionParams?.areaId || null;
-  const activeAreaName = sectionParams?.areaName || null;
   
   const [newProject, setNewProject] = useState({
     name: '',
