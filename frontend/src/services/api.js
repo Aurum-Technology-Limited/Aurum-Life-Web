@@ -221,14 +221,33 @@ export const areasAPI = {
   unarchiveArea: (areaId) => apiClient.put(`/areas/${areaId}/unarchive`),
 };
 
-// Projects API with enhanced archiving support
+// Projects API with enhanced archiving support and ultra-performance optimization
 export const projectsAPI = {
-  getProjects: (areaId = null, includeArchived = false) => apiClient.get('/projects', { 
-    params: { 
-      ...(areaId && { area_id: areaId }),
-      include_archived: includeArchived
-    } 
-  }),
+  getProjects: async (areaId = null, includeArchived = false) => {
+    try {
+      // Try ultra-performance endpoint first
+      console.log('🚀 Attempting ultra-performance projects...');
+      const startTime = Date.now();
+      const response = await apiClient.get('/ultra/projects', { 
+        params: { 
+          ...(areaId && { area_id: areaId }),
+          include_archived: includeArchived
+        } 
+      });
+      const duration = Date.now() - startTime;
+      console.log(`✅ Ultra projects completed in ${duration}ms`);
+      return response;
+    } catch (error) {
+      console.warn('⚠️ Ultra projects failed, falling back to regular endpoint:', error.message);
+      // Fallback to regular endpoint
+      return apiClient.get('/projects', { 
+        params: { 
+          ...(areaId && { area_id: areaId }),
+          include_archived: includeArchived
+        } 
+      });
+    }
+  },
   getProject: (projectId, includeTasks = false) => apiClient.get(`/projects/${projectId}`, { params: { include_tasks: includeTasks } }),
   createProject: (projectData) => apiClient.post('/projects', projectData),
   updateProject: (projectId, projectData) => apiClient.put(`/projects/${projectId}`, projectData),
