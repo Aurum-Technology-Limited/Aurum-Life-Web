@@ -16,7 +16,7 @@ const Pillars = memo(({ onSectionChange }) => {
     error, 
     isError,
     refetch 
-  } = usePillarsQuery(true, true, false); // includeSubPillars=true, includeAreas=true, includeArchived=false
+  } = usePillarsQuery(true, true, false); // includeSubPillars=true, includeAreas=true (REQUIRED for counts), includeArchived=false
   
   const [showModal, setShowModal] = useState(false);
   const [editingPillar, setEditingPillar] = useState(null);
