@@ -100,13 +100,9 @@ const ProjectCard = memo(({ project, onEdit, onDelete, onViewTasks, onUpdateStat
 
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-400">
-          <button
-            onClick={() => onViewTasks(project)}
-            className="hover:text-yellow-400 transition-colors"
-            title="Click to view tasks"
-          >
+          <span className="hover:text-yellow-400 transition-colors">
             {project.tasks ? `${project.tasks.length} tasks` : '0 tasks'}
-          </button>
+          </span>
         </div>
         
         <div className="flex space-x-2">
