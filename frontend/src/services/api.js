@@ -129,15 +129,35 @@ export const projectTemplatesAPI = {
   useTemplate: (templateId, projectData) => apiClient.post(`/project-templates/${templateId}/use`, projectData)
 };
 
-// Pillars API
+// Pillars API (updated with ultra-performance optimization)
 export const pillarsAPI = {
-  getPillars: (includeSubPillars = true, includeAreas = false, includeArchived = false) => apiClient.get('/pillars', {
-    params: {
-      include_sub_pillars: includeSubPillars,
-      include_areas: includeAreas,
-      include_archived: includeArchived
+  getPillars: async (includeSubPillars = true, includeAreas = false, includeArchived = false) => {
+    try {
+      // Try ultra-performance endpoint first
+      console.log('🚀 Attempting ultra-performance pillars...');
+      const startTime = Date.now();
+      const response = await apiClient.get('/ultra/pillars', {
+        params: {
+          include_sub_pillars: includeSubPillars,
+          include_areas: includeAreas,
+          include_archived: includeArchived
+        }
+      });
+      const duration = Date.now() - startTime;
+      console.log(`✅ Ultra pillars completed in ${duration}ms`);
+      return response;
+    } catch (error) {
+      console.warn('⚠️ Ultra pillars failed, falling back to regular endpoint:', error.message);
+      // Fallback to regular endpoint
+      return apiClient.get('/pillars', {
+        params: {
+          include_sub_pillars: includeSubPillars,
+          include_areas: includeAreas,
+          include_archived: includeArchived
+        }
+      });
     }
-  }),
+  },
   getPillar: (pillarId, includeSubPillars = true, includeAreas = false) => apiClient.get(`/pillars/${pillarId}`, {
     params: {
       include_sub_pillars: includeSubPillars,
