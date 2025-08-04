@@ -153,8 +153,13 @@ class FastSupabaseClient:
             if table in ['pillars', 'areas', 'projects']:
                 query = query.eq('archived', False)
             
-            # Apply sorting for consistent results
-            query = query.order('sort_order', desc=False).order('created_at', desc=False)
+            # Apply sorting for consistent results (conditional based on table schema)
+            if table in ['pillars', 'areas', 'projects', 'tasks']:
+                # These tables have sort_order column
+                query = query.order('sort_order', desc=False).order('created_at', desc=False)
+            else:
+                # Tables like user_profiles don't have sort_order column
+                query = query.order('created_at', desc=False)
             
             # Execute query
             response = query.execute()
