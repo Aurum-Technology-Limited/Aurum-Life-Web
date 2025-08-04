@@ -63,7 +63,7 @@ class MVPStabilityTester:
         
         # Use the specified test credentials
         self.test_user_email = "marc.alleyne@aurumtechnologyltd.com"
-        self.test_user_password = "password"
+        self.test_user_password = "password123"
         
         # Track created resources for cleanup
         self.created_resources = {
