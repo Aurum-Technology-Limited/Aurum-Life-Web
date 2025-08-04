@@ -14,26 +14,18 @@ const Insights = memo(() => {
   const fetchAlignmentSnapshot = async () => {
     try {
       setLoading(true);
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
-      const token = localStorage.getItem('auth_token');
+      console.log('🚀 Insights component: Using insightsAPI service with ultra-performance...');
       
-      const response = await fetch(`${backendUrl}/api/insights`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setInsightsData(data);
+      // Use the insightsAPI service which includes ultra-performance optimization
+      const response = await insightsAPI.getInsights('all_time');
+      
+      console.log('✅ Insights component: Successfully fetched via insightsAPI service');
+      setInsightsData(response.data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching insights:', err);
-      setError(err.message);
+      console.error('❌ Insights component: Failed to fetch insights:', err);
+      setError(err.message || 'Failed to fetch insights');
+      setInsightsData(null);
     } finally {
       setLoading(false);
     }
