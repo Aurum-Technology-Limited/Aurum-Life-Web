@@ -90,25 +90,16 @@ class UltraPerformancePillarService:
             pillars.sort(key=lambda x: x.get("sort_order", 0))
             
             if include_areas:
-                logger.info(f"🔍 Building pillars WITH areas calculation for user {user_id}")
                 areas = all_data['areas']
                 projects = all_data['projects']
                 tasks = all_data['tasks']
                 
-                logger.info(f"🔍 Raw data counts: {len(pillars)} pillars, {len(areas)} areas, {len(projects)} projects, {len(tasks)} tasks")
-                
-                pillar_responses = [
+                return [
                     UltraPerformancePillarService._build_pillar_response_ultra_fast(
                         pillar, areas, projects, tasks, include_areas=True
                     )
                     for pillar in pillars
                 ]
-                
-                # Log the calculated counts for debugging
-                for pr in pillar_responses:
-                    logger.info(f"🔍 Pillar '{pr.name}': area_count={pr.area_count}, project_count={pr.project_count}, task_count={pr.task_count}")
-                
-                return pillar_responses
             else:
                 # Simple pillar responses - maximum speed
                 return [PillarResponse(**pillar) for pillar in pillars]
