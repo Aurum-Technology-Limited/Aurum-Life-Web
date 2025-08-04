@@ -294,22 +294,18 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
   const loadProjects = async () => {
     try {
-      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
-      const response = await fetch(`${backendURL}/api/projects?include_tasks=true`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProjects(data || []);
-      } else {
-        setError('Failed to load projects');
-      }
+      console.log('🚀 Projects component: Using projectsAPI service with ultra-performance...');
+      
+      // Use the projectsAPI service which includes ultra-performance optimization
+      const response = await projectsAPI.getProjects(null, false); // null for areaId, false for includeArchived
+      
+      console.log('✅ Projects component: Successfully fetched via projectsAPI service');
+      setProjects(response.data || []);
+      setError(null);
     } catch (error) {
-      console.error('Error loading projects:', error);
+      console.error('❌ Projects component: Failed to fetch projects:', error);
       setError('Network error loading projects');
+      setProjects([]);
     } finally {
       setLoading(false);
     }
