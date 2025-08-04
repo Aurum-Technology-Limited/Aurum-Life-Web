@@ -38,13 +38,20 @@ class AuthRegistrationLoginTester:
         self.test_results = []
         self.auth_token = None
         
-        # Generate unique test credentials for each test run
+        # Use existing test credentials to avoid Supabase rate limits
+        self.test_user_email = "marc.alleyne@aurumtechnologyltd.com"
+        self.test_user_password = "password"
+        self.test_user_first_name = "Marc"
+        self.test_user_last_name = "Alleyne"
+        self.test_user_username = "marcalleyne"
+        
+        # Also test with a fresh registration user
         unique_id = str(uuid.uuid4())[:8]
-        self.test_user_email = f"newuser.test.{unique_id}@aurumlife.com"
-        self.test_user_password = "testpass123"
-        self.test_user_first_name = "Test"
-        self.test_user_last_name = "User"
-        self.test_user_username = f"testuser{unique_id}"
+        self.new_user_email = f"newuser.test.{unique_id}@aurumlife.com"
+        self.new_user_password = "testpass123"
+        self.new_user_first_name = "Test"
+        self.new_user_last_name = "User"
+        self.new_user_username = f"testuser{unique_id}"
         
     def log_test(self, test_name: str, success: bool, message: str = "", data: Any = None):
         """Log test results"""
