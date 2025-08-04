@@ -150,30 +150,83 @@ class AuthRegistrationLoginTester:
         
         return result['success']
 
+    def test_existing_user_login(self):
+        """Test 2A: Existing User Login - Test login with existing credentials"""
+        print("\n=== TESTING EXISTING USER LOGIN ===")
+        
+        # Login with existing credentials
+        login_data = {
+            "email": self.test_user_email,
+            "password": self.test_user_password
+        }
+        
+        print(f"Attempting login for existing user: {self.test_user_email}")
+        
+        result = self.make_request('POST', '/auth/login', data=login_data)
+        
+        if result['success']:
+            token_data = result['data']
+            
+            # Check if we got an access token
+            if 'access_token' in token_data:
+                self.auth_token = token_data['access_token']
+                self.log_test(
+                    "EXISTING USER LOGIN",
+                    True,
+                    f"Login successful for {self.test_user_email}. Token received."
+                )
+                
+                # Verify token structure
+                token_type = token_data.get('token_type', 'unknown')
+                expires_in = token_data.get('expires_in', 'unknown')
+                
+                self.log_test(
+                    "EXISTING USER TOKEN STRUCTURE",
+                    True,
+                    f"Token type: {token_type}, Expires in: {expires_in}"
+                )
+                
+                return True
+            else:
+                self.log_test(
+                    "EXISTING USER LOGIN",
+                    False,
+                    f"Login response missing access_token: {list(token_data.keys())}"
+                )
+                return False
+        else:
+            self.log_test(
+                "EXISTING USER LOGIN",
+                False,
+                f"Login failed: {result.get('error', 'Unknown error')}",
+                result.get('data', {})
+            )
+            return False
+
     def test_new_user_registration(self):
-        """Test 2: New User Registration - Try to register a new user with POST /api/auth/register"""
+        """Test 2B: New User Registration - Try to register a new user with POST /api/auth/register"""
         print("\n=== TESTING NEW USER REGISTRATION ===")
         
         # Prepare registration data with all required fields
         registration_data = {
-            "email": self.test_user_email,
-            "password": self.test_user_password,
-            "first_name": self.test_user_first_name,
-            "last_name": self.test_user_last_name,
-            "username": self.test_user_username
+            "email": self.new_user_email,
+            "password": self.new_user_password,
+            "first_name": self.new_user_first_name,
+            "last_name": self.new_user_last_name,
+            "username": self.new_user_username
         }
         
-        print(f"Registering user: {self.test_user_email}")
-        print(f"Username: {self.test_user_username}")
+        print(f"Registering new user: {self.new_user_email}")
+        print(f"Username: {self.new_user_username}")
         
         result = self.make_request('POST', '/auth/register', data=registration_data)
         
         if result['success']:
             user_data = result['data']
             self.log_test(
-                "USER REGISTRATION",
+                "NEW USER REGISTRATION",
                 True,
-                f"Registration successful for {self.test_user_email}. User ID: {user_data.get('id', 'Unknown')}"
+                f"Registration successful for {self.new_user_email}. User ID: {user_data.get('id', 'Unknown')}"
             )
             
             # Verify response structure
@@ -182,25 +235,34 @@ class AuthRegistrationLoginTester:
             
             if not missing_fields:
                 self.log_test(
-                    "REGISTRATION RESPONSE STRUCTURE",
+                    "NEW USER REGISTRATION RESPONSE STRUCTURE",
                     True,
                     "All required fields present in registration response"
                 )
             else:
                 self.log_test(
-                    "REGISTRATION RESPONSE STRUCTURE",
+                    "NEW USER REGISTRATION RESPONSE STRUCTURE",
                     False,
                     f"Missing fields in registration response: {missing_fields}"
                 )
                 
             return True
         else:
-            self.log_test(
-                "USER REGISTRATION",
-                False,
-                f"Registration failed: {result.get('error', 'Unknown error')}",
-                result.get('data', {})
-            )
+            # Check if it's a rate limit error
+            error_msg = result.get('error', 'Unknown error')
+            if 'rate limit' in error_msg.lower() or result.get('status_code') == 429:
+                self.log_test(
+                    "NEW USER REGISTRATION",
+                    False,
+                    f"Registration failed due to rate limiting: {error_msg}. This is expected in testing environment."
+                )
+            else:
+                self.log_test(
+                    "NEW USER REGISTRATION",
+                    False,
+                    f"Registration failed: {error_msg}",
+                    result.get('data', {})
+                )
             return False
 
     def test_login_after_registration(self):
