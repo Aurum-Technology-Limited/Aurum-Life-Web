@@ -382,7 +382,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
       alert(`Successfully created ${createdTasks.length} tasks for your project!`);
       
       // Refresh projects to show updated task counts
-      loadProjects();
+      invalidateProjects();
       
     } catch (error) {
       console.error('Error creating tasks:', error);
@@ -399,35 +399,15 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     e.preventDefault();
     setError('');
 
-    try {
-      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
-      const projectData = {
-        ...editingProject,
-        due_date: editingProject.due_date ? new Date(editingProject.due_date).toISOString() : null
-      };
+    const projectData = {
+      ...editingProject,
+      due_date: editingProject.due_date ? new Date(editingProject.due_date).toISOString() : null
+    };
 
-      const response = await fetch(`${backendURL}/api/projects/${editingProject.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
-        },
-        body: JSON.stringify(projectData),
-      });
-
-      if (response.ok) {
-        const updatedProject = await response.json();
-        setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
-        setShowEditForm(false);
-        setEditingProject(null);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to update project');
-      }
-    } catch (error) {
-      console.error('Error updating project:', error);
-      setError('Network error updating project');
-    }
+    updateProjectMutation.mutate({
+      projectId: editingProject.id,
+      projectData
+    });
   };
 
   if (loading) {
