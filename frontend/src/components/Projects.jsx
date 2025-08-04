@@ -156,7 +156,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   
   // Use React Query for areas data
   const { 
-    data: areas = [], 
+    data: areasResponse = [], 
     isLoading: areasLoading 
   } = useQuery({
     queryKey: ['areas', 'basic'], // Different key to avoid cache conflicts
@@ -164,6 +164,9 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
   });
+  
+  // Extract areas data from response
+  const areas = Array.isArray(areasResponse) ? areasResponse : (areasResponse?.data || []);
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
