@@ -190,6 +190,110 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
       : projects;
   }, [projects, activeAreaId]);
 
+  // Create project mutation
+  const createProjectMutation = useMutation({
+    mutationFn: (projectData) => {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      return fetch(`${backendURL}/api/projects`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+        },
+        body: JSON.stringify(projectData),
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to create project');
+        }
+        return response.json();
+      });
+    },
+    onSuccess: (createdProject) => {
+      // Invalidate and refetch projects data
+      invalidateProjects();
+      
+      // Store the created project for potential decomposition
+      setNewProjectForDecomposition(createdProject);
+      
+      // Reset form
+      setNewProject({
+        name: '',
+        description: '',
+        area_id: '',
+        status: 'not_started',
+        priority: 'medium',
+        color: '#F59E0B',
+        icon: 'FolderOpen',
+        due_date: ''
+      });
+      setShowCreateForm(false);
+      
+      // Ask user if they want to break down the project
+      if (window.confirm('Project created successfully! Would you like to break it down into tasks using AI suggestions?')) {
+        setShowDecompositionHelper(true);
+      }
+    },
+    onError: (error) => {
+      console.error('Create project error:', error);
+      setError('Failed to create project');
+    }
+  });
+
+  // Update project mutation
+  const updateProjectMutation = useMutation({
+    mutationFn: ({ projectId, projectData }) => {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      return fetch(`${backendURL}/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+        },
+        body: JSON.stringify(projectData),
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to update project');
+        }
+        return response.json();
+      });
+    },
+    onSuccess: () => {
+      // Invalidate and refetch projects data
+      invalidateProjects();
+      setShowEditForm(false);
+      setEditingProject(null);
+    },
+    onError: (error) => {
+      console.error('Update project error:', error);
+      setError('Failed to update project');
+    }
+  });
+
+  // Delete project mutation
+  const deleteProjectMutation = useMutation({
+    mutationFn: (projectId) => {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      return fetch(`${backendURL}/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+        },
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to delete project');
+        }
+      });
+    },
+    onSuccess: () => {
+      // Invalidate and refetch projects data
+      invalidateProjects();
+    },
+    onError: (error) => {
+      console.error('Delete project error:', error);
+      setError('Failed to delete project');
+    }
+  });
+
   // Memoize callbacks to prevent unnecessary re-renders of child components
   const handleViewProjectTasks = useCallback((project) => {
     if (onSectionChange) {
