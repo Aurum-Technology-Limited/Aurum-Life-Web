@@ -313,48 +313,15 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     if (!window.confirm(`Are you sure you want to delete the project "${projectName}"? This action cannot be undone.`)) {
       return;
     }
-
-    try {
-      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
-      const response = await fetch(`${backendURL}/api/projects/${projectId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
-        },
-      });
-
-      if (response.ok) {
-        setProjects(prev => prev.filter(p => p.id !== projectId));
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to delete project');
-      }
-    } catch (error) {
-      console.error('Error deleting project:', error);
-      setError('Network error deleting project');
-    }
-  }, []);
+    deleteProjectMutation.mutate(projectId);
+  }, [deleteProjectMutation]);
 
   const updateProjectStatus = useCallback(async (projectId, newStatus) => {
-    try {
-      const backendURL = process.env.REACT_APP_BACKEND_URL || '';
-      const response = await fetch(`${backendURL}/api/projects/${projectId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (response.ok) {
-        const updatedProject = await response.json();
-        setProjects(prev => prev.map(p => p.id === projectId ? updatedProject : p));
-      }
-    } catch (error) {
-      console.error('Error updating project status:', error);
-    }
-  }, []);
+    updateProjectMutation.mutate({
+      projectId,
+      projectData: { status: newStatus }
+    });
+  }, [updateProjectMutation]);
 
   // Update form when activeAreaId changes (for pre-populating area)
   useEffect(() => {
