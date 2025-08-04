@@ -191,8 +191,12 @@ const LoginStreakTracker = () => {
             <span>Login day</span>
           </div>
           <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 rounded-full border border-gray-500 bg-gray-600"></div>
+            <div className="w-3 h-3 rounded-full border-2 border-yellow-400 bg-gray-600"></div>
             <span>Today</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-3 h-3 rounded-full bg-gray-700"></div>
+            <span>Missed/Future</span>
           </div>
         </div>
       </div>
