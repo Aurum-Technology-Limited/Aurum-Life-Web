@@ -114,7 +114,23 @@ async def register_user(user_data: UserCreate):
             
     except Exception as e:
         logger.error(f"Registration error: {e}")
-        raise HTTPException(status_code=400, detail="Registration failed")
+        
+        # Handle specific Supabase errors
+        if "email rate limit" in str(e).lower():
+            raise HTTPException(
+                status_code=429,
+                detail="Registration rate limit exceeded. Please try again in a few minutes."
+            )
+        elif "email already registered" in str(e).lower() or "user already registered" in str(e).lower():
+            raise HTTPException(
+                status_code=409,
+                detail="Email already registered. Please try logging in instead."
+            )
+        else:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Registration failed: {str(e)}"
+            )
 
 async def get_supabase_auth_user_id(email: str) -> Optional[str]:
     """Get Supabase Auth user ID by email"""
