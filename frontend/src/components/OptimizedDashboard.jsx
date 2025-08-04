@@ -148,6 +148,7 @@ const SimpleAiCoach = React.memo(() => {
 
 // Main Dashboard component
 const OptimizedDashboard = ({ onSectionChange }) => {
+  const { user } = useAuth(); // Add user context
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
