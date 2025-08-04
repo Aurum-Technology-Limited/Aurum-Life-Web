@@ -15,7 +15,9 @@ import {
   FolderIcon as FolderIconSolid
 } from '@heroicons/react/solid';
 import { useAuth } from '../contexts/BackendAuthContext';
-import { projectsAPI } from '../services/api';
+import { projectsAPI, areasAPI } from '../services/api';
+import { useProjectsQuery, useInvalidateQueries } from '../hooks/useQueries';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import ProjectDecompositionHelper from './ProjectDecompositionHelper';
 
 // Memoized ProjectCard component to prevent unnecessary re-renders
