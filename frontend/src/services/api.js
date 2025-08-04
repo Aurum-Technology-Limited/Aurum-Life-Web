@@ -267,9 +267,23 @@ export const insightsAPI = {
   getProjectDrillDown: (projectId, dateRange = 'all_time') => apiClient.get(`/insights/projects/${projectId}?date_range=${dateRange}`),
 };
 
-// Dashboard API (updated)
+// Dashboard API (updated with ultra-performance optimization)
 export const dashboardAPI = {
-  getDashboard: () => apiClient.get('/dashboard'),
+  getDashboard: async () => {
+    try {
+      // Try ultra-performance endpoint first
+      console.log('🚀 Attempting ultra-performance dashboard...');
+      const startTime = Date.now();
+      const response = await apiClient.get('/ultra/dashboard');
+      const duration = Date.now() - startTime;
+      console.log(`✅ Ultra dashboard completed in ${duration}ms`);
+      return response;
+    } catch (error) {
+      console.warn('⚠️ Ultra dashboard failed, falling back to regular endpoint:', error.message);
+      // Fallback to regular endpoint
+      return apiClient.get('/dashboard');
+    }
+  },
 };
 
 // User API
