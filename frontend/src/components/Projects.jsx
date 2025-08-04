@@ -160,13 +160,16 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     isLoading: areasLoading 
   } = useQuery({
     queryKey: ['areas', 'basic'], // Different key to avoid cache conflicts
-    queryFn: () => areasAPI.getAreas(false, false), // Basic areas without projects
+    queryFn: async () => {
+      const response = await areasAPI.getAreas(false, false); // Basic areas without projects
+      return response.data; // Extract data from axios response
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
   });
   
-  // Extract areas data from response
-  const areas = Array.isArray(areasResponse) ? areasResponse : (areasResponse?.data || []);
+  // Areas should now be an array
+  const areas = Array.isArray(areasResponse) ? areasResponse : [];
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
