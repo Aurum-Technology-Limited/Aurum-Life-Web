@@ -207,6 +207,7 @@ async def login_user(user_credentials: UserLogin):
                             expires_delta=access_token_expires
                         )
                         
+                        logger.info(f"🔍 LOGIN TOKEN DEBUG: Created JWT with user_id: {auth_user_id} from Supabase Auth")
                         logger.info(f"✅ Hybrid authentication successful for {user_credentials.email} with auth ID: {auth_user_id}")
                         
                         return {
