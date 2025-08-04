@@ -369,7 +369,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
           <AlignmentScore onSectionChange={onSectionChange} />
           
           {/* Daily Streak Tracker */}
-          <LoginStreakTracker showReflectionPrompt={true} />
+          <LoginStreakTracker />
         </div>
       </div>
     </div>
