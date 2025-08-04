@@ -156,11 +156,21 @@ const OptimizedDashboard = ({ onSectionChange }) => {
   const [checkingNewUser, setCheckingNewUser] = useState(true);
   const [isLoading, setIsLoading] = useState(true); // Add explicit loading state
 
-  // Check if user is new (has no data)
+  // Check if user is new (has no data) - but respect onboarding completion status
   const checkNewUser = useCallback(async () => {
     try {
       console.log('🔍 Checking if user is new...');
       setCheckingNewUser(true);
+      
+      // First check if user has completed onboarding - if yes, don't show onboarding regardless of data
+      if (user && user.has_completed_onboarding) {
+        console.log('✅ User has completed onboarding - skipping data check');
+        setShowOnboarding(false);
+        return;
+      }
+      
+      // Only check data if user hasn't completed onboarding
+      console.log('🔍 User has not completed onboarding - checking data...');
       
       // Check for existing data across all main entities using ULTRA-PERFORMANCE endpoints
       const [pillarsResponse, areasResponse, projectsResponse] = await Promise.all([
@@ -178,22 +188,27 @@ const OptimizedDashboard = ({ onSectionChange }) => {
         pillars: pillarsResponse.data?.length || 0,
         areas: areasResponse.data?.length || 0,
         projects: projectsResponse.data?.length || 0,
-        total: totalItems
+        total: totalItems,
+        has_completed_onboarding: user?.has_completed_onboarding || false
       });
 
-      // If user has no data at all, show onboarding
-      if (totalItems === 0) {
+      // Only show onboarding if user has no data AND hasn't completed onboarding
+      if (totalItems === 0 && !user?.has_completed_onboarding) {
         console.log('🎯 New user detected - showing onboarding wizard');
         setShowOnboarding(true);
+      } else {
+        console.log('✅ User has data or completed onboarding - no onboarding needed');
+        setShowOnboarding(false);
       }
 
     } catch (err) {
       console.error('❌ Error checking new user status:', err);
       // On error, don't show onboarding to avoid blocking access
+      setShowOnboarding(false);
     } finally {
       setCheckingNewUser(false);
     }
-  }, []);
+  }, [user]);
 
   const fetchDashboard = useCallback(async () => {
     try {
