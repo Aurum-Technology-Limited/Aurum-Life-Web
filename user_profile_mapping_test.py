@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 """
-USER PROFILE MAPPING ISSUE TESTING - ENHANCED DEBUG LOGGING
-Testing the user profile mapping issue with enhanced debug logging as requested.
+USER PROFILE MAPPING FIX TESTING - COMPREHENSIVE TESTING
+Testing the user profile mapping fix to resolve the critical authentication bug.
 
 FOCUS AREAS:
 1. Login with marc.alleyne@aurumtechnologyltd.com and password "password123"
-2. Look for debug logs showing: "LOGIN TOKEN DEBUG: Created JWT with user_id"
-3. Note whether it's using auth user ID or legacy user ID
-4. Test profile retrieval with GET /api/auth/me
-5. Look for debug logs showing: "JWT DEBUG: Decoded payload" and "JWT DEBUG: Extracted user_id from 'sub' claim"
-6. Check the SQL query logs: "USER_PROFILES QUERY" and "LEGACY USERS QUERY"
-7. Compare user IDs throughout flow to identify mapping issues
+2. Look for debug logs showing enhanced email-based lookup logic
+3. Check for "USER MISMATCH DETECTED" warning if ID mismatch is found
+4. Look for "EMAIL-BASED LOOKUP" logs showing lookup by email
+5. Test GET /api/auth/me to verify it returns CORRECT user profile for marc.alleyne (not navtest)
+6. Verify email field is properly populated
 
 EXPECTED BEHAVIOR:
-The system should return the correct user profile for marc.alleyne@aurumtechnologyltd.com,
-not the wrong user profile (navtest user).
+The system should now correctly map users to their profiles using email-based fallback
+when ID mismatches are detected, ensuring users get the correct profile data.
 
 CREDENTIALS: marc.alleyne@aurumtechnologyltd.com / password123
 """
