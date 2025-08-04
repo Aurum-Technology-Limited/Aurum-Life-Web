@@ -186,14 +186,33 @@ export const notificationsAPI = {
   clearAllNotifications: () => apiClient.delete('/notifications/clear-all')
 };
 
-// Areas API with enhanced archiving support
+// Areas API with enhanced archiving support and ultra-performance optimization
 export const areasAPI = {
-  getAreas: (includeProjects = false, includeArchived = false) => apiClient.get('/areas', { 
-    params: { 
-      include_projects: includeProjects,
-      include_archived: includeArchived
-    } 
-  }),
+  getAreas: async (includeProjects = false, includeArchived = false) => {
+    try {
+      // Try ultra-performance endpoint first
+      console.log('🚀 Attempting ultra-performance areas...');
+      const startTime = Date.now();
+      const response = await apiClient.get('/ultra/areas', { 
+        params: { 
+          include_projects: includeProjects,
+          include_archived: includeArchived
+        } 
+      });
+      const duration = Date.now() - startTime;
+      console.log(`✅ Ultra areas completed in ${duration}ms`);
+      return response;
+    } catch (error) {
+      console.warn('⚠️ Ultra areas failed, falling back to regular endpoint:', error.message);
+      // Fallback to regular endpoint
+      return apiClient.get('/areas', { 
+        params: { 
+          include_projects: includeProjects,
+          include_archived: includeArchived
+        } 
+      });
+    }
+  },
   getArea: (areaId) => apiClient.get(`/areas/${areaId}`),
   createArea: (areaData) => apiClient.post('/areas', areaData),
   updateArea: (areaId, areaData) => apiClient.put(`/areas/${areaId}`, areaData),
