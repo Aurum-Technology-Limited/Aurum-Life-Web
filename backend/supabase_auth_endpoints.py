@@ -225,6 +225,7 @@ async def login_user(user_credentials: UserLogin):
                             expires_delta=access_token_expires
                         )
                         
+                        logger.info(f"🔍 LOGIN TOKEN DEBUG: Created JWT with user_id: {legacy_user['id']} from legacy users table")
                         logger.warning(f"⚠️ Using legacy user ID for {user_credentials.email} - auth user not found")
                         
                         return {
