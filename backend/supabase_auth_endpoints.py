@@ -291,14 +291,17 @@ async def get_current_user_profile(request: Request):
         if isinstance(current_user, dict):
             user_id = current_user.get('id', current_user.get('sub'))
         
-        logger.info(f"Looking up user: {user_id}")
+        logger.info(f"🔍 TOKEN DEBUG: Looking up user: {user_id}")
+        logger.info(f"🔍 TOKEN DEBUG: Current user type: {type(current_user)}")
+        logger.info(f"🔍 TOKEN DEBUG: Current user data: {current_user}")
         
         # First try to get user from user_profiles table (which uses auth user IDs)
         try:
             user_profile = await supabase_manager.find_document("user_profiles", {"id": user_id})
+            logger.info(f"🔍 USER_PROFILES QUERY: SELECT * FROM user_profiles WHERE id = '{user_id}'")
             
             if user_profile:
-                logger.info("✅ Found user in user_profiles table")
+                logger.info(f"✅ Found user in user_profiles table: {user_profile.get('username')} (ID: {user_profile.get('id')})")
                 # Map level field to has_completed_onboarding (level 2 = completed, level 1 = not completed)
                 level = user_profile.get('level', 1)
                 has_completed_onboarding = level >= 2
@@ -313,8 +316,10 @@ async def get_current_user_profile(request: Request):
                     has_completed_onboarding=has_completed_onboarding,
                     created_at=user_profile.get('created_at', '2025-01-01T00:00:00')
                 )
+            else:
+                logger.info(f"❌ No user found in user_profiles table for ID: {user_id}")
         except Exception as e:
-            logger.info(f"User_profiles lookup failed: {e}")
+            logger.error(f"User_profiles lookup failed: {e}")
         
         # Fallback: try to get user from legacy users table  
         try:
