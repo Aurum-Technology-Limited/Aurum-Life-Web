@@ -393,11 +393,11 @@ class UltraPerformanceDashboardService:
             # Create proper User object with required fields
             user_obj = User(
                 id=user.get('id', user_id),
-                email=user.get('email', ''),
+                email='',  # user_profiles table doesn't have email field
                 username=user.get('username', ''),
                 first_name=user.get('first_name', ''),
                 last_name=user.get('last_name', ''),
-                has_completed_onboarding=user.get('has_completed_onboarding', True)
+                has_completed_onboarding=user.get('is_active', True)  # Use is_active as proxy
             )
             
             # Ultra-fast stats calculation with list comprehensions
