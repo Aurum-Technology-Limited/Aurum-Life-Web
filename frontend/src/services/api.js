@@ -312,14 +312,30 @@ export const recurringTasksAPI = {
   generateRecurringTaskInstances: () => apiClient.post('/recurring-tasks/generate-instances')
 };
 
-// Insights API
+// Insights API (updated with ultra-performance optimization)
 export const insightsAPI = {
-  getInsights: (dateRange = 'all_time', areaId = null) => {
-    let url = `/insights?date_range=${dateRange}`;
-    if (areaId) {
-      url += `&area_id=${areaId}`;
+  getInsights: async (dateRange = 'all_time', areaId = null) => {
+    try {
+      // Try ultra-performance endpoint first
+      console.log('🚀 Attempting ultra-performance insights...');
+      const startTime = Date.now();
+      let url = `/ultra/insights?date_range=${dateRange}`;
+      if (areaId) {
+        url += `&area_id=${areaId}`;
+      }
+      const response = await apiClient.get(url);
+      const duration = Date.now() - startTime;
+      console.log(`✅ Ultra insights completed in ${duration}ms`);
+      return response;
+    } catch (error) {
+      console.warn('⚠️ Ultra insights failed, falling back to regular endpoint:', error.message);
+      // Fallback to regular endpoint
+      let url = `/insights?date_range=${dateRange}`;
+      if (areaId) {
+        url += `&area_id=${areaId}`;
+      }
+      return apiClient.get(url);
     }
-    return apiClient.get(url);
   },
   getAreaDrillDown: (areaId, dateRange = 'all_time') => apiClient.get(`/insights/areas/${areaId}?date_range=${dateRange}`),
   getProjectDrillDown: (projectId, dateRange = 'all_time') => apiClient.get(`/insights/projects/${projectId}?date_range=${dateRange}`),
