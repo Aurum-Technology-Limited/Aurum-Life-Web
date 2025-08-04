@@ -43,50 +43,48 @@ class CacheService:
             logger.warning("Redis not available, using in-memory cache only")
     
     def _initialize_redis(self):
-        """Initialize Redis connection with error handling and fallback"""
+        """Initialize Redis connection with rapid fallback to prevent performance impact"""
         try:
+            # Check if Redis is available in environment first
             import os
+            redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
             
-            # Try multiple Redis configurations
-            redis_configs = [
-                "redis://localhost:6379/0",  # Default local Redis
-                "redis://127.0.0.1:6379/0",  # Alternative local
-                os.environ.get('REDIS_URL', ''),  # Environment variable
-            ]
-            
-            for redis_url in redis_configs:
-                if not redis_url:
-                    continue
-                    
-                try:
-                    self.redis_client = redis.from_url(
-                        redis_url, 
-                        decode_responses=True,
-                        socket_connect_timeout=5,
-                        socket_timeout=5,
-                        retry_on_timeout=True,
-                        max_connections=10
-                    )
-                    
-                    # Test the connection
-                    import asyncio
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    # For now, assume connection works - async test would be complex here
-                    
-                    logger.info(f"✅ Redis cache initialized successfully with {redis_url}")
+            # Skip Redis initialization if in containerized environment without Redis
+            try:
+                import socket
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(1)  # 1 second timeout for rapid check
+                result = sock.connect_ex(('localhost', 6379))
+                sock.close()
+                
+                if result != 0:
+                    logger.info("⚠️ Redis not available in environment, using memory cache only")
+                    self.redis_client = None
                     return
                     
-                except Exception as e:
-                    logger.warning(f"⚠️ Redis connection failed for {redis_url}: {e}")
-                    continue
+            except Exception:
+                logger.info("⚠️ Redis connectivity check failed, using memory cache only")
+                self.redis_client = None
+                return
             
-            # All Redis connections failed
-            logger.warning("⚠️ All Redis connections failed, using memory cache only")
-            self.redis_client = None
+            # Try to initialize Redis with rapid timeout
+            try:
+                self.redis_client = redis.from_url(
+                    redis_url, 
+                    decode_responses=True,
+                    socket_connect_timeout=2,
+                    socket_timeout=2,
+                    retry_on_timeout=False,  # No retries for better performance
+                    max_connections=5
+                )
+                logger.info(f"✅ Redis cache initialized successfully")
+                
+            except Exception as e:
+                logger.info(f"⚠️ Redis initialization failed: {e}, using memory cache")
+                self.redis_client = None
             
         except Exception as e:
-            logger.warning(f"⚠️ Redis initialization failed: {e}, using memory cache")
+            logger.info(f"⚠️ Redis setup failed: {e}, using memory cache")
             self.redis_client = None
     
     def _generate_cache_key(self, prefix: str, user_id: str = None, **kwargs) -> str:
