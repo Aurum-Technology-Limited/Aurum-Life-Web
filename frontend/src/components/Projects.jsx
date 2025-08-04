@@ -15,6 +15,7 @@ import {
   FolderIcon as FolderIconSolid
 } from '@heroicons/react/solid';
 import { useAuth } from '../contexts/BackendAuthContext';
+import { projectsAPI } from '../services/api';
 import ProjectDecompositionHelper from './ProjectDecompositionHelper';
 
 // Memoized ProjectCard component to prevent unnecessary re-renders
