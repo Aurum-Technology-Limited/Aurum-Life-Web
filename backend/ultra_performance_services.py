@@ -364,10 +364,15 @@ class UltraPerformanceDashboardService:
             projects = all_data['projects']
             areas = all_data['areas']
             
-            # Lightning-fast user validation
+            # Lightning-fast user validation - handle user_profiles data
             user = users[0] if users else None
             if not user:
-                raise ValueError("User not found")
+                # Fallback: try to get user data from regular service
+                from supabase_services import SupabaseUserService
+                user_data = await SupabaseUserService.get_user_by_id(user_id)
+                if not user_data:
+                    raise ValueError("User not found")
+                user = user_data
             
             user_obj = User(**user)
             
