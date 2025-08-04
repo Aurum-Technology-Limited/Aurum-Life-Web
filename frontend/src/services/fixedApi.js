@@ -112,29 +112,29 @@ export const fixedAPI = {
     return result;
   },
   
-  // Dashboard data
-  getDashboard: async () => {
-    const cacheKey = 'dashboard';
+  // Ultra-Performance Dashboard data
+  getUltraDashboard: async () => {
+    const cacheKey = 'ultra_dashboard';
     
     // Check cache
     if (apiCache.has(cacheKey)) {
       const cached = apiCache.get(cacheKey);
       if (Date.now() - cached.timestamp < CACHE_TTL) {
-        console.log('📦 Using cached dashboard data');
+        console.log('📦 Using cached ultra dashboard data');
         return cached.data;
       }
     }
     
     // Prevent duplicate requests
     if (activeRequests.has(cacheKey)) {
-      console.log('⏳ Dashboard request already in progress');
+      console.log('⏳ Ultra dashboard request already in progress');
       return activeRequests.get(cacheKey);
     }
     
     const token = getAuthToken();
     if (!token) throw new Error('No auth token');
     
-    const url = buildUrl('/api/dashboard');
+    const url = buildUrl('/api/ultra/dashboard');
     const requestPromise = safeFetch(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -153,6 +153,57 @@ export const fixedAPI = {
       return result;
     } finally {
       activeRequests.delete(cacheKey);
+    }
+  },
+  
+  // Dashboard data (fallback to regular endpoint)
+  getDashboard: async () => {
+    // Try ultra-performance first, fallback to regular
+    try {
+      return await fixedAPI.getUltraDashboard();
+    } catch (error) {
+      console.warn('Ultra dashboard failed, falling back to regular dashboard:', error);
+      
+      const cacheKey = 'dashboard';
+      
+      // Check cache
+      if (apiCache.has(cacheKey)) {
+        const cached = apiCache.get(cacheKey);
+        if (Date.now() - cached.timestamp < CACHE_TTL) {
+          console.log('📦 Using cached dashboard data');
+          return cached.data;
+        }
+      }
+      
+      // Prevent duplicate requests
+      if (activeRequests.has(cacheKey)) {
+        console.log('⏳ Dashboard request already in progress');
+        return activeRequests.get(cacheKey);
+      }
+      
+      const token = getAuthToken();
+      if (!token) throw new Error('No auth token');
+      
+      const url = buildUrl('/api/dashboard');
+      const requestPromise = safeFetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      activeRequests.set(cacheKey, requestPromise);
+      
+      try {
+        const result = await requestPromise;
+        
+        // Cache successful result
+        apiCache.set(cacheKey, {
+          data: result,
+          timestamp: Date.now()
+        });
+        
+        return result;
+      } finally {
+        activeRequests.delete(cacheKey);
+      }
     }
   },
   
