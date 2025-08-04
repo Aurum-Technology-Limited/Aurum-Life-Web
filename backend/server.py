@@ -2602,7 +2602,7 @@ async def get_ultra_performance_pillars(
     """Ultra-high performance pillar retrieval - Target: <150ms"""
     try:
         user_id = str(current_user.id)
-        logger.info(f"🚀 Ultra-performance pillars request for user: {user_id}, include_areas={include_areas}, include_archived={include_archived}")
+        logger.info(f"🚀 Ultra-performance pillars request for user: {user_id}")
         
         pillars = await UltraPerformancePillarService.get_user_pillars(
             user_id, include_areas, include_archived
