@@ -62,9 +62,15 @@ const AlignmentScore = ({ onSectionChange }) => {
   };
 
   const handleSetGoal = () => {
-    // Navigate to Settings page with goals subsection
-    if (onSectionChange) {
-      onSectionChange('settings', { subSection: 'goals' });
+    // Navigate to Settings page goals section using React Router
+    try {
+      navigate('/settings/goals');
+    } catch (error) {
+      // Fallback to onSectionChange if navigate fails
+      console.log('Router navigation failed, using onSectionChange fallback');
+      if (onSectionChange) {
+        onSectionChange('settings', { subSection: 'goals' });
+      }
     }
   };
 
