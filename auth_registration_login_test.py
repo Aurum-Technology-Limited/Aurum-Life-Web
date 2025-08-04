@@ -17,7 +17,7 @@ TESTING REQUIREMENTS:
 - Test immediate login after successful registration
 - Check if JWT token is correctly returned and validated
 
-BACKEND URL: https://fa85c789-1504-48f1-9b33-719ff2e79ef1.preview.emergentagent.com/api
+BACKEND URL: https://8f296db8-41e4-45d4-b9b1-dbc5e21b4a2a.preview.emergentagent.com/api
 """
 
 import requests
@@ -29,7 +29,7 @@ import time
 import uuid
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://fa85c789-1504-48f1-9b33-719ff2e79ef1.preview.emergentagent.com/api"
+BACKEND_URL = "https://8f296db8-41e4-45d4-b9b1-dbc5e21b4a2a.preview.emergentagent.com/api"
 
 class AuthRegistrationLoginTester:
     def __init__(self):

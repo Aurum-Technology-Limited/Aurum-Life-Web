@@ -35,7 +35,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "style-src 'self' https://fonts.googleapis.com; "
                 "font-src 'self' https://fonts.gstatic.com; "
                 "img-src 'self' data: https:; "
-                "connect-src 'self' https://fa85c789-1504-48f1-9b33-719ff2e79ef1.preview.emergentagent.com; "
+                "connect-src 'self' https://8f296db8-41e4-45d4-b9b1-dbc5e21b4a2a.preview.emergentagent.com; "
                 "frame-src 'self' https://accounts.google.com; "
                 "object-src 'none'; "
                 "base-uri 'self'; "
