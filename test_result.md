@@ -56,8 +56,9 @@
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+## agent_communication:
+##     -agent: "main"
+##     -message: "User provided specific verification-only testing directives: Execute three test scenarios - 1) New User Onboarding and Data Integrity (verify no data duplication, proper dashboard navigation) 2) Hierarchy Count Accuracy (verify non-zero counts in Pillars/Areas) 3) Alignment Score Navigation (verify 'Set Monthly Goal' button navigates to /settings/goals). CONSTRAINT: Verification-only task, no code changes authorized. Will test backend first per protocol, then ask user about frontend testing. Need to report success/failure of each scenario."
 ##     -agent: "main"
 ##     -message: "Starting Pillar Hierarchy implementation - Phase 1: Backend Foundation. Will implement Pillar model, API endpoints, and Area-Pillar linking as per user confirmation."
 ##     -agent: "main"
