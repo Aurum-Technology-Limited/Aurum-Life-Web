@@ -2954,10 +2954,13 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "VERIFICATION TESTING: New User Onboarding and Data Integrity"
+    - "VERIFICATION TESTING: Hierarchy Count Accuracy"
+    - "VERIFICATION TESTING: Alignment Score Navigation"
   stuck_tasks: []
   test_all: false
-  test_priority: "high_first"
+  test_priority: "verification_first"
 
 agent_communication:
     - agent: "testing"
