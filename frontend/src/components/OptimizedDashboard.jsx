@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { TrendingUp, Target, BookOpen, Trophy, Flame, Loader2, RefreshCw } from 'lucide-react';
 import fixedAPI from '../services/fixedApi';
 import ErrorBoundary from './ErrorBoundary';
-import DailyStreakTracker from './DailyStreakTracker';
+import LoginStreakTracker from './LoginStreakTracker';
 import OnboardingWizard from './OnboardingWizard';
 import AlignmentScore from './AlignmentScore';
 import { api } from '../services/api';
