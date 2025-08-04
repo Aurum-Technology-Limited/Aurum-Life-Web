@@ -60,15 +60,21 @@ const AlignmentScore = ({ onSectionChange }) => {
   };
 
   const handleSetGoal = () => {
-    // Navigate to Settings page goals section using React Router
+    // Use window.location for direct navigation to settings page
     try {
-      navigate('/settings/goals');
-    } catch (error) {
-      // Fallback to onSectionChange if navigate fails
-      console.log('Router navigation failed, using onSectionChange fallback');
+      // First try the direct route approach
       if (onSectionChange) {
         onSectionChange('settings', { subSection: 'goals' });
+      } else {
+        // Fallback: use window location hash navigation 
+        window.location.hash = '#/settings/goals';
+        // Or try direct path navigation
+        window.location.pathname = '/settings/goals';
       }
+    } catch (error) {
+      console.error('Navigation failed:', error);
+      // Last resort: alert the user
+      alert('Please navigate to Settings > Goals to set your monthly goal');
     }
   };
 
