@@ -157,15 +157,25 @@ const LoginStreakTracker = () => {
               {date && (
                 <div 
                   className={`
-                    w-6 h-6 rounded-full text-xs flex items-center justify-center
+                    w-6 h-6 rounded-full text-xs flex items-center justify-center font-medium transition-colors
                     ${isLoginDay(date) 
-                      ? 'bg-yellow-400 text-black font-semibold' 
+                      ? 'bg-yellow-400 text-black font-bold shadow-lg' 
                       : isToday(date)
-                      ? 'bg-gray-600 text-white border border-gray-500'
-                      : 'text-gray-400'
+                      ? 'bg-gray-600 text-white border-2 border-yellow-400'
+                      : isFutureDay(date) || !isLoginDay(date)
+                      ? 'bg-gray-700 text-gray-500'
+                      : 'bg-gray-700 text-gray-400'
                     }
                   `}
-                  title={isLoginDay(date) ? `Logged in on ${date.toLocaleDateString()}` : ''}
+                  title={
+                    isLoginDay(date) 
+                      ? `✅ Logged in on ${date.toLocaleDateString()}` 
+                      : isToday(date)
+                      ? `Today - ${date.toLocaleDateString()}`
+                      : isFutureDay(date)
+                      ? `Future day - ${date.toLocaleDateString()}`
+                      : `Missed day - ${date.toLocaleDateString()}`
+                  }
                 >
                   {date.getDate()}
                 </div>
