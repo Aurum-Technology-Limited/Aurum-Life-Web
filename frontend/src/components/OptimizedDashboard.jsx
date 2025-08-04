@@ -160,11 +160,11 @@ const OptimizedDashboard = ({ onSectionChange }) => {
       console.log('🔍 Checking if user is new...');
       setCheckingNewUser(true);
       
-      // Check for existing data across all main entities
+      // Check for existing data across all main entities using ULTRA-PERFORMANCE endpoints
       const [pillarsResponse, areasResponse, projectsResponse] = await Promise.all([
-        api.get('/pillars'),
-        api.get('/areas'), 
-        api.get('/projects')
+        api.get('/ultra/pillars'),
+        api.get('/ultra/areas'), 
+        api.get('/ultra/projects')
       ]);
 
       const totalItems = 
