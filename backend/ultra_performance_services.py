@@ -364,7 +364,7 @@ class UltraPerformanceDashboardService:
             projects = all_data['projects']
             areas = all_data['areas']
             
-            # Lightning-fast user validation - handle user_profiles data
+            # Lightning-fast user validation with proper User object creation
             user = users[0] if users else None
             if not user:
                 # Fallback: try to get user data from regular service
@@ -374,8 +374,15 @@ class UltraPerformanceDashboardService:
                     raise ValueError("User not found")
                 user = user_data
             
-            # Don't create User object, just use the profile data directly
-            user_obj = user
+            # Create proper User object with required fields
+            user_obj = User(
+                id=user.get('id', user_id),
+                email=user.get('email', ''),
+                username=user.get('username', ''),
+                first_name=user.get('first_name', ''),
+                last_name=user.get('last_name', ''),
+                has_completed_onboarding=user.get('has_completed_onboarding', True)
+            )
             
             # Ultra-fast stats calculation with list comprehensions
             stats_data = {
