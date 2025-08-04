@@ -6,10 +6,10 @@ Provides multi-level caching for API responses and database queries
 import json
 import logging
 import hashlib
+import asyncio
 from typing import Any, Dict, List, Optional, Union
 from datetime import datetime, timedelta
 from functools import wraps
-import asyncio
 
 # Redis imports with fallback
 try:
