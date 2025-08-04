@@ -3,7 +3,7 @@ import {Plus, Edit2, Trash2, AlertCircle, X, Save, Layers, Archive, ArchiveResto
 import { areasAPI, api } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import {useAreasQuery, usePillarsQuery} from '../hooks/useQueries';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import DonutChart from './ui/DonutChart';
 import IconPicker from './ui/IconPicker';
 import {getDynamicFontSize, CHARACTER_LIMITS, getCharacterCounterData} from '../utils/textUtils';
