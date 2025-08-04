@@ -207,7 +207,6 @@ class OptimizedSupabaseClient:
             logger.error(f"Optimized select error: {e}")
             raise
     
-    @track_query_performance("batch_insert")
     async def batch_insert(self, table: str, records: List[Dict]) -> List[Dict]:
         """
         Optimized batch insert operation
