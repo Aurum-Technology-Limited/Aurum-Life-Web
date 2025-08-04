@@ -153,7 +153,7 @@ const Dashboard = memo(({ onSectionChange }) => {
         <AlignmentScore onSectionChange={onSectionChange} />
         
         {/* Daily Streak Tracker */}
-        <DailyStreakTracker showReflectionPrompt={true} />
+        <LoginStreakTracker />
       </div>
 
       {/* Quick Actions */}
