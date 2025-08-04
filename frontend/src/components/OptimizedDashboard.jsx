@@ -6,6 +6,7 @@ import LoginStreakTracker from './LoginStreakTracker';
 import OnboardingWizard from './OnboardingWizard';
 import AlignmentScore from './AlignmentScore';
 import { api } from '../services/api';
+import { useAuth } from '../contexts/BackendAuthContext';
 
 // Memoized StatCard component with data sanitization
 const StatCard = React.memo(({ title, value, subtitle, icon: Icon, trend, loading = false }) => {
