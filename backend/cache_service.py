@@ -152,16 +152,21 @@ class CacheService:
         try:
             serialized_value = json.dumps(value, default=str)
             
-            # Try Redis first
+            # Try Redis first only if available
             if self.redis_client:
                 try:
-                    await self.redis_client.setex(key, ttl_seconds, serialized_value)
+                    await asyncio.wait_for(
+                        self.redis_client.setex(key, ttl_seconds, serialized_value),
+                        timeout=0.1  # 100ms timeout for Redis calls
+                    )
                     self.cache_stats['sets'] += 1
                     return True
-                except Exception as e:
-                    logger.warning(f"Redis set error: {e}")
+                except (asyncio.TimeoutError, Exception) as e:
+                    # Redis failed - continue to memory cache
+                    logger.debug(f"Redis set timeout/error: {e}")
+                    pass
             
-            # Fallback to memory cache
+            # Fallback to memory cache (always works)
             expires_at = datetime.utcnow() + timedelta(seconds=ttl_seconds)
             self.memory_cache[key] = {
                 'data': value,
