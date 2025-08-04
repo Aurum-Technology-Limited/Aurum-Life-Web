@@ -402,7 +402,23 @@ class UltraPerformanceDashboardService:
             
             # Lightning-fast recent tasks (top 5)
             recent_tasks = sorted(tasks, key=lambda x: x.get("created_at", ""), reverse=True)[:5]
-            recent_task_responses = [TaskResponse(**task) for task in recent_tasks]
+            recent_task_responses = []
+            for task in recent_tasks:
+                # Map database fields to TaskResponse fields
+                task_data = {
+                    "id": task.get("id", ""),
+                    "user_id": task.get("user_id", ""),
+                    "title": task.get("name", ""),  # Map 'name' to 'title'
+                    "description": task.get("description", ""),
+                    "completed": task.get("status") == "completed",
+                    "priority": task.get("priority", "medium"),
+                    "due_date": task.get("due_date"),
+                    "project_id": task.get("project_id"),
+                    "status": task.get("status", "todo"),
+                    "created_at": task.get("created_at"),
+                    "updated_at": task.get("updated_at")
+                }
+                recent_task_responses.append(TaskResponse(**task_data))
             
             return UserDashboard(
                 user=user_obj,
