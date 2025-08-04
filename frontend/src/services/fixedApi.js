@@ -121,15 +121,17 @@ export const fixedAPI = {
     }
   },
   
-  // Current user
+  // Ultra-Fast Current User with Performance Monitoring
   getCurrentUser: async () => {
+    const startTime = Date.now();
     const cacheKey = 'current_user';
     
-    // Check cache first
+    // Check cache first for instant response
     if (apiCache.has(cacheKey)) {
       const cached = apiCache.get(cacheKey);
       if (Date.now() - cached.timestamp < CACHE_TTL) {
-        console.log('📦 Using cached user data');
+        const cacheTime = Date.now() - startTime;
+        console.log(`📦 Using cached user data (${cacheTime}ms)`);
         return cached.data;
       }
     }
@@ -137,18 +139,50 @@ export const fixedAPI = {
     const token = getAuthToken();
     if (!token) throw new Error('No auth token');
     
-    const url = buildUrl('/api/auth/me');
-    const result = await safeFetch(url, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    
-    // Cache the result
-    apiCache.set(cacheKey, {
-      data: result,
-      timestamp: Date.now()
-    });
-    
-    return result;
+    try {
+      const url = buildUrl('/api/auth/me');
+      
+      // Optimized user fetch with reduced timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      
+      const response = await fetch(url, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`User fetch failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const result = { data };
+      
+      // Cache the result for future requests
+      apiCache.set(cacheKey, {
+        data: result,
+        timestamp: Date.now()
+      });
+      
+      const totalTime = Date.now() - startTime;
+      console.log(`✅ User data fetched in ${totalTime}ms`);
+      
+      if (totalTime > 200) {
+        console.warn(`⚠️ User fetch time ${totalTime}ms exceeds 200ms target`);
+      }
+      
+      return result;
+      
+    } catch (error) {
+      const failTime = Date.now() - startTime;
+      console.error(`❌ User fetch failed after ${failTime}ms:`, error.message);
+      throw error;
+    }
   },
   
   // Ultra-Performance Dashboard data
