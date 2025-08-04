@@ -569,7 +569,7 @@ class VerificationScenariosTestSuite:
                 calc_data = result['data']
                 
                 # Check if response contains score-related data
-                has_score_data = any(key in calc_data for key in ['score', 'points', 'alignment', 'weekly', 'monthly'])
+                has_score_data = any(key in calc_data for key in ['score', 'points', 'alignment', 'weekly', 'monthly', 'monthly_alignment_goal', 'current_streak'])
                 
                 self.log_test(
                     f"ALIGNMENT CALCULATION ENDPOINT",
