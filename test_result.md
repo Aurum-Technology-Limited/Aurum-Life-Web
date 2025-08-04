@@ -130,6 +130,17 @@
 user_problem_statement: "Objective: Restore Core Functionality and Data Integrity - The goal is to fix the data duplication during onboarding, ensure the UI accurately reflects the system's state, and repair broken UI navigation. Issues: 1) Smart Onboarding Duplication - template creates multiple instances of each Pillar, Area, and Project 2) Inaccurate Hierarchy Counts - UI displaying '0' for all counts 3) Non-Functional 'Set Monthly Goal' Button - broken navigation on Alignment Score widget"
 
 backend:
+  - task: "User Registration and Login Authentication System"
+    implemented: true
+    working: false
+    file: "backend/supabase_auth_endpoints.py, backend/supabase_auth.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "🚨 CRITICAL AUTHENTICATION ISSUES IDENTIFIED - ROOT CAUSE ANALYSIS COMPLETED! Comprehensive testing executed covering user registration and login process to identify 401 errors. TESTING RESULTS: ✅ EXISTING USER LOGIN WORKING: Successfully authenticated marc.alleyne@aurumtechnologyltd.com via hybrid authentication system (Supabase Auth fails, falls back to legacy auth), JWT token generated correctly with proper 3-part structure ✅ PROTECTED ENDPOINTS ACCESS: All core endpoints (pillars, areas, projects, tasks) accessible with valid token - 100% success rate ✅ USER DATA PERSISTENCE VERIFIED: Authentication system properly maintains user sessions and allows access to user-specific data ❌ CRITICAL ISSUE 1 - USER REGISTRATION FAILING: POST /api/auth/register returns HTTP 400 'Registration failed' due to Supabase 'email rate limit exceeded' (HTTP 429). New users cannot be created in the system. ❌ CRITICAL ISSUE 2 - USER PROFILE MISMATCH: Token verification returns wrong user profile - login with marc.alleyne@aurumtechnologyltd.com returns profile for 'navtest' user instead of expected user. This indicates user ID mapping issues in hybrid authentication system. ❌ CRITICAL ISSUE 3 - INVALID PASSWORD HANDLING: System returns HTTP 200 instead of HTTP 401 for invalid passwords, indicating authentication validation is not working correctly. ROOT CAUSE ANALYSIS: 1) Supabase Auth is rate-limited/misconfigured causing registration failures 2) Hybrid authentication system has user ID mapping bugs 3) Password validation logic is bypassed in legacy authentication fallback. IMPACT: New users cannot register, existing users get wrong profiles, security vulnerability with password validation. URGENT FIXES REQUIRED: Fix Supabase Auth configuration, resolve user ID mapping in hybrid auth, implement proper password validation."
   - task: "Fix Smart Onboarding API Duplication Issue"
     implemented: true
     working: true
