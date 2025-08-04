@@ -162,7 +162,7 @@ backend:
     file: "backend/ultra_performance_services.py, backend/query_optimizer.py, backend/memory_processor.py, backend/connection_pool.py"
     stuck_count: 1
     priority: "critical"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: false
           agent: "main"
@@ -176,6 +176,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "🚨 CRITICAL PERFORMANCE FAILURE AFTER ULTRA-OPTIMIZATION IMPLEMENTATION - 0% SUCCESS RATE! Executed comprehensive performance testing after main agent's ultra-performance optimizations and discovered SEVERE performance degradation. CRITICAL FAILURES: ❌ LOGIN PERFORMANCE CATASTROPHIC: 5963ms (5.96 seconds) - 12x slower than 500ms target, WORSE than previous 7117ms issue ❌ ALL NAVIGATION FAILED: Today (1175ms), Pillars (1050ms), Areas (1146ms), Projects (1051ms), Tasks (1050ms), Insights (1064ms), AI Coach (1051ms) - ALL exceed 500ms target ❌ ULTRA-ENDPOINTS ACTIVE BUT EXTREMELY SLOW: Console shows '/ultra/pillars took 3801ms', '/ultra/areas took 3810ms', '/ultra/projects took 3807ms' - Ultra endpoints are 19x slower than target ❌ PERFORMANCE TARGET COMPLIANCE: 0/9 tests passed (0% success rate) - Complete failure to meet any performance targets. POSITIVE FINDINGS: ✅ Ultra-performance endpoints ARE being called correctly (/api/ultra/dashboard, /api/ultra/pillars, /api/ultra/areas, /api/ultra/projects detected), ✅ Frontend integration working (cache system active, fallback working), ✅ No critical JavaScript errors, ✅ All sections accessible and functional. ROOT CAUSE: The ultra-performance backend endpoints are implemented and being called, but they're performing 19x worse than targets (3800ms+ vs <200ms target). The optimization infrastructure exists but is causing severe performance degradation instead of improvement. URGENT ACTION REQUIRED: Backend ultra-performance services need immediate investigation - they're slower than regular endpoints and causing system-wide performance collapse. The login optimization also failed completely."
+        - working: false
+          agent: "main"
+          comment: "🔧 CRITICAL PERFORMANCE REGRESSION FIX IN PROGRESS - Identified and fixing two root causes from backend logs: 1. Redis Connection Failures: Cache service experiencing 'Cannot assign requested address' errors due to no Redis server in container environment. Enhanced cache service with rapid fallback to memory cache and 100ms timeouts to prevent blocking. 2. Database Schema Errors: Query optimizer was selecting non-existent fields (pillars.importance, user_profiles.email, user_profiles.sort_order). Fixed field selections to match actual database schema. Applied performance optimizations: rapid Redis connectivity checks, fast-fail timeouts, improved memory cache efficiency. Ready for backend testing to verify performance fixes."
     implemented: true
     working: true
     file: "backend/server.py, backend/supabase_services.py, backend/models.py"
