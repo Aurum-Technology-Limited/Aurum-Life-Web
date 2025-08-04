@@ -118,13 +118,15 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
     <div className="grid grid-cols-2 gap-4">
       <div>
         <p className="text-2xl font-bold text-white">
-          {area.projects?.filter(p => p.status === 'active').length || 0}
+          {area.project_count ? (area.project_count - (area.completed_project_count || 0)) : 
+           area.projects?.filter(p => p.status && p.status.toLowerCase() === 'active').length || 0}
         </p>
         <p className="text-xs text-gray-400">Active Projects</p>
       </div>
       <div>
         <p className="text-2xl font-bold text-white">
-          {area.projects?.filter(p => p.status === 'completed').length || 0}
+          {area.completed_project_count || 
+           area.projects?.filter(p => p.status && p.status.toLowerCase() === 'completed').length || 0}
         </p>
         <p className="text-xs text-gray-400">Completed</p>
       </div>
