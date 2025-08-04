@@ -64,21 +64,24 @@ const AlignmentScore = ({ onSectionChange }) => {
     
     // Use the provided onSectionChange callback for proper navigation
     try {
-      if (onSectionChange) {
+      if (onSectionChange && typeof onSectionChange === 'function') {
         console.log('✅ Using onSectionChange to navigate to settings/goals');
+        // Force navigation to settings with goals subsection
         onSectionChange('settings', { subSection: 'goals' });
+        
+        // Add a small delay to ensure state update
+        setTimeout(() => {
+          console.log('✅ AlignmentScore: Navigation completed to Goals settings');
+        }, 100);
       } else {
-        console.warn('⚠️ onSectionChange not available, using fallback navigation');
-        // Fallback approaches
-        if (window.location.hash) {
-          window.location.hash = '#/settings/goals';
-        } else {
-          window.location.pathname = '/settings/goals';
-        }
+        console.warn('⚠️ onSectionChange not available or not a function, using fallback navigation');
+        // Force page navigation as fallback
+        window.location.hash = '#settings';
+        window.location.reload();
       }
     } catch (error) {
       console.error('🚨 Navigation failed:', error);
-      alert('Please navigate to Settings > Goals to set your monthly goal');
+      alert('Navigation failed. Please manually go to Settings > Goals to set your monthly goal');
     }
   };
 
