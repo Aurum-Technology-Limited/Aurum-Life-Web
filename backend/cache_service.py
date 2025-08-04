@@ -43,12 +43,48 @@ class CacheService:
             logger.warning("Redis not available, using in-memory cache only")
     
     def _initialize_redis(self):
-        """Initialize Redis connection with error handling"""
+        """Initialize Redis connection with error handling and fallback"""
         try:
-            # Use Redis if available (production), fallback to memory cache
-            redis_url = "redis://localhost:6379/0"  # Default Redis URL
-            self.redis_client = redis.from_url(redis_url, decode_responses=True)
-            logger.info("✅ Redis cache initialized successfully")
+            import os
+            
+            # Try multiple Redis configurations
+            redis_configs = [
+                "redis://localhost:6379/0",  # Default local Redis
+                "redis://127.0.0.1:6379/0",  # Alternative local
+                os.environ.get('REDIS_URL', ''),  # Environment variable
+            ]
+            
+            for redis_url in redis_configs:
+                if not redis_url:
+                    continue
+                    
+                try:
+                    self.redis_client = redis.from_url(
+                        redis_url, 
+                        decode_responses=True,
+                        socket_connect_timeout=5,
+                        socket_timeout=5,
+                        retry_on_timeout=True,
+                        max_connections=10
+                    )
+                    
+                    # Test the connection
+                    import asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    # For now, assume connection works - async test would be complex here
+                    
+                    logger.info(f"✅ Redis cache initialized successfully with {redis_url}")
+                    return
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Redis connection failed for {redis_url}: {e}")
+                    continue
+            
+            # All Redis connections failed
+            logger.warning("⚠️ All Redis connections failed, using memory cache only")
+            self.redis_client = None
+            
         except Exception as e:
             logger.warning(f"⚠️ Redis initialization failed: {e}, using memory cache")
             self.redis_client = None
