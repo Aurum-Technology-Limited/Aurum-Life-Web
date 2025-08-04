@@ -10,7 +10,7 @@ import base64
 import sys
 
 # Configuration
-BACKEND_URL = "https://8f43b565-3ef8-487e-92ed-bb0b1b3a1936.preview.emergentagent.com/api"
+BACKEND_URL = "https://fa85c789-1504-48f1-9b33-719ff2e79ef1.preview.emergentagent.com/api"
 
 def decode_jwt_payload(token):
     """Decode JWT payload without verification"""

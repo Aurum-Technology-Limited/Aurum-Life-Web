@@ -236,7 +236,7 @@ class NotificationService:
             subject = f"Aurum Life: {reminder.title}"
             
             # Create action URL based on notification type
-            action_url = f"https://8f43b565-3ef8-487e-92ed-bb0b1b3a1936.preview.emergentagent.com/tasks?task_id={reminder.task_id}"
+            action_url = f"https://fa85c789-1504-48f1-9b33-719ff2e79ef1.preview.emergentagent.com/tasks?task_id={reminder.task_id}"
             
             html_content = NotificationService._create_notification_email_template(
                 user_name=user_name,
