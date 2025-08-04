@@ -111,15 +111,21 @@ class CacheService:
     async def get(self, key: str) -> Optional[Any]:
         """Get value from cache with Redis fallback to memory"""
         try:
-            # Try Redis first
+            # Try Redis first only if available and initialized properly
             if self.redis_client:
                 try:
-                    cached_data = await self.redis_client.get(key)
+                    # Set a short timeout to prevent Redis from blocking performance
+                    cached_data = await asyncio.wait_for(
+                        self.redis_client.get(key), 
+                        timeout=0.1  # 100ms timeout for Redis calls
+                    )
                     if cached_data:
                         self.cache_stats['hits'] += 1
                         return json.loads(cached_data)
-                except Exception as e:
-                    logger.warning(f"Redis get error: {e}")
+                except (asyncio.TimeoutError, Exception) as e:
+                    # Redis failed - fall back to memory immediately
+                    logger.debug(f"Redis get timeout/error: {e}")
+                    pass
             
             # Fallback to memory cache
             if key in self.memory_cache:
@@ -137,7 +143,7 @@ class CacheService:
             return None
             
         except Exception as e:
-            logger.error(f"Cache get error: {e}")
+            logger.debug(f"Cache get error: {e}")
             self.cache_stats['misses'] += 1
             return None
     
