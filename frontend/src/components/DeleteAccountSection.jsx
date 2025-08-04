@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
-import { ExclamationTriangleIcon, ArrowLeftIcon, TrashIcon } from '@heroicons/react/outline';
+import { ExclamationIcon, ArrowLeftIcon, TrashIcon } from '@heroicons/react/outline';
 import api from '../services/api';
 
 const DeleteAccountSection = ({ onBack }) => {
