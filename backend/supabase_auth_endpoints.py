@@ -271,6 +271,9 @@ async def get_current_user_profile(request: Request):
                 # Decode JWT token directly
                 payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
                 user_id: str = payload.get("sub")
+                logger.info(f"🔍 JWT DEBUG: Decoded payload: {payload}")
+                logger.info(f"🔍 JWT DEBUG: Extracted user_id from 'sub' claim: {user_id}")
+                
                 if user_id is None:
                     raise HTTPException(status_code=401, detail="Could not validate credentials")
                 
