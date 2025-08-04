@@ -11,7 +11,7 @@ from functools import wraps
 
 # Import our optimization modules
 from cache_service import cache_service, cache_dashboard_data, cache_user_projects, cache_user_areas, cache_user_pillars, cache_insights_data
-from optimized_supabase import optimized_supabase, get_all_user_data_optimized
+from query_optimizer import get_ultra_fast_user_data
 from performance_monitor import track_endpoint_performance
 
 # Import existing models
@@ -75,7 +75,7 @@ class UltraPerformancePillarService:
         
         try:
             # Get all data in single optimized batch operation
-            all_data = await get_all_user_data_optimized(user_id)
+            all_data = await get_ultra_fast_user_data(user_id)
             
             pillars = all_data['pillars']
             
@@ -189,7 +189,7 @@ class UltraPerformanceAreaService:
         
         try:
             # Single batch operation for maximum speed
-            all_data = await get_all_user_data_optimized(user_id)
+            all_data = await get_ultra_fast_user_data(user_id)
             
             areas = all_data['areas']
             
@@ -278,7 +278,7 @@ class UltraPerformanceProjectService:
         
         try:
             # Lightning-fast batch data retrieval
-            all_data = await get_all_user_data_optimized(user_id)
+            all_data = await get_ultra_fast_user_data(user_id)
             
             projects = all_data['projects']
             tasks = all_data['tasks']
@@ -356,7 +356,7 @@ class UltraPerformanceDashboardService:
         
         try:
             # Single lightning-fast batch operation
-            all_data = await get_all_user_data_optimized(user_id)
+            all_data = await get_ultra_fast_user_data(user_id)
             
             # Extract data with immediate processing
             users = all_data['users']
@@ -433,7 +433,7 @@ class UltraPerformanceInsightsService:
         
         try:
             # Single ultra-fast batch operation
-            all_data = await get_all_user_data_optimized(user_id)
+            all_data = await get_ultra_fast_user_data(user_id)
             
             # Lightning-fast data processing
             tasks = all_data['tasks']
@@ -497,6 +497,5 @@ def get_ultra_performance_stats():
     """Get comprehensive performance statistics"""
     return {
         'cache_stats': cache_service.get_stats(),
-        'query_stats': optimized_supabase.get_query_stats(),
         'timestamp': datetime.utcnow().isoformat()
     }
