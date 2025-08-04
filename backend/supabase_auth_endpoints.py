@@ -300,31 +300,81 @@ async def get_current_user_profile(request: Request):
         logger.info(f"🔍 TOKEN DEBUG: Current user type: {type(current_user)}")
         logger.info(f"🔍 TOKEN DEBUG: Current user data: {current_user}")
         
-        # First try to get user from user_profiles table (which uses auth user IDs)
+        # CRITICAL FIX: First try to find user by auth user ID, if not found, try to find by email
+        user_profile = None
+        legacy_user = None
+        
+        # Get email from auth token first (this is the most reliable identifier)
+        user_email = None
+        if hasattr(current_user, 'email'):
+            user_email = current_user.email
+        elif isinstance(current_user, str):
+            # For JWT tokens, we need to find the email associated with this user ID
+            try:
+                # Try to get email from Supabase Auth user
+                supabase = supabase_manager.get_client()
+                auth_users = supabase.auth.admin.list_users()
+                for auth_user in auth_users:
+                    if hasattr(auth_user, 'id') and auth_user.id == user_id:
+                        user_email = auth_user.email
+                        logger.info(f"🔍 EMAIL DEBUG: Found email {user_email} for auth user ID {user_id}")
+                        break
+            except Exception as e:
+                logger.error(f"Failed to get email from auth user: {e}")
+        
+        # Method 1: Try to get user profile by auth user ID first
         try:
             user_profile = await supabase_manager.find_document("user_profiles", {"id": user_id})
             logger.info(f"🔍 USER_PROFILES QUERY: SELECT * FROM user_profiles WHERE id = '{user_id}'")
             
             if user_profile:
                 logger.info(f"✅ Found user in user_profiles table: {user_profile.get('username')} (ID: {user_profile.get('id')})")
-                # Map level field to has_completed_onboarding (level 2 = completed, level 1 = not completed)
-                level = user_profile.get('level', 1)
-                has_completed_onboarding = level >= 2
                 
-                return UserResponse(
-                    id=user_profile['id'],
-                    username=user_profile.get('username') or '',
-                    email='',  # We'll need to get this from auth or legacy table
-                    first_name=user_profile.get('first_name') or '',
-                    last_name=user_profile.get('last_name') or '',
-                    is_active=user_profile.get('is_active', True),
-                    has_completed_onboarding=has_completed_onboarding,
-                    created_at=user_profile.get('created_at', '2025-01-01T00:00:00')
-                )
+                # VALIDATION: If we have email, check if this profile matches the authenticated email
+                if user_email:
+                    profile_email = user_profile.get('email') or user_profile.get('username')
+                    if user_email not in str(profile_email).lower():
+                        logger.warning(f"🚨 USER MISMATCH DETECTED: Auth email {user_email} doesn't match profile {profile_email}")
+                        user_profile = None  # Force fallback to email-based lookup
+                
             else:
                 logger.info(f"❌ No user found in user_profiles table for ID: {user_id}")
         except Exception as e:
             logger.error(f"User_profiles lookup failed: {e}")
+        
+        # Method 2: If not found by ID or mismatch detected, try to find by email
+        if not user_profile and user_email:
+            try:
+                # Try to find user profile by email
+                user_profile = await supabase_manager.find_document("user_profiles", {"email": user_email})
+                if not user_profile:
+                    # Also try legacy users table by email
+                    legacy_user = await supabase_manager.find_document("users", {"email": user_email})
+                    
+                logger.info(f"🔍 EMAIL-BASED LOOKUP: Looking for email {user_email}")
+                if user_profile:
+                    logger.info(f"✅ Found user profile by email: {user_profile.get('username')} (ID: {user_profile.get('id')})")
+                elif legacy_user:
+                    logger.info(f"✅ Found legacy user by email: {legacy_user.get('username')} (ID: {legacy_user.get('id')})")
+            except Exception as e:
+                logger.error(f"Email-based user lookup failed: {e}")
+        
+        # Return user profile if found
+        if user_profile:
+            # Map level field to has_completed_onboarding (level 2 = completed, level 1 = not completed)
+            level = user_profile.get('level', 1)
+            has_completed_onboarding = level >= 2
+            
+            return UserResponse(
+                id=user_profile['id'],
+                username=user_profile.get('username') or '',
+                email=user_profile.get('email') or user_email or '',
+                first_name=user_profile.get('first_name') or '',
+                last_name=user_profile.get('last_name') or '',
+                is_active=user_profile.get('is_active', True),
+                has_completed_onboarding=has_completed_onboarding,
+                created_at=user_profile.get('created_at', '2025-01-01T00:00:00')
+            )
         
         # Fallback: try to get user from legacy users table  
         try:
