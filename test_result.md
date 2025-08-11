@@ -4009,7 +4009,7 @@ test_plan:
     - "Mandatory Profile Fields Implementation - Frontend Testing"
   stuck_tasks:
     - "Mandatory Profile Fields Implementation - Frontend Testing"
-  test_all: false
+  test_all: true
   test_priority: "critical_first"
 
   - task: "Sidebar Navigation Cleanup and Profile Enhancement"
