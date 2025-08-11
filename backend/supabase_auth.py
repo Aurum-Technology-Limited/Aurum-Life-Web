@@ -28,7 +28,9 @@ class SupabaseAuth:
     
     @staticmethod
     async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
-        """Verify Supabase JWT token and return user data"""
+        """Verify Supabase JWT token and return user data.
+        Note: Allows manual invocation with a raw token string for compatibility.
+        """
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -36,12 +38,18 @@ class SupabaseAuth:
         )
         
         try:
-            token = credentials.credentials
+            # Support both FastAPI-injected credentials and direct string token usage
+            if isinstance(credentials, str):
+                token = credentials
+            elif hasattr(credentials, 'credentials'):
+                token = credentials.credentials
+            else:
+                raise credentials_exception
             
             # Verify token with Supabase
             user_response = supabase.auth.get_user(token)
             
-            if not user_response.user:
+            if not getattr(user_response, 'user', None):
                 raise credentials_exception
             
             return user_response.user
