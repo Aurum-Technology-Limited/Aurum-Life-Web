@@ -49,7 +49,7 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Backend: Login-to-Dashboard Smoke Test (auth → /ultra/dashboard fallback → core data endpoints)"
+##     - "Frontend: Login→Dashboard E2E smoke test and key data fetch verification (Pillars, Areas, Projects, Tasks, Insights, AI Coach)"
 ##   stuck_tasks:
 ##     - "None"
 ##   test_all: false
@@ -57,9 +57,7 @@
 ##
 ## agent_communication:
 ##     -agent: "main"
-##     -message: "Initiating focused backend smoke test for login → profile → dashboard data flow. Steps: 1) POST /api/auth/login with known working creds (primary: marc.alleyne@aurumtechnologyltd.com/password123; alternate: marc.alleyne@aurumtechnologyltd.com/password; fallback: final.test@aurumlife.com/password123). 2) GET /api/auth/me with Bearer token should return correct profile and auto-bootstrap user_profiles when missing. 3) GET /api/ultra/dashboard with Bearer token; if 401/500, verify GET /api/dashboard succeeds (frontend relies on this fallback). 4) Validate core data endpoints with token: /api/pillars, /api/areas, /api/projects, /api/tasks. 5) Discover Insights and AI Coach endpoints via /api/openapi.json and call the primary read endpoints (skip any that need heavy payloads). Acceptance: All calls return 200 with reasonable JSON in <1500ms avg; if /ultra fails, /dashboard must succeed. Record timings and any 401/500 with brief reason.
-
-Authentication notes: Use the first credential set that returns 200 on login; if all fail, mark as blocked and stop. Do not mutate data beyond safe GETs."
+##     -message: "User approved automated frontend testing. Proceeding with a lean Playwright E2E: 1) Open base URL from frontend/.env (REACT_APP_BACKEND_URL). 2) Log in with marc.alleyne@aurumtechnologyltd.com/password123. 3) Verify dashboard loads; confirm network shows GET /api/ultra/dashboard or fallback /api/dashboard 200. 4) Navigate via sidebar to Areas, Projects, Tasks, Insights, AI Coach; for each, wait for one primary API call to resolve 200 and confirm no critical console errors. 5) Confirm no runtime error from logo (image onError handled). Acceptance: All sections load without JS errors, and each key data fetch returns 200 in <3s. No UI changes."
 
 ##     -agent: "main"
 ##     -message: "User provided specific verification-only testing directives: Execute three test scenarios - 1) New User Onboarding and Data Integrity (verify no data duplication, proper dashboard navigation) 2) Hierarchy Count Accuracy (verify non-zero counts in Pillars/Areas) 3) Alignment Score Navigation (verify 'Set Monthly Goal' button navigates to /settings/goals). CONSTRAINT: Verification-only task, no code changes authorized. Will test backend first per protocol, then ask user about frontend testing. Need to report success/failure of each scenario."
