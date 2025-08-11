@@ -217,7 +217,22 @@ const OptimizedDashboard = ({ onSectionChange }) => {
       setIsLoading(true); // Set explicit loading state
       setError('');
       
-      const response = await fixedAPI.getUltraDashboard();
+      // Use resilient dashboard fetch that falls back to regular endpoint if ultra fails
+      // Switch to dashboardAPI for consistent axios behavior with interceptors
+      const response = await (async () => {
+        try {
+          // Prefer service with built-in fallback
+          const { dashboardAPI } = await import('../services/api');
+          return await dashboardAPI.getDashboard();
+        } catch (e) {
+          // Fallback to fixedAPI wrapper which also supports regular dashboard
+          try {
+            return await fixedAPI.getDashboard();
+          } catch (err) {
+            throw err;
+          }
+        }
+      })();
       setDashboardData(response.data);
       console.log('🏠 Dashboard loaded successfully');
     } catch (err) {
