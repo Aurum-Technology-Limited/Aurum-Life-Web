@@ -197,6 +197,26 @@ async def login_user(user_credentials: UserLogin):
                     auth_user_id = await get_supabase_auth_user_id(user_credentials.email)
                     
                     if auth_user_id:
+                        # Ensure minimal user_profiles exists for this auth ID to prevent downstream 404s
+                        try:
+                            supabase = supabase_manager.get_client()
+                            profile_check = supabase.table('user_profiles').select('*').eq('id', auth_user_id).single().execute()
+                            if not getattr(profile_check, 'data', None):
+                                username = (user_credentials.email.split('@')[0] if isinstance(user_credentials.email, str) and '@' in user_credentials.email else 'user')
+                                supabase.table('user_profiles').insert({
+                                    'id': auth_user_id,
+                                    'username': username,
+                                    'first_name': '',
+                                    'last_name': '',
+                                    'is_active': True,
+                                    'level': 1,
+                                    'total_points': 0,
+                                    'current_streak': 0
+                                }).execute()
+                                logger.info("✅ Bootstrapped user_profiles for legacy login user")
+                        except Exception as e:
+                            logger.info(f"Profile bootstrap skipped/failed: {e}")
+
                         # Use Supabase Auth user ID for token
                         from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
                         from datetime import timedelta
