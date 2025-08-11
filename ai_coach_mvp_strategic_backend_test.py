@@ -18,7 +18,7 @@ from typing import Dict, Any, List
 import uuid
 
 class AiCoachMvpStrategicTester:
-    def __init__(self, base_url: str = "https://8f296db8-41e4-45d4-b9b1-dbc5e21b4a2a.preview.emergentagent.com"):
+    def __init__(self, base_url: str = "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_base = f"{base_url}/api"
         self.auth_token = None
@@ -724,7 +724,7 @@ class AiCoachMvpStrategicTester:
 def main():
     """Main test execution"""
     # Use the production backend URL
-    backend_url = "https://8f296db8-41e4-45d4-b9b1-dbc5e21b4a2a.preview.emergentagent.com"
+    backend_url = "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com"
     
     tester = AiCoachMvpStrategicTester(backend_url)
     success = tester.run_comprehensive_test()

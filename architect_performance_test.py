@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://8f296db8-41e4-45d4-b9b1-dbc5e21b4a2a.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class ArchitectPerformanceTestSuite:
