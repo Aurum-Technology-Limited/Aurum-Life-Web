@@ -12,7 +12,7 @@ def authenticate():
     """Authenticate with the API"""
     try:
         response = requests.post(
-            "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com/api/auth/login",
+            "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api/auth/login",
             json={"email": "marc.alleyne@aurumtechnologyltd.com", "password": "Alleyne2025!"},
             headers={"Content-Type": "application/json"}
         )
@@ -35,7 +35,7 @@ def test_weekly_review(token):
     
     try:
         response = requests.post(
-            "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com/api/ai/weekly-review",
+            "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api/ai/weekly-review",
             json={},
             headers={
                 "Authorization": f"Bearer {token}",
@@ -67,7 +67,7 @@ def get_or_create_project(token):
     try:
         # Try to get existing projects
         response = requests.get(
-            "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com/api/projects",
+            "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api/projects",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -80,7 +80,7 @@ def get_or_create_project(token):
         
         # Get areas first
         areas_response = requests.get(
-            "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com/api/areas",
+            "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api/areas",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -104,7 +104,7 @@ def get_or_create_project(token):
         }
         
         project_response = requests.post(
-            "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com/api/projects",
+            "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api/projects",
             json=project_data,
             headers={
                 "Authorization": f"Bearer {token}",
@@ -142,7 +142,7 @@ def test_obstacle_analysis(token):
         }
         
         response = requests.post(
-            "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com/api/ai/obstacle-analysis",
+            "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api/ai/obstacle-analysis",
             json=request_data,
             headers={
                 "Authorization": f"Bearer {token}",
@@ -180,7 +180,7 @@ def test_obstacle_analysis(token):
         }
         
         response = requests.post(
-            "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com/api/ai/obstacle-analysis",
+            "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api/ai/obstacle-analysis",
             json=invalid_request,
             headers={
                 "Authorization": f"Bearer {token}",
