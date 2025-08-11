@@ -45,6 +45,9 @@ emergentintegrations
 google-auth-oauthlib
 google-auth-httplib2
 requests
+# Explicit dependencies required by supabase and bleach in this environment
+webencodings>=0.5.1
+gotrue>=2.4.4
 
 # Security dependencies
 bleach>=6.2.0
