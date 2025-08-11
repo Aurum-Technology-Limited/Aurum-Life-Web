@@ -138,8 +138,8 @@ user_problem_statement: "VERIFICATION-ONLY TESTING TASK - Three Specific Test Sc
 backend:
   - task: "Backend Health Check - Production Ingress Testing"
     implemented: true
-    working: "partial"
-    file: "review_backend_health_check.py"
+    working: true
+    file: "backend_auth_smoke_test_existing_user.py"
     stuck_count: 0
     priority: "critical"
     needs_retesting: false
