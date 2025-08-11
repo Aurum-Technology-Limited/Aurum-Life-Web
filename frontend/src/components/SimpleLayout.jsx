@@ -32,6 +32,30 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
     setActiveSection(key);
   };
 
+  // Robust image fallback handler (prevents errors if logo asset is missing)
+  const handleLogoError = (e) => {
+    try {
+      if (!e || !e.target) return;
+      const imgEl = e.target;
+      // Hide broken image element
+      imgEl.style.display = 'none';
+      // Prefer an explicitly marked fallback sibling for resilience
+      const fallback = imgEl.parentElement?.querySelector('[data-fallback-logo]');
+      if (fallback) {
+        fallback.style.display = 'flex';
+        return;
+      }
+      // Fallback to nextElementSibling when available
+      if (imgEl.nextElementSibling && imgEl.nextElementSibling.style) {
+        imgEl.nextElementSibling.style.display = 'flex';
+      }
+    } catch (err) {
+      // Never crash the app due to a missing logo asset
+      // eslint-disable-next-line no-console
+      console.warn('Logo fallback handler error:', err);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#0B0D14]">
       {/* Sidebar */}
@@ -44,13 +68,9 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
                 src="/aurum-brain-logo.svg" 
                 alt="Aurum Life Logo" 
                 className="w-8 h-8 object-contain"
-                onError={(e) => {
-                  // Fallback to text logo if image fails to load
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
-                }}
+                onError={handleLogoError}
               />
-              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
+              <div data-fallback-logo className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
                 <span className="text-black font-bold text-sm">AL</span>
               </div>
             </div>
