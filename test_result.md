@@ -406,7 +406,7 @@ frontend:
 
   - task: "Comprehensive Frontend E2E Button & CRUD Testing"
     implemented: true
-    working: true
+    working: false
     file: "frontend/src"
     stuck_count: 0
     priority: "critical"
