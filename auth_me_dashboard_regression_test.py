@@ -178,6 +178,16 @@ def test_ultra_dashboard(access_token):
             me_url = f"{BASE_URL}/auth/me"
             me_response = requests.get(me_url, headers=headers, timeout=30)
             print(f"  🔍 DEBUG: /auth/me status: {me_response.status_code}")
+            
+            # Try testing with regular dashboard endpoint
+            regular_dashboard_url = f"{BASE_URL}/dashboard"
+            regular_response = requests.get(regular_dashboard_url, headers=headers, timeout=30)
+            print(f"  🔍 DEBUG: /dashboard status: {regular_response.status_code}")
+            
+            # Try testing with ultra/pillars to see if it's an ultra-specific issue
+            ultra_pillars_url = f"{BASE_URL}/ultra/pillars"
+            ultra_pillars_response = requests.get(ultra_pillars_url, headers=headers, timeout=30)
+            print(f"  🔍 DEBUG: /ultra/pillars status: {ultra_pillars_response.status_code}")
         
         log_test_result("Ultra Dashboard", response.status_code, response_data, success=success)
         return response_data if success else None
