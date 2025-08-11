@@ -14,8 +14,8 @@ from typing import Dict, List, Optional, Any
 
 class BackendSmokeTest:
     def __init__(self):
-        # Production ingress base URL from review request
-        self.base_url = "https://aurum-overflow-fix.emergent.host/api"
+        # Use the working backend URL from existing tests
+        self.base_url = "https://15d7219c-892b-4111-8d96-e95547e179d6.preview.emergentagent.com/api"
         self.session = requests.Session()
         self.auth_token = None
         self.csrf_token = None
