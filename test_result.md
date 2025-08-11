@@ -49,13 +49,18 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Contextual File Attachments System - Frontend Component"
+##     - "Backend: Login-to-Dashboard Smoke Test (auth → /ultra/dashboard fallback → core data endpoints)"
 ##   stuck_tasks:
-##     - "Task name with persistent issues"
+##     - "None"
 ##   test_all: false
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
 ## agent_communication:
+##     -agent: "main"
+##     -message: "Initiating focused backend smoke test for login → profile → dashboard data flow. Steps: 1) POST /api/auth/login with known working creds (primary: marc.alleyne@aurumtechnologyltd.com/password123; alternate: marc.alleyne@aurumtechnologyltd.com/password; fallback: final.test@aurumlife.com/password123). 2) GET /api/auth/me with Bearer token should return correct profile and auto-bootstrap user_profiles when missing. 3) GET /api/ultra/dashboard with Bearer token; if 401/500, verify GET /api/dashboard succeeds (frontend relies on this fallback). 4) Validate core data endpoints with token: /api/pillars, /api/areas, /api/projects, /api/tasks. 5) Discover Insights and AI Coach endpoints via /api/openapi.json and call the primary read endpoints (skip any that need heavy payloads). Acceptance: All calls return 200 with reasonable JSON in <1500ms avg; if /ultra fails, /dashboard must succeed. Record timings and any 401/500 with brief reason.
+
+Authentication notes: Use the first credential set that returns 200 on login; if all fail, mark as blocked and stop. Do not mutate data beyond safe GETs."
+
 ##     -agent: "main"
 ##     -message: "User provided specific verification-only testing directives: Execute three test scenarios - 1) New User Onboarding and Data Integrity (verify no data duplication, proper dashboard navigation) 2) Hierarchy Count Accuracy (verify non-zero counts in Pillars/Areas) 3) Alignment Score Navigation (verify 'Set Monthly Goal' button navigates to /settings/goals). CONSTRAINT: Verification-only task, no code changes authorized. Will test backend first per protocol, then ask user about frontend testing. Need to report success/failure of each scenario."
 ##     -agent: "main"
