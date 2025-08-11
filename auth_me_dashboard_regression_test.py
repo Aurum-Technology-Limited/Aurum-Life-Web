@@ -19,6 +19,7 @@ BASE_URL = "https://aurum-overflow-fix.emergent.host/api"
 
 # Test credentials
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
+CORRECT_PASSWORD = "password123"  # Based on test_result.md history
 WRONG_PASSWORD = "placeholder_wrong_password"
 EXPECTED_SUPABASE_ID = "950f327b-4a85-438f-bb85-6229bf3cde9d"
 
