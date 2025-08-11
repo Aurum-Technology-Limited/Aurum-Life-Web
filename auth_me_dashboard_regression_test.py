@@ -218,7 +218,7 @@ def main():
     else:
         print("❌ Test 2: Get user profile - FAILED")
     
-    if dashboard_data is not None:
+    if dashboard_data is not None and not (isinstance(dashboard_data, dict) and dashboard_data.get('detail') == 'Could not validate credentials'):
         tests_passed += 1
         print("✅ Test 3: Ultra dashboard access - PASSED")
     else:
