@@ -574,9 +574,8 @@ backend:
 
 test_plan:
   current_focus:
-    - "Dashboard Streak Widget Replacement"
-    - "Alignment Score Navigation Fix"
-    - "Hierarchy Item Counts Fix for Pillars and Areas Endpoints"
+    - "Backend Smoke Test for New Disposable Test User"
+    - "Comprehensive Frontend Buttons & CRUD E2E (All Screens)"
   stuck_tasks:
     - "Dashboard Streak Widget Replacement"
   test_all: false
