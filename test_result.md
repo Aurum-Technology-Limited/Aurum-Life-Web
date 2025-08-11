@@ -408,6 +408,12 @@ frontend:
     implemented: true
     working: false
     file: "frontend/src"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "User approved: send real emails via SendGrid, and delete the disposable account at end to ensure backend cleanup. Proceeding with automated UI E2E that clicks every visible button and runs full CRUD across Pillars/Areas/Projects/Tasks, AI Coach generation (no save), Feedback real email submission, and final account deletion workflow."
+
     stuck_count: 0
     priority: "critical"
     needs_retesting: false
