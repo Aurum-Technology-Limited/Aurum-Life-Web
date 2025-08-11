@@ -168,8 +168,19 @@ def test_ultra_dashboard(access_token):
         response_data = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
         
         success = response.status_code == 200
+        
+        # Additional debugging for 401 errors
+        if response.status_code == 401:
+            print(f"  🔍 DEBUG: Token used: {access_token[:50]}...")
+            print(f"  🔍 DEBUG: Headers sent: {headers}")
+            
+            # Try testing with regular auth/me to see if token works there
+            me_url = f"{BASE_URL}/auth/me"
+            me_response = requests.get(me_url, headers=headers, timeout=30)
+            print(f"  🔍 DEBUG: /auth/me status: {me_response.status_code}")
+        
         log_test_result("Ultra Dashboard", response.status_code, response_data, success=success)
-        return response_data
+        return response_data if success else None
             
     except Exception as e:
         log_test_result("Ultra Dashboard", 0, f"Exception: {str(e)}", success=False)
