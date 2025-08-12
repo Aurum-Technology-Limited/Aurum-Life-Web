@@ -231,15 +231,21 @@ export const areasAPI = {
 export const projectsAPI = {
   getProjects: async (areaId = null, includeArchived = false) => {
     try {
+      // Temporary consistency window after writes: bypass ultra cache
+      const forceUntil = Number(localStorage.getItem('PROJECTS_FORCE_STANDARD_UNTIL') || 0);
+      const shouldBypassUltra = forceUntil && Date.now() < forceUntil;
+      const params = { ...(areaId && { area_id: areaId }), include_archived: includeArchived };
+
+      if (shouldBypassUltra) {
+        console.log('⏭️ Bypassing ultra cache for projects (consistency window active)');
+        // Add cache buster to avoid any proxy caching layers
+        return apiClient.get('/projects', { params: { ...params, _ts: Date.now() } });
+      }
+
       // Try ultra-performance endpoint first
       console.log('🚀 Attempting ultra-performance projects...');
       const startTime = Date.now();
-      const response = await apiClient.get('/ultra/projects', { 
-        params: { 
-          ...(areaId && { area_id: areaId }),
-          include_archived: includeArchived
-        } 
-      });
+      const response = await apiClient.get('/ultra/projects', { params });
       const duration = Date.now() - startTime;
       console.log(`✅ Ultra projects completed in ${duration}ms`);
       return response;
