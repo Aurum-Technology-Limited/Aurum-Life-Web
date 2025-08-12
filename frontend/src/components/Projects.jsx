@@ -230,6 +230,27 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
       // Set short-lived consistency window to bypass ultra projects after write
       try { localStorage.setItem('PROJECTS_FORCE_STANDARD_UNTIL', String(Date.now() + 2500)); } catch {}
+
+      // Hydrate cache from standard endpoint immediately for active area to avoid stale ultra cache
+      (async () => {
+        try {
+          const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+          const params = new URLSearchParams();
+          if (activeAreaId) params.append('area_id', activeAreaId);
+          params.append('include_archived', 'false');
+          params.append('_ts', String(Date.now()));
+          const resp = await fetch(`${backendURL}/api/projects?${params.toString()}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}` }
+          });
+          if (resp.ok) {
+            const list = await resp.json();
+            // Update the specific projects query cache for this area filter
+            queryClient.setQueryData(['projects', activeAreaId, false], list);
+          }
+        } catch (e) {
+          console.warn('Projects standard fetch hydration failed:', e?.message || e);
+        }
+      })();
       
       // Store the created project for potential decomposition
       setNewProjectForDecomposition(createdProject);
