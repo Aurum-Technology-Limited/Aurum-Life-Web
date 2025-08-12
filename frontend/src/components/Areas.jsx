@@ -245,6 +245,10 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
       });
       // Immediately invalidate to fetch server truth
       queryClient.invalidateQueries({ queryKey: ['areas'] });
+      // Safety refetch after a short delay to avoid any race with ultra-cache
+      setTimeout(() => {
+        try { refetchAreas && refetchAreas(); } catch (e) {}
+      }, 200);
       onDataMutation('area', 'create', newItem);
     },
     onError: (error) => {
