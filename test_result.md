@@ -49,7 +49,8 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Backend: Add ultra cache invalidation for Areas/Projects/Tasks on create/update/delete; verify via CRUD chain (Pillar→Area→Project→Task) across standard vs ultra endpoints; then Frontend full CRUD E2E retest"
+##     - "Backend: Verify Projects 422 fix by testing POST /api/projects with and without area_id, ensure status default maps, and deadline accepts ISO. Verify Areas UI flow by confirming GET /api/areas reflects POST immediately (standard and ultra)."
+##     - "Frontend later: After backend passes, validate Areas creation shows in list and modal buttons clickable."
 ##   stuck_tasks:
 ##     - "None"
 ##   test_all: false
