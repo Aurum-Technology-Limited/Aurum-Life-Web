@@ -206,11 +206,21 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   // Create mutations for area operations
   const updateAreaMutation = useMutation({
     mutationFn: ({ areaId, areaData }) => areasAPI.updateArea(areaId, areaData),
-    onSuccess: (data) => {
-      console.log('🗂️ Areas: Update mutation successful:', data);
-      // Invalidate and refetch areas data
+    onSuccess: (resp) => {
+      const updated = resp?.data || resp;
+      console.log('🗂️ Areas: Update mutation successful:', updated);
+      // Optimistically update query caches for areas (with and without projects)
+      queryClient.setQueryData(['areas', true, showArchived], (prev) => {
+        const arr = Array.isArray(prev) ? prev : [];
+        return arr.map(a => (a.id === updated.id ? { ...a, ...updated } : a));
+      });
+      queryClient.setQueryData(['areas', false, showArchived], (prev) => {
+        const arr = Array.isArray(prev) ? prev : [];
+        return arr.map(a => (a.id === updated.id ? { ...a, ...updated } : a));
+      });
+      // Invalidate to ensure server truth
       queryClient.invalidateQueries({ queryKey: ['areas'] });
-      onDataMutation('area', 'update', data);
+      onDataMutation('area', 'update', updated);
     },
     onError: (error) => {
       console.error('🗂️ Areas: Update mutation failed:', error);
