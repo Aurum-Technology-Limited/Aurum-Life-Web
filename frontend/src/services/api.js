@@ -279,7 +279,17 @@ export const projectsAPI = {
 
 // Enhanced Tasks API with Sub-task support
 export const tasksAPI = {
-  getTasks: (projectId = null) => apiClient.get('/tasks', { params: projectId ? { project_id: projectId } : {} }),
+  getTasks: (projectId = null) => {
+    const forceUntil = Number(localStorage.getItem('TASKS_FORCE_STANDARD_UNTIL') || 0);
+    const shouldBypassUltra = forceUntil && Date.now() < forceUntil;
+    const params = projectId ? { project_id: projectId } : {};
+    // We don't have ultra tasks endpoint in this API file; ensure cache-buster for standard fetch when consistency window active
+    if (shouldBypassUltra) {
+      console.log('⏭️ Bypassing ultra cache for tasks (consistency window active)');
+      return apiClient.get('/tasks', { params: { ...params, _ts: Date.now() } });
+    }
+    return apiClient.get('/tasks', { params });
+  },
   getTask: (taskId) => apiClient.get(`/tasks/${taskId}`),
   getTaskWithSubtasks: (taskId) => apiClient.get(`/tasks/${taskId}/with-subtasks`),
   getSubtasks: (parentTaskId) => apiClient.get(`/tasks/${parentTaskId}/subtasks`),
