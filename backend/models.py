@@ -440,7 +440,7 @@ class Project(BaseDocument):
     date_created: datetime = Field(default_factory=datetime.utcnow)
 
 class ProjectCreate(BaseModel):
-    area_id: str
+    area_id: Optional[str] = None
     name: str
     description: str = ""
     icon: str = "🚀"  # Add icon field
