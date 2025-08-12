@@ -509,7 +509,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" data-testid="area-form">
                 <div className="input-with-counter">
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Name
