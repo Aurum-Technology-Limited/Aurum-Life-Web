@@ -1461,6 +1461,13 @@ async def update_project(
                 # Don't fail the project update if alignment scoring fails
                 logger.error(f"Failed to record alignment score for project {project_id}: {alignment_error}")
         
+        try:
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='projects')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='areas')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='pillars')
+        except Exception as _e:
+            logger.info(f"Cache invalidation (projects/areas/pillars) skipped: {_e}")
+        
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
