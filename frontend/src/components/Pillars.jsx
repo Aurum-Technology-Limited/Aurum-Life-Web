@@ -87,7 +87,7 @@ const Pillars = memo(({ onSectionChange }) => {
         await api.delete(`/pillars/${pillarId}`);
         // Trigger data refresh and invalidate cache
         onDataMutation('pillar', 'delete', { id: pillarId, name: pillarName });
-        invalidatePillars();
+        await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'pillars' });
         await refetch(); // Ensure UI updates immediately
       } catch (error) {
         console.error('Error deleting pillar:', error);
