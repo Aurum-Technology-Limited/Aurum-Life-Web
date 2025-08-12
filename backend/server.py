@@ -1358,6 +1358,11 @@ async def delete_area(area_id: str, current_user: User = Depends(get_current_act
         success = await SupabaseAreaService.delete_area(area_id, str(current_user.id))
         if not success:
             raise HTTPException(status_code=404, detail="Area not found")
+        try:
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='areas')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='pillars')
+        except Exception as _e:
+            logger.info(f"Cache invalidation (areas/pillars) skipped: {_e}")
         return {"message": "Area deleted successfully"}
     except HTTPException:
         raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
