@@ -53,7 +53,9 @@ const Pillars = memo(({ onSectionChange }) => {
 
       // Trigger data refresh and invalidate cache
       onDataMutation('pillar', editingPillar ? 'update' : 'create', submitData);
-      invalidatePillars(); // Refresh TanStack Query cache
+      // Invalidate and immediately refetch pillars to reflect new data
+      await queryClient.invalidateQueries({ predicate: (q) => q.queryKey[0] === 'pillars' });
+      await refetch();
       handleCloseModal();
     } catch (error) {
       console.error('Error saving pillar:', error);
