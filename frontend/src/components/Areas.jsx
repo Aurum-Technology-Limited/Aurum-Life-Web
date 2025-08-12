@@ -87,6 +87,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
           {area.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
         </button>
         <button
+          data-testid={`area-edit-${area.id}`}
           onClick={(e) => {
             e.stopPropagation();
             onEdit(area);
