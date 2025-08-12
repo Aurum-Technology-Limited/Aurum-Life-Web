@@ -81,7 +81,8 @@ const Pillars = memo(({ onSectionChange }) => {
         await api.delete(`/pillars/${pillarId}`);
         // Trigger data refresh and invalidate cache
         onDataMutation('pillar', 'delete', { id: pillarId, name: pillarName });
-        invalidatePillars(); // Refresh TanStack Query cache
+        await queryClient.invalidateQueries({ predicate: (q) => q.queryKey[0] === 'pillars' });
+        await refetch(); // Ensure UI updates immediately
       } catch (error) {
         console.error('Error deleting pillar:', error);
         alert(error.response?.data?.detail || 'Error deleting pillar');
