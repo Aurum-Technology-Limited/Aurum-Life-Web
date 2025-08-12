@@ -891,9 +891,15 @@ class SupabaseProjectService:
             # Ensure user exists in auth.users table (fix for foreign key constraint)
             await SupabasePillarService._ensure_user_exists_in_auth_users(user_id)
             
+            # Handle optional area_id - if None, create or get a default "No Area" area
+            area_id = project_data.area_id
+            if area_id is None:
+                area_id = await SupabaseProjectService._get_or_create_no_area(user_id)
+            
             project_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
+                'area_id': area_id,  # Always provide an area_id (either provided or default)
                 'name': project_data.name,
                 'description': project_data.description or '',
                 'status': project_data.status or 'Not Started',  # Database uses display names
@@ -908,10 +914,6 @@ class SupabaseProjectService:
                 'updated_at': datetime.utcnow().isoformat(),
                 'date_created': datetime.utcnow().isoformat()
             }
-            
-            # Only add area_id if it's provided (handle optional area_id)
-            if project_data.area_id is not None:
-                project_dict['area_id'] = project_data.area_id
             
             response = supabase.table('projects').insert(project_dict).execute()
             
