@@ -428,6 +428,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
               <span>{showArchived ? 'Hide Archived' : 'Show Archived'}</span>
             </button>
             <button
+              data-testid="area-new"
               onClick={() => setShowModal(true)}
               className="flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
               style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
