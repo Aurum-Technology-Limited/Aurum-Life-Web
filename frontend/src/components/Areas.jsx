@@ -246,6 +246,9 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
       // Immediately invalidate to fetch server truth
       queryClient.invalidateQueries({ queryKey: ['areas'] });
 
+      // Set a short-lived consistency window to bypass ultra cache in getAreas
+      try { localStorage.setItem('AREAS_FORCE_STANDARD_UNTIL', String(Date.now() + 2500)); } catch {}
+
       // Force-fetch from standard endpoint (bypass ultra) and hydrate cache to avoid transient stale ultra cache
       (async () => {
         try {
