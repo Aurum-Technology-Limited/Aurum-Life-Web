@@ -1616,6 +1616,13 @@ async def update_task(
         
         # Update the task (no alignment scoring for individual tasks anymore)
         result = await SupabaseTaskService.update_task(task_id, str(current_user.id), task_data)
+        try:
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='tasks')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='projects')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='areas')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='pillars')
+        except Exception as _e:
+            logger.info(f"Cache invalidation (tasks/projects/areas/pillars) skipped: {_e}")
         
         # Log completion for visibility but don't award points
         if hasattr(task_data, 'completed') and task_data.completed:
