@@ -197,6 +197,7 @@ const Pillars = memo(({ onSectionChange }) => {
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
               <button
+                data-testid={`pillar-edit-${pillar.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleEdit(pillar);
