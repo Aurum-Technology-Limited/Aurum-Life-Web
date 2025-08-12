@@ -1114,6 +1114,9 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
         
         // Notify data context of the mutation
         onDataMutation('task', 'update', { taskId: editingTask.id, ...formData });
+        
+        // Consistency window for tasks after update
+        try { localStorage.setItem('TASKS_FORCE_STANDARD_UNTIL', String(Date.now() + 2000)); } catch {}
       } else {
         const response = await tasksAPI.createTask(formData);
         // Add to local state
@@ -1121,6 +1124,9 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
         
         // Notify data context of the mutation
         onDataMutation('task', 'create', response.data);
+        
+        // Consistency window for tasks after create
+        try { localStorage.setItem('TASKS_FORCE_STANDARD_UNTIL', String(Date.now() + 2500)); } catch {}
       }
       
       setModalOpen(false);
