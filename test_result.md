@@ -4161,6 +4161,18 @@ test_plan:
   test_all: false
   test_priority: "critical_first"
 
+  - task: "Areas CRUD E2E with data-testid hooks and z-index verification"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/Areas.jsx"
+    stuck_count: 3
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "🚨 AREAS CRUD E2E TESTING WITH DATA-TESTID HOOKS COMPLETED - CRITICAL UI DISPLAY BUG CONFIRMED! Executed comprehensive E2E testing as requested in review covering login, Areas navigation, area creation with data-testid='area-new', form submission via data-testid='area-submit', and z-index verification. DETAILED TESTING RESULTS: ✅ AUTHENTICATION FLOW (100% SUCCESS): Successfully logged in with marc.alleyne@aurumtechnologyltd.com/password123 credentials, dashboard loaded correctly, JWT token generation working perfectly ✅ NAVIGATION SUCCESS (100% SUCCESS): Successfully navigated to Areas page via sidebar, 'Life Areas' title visible, areas page loaded correctly ✅ DATA-TESTID HOOKS VERIFICATION (100% SUCCESS): [data-testid='area-new'] button found and clicked successfully, [data-testid='area-form'] modal opened correctly, [data-testid='area-submit'] button found and functional ✅ FORM FUNCTIONALITY (100% SUCCESS): Area creation modal opened successfully, form filled with 'E2E Area 1755008685' name, pillar field left blank as requested, submit button z-index verified (set to 'auto') ✅ BACKEND OPERATIONS (100% SUCCESS): Console logs confirm successful form submission: '🗂️ Areas: Create mutation successful: {data: Object, status: 200...}', '🗂️ Areas: Form submission successful', 'Ultra areas completed in 262ms', backend API responding correctly with HTTP 200 status ❌ CRITICAL FAILURE - UI DISPLAY BUG PERSISTS (0% SUCCESS): Despite successful backend operations, the newly created area 'E2E Area 1755008685' does NOT appear in the UI list. Console shows 'areas length: 0' even after successful creation and ultra cache refresh. Screenshot confirms 'No areas yet' empty state persists despite successful backend operations. ROOT CAUSE ANALYSIS: This confirms the same critical UI display bug reported in previous testing attempts. The issue is NOT with: Authentication (working perfectly), Backend API (HTTP 200 responses, successful mutations), Form submission (working correctly), Data-testid hooks (all functional), Z-index on submit button (present). The issue IS with: Frontend UI rendering logic not updating after successful area creation, TanStack Query cache not properly reflecting created areas in component state, Component not re-rendering with new data despite successful cache invalidation. IMPACT: Complete Areas CRUD workflow appears broken to users - they cannot see created areas despite successful backend operations. This blocks the entire hierarchical entity creation system (Areas → Projects → Tasks). URGENT INVESTIGATION REQUIRED: The UI display logic in Areas.jsx component needs debugging to identify why TanStack Query data is not properly updating the component state after successful area creation. The backend is working perfectly, but the frontend display layer has a fundamental issue. SUCCESS CRITERIA: Authentication (100%), Navigation (100%), Data-testid hooks (100%), Form submission (100%), Backend operations (100%), UI display functionality (0% - CRITICAL BLOCKER). TEST RESULT: FAIL - Areas CRUD E2E testing confirms persistent UI display bug preventing users from seeing created areas despite successful backend operations."
+
   - task: "Sidebar Navigation Cleanup and Profile Enhancement"
     implemented: true
     working: true
