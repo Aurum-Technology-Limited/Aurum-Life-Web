@@ -182,7 +182,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     name: '',
     description: '',
     area_id: '',
-    status: 'not_started',
+    // status intentionally omitted for backend default compatibility
     priority: 'medium',
     color: '#F59E0B',
     icon: 'FolderOpen',
