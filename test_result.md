@@ -4091,10 +4091,10 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Mandatory Profile Fields Implementation - Frontend Testing"
+    - "Pillar CRUD E2E Functionality - React Hooks Error Fix"
   stuck_tasks:
-    - "Mandatory Profile Fields Implementation - Frontend Testing"
-  test_all: true
+    - "Pillar CRUD E2E Functionality - React Hooks Error Fix"
+  test_all: false
   test_priority: "critical_first"
 
   - task: "Sidebar Navigation Cleanup and Profile Enhancement"
