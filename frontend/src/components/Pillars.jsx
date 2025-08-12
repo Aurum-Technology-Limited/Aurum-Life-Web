@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext, memo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDataContext } from '../contexts/DataContext';
 import { api } from '../services/api';
-import { usePillarsQuery, useInvalidateQueries } from '../hooks/useQueries';
+import { usePillarsQuery, useInvalidateQueries, queryKeys } from '../hooks/useQueries';
 import {Plus, Trash2, Edit2, Layers} from 'lucide-react';
 import IconPicker from './ui/IconPicker';
 
