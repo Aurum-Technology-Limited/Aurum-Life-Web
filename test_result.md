@@ -49,15 +49,15 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Backend: Pillars CRUD verification (POST→GET→DELETE) across /api/pillars and /api/ultra/pillars, then Frontend normalization + CRUD retest"
+##     - "Frontend: Full CRUD E2E with cleanup (Pillars → Areas → Projects → Tasks) + Google OAuth popup check — RETEST after ultra cache invalidation"
 ##   stuck_tasks:
-##     - "Pillars UI not reflecting created item"
+##     - "None"
 ##   test_all: false
 ##   test_priority: "high_first"
 ##
 ## agent_communication:
 ##     -agent: "main"
-##     -message: "Running focused backend CRUD: 1) Login, 2) POST /api/pillars name=E2E Backend Check <ts>, 3) GET /api/pillars to confirm presence (match by name, capture id), 4) GET /api/ultra/pillars to confirm presence (compare), 5) DELETE created id, 6) Confirm removal on both GETs. Record timings. Then apply frontend Pillars normalization (consistent id field and cancel/invalidate/refetch sequence) and re-run frontend full CRUD with cleanup + Google OAuth popup."
+##     -message: "Backend ultra-cache invalidation for pillars is now verified as working. Proceeding to re-run the Full CRUD E2E via UI with cleanup: create Pillar→Area→Project→Task using E2E-<ts> names, update each, then delete in reverse order verifying list presence/absence after each step. Use base URL from env, no UI changes. Finally verify Google OAuth popup to accounts.google.com."
 
 ##     -agent: "main"
 ##     -message: "User provided specific verification-only testing directives: Execute three test scenarios - 1) New User Onboarding and Data Integrity (verify no data duplication, proper dashboard navigation) 2) Hierarchy Count Accuracy (verify non-zero counts in Pillars/Areas) 3) Alignment Score Navigation (verify 'Set Monthly Goal' button navigates to /settings/goals). CONSTRAINT: Verification-only task, no code changes authorized. Will test backend first per protocol, then ask user about frontend testing. Need to report success/failure of each scenario."
