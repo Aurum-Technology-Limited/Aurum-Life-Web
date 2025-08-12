@@ -666,11 +666,22 @@ class SupabaseAreaService:
                 importance_value = importance_value
             else:
                 importance_value = 3  # Default
+
+            # Normalize pillar_id: treat empty string as null (Postgres uuid cannot be "")
+            pillar_id_value = None
+            if area_data.pillar_id is not None:
+                if isinstance(area_data.pillar_id, str):
+                    if area_data.pillar_id.strip():
+                        pillar_id_value = area_data.pillar_id.strip()
+                    else:
+                        pillar_id_value = None
+                else:
+                    pillar_id_value = area_data.pillar_id
             
             area_dict = {
                 'id': str(uuid.uuid4()),
                 'user_id': user_id,
-                'pillar_id': area_data.pillar_id,  # Can be null for areas without pillars
+                'pillar_id': pillar_id_value,  # Can be null for areas without pillars
                 'name': area_data.name,
                 'description': area_data.description or '',
                 'color': area_data.color or '#10B981',
