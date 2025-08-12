@@ -163,6 +163,17 @@
 user_problem_statement: "VERIFICATION-ONLY TESTING TASK - Three Specific Test Scenarios: 1) New User Onboarding and Data Integrity - Verify new user onboarding without data duplication and proper dashboard navigation 2) Hierarchy Count Accuracy - Verify UI displays correct, non-zero counts for all child elements in Pillars and Areas pages 3) Alignment Score Navigation - Verify 'Set Monthly Goal' button navigates to /settings/goals. CONSTRAINT: This is verification-only, no code changes authorized. Report success/failure of each scenario."
 
 backend:
+  - task: "Fix Projects 422 and Areas UI Refresh + Modal Clickability"
+    implemented: true
+    working: false
+    file: "frontend/src/components/Projects.jsx, frontend/src/components/Areas.jsx, backend/models.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "Implemented frontend normalization for project create/update (map due_date->deadline, omit status, normalize empty area_id to null), made area_id optional in ProjectCreate backend model. Added Areas safety refetch after create to avoid ultra-cache race. Ensured modal overlay and submit have pointer-events-auto to fix click interception. Ready for backend tests focusing on POST /api/projects payload validation and Areas list refresh behavior follows create."
   - task: "Auth/Me and Dashboard Regression Testing"
     implemented: true
     working: true
