@@ -49,9 +49,23 @@ const Pillars = memo(({ onSectionChange }) => {
       };
 
       if (editingPillar) {
-        await api.put(`/pillars/${editingPillar.id}`, submitData);
+        const res = await api.put(`/pillars/${editingPillar.id}`, submitData);
+        const updated = res?.data || { ...editingPillar, ...submitData };
+        // Optimistically update cache
+        queryClient.setQueryData(['pillars', true, true, false], (prev) => {
+          const arr = Array.isArray(prev) ? prev : [];
+          return arr.map(p => (p.id === updated.id ? { ...p, ...updated } : p));
+        });
       } else {
-        await api.post('/pillars', submitData);
+        const res = await api.post('/pillars', submitData);
+        const created = res?.data || submitData;
+        // Ensure created has an id; if not, rely on refetch, but still prepend a temporary item
+        const newItem = created.id ? created : { ...created, id: `temp-${Date.now()}` };
+        // Optimistically prepend to cache
+        queryClient.setQueryData(['pillars', true, true, false], (prev) => {
+          const arr = Array.isArray(prev) ? prev : [];
+          return [newItem, ...arr];
+        });
       }
       
       // Ensure backend writes are visible by invalidating and refetching pillars
