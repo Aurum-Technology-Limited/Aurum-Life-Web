@@ -1225,6 +1225,10 @@ async def update_pillar(
             pillar_data.description = sanitized_data["description"]
         
         result = await SupabasePillarService.update_pillar(pillar_id, str(current_user.id), pillar_data)
+        try:
+            await cache_service.invalidate_pattern(f"pillars:user:{str(current_user.id)}*")
+        except Exception as _e:
+            logger.info(f"Cache invalidation (pillars) skipped: {_e}")
         return result
     except HTTPException:
         raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
