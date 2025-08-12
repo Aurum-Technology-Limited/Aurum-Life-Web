@@ -194,7 +194,10 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     isLoading: pillarsLoading 
   } = useQuery({
     queryKey: ['pillars', 'basic'], // Different query key to avoid cache conflicts
-    queryFn: () => pillarsAPI.getPillars(false, false, false), // Basic pillars without counts
+    queryFn: async () => {
+      const response = await pillarsAPI.getPillars(false, false, false); // Basic pillars without counts
+      return response.data; // Ensure we return an array of pillars, not the axios response object
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
   });
