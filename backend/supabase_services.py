@@ -934,6 +934,45 @@ class SupabaseProjectService:
             raise
     
     @staticmethod
+    async def _get_or_create_no_area(user_id: str) -> str:
+        """Get or create a default 'No Area' area for projects without an area"""
+        try:
+            # First, try to find an existing "No Area" area for this user
+            response = supabase.table('areas').select('id').eq(
+                'user_id', user_id
+            ).eq('name', 'No Area').limit(1).execute()
+            
+            if response.data:
+                return response.data[0]['id']
+            
+            # If no "No Area" exists, create one
+            no_area_dict = {
+                'id': str(uuid.uuid4()),
+                'user_id': user_id,
+                'name': 'No Area',
+                'description': 'Default area for projects without a specific area',
+                'icon': '📂',
+                'color': '#9E9E9E',  # Gray color for default area
+                'importance': 1,  # Low importance for default area
+                'archived': False,
+                'sort_order': 999,  # Put at the end
+                'created_at': datetime.utcnow().isoformat(),
+                'updated_at': datetime.utcnow().isoformat()
+            }
+            
+            create_response = supabase.table('areas').insert(no_area_dict).execute()
+            
+            if not create_response.data:
+                raise Exception("Failed to create default 'No Area' area")
+            
+            logger.info(f"✅ Created default 'No Area' area for user: {user_id}")
+            return create_response.data[0]['id']
+            
+        except Exception as e:
+            logger.error(f"Error getting or creating 'No Area' area: {e}")
+            raise
+    
+    @staticmethod
     async def get_user_projects(user_id: str, include_tasks: bool = False, include_archived: bool = False) -> List[Dict[str, Any]]:
         """Get user's projects with optimized batch queries"""
         try:
