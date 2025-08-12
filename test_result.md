@@ -49,7 +49,7 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Frontend: Full CRUD E2E with cleanup (Pillars → Areas → Projects → Tasks) + Google OAuth popup check — RETEST after ultra cache invalidation"
+##     - "Backend: Add ultra cache invalidation for Areas/Projects/Tasks on create/update/delete; verify via CRUD chain (Pillar→Area→Project→Task) across standard vs ultra endpoints; then Frontend full CRUD E2E retest"
 ##   stuck_tasks:
 ##     - "None"
 ##   test_all: false
@@ -57,7 +57,7 @@
 ##
 ## agent_communication:
 ##     -agent: "main"
-##     -message: "Backend ultra-cache invalidation for pillars is now verified as working. Proceeding to re-run the Full CRUD E2E via UI with cleanup: create Pillar→Area→Project→Task using E2E-<ts> names, update each, then delete in reverse order verifying list presence/absence after each step. Use base URL from env, no UI changes. Finally verify Google OAuth popup to accounts.google.com."
+##     -message: "Implementing ultra cache invalidation on /api areas/projects/tasks create/update/delete. Test plan: login; create Pillar→Area→Project→Task; verify GET consistency for /api/* and /api/ultra/* after each create; then delete in reverse and verify removals reflected immediately on both. Post-verify, proceed to frontend full CRUD E2E retest (we have prior user approval)."
 
 ##     -agent: "main"
 ##     -message: "User provided specific verification-only testing directives: Execute three test scenarios - 1) New User Onboarding and Data Integrity (verify no data duplication, proper dashboard navigation) 2) Hierarchy Count Accuracy (verify non-zero counts in Pillars/Areas) 3) Alignment Score Navigation (verify 'Set Monthly Goal' button navigates to /settings/goals). CONSTRAINT: Verification-only task, no code changes authorized. Will test backend first per protocol, then ask user about frontend testing. Need to report success/failure of each scenario."
