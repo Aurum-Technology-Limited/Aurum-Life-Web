@@ -230,11 +230,22 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   
   const createAreaMutation = useMutation({
     mutationFn: (areaData) => areasAPI.createArea(areaData),
-    onSuccess: (data) => {
-      console.log('🗂️ Areas: Create mutation successful:', data);
-      // Invalidate and refetch areas data
+    onSuccess: (resp) => {
+      const created = resp?.data || resp;
+      const newItem = created?.id ? created : { ...created, id: `temp-${Date.now()}` };
+      console.log('🗂️ Areas: Create mutation successful:', newItem);
+      // Optimistically prepend to both areas caches (with and without projects)
+      queryClient.setQueryData(['areas', true, showArchived], (prev) => {
+        const arr = Array.isArray(prev) ? prev : [];
+        return [newItem, ...arr];
+      });
+      queryClient.setQueryData(['areas', false, showArchived], (prev) => {
+        const arr = Array.isArray(prev) ? prev : [];
+        return [newItem, ...arr];
+      });
+      // Immediately invalidate to fetch server truth
       queryClient.invalidateQueries({ queryKey: ['areas'] });
-      onDataMutation('area', 'create', data);
+      onDataMutation('area', 'create', newItem);
     },
     onError: (error) => {
       console.error('🗂️ Areas: Create mutation failed:', error);
