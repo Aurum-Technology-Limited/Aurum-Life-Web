@@ -284,6 +284,8 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     onSuccess: () => {
       // Invalidate and refetch projects data
       invalidateProjects();
+      // Set short-lived consistency window to bypass ultra after update
+      try { localStorage.setItem('PROJECTS_FORCE_STANDARD_UNTIL', String(Date.now() + 2000)); } catch {}
       setShowEditForm(false);
       setEditingProject(null);
     },
