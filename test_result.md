@@ -171,6 +171,13 @@ backend:
     stuck_count: 0
     priority: "critical"
     needs_retesting: false
+  - task: "Pillars CRUD Verification - Standard vs Ultra Endpoints"
+    implemented: true
+    working: false
+    file: "pillars_crud_backend_test.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
     status_history:
         - working: false
           agent: "testing"
