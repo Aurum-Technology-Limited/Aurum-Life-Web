@@ -53,8 +53,7 @@ const Pillars = memo(({ onSectionChange }) => {
         await api.post('/pillars', submitData);
       }
       
-      // Force a short delay then refetch to ensure backend writes are visible
-      const queryClient = useQueryClient();
+      // Ensure backend writes are visible by invalidating and refetching pillars
 
       // Trigger data refresh and invalidate cache
       onDataMutation('pillar', editingPillar ? 'update' : 'create', submitData);
