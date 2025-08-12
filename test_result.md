@@ -4715,11 +4715,11 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.3"
-  test_sequence: 5
+  version: "3.4"
+  test_sequence: 6
   run_ui: true
-  last_updated: "2025-08-12T20:46:00Z"
-  critical_issue: "Areas UI Display Bug - Backend success but UI display failure"
+  last_updated: "2025-08-12T20:56:00Z"
+  critical_issue: "Areas UI Display Bug - Ultra cache invalidation not reflecting newly created areas"
 
 test_plan:
   current_focus:
