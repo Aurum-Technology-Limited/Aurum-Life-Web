@@ -307,6 +307,27 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
       invalidateProjects();
       // Set short-lived consistency window to bypass ultra after update
       try { localStorage.setItem('PROJECTS_FORCE_STANDARD_UNTIL', String(Date.now() + 2000)); } catch {}
+
+      // Hydrate cache from standard endpoint for active area
+      (async () => {
+        try {
+          const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+          const params = new URLSearchParams();
+          if (activeAreaId) params.append('area_id', activeAreaId);
+          params.append('include_archived', 'false');
+          params.append('_ts', String(Date.now()));
+          const resp = await fetch(`${backendURL}/api/projects?${params.toString()}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}` }
+          });
+          if (resp.ok) {
+            const list = await resp.json();
+            queryClient.setQueryData(['projects', activeAreaId, false], list);
+          }
+        } catch (e) {
+          console.warn('Projects standard fetch hydration failed:', e?.message || e);
+        }
+      })();
+
       setShowEditForm(false);
       setEditingProject(null);
     },
