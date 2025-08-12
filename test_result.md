@@ -341,7 +341,7 @@ frontend:
     file: "frontend/src/components/Pillars.jsx, frontend/src/components/Areas.jsx, frontend/src/components/Projects.jsx, frontend/src/components/Tasks.jsx"
     stuck_count: 3
     priority: "critical"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: false
           agent: "testing"
