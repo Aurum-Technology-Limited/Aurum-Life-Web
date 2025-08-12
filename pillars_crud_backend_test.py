@@ -216,7 +216,7 @@ class PillarsCRUDTester:
             for pillar in pillars:
                 if (pillar.get('id') == self.created_pillar_id or 
                     pillar.get('uuid') == self.created_pillar_id or
-                    pillar.get('name', '').startswith('E2E Backend Check')):
+                    pillar.get('name', '').startswith('E2E Ultra Cache Check')):
                     created_pillar = pillar
                     break
             
