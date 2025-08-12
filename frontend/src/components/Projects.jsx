@@ -200,16 +200,26 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   const createProjectMutation = useMutation({
     mutationFn: (projectData) => {
       const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      // Normalize payload: map due_date -> deadline, omit status (backend default), normalize empty area_id to null
+      const normalized = {
+        name: projectData.name,
+        description: projectData.description || '',
+        icon: projectData.icon || 'FolderOpen',
+        deadline: projectData.due_date ? new Date(projectData.due_date).toISOString() : null,
+        priority: projectData.priority || 'medium',
+        // area_id is optional; send null if blank to avoid enum/UUID issues
+        ...(projectData.area_id && projectData.area_id.trim() ? { area_id: projectData.area_id.trim() } : { area_id: null })
+      };
       return fetch(`${backendURL}/api/projects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
         },
-        body: JSON.stringify(projectData),
+        body: JSON.stringify(normalized),
       }).then(response => {
         if (!response.ok) {
-          throw new Error('Failed to create project');
+          return response.json().then(err => { throw new Error(err.detail || 'Failed to create project'); });
         }
         return response.json();
       });
