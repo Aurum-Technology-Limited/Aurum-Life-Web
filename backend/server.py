@@ -1228,6 +1228,12 @@ async def update_pillar(
     except Exception as e:
         logger.error(f"Error updating pillar: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+        # Invalidate ultra cache for pillars for this user
+        try:
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='pillars')
+        except Exception as _e:
+            logger.info(f"Cache invalidation (pillars) skipped: {_e}")
+
 
 @api_router.delete("/pillars/{pillar_id}")
 async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
