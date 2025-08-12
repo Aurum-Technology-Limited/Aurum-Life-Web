@@ -357,7 +357,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
     const projectData = {
       ...newProject,
-      due_date: newProject.due_date ? new Date(newProject.due_date).toISOString() : null
+      // Keep due_date as date string here; mutation will map to backend 'deadline'
     };
 
     createProjectMutation.mutate(projectData);
