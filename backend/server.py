@@ -28,6 +28,7 @@ from ultra_performance_services import (
     UltraPerformanceInsightsService,
     get_ultra_performance_stats
 )
+from cache_service import cache_service
 
 # Import our models and Supabase services
 from models import *
