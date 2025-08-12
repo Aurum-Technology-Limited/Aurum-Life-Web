@@ -4154,8 +4154,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Pillar CRUD E2E Functionality - UI Display Bug Fix"
+    - "Areas CRUD E2E Functionality - Critical UI Display Bug Confirmed"
   stuck_tasks:
+    - "Frontend: Areas CRUD UI Display Bug - Created areas not appearing in list despite successful backend operations"
     - "Frontend: Full CRUD E2E with cleanup (Pillars → Areas → Projects → Tasks) + Google OAuth popup check"
   test_all: false
   test_priority: "critical_first"
