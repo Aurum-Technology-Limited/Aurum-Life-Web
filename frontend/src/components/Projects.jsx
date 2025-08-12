@@ -227,6 +227,9 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     onSuccess: (createdProject) => {
       // Invalidate and refetch projects data
       invalidateProjects();
+
+      // Set short-lived consistency window to bypass ultra projects after write
+      try { localStorage.setItem('PROJECTS_FORCE_STANDARD_UNTIL', String(Date.now() + 2500)); } catch {}
       
       // Store the created project for potential decomposition
       setNewProjectForDecomposition(createdProject);
