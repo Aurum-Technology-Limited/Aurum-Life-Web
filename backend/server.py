@@ -1332,6 +1332,11 @@ async def update_area(
             area_data.description = sanitized_data["description"]
         
         result = await SupabaseAreaService.update_area(area_id, str(current_user.id), area_data)
+        try:
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='areas')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='pillars')
+        except Exception as _e:
+            logger.info(f"Cache invalidation (areas/pillars) skipped: {_e}")
         return result
     except HTTPException:
         raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
