@@ -7,7 +7,6 @@ import IconPicker from './ui/IconPicker';
 
 const Pillars = memo(({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
-  const queryClient = useQueryClient();
 
   const { invalidatePillars } = useInvalidateQueries();
   
