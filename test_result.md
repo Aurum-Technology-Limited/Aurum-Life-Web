@@ -4723,10 +4723,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Areas UI Display Bug Investigation - Backend persistence verification needed"
+    - "Areas UI Display Bug Investigation - Ultra cache invalidation not reflecting newly created areas"
     - "Projects Create Flow UI - COMPLETED"
   stuck_tasks:
-    - "Areas UI Display after Create - Backend operations successful but UI display failing"
+    - "Areas UI Display after Create - Backend operations successful but ultra cache invalidation failing"
   test_all: false
   test_priority: "critical_first"
 
