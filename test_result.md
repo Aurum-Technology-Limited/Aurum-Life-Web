@@ -4096,9 +4096,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Pillar CRUD E2E Functionality - React Hooks Error Fix"
+    - "Pillar CRUD E2E Functionality - UI Display Bug Fix"
   stuck_tasks:
-    - "Pillar CRUD E2E Functionality - React Hooks Error Fix"
+    - "Frontend: Full CRUD E2E with cleanup (Pillars → Areas → Projects → Tasks) + Google OAuth popup check"
   test_all: false
   test_priority: "critical_first"
 
