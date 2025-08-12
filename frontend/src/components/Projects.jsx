@@ -259,13 +259,18 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   const updateProjectMutation = useMutation({
     mutationFn: ({ projectId, projectData }) => {
       const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+      // Normalize payload for update: map due_date -> deadline
+      const normalized = {
+        ...projectData,
+        ...(projectData.due_date !== undefined ? { deadline: projectData.due_date ? new Date(projectData.due_date).toISOString() : null } : {}),
+      };
       return fetch(`${backendURL}/api/projects/${projectId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
         },
-        body: JSON.stringify(projectData),
+        body: JSON.stringify(normalized),
       }).then(response => {
         if (!response.ok) {
           throw new Error('Failed to update project');
