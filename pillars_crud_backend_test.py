@@ -147,8 +147,8 @@ class PillarsCRUDTester:
         
         timestamp = int(time.time())
         pillar_data = {
-            "name": f"E2E Backend Check {timestamp}",
-            "description": "E2E verification",
+            "name": f"E2E Ultra Cache Check {timestamp}",
+            "description": "Ultra cache invalidation verification",
             "icon": "🎯",
             "color": "#4CAF50"
         }
