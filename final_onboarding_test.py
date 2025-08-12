@@ -20,7 +20,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api"
+BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
 
 def test_complete_onboarding_flow():
     """Test the complete onboarding flow"""

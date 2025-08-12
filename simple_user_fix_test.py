@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api"
+BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
 
 def test_user_creation_fix():
     """Test the user creation fix by attempting to create a pillar"""

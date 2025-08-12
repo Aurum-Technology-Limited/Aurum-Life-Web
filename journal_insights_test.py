@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration - Use external URL from frontend/.env
-BACKEND_URL = "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com"
+BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class JournalInsightsTestSuite:

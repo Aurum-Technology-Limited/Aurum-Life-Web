@@ -29,7 +29,7 @@ import uuid
 import time
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api"
+BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
 
 class NotificationSystemTester:
     def __init__(self):

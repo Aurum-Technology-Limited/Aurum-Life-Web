@@ -6,7 +6,7 @@ import json
 import os
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://fastapi-react-fix.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def test_task_creation_debug():

@@ -10,7 +10,7 @@ import base64
 import sys
 
 # Configuration
-BACKEND_URL = "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api"
+BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
 
 def decode_jwt_payload(token):
     """Decode JWT payload without verification"""

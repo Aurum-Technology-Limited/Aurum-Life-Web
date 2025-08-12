@@ -22,7 +22,7 @@ def get_base_url():
         print(f"Error reading frontend/.env: {e}")
     
     # Fallback
-    return "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com"
+    return "https://fastapi-react-fix.preview.emergentagent.com"
 
 BASE_URL = get_base_url()
 print(f"🌐 Using base URL: {BASE_URL}")

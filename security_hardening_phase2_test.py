@@ -13,7 +13,7 @@ import sys
 import os
 
 # Configuration
-BACKEND_URL = "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api"
+BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
 TEST_USER_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_USER_PASSWORD = "password"
 

@@ -6,7 +6,7 @@ Quick validation test for empty strings
 import requests
 import json
 
-BACKEND_URL = "https://b7ef6377-f814-4d39-824c-6237cb92693c.preview.emergentagent.com/api"
+BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
 
 def test_validation():
     # Login first
