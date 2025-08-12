@@ -61,6 +61,24 @@ const Pillars = memo(({ onSectionChange }) => {
       // Invalidate and immediately refetch pillars to reflect new data
       // Ensure query cache is updated and refetched
       await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'pillars' });
+
+      // Force-fetch from standard endpoint to bypass any server-side ultra cache and update query cache
+      try {
+        const fresh = await api.get('/pillars', {
+          params: {
+            include_sub_pillars: true,
+            include_areas: true,
+            include_archived: false,
+            // cache-buster to avoid intermediary caches
+            _ts: Date.now()
+          }
+        });
+        // Update the primary pillars query cache directly
+        queryClient.setQueryData(['pillars', true, true, false], fresh.data);
+      } catch (e) {
+        console.warn('Fallback pillars fetch failed, will rely on refetch()', e?.message);
+      }
+
       await refetch();
       handleCloseModal();
     } catch (error) {
