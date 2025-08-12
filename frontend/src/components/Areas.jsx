@@ -271,6 +271,9 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     mutationFn: (areaId) => areasAPI.deleteArea(areaId),
     onSuccess: (data, areaId) => {
       console.log('🗂️ Areas: Delete mutation successful:', data);
+      // Optimistically remove from both caches
+      queryClient.setQueryData(['areas', true, showArchived], (prev) => Array.isArray(prev) ? prev.filter(a => a.id !== areaId) : prev);
+      queryClient.setQueryData(['areas', false, showArchived], (prev) => Array.isArray(prev) ? prev.filter(a => a.id !== areaId) : prev);
       // Invalidate and refetch areas data
       queryClient.invalidateQueries({ queryKey: ['areas'] });
       onDataMutation('area', 'delete', { areaId });
