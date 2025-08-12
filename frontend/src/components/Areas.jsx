@@ -627,16 +627,18 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                     Cancel
                   </button>
                   <button
+                    data-testid="area-submit"
                     type="submit"
                     disabled={!formData.name.trim() || updateAreaMutation.isPending || createAreaMutation.isPending}
-                    className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    className={`relative z-50 flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                       (!formData.name.trim() || updateAreaMutation.isPending || createAreaMutation.isPending)
                         ? 'bg-gray-600 cursor-not-allowed opacity-50' 
                         : 'hover:opacity-90'
                     }`}
                     style={{ 
                       backgroundColor: (!formData.name.trim() || updateAreaMutation.isPending || createAreaMutation.isPending) ? '#6B7280' : '#F4B400', 
-                      color: '#0B0D14' 
+                      color: '#0B0D14',
+                      zIndex: 60
                     }}
                   >
                     <Save className="h-4 w-4" />
