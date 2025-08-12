@@ -8,6 +8,8 @@ import IconPicker from './ui/IconPicker';
 
 const Pillars = memo(({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
+  const queryClient = useQueryClient();
+
   const { invalidatePillars } = useInvalidateQueries();
   
   // Use TanStack Query with include_areas=true to get accurate counts
