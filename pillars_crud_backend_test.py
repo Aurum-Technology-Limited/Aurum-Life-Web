@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-FOCUSED BACKEND CRUD VERIFICATION FOR PILLARS
+ULTRA CACHE INVALIDATION VERIFICATION FOR PILLARS
 Testing specific flow as requested in review:
 1) Login with marc.alleyne@aurumtechnologyltd.com / password123
-2) Create pillar with specific format
-3) Read list from both /api/pillars and /api/ultra/pillars
-4) Delete created pillar
-5) Confirm removal
+2) POST /api/pillars with name "E2E Ultra Cache Check <timestamp>"
+3) GET /api/pillars → ensure item present
+4) GET /api/ultra/pillars → ensure item present (no stale miss)
+5) DELETE the created id
+6) GET /api/pillars → ensure removed
+7) GET /api/ultra/pillars → ensure removed (no stale presence)
 
 Expected output:
-- Status + response time for each call
-- The id/uuid field name returned by POST and present in GETs
-- Whether standard and ultra returned consistent results
-- PASS if created item is visible in both GETs and removed after DELETE; else FAIL
+- PASS/FAIL and timings for each step
+- Verification that ultra cache invalidation works correctly
 """
 
 import requests
