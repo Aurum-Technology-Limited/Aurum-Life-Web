@@ -49,15 +49,15 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Frontend: Full CRUD E2E with cleanup (Pillars → Areas → Projects → Tasks) + Google OAuth popup check"
+##     - "Backend: Pillars CRUD verification (POST→GET→DELETE) across /api/pillars and /api/ultra/pillars, then Frontend normalization + CRUD retest"
 ##   stuck_tasks:
-##     - "None"
+##     - "Pillars UI not reflecting created item"
 ##   test_all: false
-##   test_priority: "high_first"  # or "sequential" or "stuck_first"
+##   test_priority: "high_first"
 ##
 ## agent_communication:
 ##     -agent: "main"
-##     -message: "User requested extended frontend tests. Plan: Use Playwright to perform full CRUD via UI with hard cleanup: Create unique Pillar, Area (linked to Pillar), Project (linked to Area), Task (linked to Project); then update each; then delete in reverse order (Task → Project → Area → Pillar). Names use E2E-<timestamp> for uniqueness. Use base URL from frontend/.env (REACT_APP_BACKEND_URL). Log in with marc.alleyne@aurumtechnologyltd.com/password123. Validate success via list presence/absence, toasts, and count changes. After CRUD, open a fresh context, click 'Sign in with Google' and verify popup to accounts.google.com appears; close without authenticating. Constraints: No UI changes, rely on resilient selectors (buttons containing 'Create'/'New', labels 'Name', dropdowns for linking), timeouts up to 20s for modals. Ensure complete cleanup so no test data remains."
+##     -message: "Running focused backend CRUD: 1) Login, 2) POST /api/pillars name=E2E Backend Check <ts>, 3) GET /api/pillars to confirm presence (match by name, capture id), 4) GET /api/ultra/pillars to confirm presence (compare), 5) DELETE created id, 6) Confirm removal on both GETs. Record timings. Then apply frontend Pillars normalization (consistent id field and cancel/invalidate/refetch sequence) and re-run frontend full CRUD with cleanup + Google OAuth popup."
 
 ##     -agent: "main"
 ##     -message: "User provided specific verification-only testing directives: Execute three test scenarios - 1) New User Onboarding and Data Integrity (verify no data duplication, proper dashboard navigation) 2) Hierarchy Count Accuracy (verify non-zero counts in Pillars/Areas) 3) Alignment Score Navigation (verify 'Set Monthly Goal' button navigates to /settings/goals). CONSTRAINT: Verification-only task, no code changes authorized. Will test backend first per protocol, then ask user about frontend testing. Need to report success/failure of each scenario."
