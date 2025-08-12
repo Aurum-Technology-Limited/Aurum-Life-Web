@@ -245,6 +245,19 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
       });
       // Immediately invalidate to fetch server truth
       queryClient.invalidateQueries({ queryKey: ['areas'] });
+
+      // Force-fetch from standard endpoint (bypass ultra) and hydrate cache to avoid transient stale ultra cache
+      (async () => {
+        try {
+          const standardResp = await api.get('/areas', { params: { include_projects: true, include_archived: showArchived } });
+          const list = Array.isArray(standardResp.data) ? standardResp.data : (standardResp.data?.data || []);
+          queryClient.setQueryData(['areas', true, showArchived], list);
+          queryClient.setQueryData(['areas', false, showArchived], list);
+        } catch (e) {
+          console.warn('Areas standard fetch hydration failed, falling back to refetch:', e?.message || e);
+        }
+      })();
+
       // Safety refetch after a short delay to avoid any race with ultra-cache
       setTimeout(() => {
         try { refetchAreas && refetchAreas(); } catch (e) {}
