@@ -14,12 +14,15 @@ const Pillars = memo(({ onSectionChange }) => {
   
   // Use TanStack Query with include_areas=true to get accurate counts
   const { 
-    data: pillars = [], 
+    data: pillarsData = [], 
     isLoading: loading, 
     error, 
     isError,
     refetch 
   } = usePillarsQuery(true, true, false); // includeSubPillars=true, includeAreas=true (REQUIRED for counts), includeArchived=false
+
+  // Ensure we always have an array for rendering
+  const pillars = Array.isArray(pillarsData) ? pillarsData : [];
   
   const [showModal, setShowModal] = useState(false);
   const [editingPillar, setEditingPillar] = useState(null);
