@@ -140,7 +140,8 @@ export const pillarsAPI = {
         params: {
           // Ultra endpoint only supports include_areas and include_archived
           include_areas: includeAreas,
-          include_archived: includeArchived
+          include_archived: includeArchived,
+          _ts: Date.now()
         }
       });
       const duration = Date.now() - startTime;
