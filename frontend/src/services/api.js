@@ -190,16 +190,21 @@ export const notificationsAPI = {
 // Areas API with enhanced archiving support and ultra-performance optimization
 export const areasAPI = {
   getAreas: async (includeProjects = false, includeArchived = false) => {
+    // Temporary consistency window after writes: bypass ultra cache
     try {
+      const forceUntil = Number(localStorage.getItem('AREAS_FORCE_STANDARD_UNTIL') || 0);
+      const shouldBypassUltra = forceUntil && Date.now() < forceUntil;
+      const params = { include_projects: includeProjects, include_archived: includeArchived };
+
+      if (shouldBypassUltra) {
+        console.log('⏭️ Bypassing ultra cache for areas (consistency window active)');
+        return apiClient.get('/areas', { params });
+      }
+
       // Try ultra-performance endpoint first
       console.log('🚀 Attempting ultra-performance areas...');
       const startTime = Date.now();
-      const response = await apiClient.get('/ultra/areas', { 
-        params: { 
-          include_projects: includeProjects,
-          include_archived: includeArchived
-        } 
-      });
+      const response = await apiClient.get('/ultra/areas', { params });
       const duration = Date.now() - startTime;
       console.log(`✅ Ultra areas completed in ${duration}ms`);
       return response;
