@@ -490,7 +490,7 @@ def main():
     tester = PillarsCRUDTester()
     
     try:
-        success = tester.run_focused_crud_verification()
+        success = tester.run_ultra_cache_verification()
         
         print("\n" + "=" * 80)
         print("📋 FINAL VERIFICATION RESULT")
