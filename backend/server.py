@@ -1487,6 +1487,12 @@ async def delete_project(project_id: str, current_user: User = Depends(get_curre
         success = await SupabaseProjectService.delete_project(project_id, str(current_user.id))
         if not success:
             raise HTTPException(status_code=404, detail="Project not found")
+        try:
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='projects')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='areas')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='pillars')
+        except Exception as _e:
+            logger.info(f"Cache invalidation (projects/areas/pillars) skipped: {_e}")
         return {"message": "Project deleted successfully"}
     except HTTPException:
         raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
