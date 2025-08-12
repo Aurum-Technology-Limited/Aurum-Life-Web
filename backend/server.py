@@ -1281,6 +1281,11 @@ async def create_area(area_data: AreaCreate, current_user: User = Depends(get_cu
         area_data.description = sanitized_data["description"]
         
         result = await SupabaseAreaService.create_area(str(current_user.id), area_data)
+        try:
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='areas')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='pillars')
+        except Exception as _e:
+            logger.info(f"Cache invalidation (areas/pillars) skipped: {_e}")
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
