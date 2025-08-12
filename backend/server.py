@@ -1514,6 +1514,13 @@ async def create_task(task_data: TaskCreate, current_user: User = Depends(get_cu
         task_data.description = sanitized_data["description"]
         
         result = await SupabaseTaskService.create_task(str(current_user.id), task_data)
+        try:
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='tasks')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='projects')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='areas')
+            await cache_service.invalidate_user_cache(str(current_user.id), data_type='pillars')
+        except Exception as _e:
+            logger.info(f"Cache invalidation (tasks/projects/areas/pillars) skipped: {_e}")
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
