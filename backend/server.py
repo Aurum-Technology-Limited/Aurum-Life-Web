@@ -1256,6 +1256,10 @@ async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current
         success = await SupabasePillarService.delete_pillar(pillar_id, str(current_user.id))
         if not success:
             raise HTTPException(status_code=404, detail="Pillar not found")
+        try:
+            await cache_service.invalidate_pattern(f"pillars:user:{str(current_user.id)}*")
+        except Exception as _e:
+            logger.info(f"Cache invalidation (pillars) skipped: {_e}")
         return {"message": "Pillar deleted successfully"}
     except HTTPException:
         raise  # Re-raise HTTP exceptions (like 404 from IDOR protection)
