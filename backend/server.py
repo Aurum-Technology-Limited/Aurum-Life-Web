@@ -1174,6 +1174,11 @@ async def create_pillar(pillar_data: PillarCreate, current_user: User = Depends(
         pillar_data.description = sanitized_data["description"]
         
         result = await SupabasePillarService.create_pillar(str(current_user.id), pillar_data)
+        # Invalidate ultra cache for pillars for this user
+        try:
+            await cache_service.invalidate_pattern(f"pillars:user:{str(current_user.id)}*")
+        except Exception as _e:
+            logger.info(f"Cache invalidation (pillars) skipped: {_e}")
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
