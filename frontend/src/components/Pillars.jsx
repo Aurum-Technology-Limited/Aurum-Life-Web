@@ -56,7 +56,8 @@ const Pillars = memo(({ onSectionChange }) => {
       // Trigger data refresh and invalidate cache
       onDataMutation('pillar', editingPillar ? 'update' : 'create', submitData);
       // Invalidate and immediately refetch pillars to reflect new data
-      await queryClient.invalidateQueries({ predicate: (q) => q.queryKey[0] === 'pillars' });
+      // Invalidate via provided hook helper and refetch
+      invalidatePillars();
       await refetch();
       handleCloseModal();
     } catch (error) {
