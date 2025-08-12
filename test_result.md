@@ -4738,9 +4738,10 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Projects Consistency Window UI Display Fix - Critical UI display bug preventing newly created projects from appearing in list"
     - "Areas UI Display Bug Investigation - Ultra cache invalidation not reflecting newly created areas"
-    - "Projects Create Flow UI - COMPLETED"
   stuck_tasks:
+    - "Projects Consistency Window UI Display Fix - Backend operations successful but frontend failing to display created projects"
     - "Areas UI Display after Create - Backend operations successful but ultra cache invalidation failing"
   test_all: false
   test_priority: "critical_first"
