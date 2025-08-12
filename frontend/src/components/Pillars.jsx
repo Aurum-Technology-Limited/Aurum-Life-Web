@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, memo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDataContext } from '../contexts/DataContext';
 import { api } from '../services/api';
 import { usePillarsQuery, useInvalidateQueries } from '../hooks/useQueries';
