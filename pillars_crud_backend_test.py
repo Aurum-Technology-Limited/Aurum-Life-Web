@@ -395,21 +395,21 @@ class PillarsCRUDTester:
         
         return consistent
 
-    def run_focused_crud_verification(self):
-        """Run the complete focused CRUD verification flow"""
-        print("🎯 STARTING FOCUSED BACKEND CRUD VERIFICATION FOR PILLARS")
+    def run_ultra_cache_verification(self):
+        """Run the complete ultra cache invalidation verification flow"""
+        print("🎯 STARTING ULTRA CACHE INVALIDATION VERIFICATION FOR PILLARS")
         print("=" * 80)
         print(f"Backend URL: {self.base_url}")
         print(f"Test User: {self.test_user_email}")
         print("=" * 80)
         
-        # Execute the 6-step flow
+        # Execute the 7-step flow as specified in review request
         step_results = []
         
         # Step 1: Login
         step_results.append(self.step_1_login())
         if not step_results[-1]:
-            print("\n❌ CRITICAL: Login failed, cannot proceed with CRUD verification")
+            print("\n❌ CRITICAL: Login failed, cannot proceed with verification")
             return False
         
         # Step 2: Create pillar
@@ -426,13 +426,13 @@ class PillarsCRUDTester:
         ultra_result = self.step_4_read_ultra_pillars()
         step_results.append(ultra_result["success"])
         
-        # Compare consistency
-        consistency_check = self.compare_standard_vs_ultra(standard_result, ultra_result)
+        # Compare consistency after creation
+        consistency_after_create = self.compare_standard_vs_ultra(standard_result, ultra_result)
         
         # Step 5: Delete pillar
         step_results.append(self.step_5_delete_pillar())
         
-        # Step 6: Confirm removal
+        # Step 6 & 7: Confirm removal from both endpoints
         step_results.append(self.step_6_confirm_removal())
         
         # Calculate overall result
@@ -440,27 +440,28 @@ class PillarsCRUDTester:
         total_steps = len(step_results)
         
         print(f"\n" + "=" * 80)
-        print("📊 FOCUSED CRUD VERIFICATION SUMMARY")
+        print("📊 ULTRA CACHE INVALIDATION VERIFICATION SUMMARY")
         print("=" * 80)
         print(f"Backend URL: {self.base_url}")
         print(f"Steps Completed: {successful_steps}/{total_steps}")
-        print(f"Consistency Check: {'✅ PASS' if consistency_check else '❌ FAIL'}")
+        print(f"Cache Consistency After Create: {'✅ PASS' if consistency_after_create else '❌ FAIL'}")
         
-        # Determine final result
-        crud_success = (successful_steps == total_steps and consistency_check)
+        # Determine final result - all steps must pass AND consistency must be maintained
+        cache_invalidation_success = (successful_steps == total_steps and consistency_after_create)
         
-        if crud_success:
+        if cache_invalidation_success:
             print("\n🎉 OVERALL RESULT: ✅ PASS")
-            print("   ✅ Created item visible in both standard and ultra GETs")
-            print("   ✅ Item successfully removed after DELETE")
-            print("   ✅ Standard and ultra endpoints returned consistent results")
+            print("   ✅ Ultra cache invalidation working correctly")
+            print("   ✅ Created item visible in both /api/pillars and /api/ultra/pillars")
+            print("   ✅ Item successfully removed from both endpoints after DELETE")
+            print("   ✅ No stale cache data detected")
         else:
             print("\n💥 OVERALL RESULT: ❌ FAIL")
             if successful_steps < total_steps:
                 failed_steps = total_steps - successful_steps
                 print(f"   ❌ {failed_steps} step(s) failed")
-            if not consistency_check:
-                print("   ❌ Standard and ultra endpoints returned inconsistent results")
+            if not consistency_after_create:
+                print("   ❌ Ultra cache invalidation not working - inconsistent data between endpoints")
         
         # Show detailed results
         print(f"\n🔍 DETAILED STEP RESULTS:")
@@ -479,7 +480,7 @@ class PillarsCRUDTester:
             print(f"   Average response time: {avg_time:.0f}ms")
             print(f"   API calls made: {len(timed_results)}")
         
-        return crud_success
+        return cache_invalidation_success
 
 def main():
     """Run Focused CRUD Verification"""
