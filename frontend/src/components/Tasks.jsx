@@ -1202,6 +1202,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
           )}
         </div>
         <button
+          data-testid="task-new"
           onClick={handleCreateTask}
           className="flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
           style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
