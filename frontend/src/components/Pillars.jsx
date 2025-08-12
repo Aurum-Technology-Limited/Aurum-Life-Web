@@ -48,6 +48,9 @@ const Pillars = memo(({ onSectionChange }) => {
         await api.post('/pillars', submitData);
       }
       
+      // Force a short delay then refetch to ensure backend writes are visible
+      const queryClient = useQueryClient();
+
       // Trigger data refresh and invalidate cache
       onDataMutation('pillar', editingPillar ? 'update' : 'create', submitData);
       invalidatePillars(); // Refresh TanStack Query cache
