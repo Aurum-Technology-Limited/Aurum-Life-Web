@@ -1238,11 +1238,11 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.2"
-  test_sequence: 4
+  version: "3.3"
+  test_sequence: 15
   run_ui: false
-  last_updated: "2025-07-31T00:25:00Z"
-  critical_issue: "Frontend ChunkLoadError and Environment URL mismatch fixed"
+  last_updated: "2025-08-13T03:36:00Z"
+  critical_issue: "Pillar-Area linking broken in dropdown and modal overlay CSS issues"
 
   - task: "Frontend Environment URL Configuration Fix"
     implemented: true
