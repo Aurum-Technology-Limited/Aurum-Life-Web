@@ -624,7 +624,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
                   onChange={(e) => setEditingProject({...editingProject, area_id: e.target.value})}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-yellow-500"
                 >
-                  <option value="">Select an area (optional)</option>
+                  <option value="">Select an area</option>
                   {areas.map((area) => (
                     <option key={area.id} value={area.id}>{area.name}</option>
                   ))}
