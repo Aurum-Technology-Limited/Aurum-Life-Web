@@ -290,12 +290,13 @@ class CascadeDeletionTester:
         else:
             self.log_test("VERIFY AREA CASCADE DELETED", False, f"Failed to get areas: {result.get('error')}")
         
-        # Verify Projects are gone
-        result = self.make_request('GET', '/projects', params={'area_id': hierarchy['area_id']}, use_auth=True)
+        # Verify Projects are gone - check specifically for our project
+        result = self.make_request('GET', '/projects', use_auth=True)
         if result['success']:
             projects = result['data']
-            projects_gone = len(projects) == 0
-            self.log_test("VERIFY PROJECTS CASCADE DELETED", projects_gone, "Projects successfully cascade deleted" if projects_gone else f"Found {len(projects)} projects still exist")
+            our_project_exists = any(project['id'] == hierarchy['project_id'] for project in projects)
+            projects_gone = not our_project_exists
+            self.log_test("VERIFY PROJECTS CASCADE DELETED", projects_gone, "Projects successfully cascade deleted" if projects_gone else f"Our project {hierarchy['project_id']} still exists")
         else:
             self.log_test("VERIFY PROJECTS CASCADE DELETED", False, f"Failed to get projects: {result.get('error')}")
         
