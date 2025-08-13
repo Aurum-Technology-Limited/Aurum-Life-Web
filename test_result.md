@@ -4766,9 +4766,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Projects Consistency Window UI Display Fix - RESOLVED - Hydration fixes successful, projects appearing and persisting correctly"
-    - "Areas UI Display Bug Investigation - Ultra cache invalidation not reflecting newly created areas"
+    - "UI Cascade Deletion Functionality - CRITICAL FAILURE - Frontend delete operations completely non-functional"
+    - "Modal Overlay CSS Issues - Preventing proper user interactions with delete buttons"
+    - "TanStack Query Cache Invalidation - Not updating UI after successful deletions"
   stuck_tasks:
+    - "UI Cascade Deletion Implementation - Multiple critical frontend issues blocking cascade deletion workflow"
     - "Areas UI Display after Create - Backend operations successful but ultra cache invalidation failing"
   test_all: false
   test_priority: "critical_first"
