@@ -224,6 +224,99 @@ async def get_current_user_profile_google(token: str = Depends(HTTPBearer())):
         logger.error(f"Error getting user profile: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to get user profile")
 
+# ================================
+# LOGIN STREAK ENDPOINTS (DB-backed)
+# ================================
+@api_router.post("/streaks/login")
+async def record_login(request: Request, current_user: User = Depends(get_current_active_user_hybrid)):
+    """Record a user's login for today in UTC and update current/best streaks."""
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+
+        # Normalize dates in UTC
+        today_utc = datetime.utcnow().date()
+        yesterday_utc = today_utc - timedelta(days=1)
+
+        # Optional client timezone
+        client_tz = request.headers.get('X-Client-Timezone')
+
+        # Upsert today's login event
+        event_dict = {
+            'id': str(uuid.uuid4()),
+            'user_id': user_id,
+            'login_date_utc': today_utc.isoformat(),
+            'client_timezone': client_tz,
+            'created_at': datetime.utcnow().isoformat()
+        }
+        supabase.table('login_events').upsert(event_dict, on_conflict='user_id,login_date_utc').execute()
+
+        # Get profile streaks
+        profile_resp = supabase.table('user_profiles').select('current_streak,best_streak').eq('id', user_id).execute()
+        current_streak = 0
+        best_streak = 0
+        if profile_resp.data:
+            current_streak = profile_resp.data[0].get('current_streak', 0) or 0
+            best_streak = profile_resp.data[0].get('best_streak', 0) or 0
+
+        # Check yesterday login
+        y_resp = supabase.table('login_events').select('id').eq('user_id', user_id).eq('login_date_utc', yesterday_utc.isoformat()).limit(1).execute()
+        new_current = current_streak + 1 if (y_resp.data or current_streak == 0) else 1
+        new_best = max(best_streak, new_current)
+
+        # Update profile
+        supabase.table('user_profiles').update({
+            'current_streak': new_current,
+            'best_streak': new_best,
+            'updated_at': datetime.utcnow().isoformat()
+        }).eq('id', user_id).execute()
+
+        return { 'status': 'ok', 'current_streak': new_current, 'best_streak': new_best }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error recording login event: {e}")
+        raise HTTPException(status_code=500, detail="Failed to record login")
+
+@api_router.get("/streaks/stats")
+async def get_streak_stats(current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        profile_resp = supabase.table('user_profiles').select('current_streak,best_streak').eq('id', user_id).execute()
+        if profile_resp.data:
+            return profile_resp.data[0]
+        return { 'current_streak': 0, 'best_streak': 0 }
+    except Exception as e:
+        logger.error(f"Error fetching streak stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch streak stats")
+
+@api_router.get("/streaks/month")
+async def get_month_logins(year: int = Query(...), month: int = Query(..., ge=1, le=12), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        first_day = datetime(year, month, 1)
+        next_month = month + 1
+        next_year = year + 1 if next_month == 13 else year
+        if next_month == 13:
+            next_month = 1
+        last_day = datetime(next_year, next_month, 1) - timedelta(days=1)
+        resp = supabase.table('login_events').select('login_date_utc').eq('user_id', user_id).gte('login_date_utc', first_day.date().isoformat()).lte('login_date_utc', last_day.date().isoformat()).execute()
+        days = []
+        for row in (resp.data or []):
+            s = row.get('login_date_utc')
+            try:
+                d = datetime.fromisoformat(s).date() if isinstance(s, str) else s
+                days.append(int(d.day))
+            except Exception:
+                if isinstance(s, str) and len(s) >= 10:
+                    days.append(int(s[8:10]))
+        return { 'year': year, 'month': month, 'days': sorted(list(set(days))) }
+    except Exception as e:
+        logger.error(f"Error fetching month logins: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch month logins")
+
 @api_router.post("/auth/logout")
 async def logout_user(token: str = Depends(HTTPBearer())):
     """Logout user and invalidate session"""
