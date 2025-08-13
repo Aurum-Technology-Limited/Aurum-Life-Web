@@ -4808,8 +4808,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Automated UI Cascade Deletion Tests: Pillar→Area→Project→Tasks creation and cascade deletion at Pillar, Area, Project levels with screenshots - COMPLETED"
-    - "Ensure confirmation dialogs show accurate cascade warnings and UI lists update without orphans - COMPLETED"
+    - "Final E2E: Strict validation + cascade deletion across Pillar→Area→Project→Tasks with screenshots"
+    - "Verify no orphans remain after cascading deletes and UI lists hydrate correctly"
 
   stuck_tasks: []
     - "Full cascade deletion test blocked by Areas creation UI issues - cannot create hierarchical entities for testing"
