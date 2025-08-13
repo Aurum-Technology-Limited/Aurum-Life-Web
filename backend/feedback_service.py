@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 from supabase import create_client, Client
 import logging
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, Category
 
 logger = logging.getLogger(__name__)
 
