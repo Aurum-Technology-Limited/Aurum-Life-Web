@@ -347,20 +347,24 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
   // Delete project mutation
   const deleteProjectMutation = useMutation({
-    mutationFn: (projectId) => {
+    mutationFn: async (projectId) => {
       const backendURL = process.env.REACT_APP_BACKEND_URL || '';
-      return fetch(`${backendURL}/api/projects/${projectId}`, {
+      const resp = await fetch(`${backendURL}/api/projects/${projectId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
         },
-      }).then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to delete project');
-        }
       });
+      // Treat 404 as idempotent success (already deleted or not found)
+      if (!resp.ok && resp.status !== 404) {
+        const err = await (async () => { try { return await resp.json(); } catch { return {}; } })();
+        throw new Error(err?.detail || 'Failed to delete project');
+      }
+      return { projectId };
     },
-    onSuccess: () => {
+    onSuccess: (_data, projectId) => {
+      // Optimistically remove from cache
+      queryClient.setQueryData(['projects', activeAreaId, false], (prev) => Array.isArray(prev) ? prev.filter(p => p.id !== projectId) : prev);
       // Invalidate and refetch projects data
       invalidateProjects();
       // Defensive: also invalidate tasks cache
@@ -388,8 +392,10 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
         }
       })();
     },
-    onError: (error) => {
+    onError: (error, projectId) => {
       console.error('Delete project error:', error);
+      // If this was a 404 treated as error by network, remove from cache anyway
+      queryClient.setQueryData(['projects', activeAreaId, false], (prev) => Array.isArray(prev) ? prev.filter(p => p.id !== projectId) : prev);
       setError('Failed to delete project');
     }
   });
