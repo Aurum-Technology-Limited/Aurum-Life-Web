@@ -12,6 +12,53 @@ const LoginStreakTracker = () => {
   useEffect(() => {
     fetchLoginStreakData();
     recordTodayLogin();
+    // Attempt DB-backed record and fetch
+    (async () => {
+      try {
+        const backendURL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL || '';
+        const token = localStorage.getItem('auth_token') || '';
+        if (!token || !backendURL) return;
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        await fetch(`${backendURL}/api/streaks/login`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Client-Timezone': tz
+          }
+        });
+        const statsResp = await fetch(`${backendURL}/api/streaks/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (statsResp.ok) {
+          const stats = await statsResp.json();
+          if (typeof stats.current_streak === 'number') setStreak(stats.current_streak);
+          if (typeof stats.best_streak === 'number') setBestStreak(stats.best_streak);
+        }
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = now.getMonth() + monthOffset + 1; // 1-based
+        const monthResp = await fetch(`${backendURL}/api/streaks/month?year=${y}&month=${m}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (monthResp.ok) {
+          const data = await monthResp.json();
+          if (data && Array.isArray(data.days)) {
+            // Merge with local for resiliency
+            const ref = new Date(y, m - 1, 1);
+            const setDays = new Set([...loginDays]);
+            for (const d of data.days) {
+              const date = new Date(ref.getFullYear(), ref.getMonth(), d);
+              setDays.add(keyFromDate(date));
+            }
+            setLoginDays(setDays);
+            localStorage.setItem('login_days', JSON.stringify([...setDays]));
+          }
+        }
+      } catch (e) {
+        // Silent fallback to local mode
+        console.warn('DB-backed streak fetch failed, using local mode', e?.message || e);
+      }
+    })();
   }, []);
 
   const keyFromDate = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).toDateString();
