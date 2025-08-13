@@ -114,12 +114,15 @@ const Pillars = memo(({ onSectionChange }) => {
   };
 
   const handleDelete = async (pillarId, pillarName) => {
-    if (window.confirm(`Are you sure you want to delete "${pillarName}"? This will unlink all associated areas.`)) {
+    const message = `Are you sure you want to delete "${pillarName}"?\n\nThis will permanently delete:\n• All Areas under this Pillar\n• All Projects in those Areas\n• All Tasks in those Projects\n\nThis action cannot be undone.`;
+    if (window.confirm(message)) {
       try {
         await api.delete(`/pillars/${pillarId}`);
         // Trigger data refresh and invalidate cache
         onDataMutation('pillar', 'delete', { id: pillarId, name: pillarName });
         await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'pillars' });
+        // Also invalidate related caches
+        await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && ['areas', 'projects', 'tasks'].includes(q.queryKey[0]) });
         await refetch(); // Ensure UI updates immediately
       } catch (error) {
         console.error('Error deleting pillar:', error);
