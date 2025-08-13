@@ -178,12 +178,6 @@ const Feedback = () => {
           </div>
 
           <div className="flex items-center justify-center pt-4">
-            <div className="text-sm text-gray-400">
-              {user?.email && (
-                <span>Feedback will be sent from: {user.email}</span>
-              )}
-            </div>
-            
             <button
               type="submit"
               disabled={isSubmitting}
