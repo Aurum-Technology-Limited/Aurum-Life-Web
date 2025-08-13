@@ -126,6 +126,15 @@ const Pillars = memo(({ onSectionChange }) => {
         await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'pillars' });
         // Also invalidate related caches
         await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && ['areas', 'projects', 'tasks'].includes(q.queryKey[0]) });
+        // Hydrate pillars from standard endpoint to avoid ultra staleness
+        try {
+          const fresh = await api.get('/pillars', {
+            params: { include_sub_pillars: true, include_areas: true, include_archived: false, _ts: Date.now() }
+          });
+          queryClient.setQueryData(['pillars', true, true, false], fresh.data);
+        } catch (e) {
+          console.warn('Pillars standard fetch hydration after delete failed:', e?.message || e);
+        }
         await refetch(); // Ensure UI updates immediately
       } catch (error) {
         console.error('Error deleting pillar:', error);
