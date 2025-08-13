@@ -4772,11 +4772,11 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.4"
-  test_sequence: 6
+  version: "3.5"
+  test_sequence: 7
   run_ui: true
-  last_updated: "2025-08-12T21:57:00Z"
-  critical_issue: "Areas UI Display Bug - Ultra cache invalidation not reflecting newly created areas (Projects consistency windows RESOLVED)"
+  last_updated: "2025-08-13T02:15:00Z"
+  critical_issue: "Areas UI Display Bug - Ultra cache invalidation not reflecting newly created areas (UI Cascade Deletion Dialog System WORKING)"
 
 test_plan:
   current_focus:
