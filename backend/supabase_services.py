@@ -877,18 +877,24 @@ class SupabaseAreaService:
     
     @staticmethod
     async def delete_area(area_id: str, user_id: str) -> bool:
-        """Delete an area and unlink its projects"""
+        """Delete an area and cascade delete its projects and tasks"""
         try:
-            # First, unlink projects from this area
-            projects_response = supabase.table('projects').update({
-                'area_id': None,
-                'updated_at': datetime.utcnow().isoformat()
-            }).eq('area_id', area_id).execute()
+            # 1) Fetch projects under this area
+            projects_resp = supabase.table('projects').select('id').eq('area_id', area_id).eq('user_id', user_id).execute()
+            project_ids = [row['id'] for row in (projects_resp.data or [])]
+
+            # 2) Delete tasks under these projects
+            if project_ids:
+                supabase.table('tasks').delete().in_('project_id', project_ids).eq('user_id', user_id).execute()
             
-            # Then delete the area
-            response = supabase.table('areas').delete().eq('id', area_id).eq('user_id', user_id).execute()
+            # 3) Delete projects under this area
+            if project_ids:
+                supabase.table('projects').delete().in_('id', project_ids).eq('user_id', user_id).execute()
             
-            logger.info(f"✅ Deleted area: {area_id} and unlinked {len(projects_response.data or [])} projects")
+            # 4) Delete the area
+            supabase.table('areas').delete().eq('id', area_id).eq('user_id', user_id).execute()
+            
+            logger.info(f"✅ Cascaded delete for area {area_id}: projects={len(project_ids)}")
             return True
             
         except Exception as e:
