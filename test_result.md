@@ -4785,6 +4785,7 @@ test_plan:
 
   stuck_tasks:
     - "Areas UI Display after Create - Backend operations successful but ultra cache invalidation failing"
+    - "Full cascade deletion test blocked by Areas creation UI issues - cannot create hierarchical entities for testing"
   test_all: false
   test_priority: "critical_first"
 
