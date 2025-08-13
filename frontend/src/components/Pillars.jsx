@@ -113,13 +113,16 @@ const Pillars = memo(({ onSectionChange }) => {
     setShowModal(true);
   };
 
-  const handleDelete = async (pillarId, pillarName) => {
-    const message = `Are you sure you want to delete "${pillarName}"?\n\nThis will permanently delete:\n• All Areas under this Pillar\n• All Projects in those Areas\n• All Tasks in those Projects\n\nThis action cannot be undone.`;
+  const handleDelete = async (pillar) => {
+    const areaCount = pillar.area_count || 0;
+    const projectCount = pillar.project_count || 0;
+    const taskCount = pillar.task_count || 0;
+    const message = `Are you sure you want to delete "${pillar.name}"?\n\nThis will permanently delete:\n• ${areaCount} Area(s) under this Pillar\n• ${projectCount} Project(s) in those Areas\n• ${taskCount} Task(s) in those Projects\n\nThis action cannot be undone.`;
     if (window.confirm(message)) {
       try {
-        await api.delete(`/pillars/${pillarId}`);
+        await api.delete(`/pillars/${pillar.id}`);
         // Trigger data refresh and invalidate cache
-        onDataMutation('pillar', 'delete', { id: pillarId, name: pillarName });
+        onDataMutation('pillar', 'delete', { id: pillar.id, name: pillar.name });
         await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'pillars' });
         // Also invalidate related caches
         await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && ['areas', 'projects', 'tasks'].includes(q.queryKey[0]) });
