@@ -290,14 +290,34 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   
   const deleteAreaMutation = useMutation({
     mutationFn: (areaId) => areasAPI.deleteArea(areaId),
-    onSuccess: (data, areaId) => {
+    onSuccess: async (data, areaId) => {
       console.log('🗂️ Areas: Delete mutation successful:', data);
       // Optimistically remove from both caches
       queryClient.setQueryData(['areas', true, showArchived], (prev) => Array.isArray(prev) ? prev.filter(a => a.id !== areaId) : prev);
       queryClient.setQueryData(['areas', false, showArchived], (prev) => Array.isArray(prev) ? prev.filter(a => a.id !== areaId) : prev);
-      // Invalidate and refetch areas data
-      queryClient.invalidateQueries({ queryKey: ['areas'] });
+      // Invalidate related caches
+      await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && ['areas','projects','tasks'].includes(q.queryKey[0]) });
       onDataMutation('area', 'delete', { areaId });
+      // Consistency window to bypass ultra
+      try { localStorage.setItem('AREAS_FORCE_STANDARD_UNTIL', String(Date.now() + 2500)); } catch {}
+      // Hydrate from standard endpoint
+      try {
+        const backendURL = process.env.REACT_APP_BACKEND_URL || '';
+        const params = new URLSearchParams();
+        params.append('include_projects', 'true');
+        params.append('include_archived', String(!!showArchived));
+        params.append('_ts', String(Date.now()));
+        const resp = await fetch(`${backendURL}/api/areas?${params.toString()}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}` }
+        });
+        if (resp.ok) {
+          const list = await resp.json();
+          queryClient.setQueryData(['areas', true, showArchived], list);
+          queryClient.setQueryData(['areas', false, showArchived], list);
+        }
+      } catch (e) {
+        console.warn('Areas standard fetch hydration after delete failed:', e?.message || e);
+      }
     },
     onError: (error) => {
       console.error('🗂️ Areas: Delete mutation failed:', error);
