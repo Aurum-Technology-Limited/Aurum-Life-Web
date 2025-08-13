@@ -397,7 +397,7 @@ class Area(BaseDocument):
     date_created: datetime = Field(default_factory=datetime.utcnow)
 
 class AreaCreate(BaseModel):
-    pillar_id: Optional[str] = None
+    pillar_id: str
     name: str
     description: str = ""
     icon: str = "🎯"
