@@ -363,6 +363,8 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     onSuccess: () => {
       // Invalidate and refetch projects data
       invalidateProjects();
+      // Defensive: also invalidate tasks cache
+      try { queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'tasks' }); } catch {}
       // Set short-lived consistency window to bypass ultra after delete
       try { localStorage.setItem('PROJECTS_FORCE_STANDARD_UNTIL', String(Date.now() + 2000)); } catch {}
 
