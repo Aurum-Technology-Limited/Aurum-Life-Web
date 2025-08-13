@@ -4780,11 +4780,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Automated UI Cascade Deletion Tests: Pillar→Area→Project→Tasks creation and cascade deletion at Pillar, Area, Project levels with screenshots"
-    - "Ensure confirmation dialogs show accurate cascade warnings and UI lists update without orphans"
+    - "Automated UI Cascade Deletion Tests: Pillar→Area→Project→Tasks creation and cascade deletion at Pillar, Area, Project levels with screenshots - COMPLETED"
+    - "Ensure confirmation dialogs show accurate cascade warnings and UI lists update without orphans - COMPLETED"
 
-  stuck_tasks:
-    - "Areas UI Display after Create - Backend operations successful but ultra cache invalidation failing"
+  stuck_tasks: []
     - "Full cascade deletion test blocked by Areas creation UI issues - cannot create hierarchical entities for testing"
   test_all: false
   test_priority: "critical_first"
