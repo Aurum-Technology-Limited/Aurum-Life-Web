@@ -633,7 +633,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                     required
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   >
-                    <option value="">No Pillar</option>
+                    <option value="">Select a pillar</option>
                     {pillars.map((pillar) => (
                       <option key={pillar.id} value={pillar.id}>
                         {pillar.icon} {pillar.name}
