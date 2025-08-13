@@ -289,8 +289,19 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   });
   
   const deleteAreaMutation = useMutation({
-    mutationFn: (areaId) => areasAPI.deleteArea(areaId),
-    onSuccess: async (data, areaId) => {
+    mutationFn: async (areaId) => {
+      try {
+        await areasAPI.deleteArea(areaId);
+        return { areaId };
+      } catch (err) {
+        // Treat 404 as idempotent success
+        if (err?.response?.status === 404) {
+          return { areaId, already: true };
+        }
+        throw err;
+      }
+    },
+    onSuccess: async (_resp, areaId) => {
       console.log('🗂️ Areas: Delete mutation successful:', data);
       // Optimistically remove from both caches
       queryClient.setQueryData(['areas', true, showArchived], (prev) => Array.isArray(prev) ? prev.filter(a => a.id !== areaId) : prev);
