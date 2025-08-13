@@ -630,6 +630,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                   <select
                     value={formData.pillar_id}
                     onChange={(e) => setFormData({ ...formData, pillar_id: e.target.value })}
+                    required
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   >
                     <option value="">No Pillar</option>
