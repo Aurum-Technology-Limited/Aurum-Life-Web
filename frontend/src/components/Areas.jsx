@@ -395,7 +395,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   };
 
   const handleDelete = async (areaId) => {
-    if (window.confirm('Are you sure? This will delete all projects and tasks in this area.')) {
+    if (window.confirm('Are you sure? This will permanently delete all Projects and Tasks in this Area. This action cannot be undone.')) {
       console.log('🗂️ Areas: Deleting area:', areaId);
       try {
         await deleteAreaMutation.mutateAsync(areaId);
