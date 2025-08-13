@@ -525,12 +525,13 @@ class CascadeDeletionTester:
         else:
             self.log_test("VERIFY TASKS UNDER PR3 DELETED", False, f"Failed to get tasks: {result.get('error')}")
         
-        # Verify Project PR3 is gone
-        result = self.make_request('GET', '/projects', params={'area_id': area_a3_id}, use_auth=True)
+        # Verify Project PR3 is gone - check specifically for our project
+        result = self.make_request('GET', '/projects', use_auth=True)
         if result['success']:
             projects = result['data']
-            project_gone = not any(project['id'] == project_pr3_id for project in projects)
-            self.log_test("VERIFY PROJECT PR3 DELETED", project_gone, "Project PR3 successfully deleted" if project_gone else "Project PR3 still exists")
+            our_project_exists = any(project['id'] == project_pr3_id for project in projects)
+            project_gone = not our_project_exists
+            self.log_test("VERIFY PROJECT PR3 DELETED", project_gone, "Project PR3 successfully deleted" if project_gone else f"Project PR3 {project_pr3_id} still exists")
         else:
             self.log_test("VERIFY PROJECT PR3 DELETED", False, f"Failed to get projects: {result.get('error')}")
         
