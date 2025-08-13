@@ -97,6 +97,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
           <Edit2 className="h-4 w-4" />
         </button>
         <button
+          data-testid={`area-delete-${area.id}`}
           onClick={(e) => {
             e.stopPropagation();
             onDelete(area.id);
