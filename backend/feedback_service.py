@@ -352,7 +352,8 @@ class FeedbackService:
             
             # Add categories for SendGrid analytics
             try:
-                message.category = ["feedback", "aurum-life"]
+                # Use SendGrid Category helper objects
+                message.categories = [Category("feedback"), Category("aurum-life")]
                 logger.info("Categories added successfully")
             except Exception as category_error:
                 logger.warning(f"Could not add categories: {category_error}")
