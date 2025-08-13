@@ -408,10 +408,10 @@ const OptimizedDashboard = ({ onSectionChange }) => {
   );
 };
 
-// Wrap in error boundary
-const Dashboard = () => (
+// Wrap in error boundary and forward props (critical to preserve navigation callbacks)
+const Dashboard = (props) => (
   <ErrorBoundary>
-    <OptimizedDashboard />
+    <OptimizedDashboard {...props} />
   </ErrorBoundary>
 );
 
