@@ -802,7 +802,8 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
             <div className="flex space-x-3 pt-4">
               <button
                 type="submit"
-                className="bg-yellow-500 text-black px-4 py-2 rounded-md font-medium hover:bg-yellow-600 transition-colors"
+                disabled={!newProject.name.trim() || !newProject.area_id}
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${(!newProject.name.trim() || !newProject.area_id) ? 'bg-gray-600 text-white cursor-not-allowed' : 'bg-yellow-500 text-black hover:bg-yellow-600'}`}
               >
                 Create Project
               </button>
