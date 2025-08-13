@@ -443,6 +443,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
     const projectData = {
       ...newProject,
+      area_id: newProject.area_id?.trim(), // backend now requires area_id (not null)
       // Keep due_date as date string here; mutation will map to backend 'deadline'
     };
 
