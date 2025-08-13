@@ -1345,8 +1345,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Onboarding Functionality Testing - COMPLETED"
-  stuck_tasks: []
+    - "Fix pillar dropdown loading in Areas.jsx component for proper pillar-area linking"
+    - "Resolve modal overlay CSS z-index issues preventing form submissions"
+  stuck_tasks:
+    - "Cascade deletion verification with hierarchy creation and warning dialogs"
   test_all: false
   test_priority: "high_first"
 
