@@ -169,7 +169,9 @@ export const pillarsAPI = {
   updatePillar: (pillarId, pillarData) => apiClient.put(`/pillars/${pillarId}`, pillarData),
   archivePillar: (pillarId) => apiClient.put(`/pillars/${pillarId}/archive`),
   unarchivePillar: (pillarId) => apiClient.put(`/pillars/${pillarId}/unarchive`),
-  deletePillar: (pillarId) => apiClient.delete(`/pillars/${pillarId}`)
+  deletePillar: (pillarId) => apiClient.delete(`/pillars/${pillarId}`),
+  // extra: fetch counts for confirmation (if backend supports)
+  getPillarCounts: (pillarId) => apiClient.get(`/pillars/${pillarId}/counts`)
 };
 // Enhanced notifications API with bulk actions
 export const notificationsAPI = {
