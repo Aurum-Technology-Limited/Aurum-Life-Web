@@ -4780,8 +4780,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Areas UI Display after Create - Backend operations successful but ultra cache invalidation failing"
-    - "Complete cascade deletion workflow verification - Dialog system working but full deletion flow needs verification"
+    - "Automated UI Cascade Deletion Tests: Pillar→Area→Project→Tasks creation and cascade deletion at Pillar, Area, Project levels with screenshots"
+    - "Ensure confirmation dialogs show accurate cascade warnings and UI lists update without orphans"
+
   stuck_tasks:
     - "Areas UI Display after Create - Backend operations successful but ultra cache invalidation failing"
   test_all: false
