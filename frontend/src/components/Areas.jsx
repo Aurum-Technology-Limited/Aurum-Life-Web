@@ -302,7 +302,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
       }
     },
     onSuccess: async (_resp, areaId) => {
-      console.log('🗂️ Areas: Delete mutation successful:', data);
+      console.log('🗂️ Areas: Delete mutation successful:', _resp);
       // Optimistically remove from both caches
       queryClient.setQueryData(['areas', true, showArchived], (prev) => Array.isArray(prev) ? prev.filter(a => a.id !== areaId) : prev);
       queryClient.setQueryData(['areas', false, showArchived], (prev) => Array.isArray(prev) ? prev.filter(a => a.id !== areaId) : prev);
