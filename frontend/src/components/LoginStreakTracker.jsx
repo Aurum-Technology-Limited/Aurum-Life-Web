@@ -3,7 +3,9 @@ import { LightningBoltIcon, CalendarIcon } from '@heroicons/react/outline';
 
 const LoginStreakTracker = () => {
   const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
   const [loginDays, setLoginDays] = useState(new Set());
+  const [monthOffset, setMonthOffset] = useState(0); // 0 = current month, -1 = prev, +1 = next
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -12,18 +14,18 @@ const LoginStreakTracker = () => {
     recordTodayLogin();
   }, []);
 
+  const keyFromDate = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).toDateString();
+
   const fetchLoginStreakData = async () => {
     try {
       setLoading(true);
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
       const token = localStorage.getItem('auth_token');
-
       if (!token) return;
 
-      // For now, we'll use localStorage to track login days and streak
-      // In a production system, this would be tracked server-side
+      // Local persistence for MVP (DB-backed planned)
       const storedLoginDays = localStorage.getItem('login_days');
       const storedStreak = localStorage.getItem('login_streak');
+      const storedBest = localStorage.getItem('login_best_streak');
       
       if (storedLoginDays) {
         setLoginDays(new Set(JSON.parse(storedLoginDays)));
@@ -31,6 +33,18 @@ const LoginStreakTracker = () => {
       
       if (storedStreak) {
         setStreak(parseInt(storedStreak, 10));
+      }
+
+      if (storedBest) {
+        setBestStreak(parseInt(storedBest, 10));
+      } else {
+        // Compute best from history if not stored
+        try {
+          const arr = storedLoginDays ? JSON.parse(storedLoginDays) : [];
+          const best = computeBestStreak(arr);
+          setBestStreak(best);
+          localStorage.setItem('login_best_streak', String(best));
+        } catch {}
       }
       
     } catch (err) {
@@ -41,9 +55,27 @@ const LoginStreakTracker = () => {
     }
   };
 
+  const computeBestStreak = (dayStrings = []) => {
+    const days = dayStrings.map(s => new Date(s)).sort((a,b)=>a-b);
+    let best = 0;
+    let current = 0;
+    let prevDay = null;
+    for (const d of days) {
+      if (!prevDay) {
+        current = 1;
+      } else {
+        const diff = (new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(prevDay.getFullYear(), prevDay.getMonth(), prevDay.getDate())) / (24*60*60*1000);
+        current = (diff === 1) ? current + 1 : 1;
+      }
+      best = Math.max(best, current);
+      prevDay = d;
+    }
+    return best;
+  };
+
   const recordTodayLogin = () => {
-    const today = new Date().toDateString();
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+    const today = keyFromDate(new Date());
+    const yesterday = keyFromDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
     
     // Get current login days from localStorage
     const storedLoginDays = localStorage.getItem('login_days');
@@ -56,7 +88,6 @@ const LoginStreakTracker = () => {
       // Calculate streak
       let newStreak = 1;
       if (currentLoginDays.has(yesterday)) {
-        // Continue existing streak
         const currentStreak = parseInt(localStorage.getItem('login_streak') || '0', 10);
         newStreak = currentStreak + 1;
       }
@@ -66,54 +97,59 @@ const LoginStreakTracker = () => {
       setStreak(newStreak);
       localStorage.setItem('login_days', JSON.stringify([...currentLoginDays]));
       localStorage.setItem('login_streak', newStreak.toString());
+      
+      const prevBest = parseInt(localStorage.getItem('login_best_streak') || '0', 10);
+      const nextBest = Math.max(prevBest, newStreak);
+      setBestStreak(nextBest);
+      localStorage.setItem('login_best_streak', String(nextBest));
     }
   };
 
-  const getCurrentMonthDays = () => {
+  const getMonthRef = () => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
+    return new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+  };
+
+  const getMonthDays = () => {
+    const ref = getMonthRef();
+    const year = ref.getFullYear();
+    const month = ref.getMonth();
     
-    // Get first day of month and last day of month
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
-    // Get day of week for first day (0 = Sunday, 1 = Monday, etc.)
     const startDayOfWeek = firstDay.getDay();
-    
     const days = [];
-    
-    // Add empty cells for days before month starts
-    for (let i = 0; i < startDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    // Add all days of the month
+    for (let i = 0; i < startDayOfWeek; i++) days.push(null);
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const date = new Date(year, month, day);
       days.push(date);
     }
-    
     return days;
   };
 
   const isLoginDay = (date) => {
     if (!date) return false;
-    return loginDays.has(date.toDateString());
+    return loginDays.has(keyFromDate(date));
   };
 
   const isToday = (date) => {
     if (!date) return false;
-    return date.toDateString() === new Date().toDateString();
+    return keyFromDate(date) === keyFromDate(new Date());
   };
 
   const isFutureDay = (date) => {
     if (!date) return false;
-    return date > new Date();
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const d = new Date(date);
+    d.setHours(0,0,0,0);
+    return d > today;
   };
 
-  const monthDays = getCurrentMonthDays();
-  const monthName = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthDays = getMonthDays();
+  const monthName = getMonthRef().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const canGoNext = monthOffset < 0; // only allow navigating up to current month (no future)
 
   return (
     <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
@@ -131,15 +167,28 @@ const LoginStreakTracker = () => {
           <p className="text-2xl font-bold text-yellow-400">
             {loading ? '-' : streak}
           </p>
-          <p className="text-xs text-gray-400">{streak === 1 ? 'day' : 'days'}</p>
+          <p className="text-xs text-gray-400">{streak === 1 ? 'day' : 'days'} • Best: {bestStreak}</p>
         </div>
       </div>
 
       {/* Calendar View */}
       <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <CalendarIcon className="h-4 w-4 text-gray-400" />
-          <span className="text-sm font-medium text-gray-300">{monthName}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <CalendarIcon className="h-4 w-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-300">{monthName}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button className="text-xs text-gray-300 hover:text-white px-2 py-1 rounded border border-gray-600"
+              onClick={() => setMonthOffset(o => o - 1)}>
+              ◀ Prev
+            </button>
+            <button className={`text-xs px-2 py-1 rounded border ${canGoNext ? 'text-gray-300 border-gray-600 hover:text-white' : 'text-gray-600 border-gray-700 cursor-not-allowed'}`}
+              onClick={() => canGoNext && setMonthOffset(o => o + 1)}
+              disabled={!canGoNext}>
+              Next ▶
+            </button>
+          </div>
         </div>
         
         {/* Calendar Grid */}
