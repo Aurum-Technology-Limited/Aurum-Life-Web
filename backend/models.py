@@ -1316,6 +1316,29 @@ class CustomAchievementCreate(BaseModel):
 class CustomAchievementUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+
+# ----------------
+# Login Streak Models
+# ----------------
+class LoginEvent(BaseModel):
+    user_id: str
+    login_date_utc: date
+    client_timezone: Optional[str] = None
+    created_at: datetime
+
+class LoginStreakStats(BaseModel):
+    current_streak: int = 0
+    best_streak: int = 0
+
+class MonthLoginRequest(BaseModel):
+    year: int
+    month: int  # 1-12
+
+class MonthLoginResponse(BaseModel):
+    year: int
+    month: int
+    days: List[int]  # days of month (1-based) that had a login
+
     icon: Optional[str] = None
     target_count: Optional[int] = None
     is_active: Optional[bool] = None
