@@ -610,18 +610,33 @@ class SupabasePillarService:
     
     @staticmethod
     async def delete_pillar(pillar_id: str, user_id: str) -> bool:
-        """Delete a pillar and unlink its areas"""
+        """Delete a pillar and cascade delete its areas, projects, and tasks."""
         try:
-            # First, unlink areas from this pillar
-            areas_response = supabase.table('areas').update({
-                'pillar_id': None,
-                'updated_at': datetime.utcnow().isoformat()
-            }).eq('pillar_id', pillar_id).execute()
+            # 1) Fetch areas under this pillar
+            areas_resp = supabase.table('areas').select('id').eq('pillar_id', pillar_id).eq('user_id', user_id).execute()
+            area_ids = [row['id'] for row in (areas_resp.data or [])]
+
+            project_ids = []
+            if area_ids:
+                # 2) Fetch projects under these areas
+                projects_resp = supabase.table('projects').select('id').in_('area_id', area_ids).eq('user_id', user_id).execute()
+                project_ids = [row['id'] for row in (projects_resp.data or [])]
+
+                # 3) Delete tasks under these projects
+                if project_ids:
+                    supabase.table('tasks').delete().in_('project_id', project_ids).eq('user_id', user_id).execute()
+                
+                # 4) Delete projects under these areas
+                if project_ids:
+                    supabase.table('projects').delete().in_('id', project_ids).eq('user_id', user_id).execute()
+                
+                # 5) Delete areas under this pillar
+                supabase.table('areas').delete().in_('id', area_ids).eq('user_id', user_id).execute()
             
-            # Then delete the pillar
-            response = supabase.table('pillars').delete().eq('id', pillar_id).eq('user_id', user_id).execute()
-            
-            logger.info(f"✅ Deleted pillar: {pillar_id} and unlinked {len(areas_response.data or [])} areas")
+            # 6) Finally, delete the pillar
+            supabase.table('pillars').delete().eq('id', pillar_id).eq('user_id', user_id).execute()
+
+            logger.info(f"✅ Cascaded delete for pillar {pillar_id}: areas={len(area_ids)}, projects={len(project_ids)}")
             return True
             
         except Exception as e:
