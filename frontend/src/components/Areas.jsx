@@ -706,7 +706,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                   <button
                     data-testid="area-submit"
                     type="submit"
-                    disabled={!formData.name.trim() || updateAreaMutation.isPending || createAreaMutation.isPending}
+                    disabled={!formData.name.trim() || !formData.pillar_id || updateAreaMutation.isPending || createAreaMutation.isPending}
                     className={`relative z-50 flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors pointer-events-auto ${
                       (!formData.name.trim() || updateAreaMutation.isPending || createAreaMutation.isPending)
                         ? 'bg-gray-600 cursor-not-allowed opacity-50' 
