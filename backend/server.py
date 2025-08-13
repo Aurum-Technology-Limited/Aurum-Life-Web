@@ -2753,6 +2753,165 @@ async def get_user_feedback(
         raise HTTPException(status_code=500, detail="Failed to retrieve feedback")
 
 # ================================
+# ADMIN: DEMO DATA SEEDING ENDPOINT
+# ================================
+@api_router.post("/admin/seed-demo")
+async def seed_demo_data(
+    size: str = Query("light", description="light | medium | heavy"),
+    include_streak: bool = Query(False),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Seed realistic demo data for the current user.
+    Creates Pillars → Areas → Projects → Tasks. Idempotent-ish by using timestamped names.
+    """
+    try:
+        user_id = str(current_user.id)
+        ts = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+
+        # Sizing presets
+        presets = {
+            "light": {"pillars": 4, "areas_per_pillar": 2, "projects_per_area": 3, "tasks_per_project": 5},
+            "medium": {"pillars": 6, "areas_per_pillar": 2, "projects_per_area": 5, "tasks_per_project": 6},
+            "heavy": {"pillars": 10, "areas_per_pillar": 3, "projects_per_area": 6, "tasks_per_project": 8},
+        }
+        cfg = presets.get(size, presets["light"])
+
+        pillar_themes = [
+            ("Health", "Physical and mental wellbeing", "💪", "#10B981"),
+            ("Career", "Professional growth and impact", "💼", "#3B82F6"),
+            ("Relationships", "Family and friends", "🤝", "#F59E0B"),
+            ("Learning", "Skills and knowledge", "📚", "#8B5CF6"),
+            ("Finance", "Money management", "💰", "#22C55E"),
+            ("Hobbies", "Fun and creativity", "🎨", "#EC4899"),
+        ]
+
+        area_templates = {
+            "Health": ["Fitness", "Nutrition", "Recovery", "Mindfulness"],
+            "Career": ["Skill Development", "Networking", "Leadership", "Portfolio"],
+            "Relationships": ["Family", "Friends", "Community", "Partner"],
+            "Learning": ["Programming", "Languages", "Reading", "Workshops"],
+            "Finance": ["Budgeting", "Investing", "Savings", "Taxes"],
+            "Hobbies": ["Music", "Art", "Photography", "Sports"],
+        }
+
+        created = {"pillars": 0, "areas": 0, "projects": 0, "tasks": 0}
+        created_ids = {"pillars": [], "areas": [], "projects": [], "tasks": []}
+
+        # Helper for round-robin choices
+        def rr(items, idx):
+            return items[idx % len(items)]
+
+        # Create pillars
+        for i in range(cfg["pillars"]):
+            name, desc, icon, color = rr(pillar_themes, i)
+            p = PillarCreate(
+                name=f"{name} Demo {ts}-{i+1}",
+                description=desc,
+                icon=icon,
+                color=color,
+                time_allocation_percentage=round(10 + (i * 5) % 40, 2),
+            )
+            pillar = await SupabasePillarService.create_pillar(user_id, p)
+            created["pillars"] += 1
+            created_ids["pillars"].append(pillar["id"])
+
+            # Create areas under this pillar
+            area_names = area_templates.get(name, ["General"])
+            for j in range(cfg["areas_per_pillar"]):
+                a_name = rr(area_names, j)
+                a = AreaCreate(
+                    pillar_id=pillar["id"],
+                    name=f"{a_name} {ts}-{i+1}.{j+1}",
+                    description=f"{a_name} focus area",
+                    icon="🎯",
+                    color="#F4B400",
+                    importance=ImportanceEnum.medium,
+                )
+                area = await SupabaseAreaService.create_area(user_id, a)
+                created["areas"] += 1
+                created_ids["areas"].append(area["id"])
+
+                # Create projects under area
+                for k in range(cfg["projects_per_area"]):
+                    deadline = datetime.utcnow() + timedelta(days=14 + k * 7)
+                    status = rr([ProjectStatusEnum.not_started, ProjectStatusEnum.in_progress, ProjectStatusEnum.on_hold], k)
+                    pr = ProjectCreate(
+                        area_id=area["id"],
+                        name=f"{a_name} Project {ts}-{i+1}.{j+1}.{k+1}",
+                        description=f"Deliverables for {a_name}",
+                        icon="🚀",
+                        deadline=deadline,
+                        status=status,
+                        priority=PriorityEnum.medium,
+                        importance=ImportanceEnum.medium,
+                    )
+                    project = await SupabaseProjectService.create_project(user_id, pr)
+                    created["projects"] += 1
+                    created_ids["projects"].append(project["id"])
+
+                    # Create tasks under project
+                    for t_idx in range(cfg["tasks_per_project"]):
+                        due = datetime.utcnow() + timedelta(days=3 + t_idx)
+                        t_status = rr([TaskStatusEnum.todo, TaskStatusEnum.in_progress, TaskStatusEnum.review], t_idx)
+                        tk = TaskCreate(
+                            project_id=project["id"],
+                            name=f"Task {t_idx+1}: {a_name} {ts}-{i+1}.{j+1}.{k+1}",
+                            description=f"Work item {t_idx+1} for {a_name}",
+                            status=t_status,
+                            priority=rr([PriorityEnum.low, PriorityEnum.medium, PriorityEnum.high], t_idx),
+                            due_date=due,
+                            category="general",
+                        )
+                        task = await SupabaseTaskService.create_task(user_id, tk)
+                        created["tasks"] += 1
+                        created_ids["tasks"].append(task["id"])
+
+        # Optionally seed login streak (past 30/60 days)
+        if include_streak:
+            try:
+                supabase = get_supabase_client()
+                days = 45
+                today = datetime.utcnow().date()
+                for offset in range(days, 0, -1):
+                    if offset % 2 == 0:
+                        d = today - timedelta(days=offset)
+                        supabase.table('login_events').upsert({
+                            'id': str(uuid.uuid4()),
+                            'user_id': user_id,
+                            'login_date_utc': d.isoformat(),
+                            'client_timezone': 'UTC',
+                            'created_at': datetime.utcnow().isoformat()
+                        }, on_conflict='user_id,login_date_utc').execute()
+                # Update streak counters roughly
+                supabase.table('user_profiles').update({
+                    'current_streak': 7,
+                    'best_streak': 12,
+                    'updated_at': datetime.utcnow().isoformat()
+                }).eq('id', user_id).execute()
+            except Exception as e:
+                logger.warning(f"Seed streak skipped: {e}")
+
+        # Invalidate ultra caches for this user
+        try:
+            await cache_service.invalidate_pattern(f"pillars:user:{user_id}*")
+            await cache_service.invalidate_pattern(f"areas:user:{user_id}*")
+            await cache_service.invalidate_pattern(f"projects:user:{user_id}*")
+            await cache_service.invalidate_pattern(f"tasks:user:{user_id}*")
+        except Exception as _e:
+            logger.info(f"Cache invalidation (seed) skipped: {_e}")
+
+        return {
+            "message": "Demo data seeded",
+            "size": size,
+            "include_streak": include_streak,
+            "created": created,
+            "ids_sample": {k: v[:3] for k, v in created_ids.items()}
+        }
+    except Exception as e:
+        logger.error(f"Error seeding demo data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to seed demo data")
+
+# ================================
 # ULTRA-PERFORMANCE ENDPOINTS
 # Target: <200ms response times
 # ================================
