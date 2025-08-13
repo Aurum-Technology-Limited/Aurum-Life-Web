@@ -20,7 +20,7 @@ from typing import Dict, List, Any
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://bf6e30ba-111b-4b82-8cdf-ddd27513fb58.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
 
 class CascadeDeletionTester:
     def __init__(self):

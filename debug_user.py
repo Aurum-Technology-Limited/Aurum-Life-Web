@@ -6,7 +6,7 @@ Debug current user data
 import requests
 import json
 
-BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
 
 def debug_user():
     # Login first

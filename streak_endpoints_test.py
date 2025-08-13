@@ -16,7 +16,7 @@ import os
 import sys
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://bf6e30ba-111b-4b82-8cdf-ddd27513fb58.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://hierarchy-enforcer.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_streak_endpoints():

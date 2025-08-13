@@ -13,7 +13,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
 
 class UnifiedProjectViewsTester:
     def __init__(self):

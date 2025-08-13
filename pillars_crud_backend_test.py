@@ -23,7 +23,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
 
 class PillarsCRUDTester:
     def __init__(self):

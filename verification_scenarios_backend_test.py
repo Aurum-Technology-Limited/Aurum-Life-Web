@@ -31,7 +31,7 @@ import time
 import uuid
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
 
 class VerificationScenariosTestSuite:
     def __init__(self):

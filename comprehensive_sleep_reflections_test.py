@@ -10,7 +10,7 @@ from datetime import datetime, date, timedelta
 from typing import Dict, Any, List
 
 # Configuration
-BACKEND_URL = "https://fastapi-react-fix.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password"
 
