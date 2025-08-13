@@ -129,6 +129,14 @@ const ProjectCard = memo(({ project, onEdit, onDelete, onViewTasks, onUpdateStat
           >
             <CheckIcon className="h-4 w-4" />
           </button>
+          <button
+            data-testid={`project-delete-${project.id}`}
+            onClick={(e) => { e.stopPropagation(); onDelete(project.id, project.name); }}
+            className="p-1 text-red-400 hover:text-red-300 transition-colors"
+            title="Delete Project"
+          >
+            <TrashIcon className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>
