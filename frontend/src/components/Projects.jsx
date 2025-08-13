@@ -400,7 +400,8 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   }, []);
 
   const handleDeleteProject = useCallback(async (projectId, projectName) => {
-    if (!window.confirm(`Are you sure you want to delete the project "${projectName}"? This action cannot be undone.`)) {
+    const message = `Are you sure you want to delete the project "${projectName}"?\n\nThis will permanently delete all Tasks in this project.\n\nThis action cannot be undone.`;
+    if (!window.confirm(message)) {
       return;
     }
     deleteProjectMutation.mutate(projectId);
