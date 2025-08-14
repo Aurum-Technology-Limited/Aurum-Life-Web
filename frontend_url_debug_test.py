@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration - Use frontend's configured URL
-FRONTEND_BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com"
+FRONTEND_BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com"
 API_BASE = f"{FRONTEND_BACKEND_URL}/api"
 
 class FrontendUrlDebugSuite:

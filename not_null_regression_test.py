@@ -21,7 +21,7 @@ import time
 import uuid
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
 
 class NotNullRegressionTester:
     def __init__(self):

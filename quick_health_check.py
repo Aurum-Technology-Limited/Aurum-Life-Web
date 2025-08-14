@@ -26,7 +26,7 @@ from typing import Dict, List, Any
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
 
 class QuickHealthCheckTester:
     def __init__(self):

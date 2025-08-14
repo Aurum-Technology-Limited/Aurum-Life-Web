@@ -29,7 +29,7 @@ import time
 import re
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
 
 class FeedbackEmailImprovementsTester:
     def __init__(self):

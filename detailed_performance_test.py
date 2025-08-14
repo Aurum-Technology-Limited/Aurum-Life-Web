@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Tuple
 
 # Configuration - Use external URL for testing
-BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com"
+BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class DetailedPerformanceTestSuite:

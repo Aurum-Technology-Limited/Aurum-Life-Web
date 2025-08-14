@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://hierarchy-enforcer.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://hierarchy-master.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def debug_auth():

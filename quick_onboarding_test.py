@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
 TEST_USER_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_USER_PASSWORD = "password"
 

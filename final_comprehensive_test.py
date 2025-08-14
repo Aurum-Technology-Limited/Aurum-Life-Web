@@ -9,7 +9,7 @@ import json
 import sys
 from datetime import datetime
 
-BACKEND_URL = "https://hierarchy-enforcer.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
 
 class FinalMandatoryFieldsTest:
     def __init__(self):

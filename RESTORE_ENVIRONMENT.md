@@ -20,7 +20,7 @@ Edit `/app/frontend/.env` and replace:
 
 ```bash
 # Replace with your actual backend URL:
-REACT_APP_BACKEND_URL=https://hierarchy-enforcer.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://hierarchy-master.preview.emergentagent.com
 ```
 
 ## 🚀 Restart Services
