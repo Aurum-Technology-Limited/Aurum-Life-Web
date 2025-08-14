@@ -628,6 +628,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                     Pillar
                   </label>
                   <select
+                    data-testid="area-pillar-select"
                     value={formData.pillar_id}
                     onChange={(e) => setFormData({ ...formData, pillar_id: e.target.value })}
                     required
