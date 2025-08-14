@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
   // Check if user is authenticated on app load
   useEffect(() => {
     const initializeAuth = async () => {
+      const sleep = (ms) => new Promise(res => setTimeout(res, ms));
       const storedToken = localStorage.getItem('auth_token');
       
       if (storedToken) {
