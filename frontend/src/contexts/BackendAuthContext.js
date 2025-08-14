@@ -61,6 +61,33 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
+  const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+  const fetchUserWithRetry = async (authToken, maxAttempts = 3, delayMs = 500) => {
+    let lastErr = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const userResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          return { ok: true, data: userData };
+        } else {
+          const err = await (async () => { try { return await userResponse.json(); } catch { return {}; } })();
+          lastErr = new Error(err?.detail || `auth/me failed with ${userResponse.status}`);
+        }
+      } catch (e) {
+        lastErr = e;
+      }
+      await sleep(delayMs);
+    }
+    return { ok: false, error: lastErr };
+  };
+
   const login = async (email, password) => {
     try {
       setLoading(true);
