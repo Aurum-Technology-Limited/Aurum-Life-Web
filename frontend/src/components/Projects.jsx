@@ -620,6 +620,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
                   Area
                 </label>
                 <select
+                  data-testid="project-area-select-edit"
                   value={editingProject.area_id || ''}
                   onChange={(e) => setEditingProject({...editingProject, area_id: e.target.value})}
                   required
