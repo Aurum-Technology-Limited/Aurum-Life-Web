@@ -746,6 +746,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
                   Area
                 </label>
                 <select
+                  data-testid="project-area-select"
                   value={newProject.area_id}
                   onChange={(e) => setNewProject({...newProject, area_id: e.target.value})}
                   required
