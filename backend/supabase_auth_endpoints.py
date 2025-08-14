@@ -21,6 +21,28 @@ async def register_user(user_data: UserCreate):
     try:
         supabase = supabase_manager.get_client()
         
+        # Check if email already exists to return a clean 409 before attempting creation
+        try:
+            existing = supabase.auth.admin.list_users()
+            # The SDK response shape varies; handle both dict and iterable objects
+            existing_users = []
+            if hasattr(existing, 'users'):
+                existing_users = existing.users or []
+            elif isinstance(existing, dict) and 'users' in existing:
+                existing_users = existing['users'] or []
+            elif isinstance(existing, list):
+                existing_users = existing
+            # Scan for email match (case-insensitive)
+            for u in existing_users:
+                email_val = getattr(u, 'email', None) if hasattr(u, 'email') else (u.get('email') if isinstance(u, dict) else None)
+                if isinstance(email_val, str) and email_val.lower() == user_data.email.lower():
+                    raise HTTPException(status_code=409, detail="Email already registered. Please log in instead.")
+        except HTTPException:
+            raise
+        except Exception as _:
+            # If list_users fails, continue to create and rely on error handling below
+            pass
+
         # Create user in Supabase Auth using Admin API and mark email confirmed for immediate login
         admin_payload = {
             "email": user_data.email,
