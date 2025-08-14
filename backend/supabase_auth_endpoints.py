@@ -175,83 +175,82 @@ async def login_user(user_credentials: UserLogin):
         except Exception as supabase_error:
             logger.info(f"Supabase auth failed: {supabase_error}")
             
-            # If Supabase auth fails, try legacy auth for development
-            if "Email not confirmed" in str(supabase_error) or "Invalid login credentials" in str(supabase_error):
-                logger.info("Attempting legacy authentication for development...")
+            # DEVELOPMENT FALLBACK: Always attempt legacy path when Supabase sign-in fails
+            logger.info("Attempting legacy authentication fallback...")
+            
+            # Check if user exists in legacy users table
+            legacy_user = await supabase_manager.find_document("users", {"email": user_credentials.email})
+            
+            if legacy_user:
+                # Verify password for legacy users if hash present
+                if legacy_user.get('password_hash'):
+                    from auth import verify_password
+                    if not verify_password(user_credentials.password, legacy_user['password_hash']):
+                        logger.warning(f"Invalid password for legacy user {user_credentials.email}")
+                        raise HTTPException(
+                            status_code=401,
+                            detail="Invalid credentials"
+                        )
                 
-                # Check if user exists in legacy users table
-                legacy_user = await supabase_manager.find_document("users", {"email": user_credentials.email})
+                # Get Supabase Auth user ID for this email (best identifier)
+                auth_user_id = await get_supabase_auth_user_id(user_credentials.email)
                 
-                if legacy_user:
-                    # CRITICAL SECURITY FIX: Verify password for legacy users
-                    if legacy_user.get('password_hash'):
-                        from auth import verify_password
-                        if not verify_password(user_credentials.password, legacy_user['password_hash']):
-                            logger.warning(f"Invalid password for legacy user {user_credentials.email}")
-                            raise HTTPException(
-                                status_code=401,
-                                detail="Invalid credentials"
-                            )
-                    
-                    # Get Supabase Auth user ID for this email
-                    auth_user_id = await get_supabase_auth_user_id(user_credentials.email)
-                    
-                    if auth_user_id:
-                        # Ensure minimal user_profiles exists for this auth ID to prevent downstream 404s
-                        try:
-                            supabase = supabase_manager.get_client()
-                            profile_check = supabase.table('user_profiles').select('*').eq('id', auth_user_id).single().execute()
-                            if not getattr(profile_check, 'data', None):
-                                username = (user_credentials.email.split('@')[0] if isinstance(user_credentials.email, str) and '@' in user_credentials.email else 'user')
-                                supabase.table('user_profiles').insert({
-                                    'id': auth_user_id,
-                                    'username': username,
-                                    'first_name': '',
-                                    'last_name': '',
-                                    'is_active': True,
-                                    'level': 1,
-                                    'total_points': 0,
-                                    'current_streak': 0
-                                }).execute()
-                                logger.info("✅ Bootstrapped user_profiles for legacy login user")
-                        except Exception as e:
-                            logger.info(f"Profile bootstrap skipped/failed: {e}")
+                if auth_user_id:
+                    # Ensure minimal user_profiles exists for this auth ID to prevent downstream 404s
+                    try:
+                        supabase = supabase_manager.get_client()
+                        profile_check = supabase.table('user_profiles').select('*').eq('id', auth_user_id).single().execute()
+                        if not getattr(profile_check, 'data', None):
+                            username = (user_credentials.email.split('@')[0] if isinstance(user_credentials.email, str) and '@' in user_credentials.email else 'user')
+                            supabase.table('user_profiles').insert({
+                                'id': auth_user_id,
+                                'username': username,
+                                'first_name': '',
+                                'last_name': '',
+                                'is_active': True,
+                                'level': 1,
+                                'total_points': 0,
+                                'current_streak': 0
+                            }).execute()
+                            logger.info("✅ Bootstrapped user_profiles for legacy login user")
+                    except Exception as e:
+                        logger.info(f"Profile bootstrap skipped/failed: {e}")
 
-                        # Use Supabase Auth user ID for token
-                        from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-                        from datetime import timedelta
-                        
-                        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-                        access_token = create_access_token(
-                            data={"sub": auth_user_id},  # Use auth user ID instead of legacy ID
-                            expires_delta=access_token_expires
-                        )
-                        
-                        logger.info(f"🔍 LOGIN TOKEN DEBUG: Created JWT with user_id: {auth_user_id} from Supabase Auth")
-                        logger.info(f"✅ Hybrid authentication successful for {user_credentials.email} with auth ID: {auth_user_id}")
-                        
-                        return {
-                            "access_token": access_token,
-                            "token_type": "bearer"
-                        }
-                    else:
-                        # Fallback to legacy user ID if auth user not found
-                        from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-                        from datetime import timedelta
-                        
-                        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-                        access_token = create_access_token(
-                            data={"sub": legacy_user['id']}, 
-                            expires_delta=access_token_expires
-                        )
-                        
-                        logger.info(f"🔍 LOGIN TOKEN DEBUG: Created JWT with user_id: {legacy_user['id']} from legacy users table")
-                        logger.warning(f"⚠️ Using legacy user ID for {user_credentials.email} - auth user not found")
-                        
-                        return {
-                            "access_token": access_token,
-                            "token_type": "bearer"
-                        }
+                    # Use Supabase Auth user ID for token
+                    from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+                    from datetime import timedelta
+                    
+                    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                    access_token = create_access_token(
+                        data={"sub": auth_user_id},  # Use auth user ID instead of legacy ID
+                        expires_delta=access_token_expires
+                    )
+                    
+                    logger.info(f"🔍 LOGIN TOKEN DEBUG: Created JWT with user_id: {auth_user_id} from Supabase Auth")
+                    logger.info(f"✅ Hybrid authentication successful for {user_credentials.email} with auth ID: {auth_user_id}")
+                    
+                    return {
+                        "access_token": access_token,
+                        "token_type": "bearer"
+                    }
+                else:
+                    # Fallback to legacy user ID if auth user not found
+                    from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+                    from datetime import timedelta
+                    
+                    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                    access_token = create_access_token(
+                        data={"sub": legacy_user['id']}, 
+                        expires_delta=access_token_expires
+                    )
+                    
+                    logger.info(f"🔍 LOGIN TOKEN DEBUG: Created JWT with user_id: {legacy_user['id']} from legacy users table")
+                    logger.warning(f"⚠️ Using legacy user ID for {user_credentials.email} - auth user not found")
+                    
+                    return {
+                        "access_token": access_token,
+                        "token_type": "bearer"
+                    }
         
         # If both methods fail
         raise HTTPException(
