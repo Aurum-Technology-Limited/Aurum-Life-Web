@@ -79,13 +79,21 @@ const Login = () => {
             username: ''
           });
           
-          // Set success message
+          // Set success message + popup
           setMessage('Your account has been created successfully. You can now sign in.');
-          
-          // Auto-switch to login tab after 3 seconds
+          try {
+            if (window?.Notification && Notification.permission !== 'denied') {
+              const perm = await Notification.requestPermission();
+              if (perm === 'granted') {
+                new Notification('Account Created', { body: 'Your account has been created successfully. You can now sign in.' });
+              }
+            }
+          } catch {}
+
+          // Auto-switch to login tab after 1200ms for faster flow
           setTimeout(() => {
             setIsLogin(true);
-          }, 3000);
+          }, 1200);
         } else {
           setError(result.error || 'Registration failed');
         }
