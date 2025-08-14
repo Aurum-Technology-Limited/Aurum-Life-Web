@@ -31,15 +31,23 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           // Verify token with backend
-          const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${storedToken}`,
-              'Content-Type': 'application/json'
+          // Retry a couple of times because profile bootstrap may lag
+          let userData = null;
+          for (let i = 0; i < 3; i++) {
+            const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+              headers: {
+                'Authorization': `Bearer ${storedToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            if (response.ok) {
+              userData = await response.json();
+              break;
             }
-          });
+            await sleep(300);
+          }
 
-          if (response.ok) {
-            const userData = await response.json();
+          if (userData) {
             setUser(userData);
             setToken(storedToken);
           } else {
