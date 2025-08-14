@@ -83,7 +83,7 @@ def run_auth_flow_smoke_test():
             return test_results
         
         # Step 5: GET /api/auth/me with Bearer token
-        print(f"\n👤 Step 3: Get User Profile (Pre-Onboarding)")
+        print(f"\n👤 Step 2: Get User Profile (Pre-Onboarding Check)")
         profile1_start = time.time()
         
         headers = {"Authorization": f"Bearer {access_token}"}
