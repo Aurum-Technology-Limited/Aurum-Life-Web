@@ -114,7 +114,7 @@ def run_auth_flow_smoke_test():
             return test_results
         
         # Step 6: POST /api/auth/complete-onboarding with Bearer token
-        print(f"\n🎯 Step 4: Complete Onboarding")
+        print(f"\n🎯 Step 3: Complete Onboarding")
         onboarding_start = time.time()
         
         onboarding_response = requests.post(
