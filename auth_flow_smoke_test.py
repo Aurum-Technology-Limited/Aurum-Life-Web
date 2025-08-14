@@ -16,6 +16,19 @@ def run_auth_flow_smoke_test():
     base_url = "https://hierarchy-master.preview.emergentagent.com"
     print(f"🌐 Using base URL: {base_url}")
     
+    # Step 0: Health check first
+    print(f"\n🏥 Step 0: Backend Health Check")
+    try:
+        health_response = requests.get(f"{base_url}/", timeout=10)
+        print(f"   📊 Health Status: {health_response.status_code}")
+        if health_response.status_code == 200:
+            print(f"   ✅ Backend is accessible")
+        else:
+            print(f"   ⚠️  Backend returned: {health_response.text}")
+    except Exception as health_error:
+        print(f"   ❌ Backend health check failed: {health_error}")
+        return [{"step": "health_check", "status": "failed", "error": str(health_error)}]
+    
     # Step 2: Generate unique email timestamp
     timestamp = int(time.time())
     email = f"e2e.test+{timestamp}@example.com"
