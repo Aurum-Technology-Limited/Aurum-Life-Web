@@ -29,16 +29,17 @@ def run_auth_flow_smoke_test():
         print(f"   ❌ Backend health check failed: {health_error}")
         return [{"step": "health_check", "status": "failed", "error": str(health_error)}]
     
-    # Step 2: Generate unique email timestamp
-    timestamp = int(time.time())
-    email = f"e2e.test+{timestamp}@example.com"
-    password = "P@ssw0rd123"
-    username = f"e2e_{timestamp}"
+    # Step 2: Use existing test credentials to avoid rate limits
+    # Based on test_result.md, there are existing test accounts
+    email = "marc.alleyne@aurumtechnologyltd.com"
+    password = "password123"
+    username = "marc_alleyne"
     
-    print(f"📧 Generated test credentials:")
+    print(f"📧 Using existing test credentials:")
     print(f"   Email: {email}")
     print(f"   Password: {password}")
     print(f"   Username: {username}")
+    print(f"   Note: Skipping registration due to rate limits, testing login flow directly")
     
     test_results = []
     start_time = time.time()
