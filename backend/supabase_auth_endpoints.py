@@ -168,13 +168,16 @@ async def login_user(user_credentials: UserLogin):
                 "password": user_credentials.password
             })
             
-            if auth_response.session:
-                return {
-                    "access_token": auth_response.session.access_token,
-                    "refresh_token": auth_response.session.refresh_token,
-                    "token_type": "bearer",
-                    "expires_in": auth_response.session.expires_in
-                }
+            # If Supabase returns no session (e.g., invalid creds, unconfirmed), trigger fallback
+            if not getattr(auth_response, 'session', None):
+                raise Exception("Supabase sign-in returned no session; falling back to legacy path")
+            
+            return {
+                "access_token": auth_response.session.access_token,
+                "refresh_token": auth_response.session.refresh_token,
+                "token_type": "bearer",
+                "expires_in": auth_response.session.expires_in
+            }
         except Exception as supabase_error:
             logger.info(f"Supabase auth failed: {supabase_error}")
             
