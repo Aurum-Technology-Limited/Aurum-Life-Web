@@ -234,6 +234,11 @@ const Login = () => {
               {error}
             </div>
           )}
+          {message && (
+            <div className="mb-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded" role="alert" data-testid="auth-success">
+              {message}
+            </div>
+          )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Registration fields */}
