@@ -655,6 +655,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
                   Priority
                 </label>
                 <select
+                  data-testid="project-priority-select-edit"
                   value={editingProject.priority || 'medium'}
                   onChange={(e) => setEditingProject({...editingProject, priority: e.target.value})}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-yellow-500"
