@@ -57,6 +57,8 @@
 ##   test_priority: "high_first"
 ##
 ## agent_communication:
+    -agent: "user"
+    -message: "CRITICAL: New user login + onboarding failing after sign-up. 401 on /api/auth/login and 400 on /api/auth/register, WebSocket connection errors, user not redirected to onboarding. Expected: New user can register, login, onboarding auto-starts, dashboard populated by chosen template. Please debug/fix end-to-end and add automated tests that create random accounts and validate full flow."
 ##     -agent: "main"
 ##     -message: "Implementing ultra cache invalidation on /api areas/projects/tasks create/update/delete. Test plan: login; create Pillar→Area→Project→Task; verify GET consistency for /api/* and /api/ultra/* after each create; then delete in reverse and verify removals reflected immediately on both. Post-verify, proceed to frontend full CRUD E2E retest (we have prior user approval)."
 
