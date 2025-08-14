@@ -110,25 +110,14 @@ export const AuthProvider = ({ children }) => {
         setToken(authToken);
 
         // Get user profile
-        const userResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          setUser(userData);
-          setLoading(false); // Set loading false AFTER setting user
-          
-          return { 
-            success: true, 
-            message: 'Login successful!'
-          };
+        const { ok, data, error } = await fetchUserWithRetry(authToken, 3, 400);
+        if (ok) {
+          setUser(data);
+          setLoading(false); // AFTER setting user
+          return { success: true, message: 'Login successful!' };
         } else {
           setLoading(false);
-          throw new Error('Failed to get user profile');
+          throw new Error(error?.message || 'Failed to get user profile');
         }
         
       } else {
