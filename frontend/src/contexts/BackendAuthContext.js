@@ -166,6 +166,11 @@ export const AuthProvider = ({ children }) => {
           success: true, 
           message: data.message || 'Registration successful! You can now log in.'
         };
+      } else if (response.status === 409) {
+        return {
+          success: false,
+          error: 'An account with this email already exists. Please sign in instead.'
+        };
       } else {
         return { 
           success: false, 
