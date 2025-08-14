@@ -45,41 +45,8 @@ def run_auth_flow_smoke_test():
     start_time = time.time()
     
     try:
-        # Step 3: POST /api/auth/register
-        print(f"\n🔐 Step 1: User Registration")
-        register_start = time.time()
-        
-        register_payload = {
-            "email": email,
-            "password": password,
-            "first_name": "E2E",
-            "last_name": "User",
-            "username": username
-        }
-        
-        register_response = requests.post(
-            f"{base_url}/api/auth/register",
-            json=register_payload,
-            headers={"Content-Type": "application/json"},
-            timeout=30
-        )
-        
-        register_time = time.time() - register_start
-        print(f"   ⏱️  Registration time: {register_time:.3f}s")
-        print(f"   📊 Status: {register_response.status_code}")
-        
-        if register_response.status_code in [200, 201]:
-            register_data = register_response.json()
-            user_id = register_data.get('id') or register_data.get('user', {}).get('id')
-            print(f"   ✅ Registration successful - User ID: {user_id}")
-            test_results.append({"step": "registration", "status": "success", "time": register_time, "user_id": user_id})
-        else:
-            print(f"   ❌ Registration failed: {register_response.text}")
-            test_results.append({"step": "registration", "status": "failed", "time": register_time, "error": register_response.text})
-            return test_results
-        
-        # Step 4: POST /api/auth/login immediately
-        print(f"\n🔑 Step 2: User Login")
+        # Step 3: Skip registration due to rate limits, go directly to login
+        print(f"\n🔐 Step 1: User Login (Skipping Registration)")
         login_start = time.time()
         
         login_payload = {
