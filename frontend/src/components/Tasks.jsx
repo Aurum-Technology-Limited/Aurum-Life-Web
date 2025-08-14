@@ -517,6 +517,7 @@ const TaskModal = memo(({ task, isOpen, onClose, onSave, loading = false, defaul
                 Priority
               </label>
               <select
+                data-testid="task-priority-select"
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                 className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-yellow-400 focus:outline-none"
