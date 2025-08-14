@@ -146,10 +146,10 @@ async def register_user(user_data: UserCreate):
                 status_code=429,
                 detail="Registration rate limit exceeded. Please try again in a few minutes."
             )
-        elif "email already registered" in str(e).lower() or "user already registered" in str(e).lower():
+        elif "email already registered" in str(e).lower() or "user already registered" in str(e).lower() or "duplicate key" in str(e).lower():
             raise HTTPException(
                 status_code=409,
-                detail="Email already registered. Please try logging in instead."
+                detail="Email already registered. Please log in instead."
             )
         else:
             raise HTTPException(
