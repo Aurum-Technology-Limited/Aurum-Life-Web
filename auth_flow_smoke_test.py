@@ -144,7 +144,7 @@ def run_auth_flow_smoke_test():
             return test_results
         
         # Step 7: GET /api/auth/me again to verify onboarding status
-        print(f"\n👤 Step 5: Get User Profile (Post-Onboarding)")
+        print(f"\n👤 Step 4: Get User Profile (Post-Onboarding)")
         profile2_start = time.time()
         
         profile2_response = requests.get(
