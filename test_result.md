@@ -57,6 +57,8 @@
 ##   test_priority: "high_first"
 ##
 ## agent_communication:
+    -agent: "dev"
+    -message: "Implemented A, B, C: 1) Backend auth register now uses Supabase admin.create_user with email_confirm=true; login hybrid fallback hardened. 2) Frontend UX: Sign-up success now shows visible success alert + browser notification, auto-switch to Login reduced to 1.2s, login also shows success popup. 3) Added data-testid to selects: area-pillar-select, area-importance-select, project-area-select (+edit), project-priority-select (+edit), task-project-select, task-priority-select. Proceeding with backend smoke then automated UI E2E for two fresh accounts (Student and Entrepreneur templates)."
     -agent: "user"
     -message: "CRITICAL: New user login + onboarding failing after sign-up. 401 on /api/auth/login and 400 on /api/auth/register, WebSocket connection errors, user not redirected to onboarding. Expected: New user can register, login, onboarding auto-starts, dashboard populated by chosen template. Please debug/fix end-to-end and add automated tests that create random accounts and validate full flow."
 ##     -agent: "main"
