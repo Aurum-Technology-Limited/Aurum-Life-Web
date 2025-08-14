@@ -172,7 +172,7 @@ def run_auth_flow_smoke_test():
             test_results.append({"step": "profile_post_onboarding", "status": "failed", "time": profile2_time, "error": profile2_response.text})
         
         # Step 8: Optional - POST /api/admin/seed-demo to verify token works
-        print(f"\n🌱 Step 6: Optional - Seed Demo Data (Token Verification)")
+        print(f"\n🌱 Step 5: Optional - Seed Demo Data (Token Verification)")
         seed_start = time.time()
         
         seed_payload = {
