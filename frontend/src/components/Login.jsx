@@ -42,6 +42,15 @@ const Login = () => {
         const result = await login(formData.email, formData.password);
         if (result.success) {
           setMessage('Login successful!');
+          // Quick toast-like popup for success
+          try {
+            if (window?.Notification && Notification.permission !== 'denied') {
+              const perm = await Notification.requestPermission();
+              if (perm === 'granted') {
+                new Notification('Welcome back!', { body: 'Login successful' });
+              }
+            }
+          } catch {}
           // Navigation will be handled automatically by ProtectedRoute
         } else {
           setError(result.error || 'Login failed');
