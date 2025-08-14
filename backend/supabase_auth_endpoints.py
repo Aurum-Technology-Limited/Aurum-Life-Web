@@ -21,21 +21,24 @@ async def register_user(user_data: UserCreate):
     try:
         supabase = supabase_manager.get_client()
         
-        # Create user in Supabase Auth
-        auth_response = supabase.auth.sign_up({
+        # Create user in Supabase Auth using Admin API and mark email confirmed for immediate login
+        admin_payload = {
             "email": user_data.email,
             "password": user_data.password,
-            "options": {
-                "data": {
-                    "first_name": user_data.first_name,
-                    "last_name": user_data.last_name,
-                    "username": user_data.username
-                }
+            "email_confirm": True,
+            "user_metadata": {
+                "first_name": user_data.first_name,
+                "last_name": user_data.last_name,
+                "username": user_data.username
             }
-        })
+        }
+        auth_response = supabase.auth.admin.create_user(admin_payload)
         
-        if auth_response.user:
-            user_id = auth_response.user.id
+        # Supabase Python client returns a dict-like object for admin.create_user
+        user_obj = getattr(auth_response, 'user', None) or getattr(auth_response, 'data', None) or auth_response
+        
+        if user_obj and (getattr(user_obj, 'id', None) or (isinstance(user_obj, dict) and user_obj.get('id'))):
+            user_id = getattr(user_obj, 'id', None) or user_obj.get('id')
             
             # Create user profile in our user_profiles table
             profile_data = {
