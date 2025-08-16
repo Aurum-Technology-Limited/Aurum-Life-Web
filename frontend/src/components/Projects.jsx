@@ -177,19 +177,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Ensure Area dropdown is always fresh when opening Project create/edit forms
-  useEffect(() => {
-    if (showCreateForm || showEditForm) {
-      try {
-        queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'areas' });
-      } catch {}
-      Promise.resolve().then(() => {
-        requestAnimationFrame(() => {
-          try { refetchAreasBasic && refetchAreasBasic(); } catch {}
-        });
-      });
-    }
-  }, [showCreateForm, showEditForm, queryClient, refetchAreasBasic]);
+  // Area dropdown freshness effect is declared after state initialization below to avoid TDZ errors
   
   // Areas should now be an array
   const areas = Array.isArray(areasResponse) ? areasResponse : [];
