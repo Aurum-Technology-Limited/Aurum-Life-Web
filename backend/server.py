@@ -584,7 +584,7 @@ async def search_tasks(
 
 @api_router.get("/tasks/suggest-focus")
 async def suggest_focus_tasks(current_user: User = Depends(get_current_active_user_hybrid)):
-    """Return top 3 suggested tasks using rule-based scoring. No LLM calls."""
+    """Return top 3 suggested tasks using rule-based scoring. Includes full task payload to avoid extra fetches."""
     try:
         user_id = str(current_user.id)
         # Rate limit suggestions
@@ -594,18 +594,51 @@ async def suggest_focus_tasks(current_user: User = Depends(get_current_active_us
         result = await ai_coach_mvp.get_today_priorities(user_id, coaching_top_n=0)
         tasks_sorted = result.get('tasks', [])
         top3 = tasks_sorted[:3]
-        # Map to required fields using already included project_name
+        ids = [t.get('id') for t in top3 if t.get('id')]
+        # Validate existence and enrich with task fields + project names to avoid 404 on client
+        supabase = get_supabase_client()
+        full_lookup = {}
+        if ids:
+            t_resp = (
+                supabase.table('tasks')
+                .select('id,name,description,priority,status,due_date,project_id,completed')
+                .eq('user_id', user_id)
+                .in_('id', ids)
+                .execute()
+            )
+            task_rows = t_resp.data or []
+            proj_ids = list({row.get('project_id') for row in task_rows if row.get('project_id')})
+            proj_lookup = {}
+            if proj_ids:
+                p_resp = supabase.table('projects').select('id,name').in_('id', proj_ids).execute()
+                for p in (p_resp.data or []):
+                    proj_lookup[p['id']] = p['name']
+            for row in task_rows:
+                full_lookup[row['id']] = {
+                    'id': row['id'],
+                    'name': row.get('name'),
+                    'description': row.get('description'),
+                    'priority': row.get('priority'),
+                    'status': row.get('status'),
+                    'due_date': row.get('due_date'),
+                    'project_name': proj_lookup.get(row.get('project_id'))
+                }
+        # Map to required fields and include full task when available
         mapped = []
         for t in top3:
+            tid = t.get('id')
             mapped.append({
-                'taskId': t.get('id'),
+                'taskId': tid,
                 'title': t.get('title'),
                 'description': t.get('description'),
                 'project': t.get('project_name'),
                 'dueDate': t.get('due_date'),
                 'priority': t.get('priority'),
-                'status': t.get('status')
+                'status': t.get('status'),
+                'task': full_lookup.get(tid)  # may be None if filtered out
             })
+        # Filter out items without a valid underlying task if you want stricter validation
+        mapped = [m for m in mapped if m.get('task') is not None]
         return mapped
     except HTTPException:
         raise
