@@ -618,7 +618,7 @@ class TasksDependenciesAPITester:
         test_steps = [
             ("Step 1: Login with known test user", self.test_step_1_login),
             ("Step 2: GET /api/tasks → expect 200, array", self.test_step_2_get_tasks),
-            ("Step 3: Create temporary project", self.test_step_3_create_project),
+            ("Step 3: Get existing project (POST not available)", self.test_step_3_get_existing_project),
             ("Step 4: POST /api/tasks with project_id", self.test_step_4_create_task),
             ("Step 5: GET /api/tasks?project_id → includes created task", self.test_step_5_get_tasks_by_project),
             ("Step 6: GET available-dependencies → expect 200 array", self.test_step_6_get_available_dependencies),
