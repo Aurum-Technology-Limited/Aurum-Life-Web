@@ -26,6 +26,218 @@ class AiCoachMvpService:
     def __init__(self):
         self.supabase = get_supabase_client()
     
+    # ================================
+    # TODAY PRIORITIZATION (MVP)
+    # ================================
+    async def get_today_priorities(self, user_id: str, coaching_top_n: int = 3) -> Dict[str, Any]:
+        """
+        Compute rule-based priority scores for all active tasks and optionally add
+        Gemini coaching for the top N (default 3). Returns list sorted by score desc
+        with a transparent scoring breakdown per task.
+        """
+        from datetime import timezone
+        from zoneinfo import ZoneInfo
+        import os
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        supabase = self.supabase
+        # 1) Get user timezone (optional)
+        tz_name = "UTC"
+        try:
+            profile_resp = supabase.table('user_profiles').select('timezone, time_zone, tz').eq('id', user_id).execute()
+            if profile_resp.data:
+                row = profile_resp.data[0]
+                tz_name = row.get('timezone') or row.get('time_zone') or row.get('tz') or 'UTC'
+        except Exception:
+            tz_name = "UTC"
+        try:
+            user_tz = ZoneInfo(tz_name)
+        except Exception:
+            user_tz = ZoneInfo('UTC')
+        
+        # 2) Fetch active, incomplete tasks
+        tasks_resp = supabase.table('tasks').select(
+            'id, name, description, status, priority, due_date, project_id, completed, dependency_task_ids'
+        ).eq('user_id', user_id).eq('completed', False).execute()
+        tasks = tasks_resp.data or []
+        
+        # Filter active statuses
+        active_statuses = {'todo', 'in_progress', 'review'}
+        tasks = [t for t in tasks if (t.get('status') in active_statuses or not t.get('status'))]
+        if not tasks:
+            return { 'date': datetime.now(user_tz).isoformat(), 'tasks': [] }
+        
+        # 3) Fetch related projects and areas
+        project_ids = list({t.get('project_id') for t in tasks if t.get('project_id')})
+        projects = {}
+        if project_ids:
+            proj_resp = supabase.table('projects').select('id, name, area_id, importance').in_('id', project_ids).execute()
+            for p in (proj_resp.data or []):
+                projects[p['id']] = p
+        area_ids = list({p.get('area_id') for p in projects.values() if p.get('area_id')})
+        areas = {}
+        if area_ids:
+            area_resp = supabase.table('areas').select('id, name, importance').in_('id', area_ids).execute()
+            for a in (area_resp.data or []):
+                areas[a['id']] = a
+        
+        # 4) Preload all dependency tasks
+        dep_ids = []
+        for t in tasks:
+            arr = t.get('dependency_task_ids') or []
+            if isinstance(arr, list):
+                dep_ids.extend(arr)
+        dep_lookup = {}
+        if dep_ids:
+            # Unique
+            dep_ids = list({d for d in dep_ids if d})
+            if dep_ids:
+                deps_resp = supabase.table('tasks').select('id, completed').in_('id', dep_ids).execute()
+                for d in (deps_resp.data or []):
+                    dep_lookup[d['id']] = d
+        
+        # 5) Score tasks
+        from math import fsum
+        today_local = datetime.now(user_tz).date()
+        scored = []
+        for t in tasks:
+            breakdown = {
+                'urgency': 0,
+                'priority': 0,
+                'project_importance': 0,
+                'area_importance': 0,
+                'dependencies': 0,
+                'total': 0,
+                'reasons': []
+            }
+            # Urgency: overdue +100, due today +80
+            due_date_val = None
+            if t.get('due_date'):
+                try:
+                    # Parse and convert to user's tz
+                    dts = datetime.fromisoformat(str(t['due_date']).replace('Z', '+00:00'))
+                    if dts.tzinfo is None:
+                        dts = dts.replace(tzinfo=ZoneInfo('UTC'))
+                    due_local = dts.astimezone(user_tz).date()
+                    due_date_val = due_local
+                except Exception:
+                    due_date_val = None
+            if due_date_val and due_date_val < today_local:
+                breakdown['urgency'] = 100
+                delta = (today_local - due_date_val).days
+                breakdown['reasons'].append(f"Overdue by {delta} day{'s' if delta != 1 else ''}")
+            elif due_date_val and due_date_val == today_local:
+                breakdown['urgency'] = 80
+                breakdown['reasons'].append('Due today')
+            
+            # Priority: task.priority high = +30
+            pr = (t.get('priority') or '').lower()
+            if pr == 'high':
+                breakdown['priority'] = 30
+                breakdown['reasons'].append('Task priority: High')
+            
+            # Vertical alignment: project importance high (>=4) +50, area importance high (>=4) +25
+            proj = projects.get(t.get('project_id')) if t.get('project_id') else None
+            if proj and proj.get('importance') is not None:
+                try:
+                    imp = int(proj['importance'])
+                    if imp >= 4:
+                        breakdown['project_importance'] = 50
+                        breakdown['reasons'].append('Project importance: High')
+                except Exception:
+                    pass
+            ar = areas.get(proj.get('area_id')) if proj and proj.get('area_id') else None
+            if ar and ar.get('importance') is not None:
+                try:
+                    aimp = int(ar['importance'])
+                    if aimp >= 4:
+                        breakdown['area_importance'] = 25
+                        breakdown['reasons'].append('Area importance: High')
+                except Exception:
+                    pass
+            
+            # Dependencies met: +60 when all prereqs completed or none
+            deps = t.get('dependency_task_ids') or []
+            all_met = True
+            if deps and isinstance(deps, list) and len(deps) > 0:
+                for dep_id in deps:
+                    dep = dep_lookup.get(dep_id)
+                    if not dep or not dep.get('completed'):
+                        all_met = False
+                        break
+            if all_met:
+                breakdown['dependencies'] = 60
+                breakdown['reasons'].append('Dependencies met')
+            
+            breakdown['total'] = sum([breakdown['urgency'], breakdown['priority'], breakdown['project_importance'], breakdown['area_importance'], breakdown['dependencies']])
+            scored.append({
+                'task': t,
+                'project': proj,
+                'area': ar,
+                'score': breakdown['total'],
+                'breakdown': breakdown
+            })
+        
+        # 6) Sort descending
+        scored.sort(key=lambda x: x['score'], reverse=True)
+        
+        # 7) Optional: Gemini 2.0-flash coaching for top N
+        def init_llm():
+            api_key = os.environ.get('GEMINI_API_KEY')
+            if not api_key:
+                return None
+            return LlmChat(api_key=api_key, session_id=f"coach-{user_id}", system_message="You are the Aurum Life AI Coach. Be concise (1-2 sentences), motivational, and explicitly connect the task to its Project/Area/Pillar when available.").with_model("gemini", "gemini-2.0-flash")
+        
+        llm = init_llm()
+        top = scored[:max(0, int(coaching_top_n))]
+        if llm and top:
+            for item in top:
+                t = item['task']
+                p = item.get('project') or {}
+                a = item.get('area') or {}
+                prompt = (
+                    f"Task: '{t.get('name','')}'\n"
+                    f"Project: '{p.get('name','') or 'None'}'\n"
+                    f"Area: '{a.get('name','') or 'None'}'\n"
+                    f"Pillar: ''\n"
+                    f"Instruction: In 1-2 sentences, motivate the user by explaining why this task matters today and how it ties to the project/area pillar context."
+                )
+                try:
+                    msg = UserMessage(text=prompt)
+                    resp = await llm.send_message(msg)
+                    item['coaching_message'] = (resp or '').strip()
+                    item['ai_powered'] = True
+                except Exception as e:
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Gemini coaching failed: {e}")
+                    item['coaching_message'] = None
+                    item['ai_powered'] = False
+        
+        # 8) Build API response list
+        out = []
+        for item in scored:
+            t = item['task']
+            p = item.get('project') or {}
+            a = item.get('area') or {}
+            out.append({
+                'id': t['id'],
+                'title': t.get('name'),
+                'description': t.get('description'),
+                'status': t.get('status'),
+                'priority': t.get('priority'),
+                'due_date': t.get('due_date'),
+                'project_id': t.get('project_id'),
+                'project_name': p.get('name'),
+                'area_id': p.get('area_id') if p else None,
+                'area_name': a.get('name') if a else None,
+                'score': item['score'],
+                'breakdown': item['breakdown'],
+                'coaching_message': item.get('coaching_message'),
+                'ai_powered': item.get('ai_powered', False)
+            })
+        
+        return { 'date': datetime.now(user_tz).isoformat(), 'tasks': out }
+    
     # Feature 1: Contextual "Why" Statements
     async def generate_task_why_statements(self, user_id: str, task_ids: List[str] = None) -> TaskWhyStatementResponse:
         """
