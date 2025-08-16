@@ -756,6 +756,133 @@ async def suggest_focus_tasks(current_user: User = Depends(get_current_active_us
         logger.error(f"Error in suggest focus: {e}")
         raise HTTPException(status_code=500, detail="Failed to suggest focus tasks")
 
+
+# ================================
+# TASKS: CORE CRUD + DEPENDENCIES
+# ================================
+@api_router.get("/tasks")
+async def get_tasks(project_id: Optional[str] = Query(None), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        tasks = await SupabaseTaskService.get_user_tasks(user_id, project_id=project_id)
+        return tasks
+    except Exception as e:
+        logger.error(f"Get tasks error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch tasks")
+
+@api_router.post("/tasks")
+async def create_task(payload: TaskCreate = Body(...), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        created = await SupabaseTaskService.create_task(user_id, payload)
+        return created
+    except ValueError as e:
+        logger.error(f"Validation error creating task: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Create task error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create task")
+
+@api_router.put("/tasks/{task_id}")
+async def update_task(task_id: str, payload: TaskUpdate = Body(...), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        updated = await SupabaseTaskService.update_task(task_id, user_id, payload)
+        return updated
+    except Exception as e:
+        logger.error(f"Update task error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update task")
+
+@api_router.delete("/tasks/{task_id}")
+async def delete_task(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        ok = await SupabaseTaskService.delete_task(task_id, user_id)
+        if not ok:
+            raise HTTPException(status_code=400, detail="Failed to delete task")
+        return { 'status': 'ok' }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete task error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete task")
+
+@api_router.get("/tasks/{task_id}/with-subtasks")
+async def get_task_with_subtasks(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        # Basic task with subtasks (simple version for MVP)
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        t_resp = supabase.table('tasks').select('*').eq('id', task_id).eq('user_id', user_id).single().execute()
+        task = t_resp.data
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        st_resp = supabase.table('tasks').select('*').eq('parent_task_id', task_id).eq('user_id', user_id).execute()
+        task['subtasks'] = st_resp.data or []
+        return task
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get task with subtasks error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch task")
+
+@api_router.get("/projects/{project_id}/tasks/available-dependencies")
+async def get_available_dependency_tasks(project_id: str, task_id: Optional[str] = Query(None), current_user: User = Depends(get_current_active_user_hybrid)):
+    """Return tasks in the same project that can be set as prerequisites (exclude the task itself and completed tasks)."""
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        query = (supabase.table('tasks')
+                 .select('id,name,description,status,priority,completed')
+                 .eq('user_id', user_id)
+                 .eq('project_id', project_id))
+        if task_id:
+            query = query.neq('id', task_id)
+        resp = query.execute()
+        tasks = resp.data or []
+        # Only allow tasks that are not completed as dependencies
+        tasks = [t for t in tasks if not (t.get('completed') or t.get('status') == 'completed')]
+        return tasks
+    except Exception as e:
+        logger.error(f"Available dependencies error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load available dependency tasks")
+
+@api_router.get("/tasks/{task_id}/dependencies")
+async def get_task_dependencies(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        resp = supabase.table('tasks').select('dependency_task_ids').eq('id', task_id).eq('user_id', user_id).single().execute()
+        ids = resp.data.get('dependency_task_ids') if resp.data else []
+        dep_tasks = []
+        if ids:
+            dep_resp = supabase.table('tasks').select('id,name,priority,status,completed').in_('id', ids).execute()
+            dep_tasks = dep_resp.data or []
+        return { 'dependency_task_ids': ids or [], 'dependency_tasks': dep_tasks }
+    except Exception as e:
+        logger.error(f"Get task dependencies error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load task dependencies")
+
+@api_router.put("/tasks/{task_id}/dependencies")
+async def update_task_dependencies(task_id: str, dependency_ids: List[str] = Body(...), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        # Validate all dependency IDs belong to the same user and exist
+        if dependency_ids:
+            dep_check = supabase.table('tasks').select('id').in_('id', dependency_ids).eq('user_id', user_id).execute()
+            valid_ids = [row['id'] for row in (dep_check.data or [])]
+            if len(valid_ids) != len(dependency_ids):
+                raise HTTPException(status_code=400, detail="Invalid dependency task IDs")
+        # Update dependency list on parent task
+        supabase.table('tasks').update({ 'dependency_task_ids': dependency_ids or [] }).eq('id', task_id).eq('user_id', user_id).execute()
+        return { 'status': 'ok' }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update task dependencies error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update task dependencies")
+
 # ... existing endpoints continue ...
 
 # ================================
