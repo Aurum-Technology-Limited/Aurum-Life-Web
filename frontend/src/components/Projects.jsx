@@ -440,6 +440,21 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     }
   }, [activeAreaId]);
 
+
+  // Ensure Area dropdown is always fresh when opening Project create/edit forms
+  useEffect(() => {
+    if (showCreateForm || showEditForm) {
+      try {
+        queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'areas' });
+      } catch {}
+      Promise.resolve().then(() => {
+        requestAnimationFrame(() => {
+          try { refetchAreasBasic && refetchAreasBasic(); } catch {}
+        });
+      });
+    }
+  }, [showCreateForm, showEditForm, queryClient, refetchAreasBasic]);
+
   const handleCreateProject = async (e) => {
     e.preventDefault();
     setError('');
