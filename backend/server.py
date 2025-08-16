@@ -525,6 +525,43 @@ async def get_today_view(
         raise HTTPException(status_code=500, detail="Failed to generate Today view")
 
 # ================================
+# PILLARS ENDPOINTS (ULTRA + STANDARD)
+# ================================
+@api_router.get("/ultra/pillars", response_model=List[dict])
+async def ultra_get_pillars(
+    include_areas: bool = Query(False, description="Include linked areas"),
+    include_archived: bool = Query(False, description="Include archived pillars"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    try:
+        user_id = str(current_user.id)
+        pillars = await UltraPerformancePillarService.get_user_pillars(
+            user_id, include_areas=include_areas, include_archived=include_archived
+        )
+        # Convert Pydantic models to dict if necessary
+        return [p.dict() if hasattr(p, 'dict') else dict(p) if isinstance(p, dict) else p for p in pillars]
+    except Exception as e:
+        logger.error(f"Ultra pillars error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch pillars")
+
+@api_router.get("/pillars", response_model=List[dict])
+async def get_pillars(
+    include_sub_pillars: bool = Query(False, description="(Reserved) Include sub pillars - not used in Supabase mode"),
+    include_areas: bool = Query(False, description="Include linked areas"),
+    include_archived: bool = Query(False, description="Include archived pillars"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    try:
+        user_id = str(current_user.id)
+        pillars = await SupabasePillarService.get_user_pillars(
+            user_id, include_areas=include_areas, include_archived=include_archived
+        )
+        return pillars
+    except Exception as e:
+        logger.error(f"Pillars error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch pillars")
+
+# ================================
 # TASKS: SEARCH & SUGGEST-FOCUS
 # ================================
 @api_router.get("/tasks/search")
