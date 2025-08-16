@@ -58,6 +58,8 @@
 ##
 ## agent_communication:
     -agent: "main"
+    -message: "Re-running full hierarchy E2E after backend CRUD + modal fixes: 1) Login; 2) Create Pillar→Area→Project→Two Tasks; 3) Refresh and verify persistence; 4) Update Task→Project→Area names and verify up-chain; 5) Delete Pillar and verify cascade; 6) Assert no 404/500 in console. Use data-testids for selects (area-pillar-select, project-area-select, task-project-select)."
+    -agent: "main"
     -message: "Running full hierarchy E2E: 1) Login; 2) Create Pillar→Area→Project→Two Tasks; 3) Verify persistence on refresh; 4) Update Task then confirm in Project; 5) Update Project then confirm in Area; 6) Update Area then confirm in Pillars; 7) Delete Pillar and confirm cascade removes all; 8) Assert no 404/500 in console throughout. Use data-testids for selects (area-pillar-select, project-area-select, task-project-select)."
     -agent: "main"
     -message: "Run E2E for Monthly Goal flow: 1) Login with existing test account, 2) On Dashboard, click Update Goal on Alignment Score card (navigates to Settings > Goals), 3) Read current goal via GET, 4) Enter a new valid value (e.g., 321) in input#monthlyGoal, 5) Click Save Goal, expect loading state and success message, 6) Re-fetch or navigate back to Dashboard to confirm persistence (value change reflected), 7) Assert no console errors (no CORS/401/404 for goal endpoints)."
