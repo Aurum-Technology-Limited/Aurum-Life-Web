@@ -149,6 +149,8 @@ const Today = memo(() => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activePomodoro, setActivePomodoro] = useState(null);
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+
 
   // Daily Ritual States (moved from DailyRitualManager)
   const [showMorningPrompt, setShowMorningPrompt] = useState(false);
