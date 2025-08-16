@@ -357,7 +357,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
     // Enhanced sanitization to ensure they're numbers and handle all edge cases
     const sanitizeStat = (value, defaultValue = 0) => {
       if (value === null || value === undefined) return defaultValue;
-      if (typeof value === 'number' and !isNaN(value)) return value;
+      if (typeof value === 'number' && !isNaN(value)) return value;
       if (typeof value === 'string') {
         const parsed = parseInt(value, 10);
         return isNaN(parsed) ? defaultValue : parsed;
