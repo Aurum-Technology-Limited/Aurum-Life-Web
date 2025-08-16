@@ -731,7 +731,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
       {/* Create Project Form */}
       {showCreateForm && (
-        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <div id="project-create-panel" className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <form onSubmit={handleCreateProject} className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-white">Create New Project</h3>
