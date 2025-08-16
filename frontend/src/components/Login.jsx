@@ -6,6 +6,7 @@ import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 const Login = () => {
   const { login, register, forgotPassword, loginWithGoogle, loading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [justAutoSwitched, setJustAutoSwitched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
