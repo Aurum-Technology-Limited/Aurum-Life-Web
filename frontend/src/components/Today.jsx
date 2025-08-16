@@ -651,11 +651,16 @@ const Today = memo(() => {
                           mode="suggestion"
                           onAdd={async () => {
                             try {
-                              const resp = await tasksAPI.getTask(s.taskId);
-                              if (resp.data) {
-                                handleAddTaskToFocus(resp.data);
+                              if (s.task) {
+                                handleAddTaskToFocus({ ...s.task });
                               } else {
-                                handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
+                                // Fallback: fetch by id or construct minimal
+                                const resp = await tasksAPI.getTask(s.taskId);
+                                if (resp.data) {
+                                  handleAddTaskToFocus(resp.data);
+                                } else {
+                                  handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
+                                }
                               }
                             } catch {
                               handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
