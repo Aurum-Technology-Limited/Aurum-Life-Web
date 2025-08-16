@@ -28,22 +28,15 @@ const AlignmentScore = ({ onSectionChange }) => {
       setLoading(true);
       setError(null);
 
-      // Use centralized API client instead of manual fetch
-      // Quick unblock: call the new /api/alignment-score endpoint directly
-      const response = await api.get('/alignment-score');
-      const staticData = response?.data || {};
-      // Map static fields to component data shape
-      const data = {
-        rolling_weekly_score: typeof staticData.score === 'number' ? staticData.score : 0,
-        monthly_score: typeof staticData.score === 'number' ? Math.round(staticData.score * 1.2) : 0,
-        monthly_goal: 100,
-        progress_percentage: typeof staticData.score === 'number' ? Math.min(staticData.score, 100) : 0,
-        has_goal_set: true
-      };
+      // Fetch real alignment dashboard data
+      const response = await alignmentScoreAPI.getDashboardData();
+      const data = response?.data || {};
+      
+      // Normalize and guard values
       const safeData = {
         rolling_weekly_score: typeof data.rolling_weekly_score === 'number' ? data.rolling_weekly_score : 0,
         monthly_score: typeof data.monthly_score === 'number' ? data.monthly_score : 0,
-        monthly_goal: data.monthly_goal || null,
+        monthly_goal: typeof data.monthly_goal === 'number' ? data.monthly_goal : (data.monthly_goal ? parseInt(data.monthly_goal) : null),
         progress_percentage: typeof data.progress_percentage === 'number' ? data.progress_percentage : 0,
         has_goal_set: Boolean(data.has_goal_set)
       };
