@@ -561,6 +561,44 @@ async def get_pillars(
         logger.error(f"Pillars error: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch pillars")
 
+@api_router.post("/pillars", response_model=dict)
+async def create_pillar(payload: PillarCreate, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        created = await SupabasePillarService.create_pillar(user_id, payload)
+        return created
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Create pillar error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create pillar")
+
+@api_router.put("/pillars/{pillar_id}", response_model=dict)
+async def update_pillar(pillar_id: str, payload: PillarUpdate, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        updated = await SupabasePillarService.update_pillar(pillar_id, user_id, payload)
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update pillar error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update pillar")
+
+@api_router.delete("/pillars/{pillar_id}")
+async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        ok = await SupabasePillarService.delete_pillar(pillar_id, user_id)
+        if not ok:
+            raise HTTPException(status_code=400, detail="Failed to delete pillar")
+        return { 'status': 'ok' }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete pillar error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete pillar")
+
 # ================================
 # TASKS: SEARCH & SUGGEST-FOCUS
 # ================================
