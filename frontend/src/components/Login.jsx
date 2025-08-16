@@ -234,12 +234,8 @@ const Login = () => {
             <button
               type="button"
               onClick={() => {
-                setIsLogin(false); 
-                setError(''); 
-          {justAutoSwitched && isLogin && (
-            <div data-testid="auto-switched-to-login" className="hidden">auto-switched</div>
-          )}
-
+                setIsLogin(false);
+                setError('');
                 setMessage(''); // Always clear message when switching to signup
               }}
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md border-t border-r border-b ${
@@ -247,6 +243,7 @@ const Login = () => {
                   ? 'bg-yellow-500 text-black border-yellow-500'
                   : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
               }`}
+              data-testid={!isLogin ? 'auth-tab-signup' : 'auth-tab-signup-inactive'}
             >
               Sign Up
             </button>
