@@ -109,19 +109,19 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+      const loginData = await response.json();
 
-      if (response.ok && data.access_token) {
-        const authToken = data.access_token;
+      if (response.ok && loginData.access_token) {
+        const authToken = loginData.access_token;
         
         // Store token
         localStorage.setItem('auth_token', authToken);
         setToken(authToken);
 
         // Get user profile
-        const { ok, data, error } = await fetchUserWithRetry(authToken, 3, 400);
+        const { ok, data: profileData, error } = await fetchUserWithRetry(authToken, 3, 400);
         if (ok) {
-          setUser(data);
+          setUser(profileData);
           setLoading(false); // AFTER setting user
           return { success: true, message: 'Login successful!' };
         } else {
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return { 
           success: false, 
-          error: data.detail || 'Login failed' 
+          error: loginData.detail || 'Login failed' 
         };
       }
       
