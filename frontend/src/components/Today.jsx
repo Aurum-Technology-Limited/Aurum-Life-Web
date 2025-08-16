@@ -345,22 +345,19 @@ const Today = memo(() => {
   };
 
   const handleAddTaskToFocus = (task) => {
-    // Check if task is already in today's focus
-    if (todaysTasks.find(t => t.id === task.id)) {
-      console.log('Task already in today\'s focus');
-      return;
-    }
-    
-    console.log('🎯 Adding task to today\'s focus:', task.name);
-    
-    const updatedTasks = [...todaysTasks, task];
-    setTodaysTasks(updatedTasks);
-    
-    // Update localStorage
-    const taskIds = updatedTasks.map(t => t.id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(taskIds));
-    
-    onDataMutation('today', 'add_task', { taskId: task.id });
+    if (!task || !task.id) return;
+    // Dedupe by id
+    setTodaysTasks((prev) => {
+      if (prev.some(t => t.id === task.id)) {
+        console.log('Task already in today\'s focus');
+        return prev;
+      }
+      const next = [...prev, task];
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      // Fire mutation with valid id only
+      onDataMutation('today', 'add_task', { taskId: task.id });
+      return next;
+    });
   };
 
   const [undo, setUndo] = useState({ visible: false, last: null });
