@@ -155,7 +155,7 @@ const UnifiedTaskItem = ({ task, context, mode = 'focus', onAdd, onToggleComplet
           </button>
         )}
         {/* Priority indicator */}
-        <div className={`w-2 h-2 rounded-full mt-2 ${priorityClass}`} aria-hidden="true"></div>
+        <div className={`w-2 h-2 rounded-full mt-2 ${priorityClass}`} aria-hidden="true" title={showAIBadge ? 'Suggested by AI' : undefined}></div>
         <div>
           <div className="flex items-center">
             <div className={`text-sm font-medium ${completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.name || task.title}</div>
