@@ -443,15 +443,39 @@ class UltraPerformanceDashboardService:
                 }
                 recent_task_responses.append(TaskResponse(**task_data))
             
-            return UserDashboard(
-                user=user_obj,
-                stats=stats,
-                recent_tasks=recent_task_responses,
-                recent_courses=[],
-                recent_achievements=[],
-                areas=[],
-                today_tasks=[]
-            )
+            # Return dictionary format to match regular dashboard service
+            return {
+                'user': {
+                    'id': user_obj.id,
+                    'email': user_obj.email,
+                    'username': user_obj.username,
+                    'first_name': user_obj.first_name,
+                    'last_name': user_obj.last_name,
+                    'has_completed_onboarding': user_obj.has_completed_onboarding
+                },
+                'stats': {
+                    'completed_tasks': stats.tasks_completed,
+                    'total_tasks': stats.total_tasks,
+                    'completion_rate': int((stats.tasks_completed / stats.total_tasks * 100) if stats.total_tasks > 0 else 0),
+                    'active_projects': stats.total_projects,
+                    'completed_projects': stats.completed_projects,
+                    'active_areas': stats.total_areas
+                },
+                'recent_tasks': [
+                    {
+                        'id': task.id,
+                        'title': task.title,
+                        'description': task.description,
+                        'completed': task.completed,
+                        'priority': task.priority.value if hasattr(task.priority, 'value') else str(task.priority),
+                        'due_date': task.due_date.isoformat() if task.due_date else None,
+                        'status': task.status.value if hasattr(task.status, 'value') else str(task.status),
+                        'created_at': task.created_at.isoformat() if task.created_at else None
+                    }
+                    for task in recent_task_responses
+                ],
+                'areas': []
+            }
             
         except Exception as e:
             logger.error(f"Ultra dashboard service error: {e}")
