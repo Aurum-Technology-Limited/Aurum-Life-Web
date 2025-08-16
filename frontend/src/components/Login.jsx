@@ -51,6 +51,25 @@ const Login = () => {
       } catch {}
     }
   }, [isLogin, pendingAutoSwitchDuplicate]);
+  // One-time hydration from localStorage signal (belt and suspenders)
+  useEffect(() => {
+    if (isLogin) {
+      try {
+        const dup = localStorage.getItem('auth_duplicate_signal');
+        if (dup === '1') {
+          const saved = localStorage.getItem('auth_prefill_email') || '';
+          setFormData(prev => ({ ...prev, email: saved, password: '', confirmPassword: '' }));
+          setAutoSwitchedDuplicate(true);
+          setJustAutoSwitched(true);
+          setTimeout(() => {
+            try { passwordInputRef?.current?.focus(); } catch {}
+          }, 150);
+          localStorage.removeItem('auth_duplicate_signal');
+        }
+      } catch {}
+    }
+  }, [isLogin]);
+
 
 
 
