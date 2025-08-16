@@ -698,6 +698,37 @@ async def get_alignment_score_quick(current_user: User = Depends(get_current_act
 
 
 # Include the auth router in the api router
+
+# ================================
+# MONTHLY GOAL ENDPOINTS (CRUD minimal)
+# ================================
+class MonthlyGoalUpdate(BaseModel):
+    goal: int = Field(..., ge=1, le=100000)
+
+@api_router.get("/alignment/monthly-goal")
+async def get_monthly_goal(current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+      service = AlignmentScoreService()
+      goal = await service.get_user_monthly_goal(str(current_user.id))
+      return { 'goal': goal }
+    except Exception as e:
+      logger.error(f"Get monthly goal error: {e}")
+      raise HTTPException(status_code=500, detail='Failed to fetch monthly goal')
+
+@api_router.put("/alignment/monthly-goal")
+async def set_monthly_goal(payload: MonthlyGoalUpdate, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+      service = AlignmentScoreService()
+      ok = await service.set_user_monthly_goal(str(current_user.id), int(payload.goal))
+      if not ok:
+        raise HTTPException(status_code=400, detail='Failed to update monthly goal')
+      return { 'status': 'ok', 'goal': int(payload.goal) }
+    except HTTPException:
+      raise
+    except Exception as e:
+      logger.error(f"Set monthly goal error: {e}")
+      raise HTTPException(status_code=500, detail='Failed to update monthly goal')
+
 api_router.include_router(auth_router, prefix="/auth")
 
 # Include the router
