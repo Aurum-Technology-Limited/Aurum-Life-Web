@@ -58,6 +58,8 @@
 ##
 ## agent_communication:
     -agent: "main"
+    -message: "Running frontend E2E for dashboard regression: validate CORS fixed (no CORS errors), Alignment Score loads via /api/alignment-score, Dashboard sections render, Today’s Focus search/suggest/clear still function with persistence. Login with existing test account, navigate to dashboard, and assert no 404/401 in console."
+    -agent: "main"
     -message: "Proceeding with frontend E2E for Today’s Focus MVP: verify search dropdown wired to /api/tasks/search (debounced, loading state), selecting a result adds to Focus list (deduped), Suggest My Focus button fetches /api/tasks/suggest-focus and appends up to 3 (deduped), and removal via X works. Login via existing test account, then navigate to dashboard. Tests handle empty data gracefully (assert UI elements/empty state rather than strict counts)."
     -agent: "main"
     -message: "Frontend auth UX updated: On registration duplicate (HTTP 409), auto-switch to Login tab after 1.2s, prefill email remains, password field auto-focused. Added data-testid hooks: auth-tab-login, auth-tab-login-inactive, auth-tab-signup, auth-tab-signup-inactive, auth-email, auth-password, auto-switched-to-login. Will run frontend E2E after user approval."
