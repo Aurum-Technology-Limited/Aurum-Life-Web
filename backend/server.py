@@ -603,6 +603,39 @@ async def suggest_focus_tasks(current_user: User = Depends(get_current_active_us
 
 # ... existing endpoints continue ...
 
+# ================================
+# DASHBOARD ENDPOINT
+# ================================
+
+@api_router.get("/dashboard", response_model=dict)
+async def get_dashboard(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get dashboard data"""
+    try:
+        dashboard_service = SupabaseDashboardService()
+        dashboard_data = await dashboard_service.get_dashboard_data(str(current_user.id))
+        return dashboard_data
+    except Exception as e:
+        logger.error(f"Error getting dashboard data: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/ultra/dashboard", response_model=dict)
+async def get_ultra_dashboard(current_user: User = Depends(get_current_active_user_hybrid)):
+    """Get ultra-performance dashboard data"""
+    try:
+        ultra_dashboard_service = UltraPerformanceDashboardService()
+        dashboard_data = await ultra_dashboard_service.get_dashboard_data(str(current_user.id))
+        return dashboard_data
+    except Exception as e:
+        logger.error(f"Error getting ultra dashboard data: {str(e)}")
+        # Fallback to regular dashboard
+        try:
+            dashboard_service = SupabaseDashboardService()
+            dashboard_data = await dashboard_service.get_dashboard_data(str(current_user.id))
+            return dashboard_data
+        except Exception as fallback_e:
+            logger.error(f"Error getting fallback dashboard data: {str(fallback_e)}")
+            raise HTTPException(status_code=500, detail="Internal server error")
+
 # Include the auth router in the api router
 api_router.include_router(auth_router, prefix="/auth")
 
