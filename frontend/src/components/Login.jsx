@@ -40,6 +40,18 @@ const Login = () => {
       setPendingAutoSwitchDuplicate(false);
     }
   }, [isLogin, pendingAutoSwitchDuplicate]);
+  // Hydrate prefill email if present (safety net)
+  useEffect(() => {
+    if (isLogin && pendingAutoSwitchDuplicate) {
+      try {
+        const saved = localStorage.getItem('auth_prefill_email');
+        if (saved) {
+          setFormData(prev => ({ ...prev, email: saved }));
+        }
+      } catch {}
+    }
+  }, [isLogin, pendingAutoSwitchDuplicate]);
+
 
 
 
