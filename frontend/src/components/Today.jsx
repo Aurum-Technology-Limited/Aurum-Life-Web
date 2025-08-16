@@ -640,43 +640,32 @@ const Today = memo(() => {
                 {/* AI Suggestions List */}
                 {aiSuggestions.length > 0 && (
                   <div className="mb-6 space-y-2">
-                    {aiSuggestions.map((s) => (
-                      <div key={s.taskId} className="flex items-start justify-between bg-gray-900/50 border border-gray-800 rounded-md p-3">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                try {
-                                  // fetch full task by id to add (ensures consistent shape)
-                                  const resp = await tasksAPI.getTask(s.taskId);
-                                  if (resp.data) {
-                                    handleAddTaskToFocus(resp.data);
-                                    setAiSuggestions(prev => prev.filter(x => x.taskId !== s.taskId));
-                                  }
-                                } catch {
-                                  // Fallback: construct minimal task object
-                                  handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
-                                  setAiSuggestions(prev => prev.filter(x => x.taskId !== s.taskId));
-                                }
-                              }}
-                              className="mr-2 p-1.5 text-gray-300 hover:text-yellow-400 hover:bg-gray-800 rounded"
-                              title="Add to Today's Focus"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                            <div>
-                              <div className="text-sm text-white font-medium">{s.title}</div>
-                              <div className="text-xs text-gray-400 mt-0.5">
-                                {s.pillar || s.pillar_name ? `Pillar: ${s.pillar || s.pillar_name}` : null}
-                                {s.area || s.area_name ? ` • Area: ${s.area || s.area_name}` : ''}
-                                {s.project ? ` • Project: ${s.project}` : ''}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                    {aiSuggestions.map((s) => {
+                      const context = `${s.pillar || s.pillar_name ? `Pillar: ${s.pillar || s.pillar_name}` : ''}${s.area || s.area_name ? `${s.pillar || s.pillar_name ? ' • ' : ''}Area: ${s.area || s.area_name}` : ''}${s.project ? `${(s.pillar || s.pillar_name || s.area || s.area_name) ? ' • ' : ''}Project: ${s.project}` : ''}`;
+                      const key = s.taskId || s.id || `${s.title}-${s.project || ''}`;
+                      return (
+                        <UnifiedTaskItem
+                          key={key}
+                          task={{ name: s.title, priority: (s.priority || 'medium').toLowerCase(), id: s.taskId }}
+                          context={context}
+                          mode="suggestion"
+                          onAdd={async () => {
+                            try {
+                              const resp = await tasksAPI.getTask(s.taskId);
+                              if (resp.data) {
+                                handleAddTaskToFocus(resp.data);
+                              } else {
+                                handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
+                              }
+                            } catch {
+                              handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
+                            } finally {
+                              setAiSuggestions(prev => prev.filter(x => (x.taskId || x.id) !== (s.taskId || s.id)));
+                            }
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                 )}
 
