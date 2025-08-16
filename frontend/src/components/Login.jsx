@@ -295,8 +295,8 @@ const Login = () => {
                 setMessage(''); // Clear message when manually switching to login
                 // When manually switching to login, focus password and clear auto-switch flag
                 setTimeout(() => {
-                  try { passwordInputRef?.current?.focus(); } catch {}
-                }, 50);
+                  focusPasswordStable();
+                }, 0);
                 setJustAutoSwitched(false);
               }}
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md border ${
