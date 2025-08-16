@@ -746,6 +746,7 @@ async def get_alignment_dashboard(current_user: User = Depends(get_current_activ
 
 
 # Include the router
+app.include_router(api_router)
 
 # ================================
 # FRONTEND CATCH-ALL FOR SPA ROUTING
@@ -769,5 +770,3 @@ async def spa_catch_all(full_path: str):
     except Exception as e:
         logger.error(f"SPA catch-all error: {e}")
         raise HTTPException(status_code=404, detail='Not Found')
-
-app.include_router(api_router)
