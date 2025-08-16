@@ -1427,36 +1427,37 @@ class SupabaseDashboardService:
     
     @staticmethod
     async def get_dashboard_data(user_id: str) -> Dict[str, Any]:
-        """Get dashboard data for user"""
+        """Get dashboard data for user with concurrency and caching-friendly minimal selects"""
         try:
-            # Get user profile
-            user_profile = await SupabaseUserService.get_user_profile(user_id)
+            start = time.monotonic()
             
-            # Remove achievement/level related fields from user profile
+            # Fire independent queries concurrently with minimal selects
+            tasks_future = asyncio.to_thread(lambda: supabase.table('tasks').select('completed,created_at').eq('user_id', user_id).execute())
+            projects_future = asyncio.to_thread(lambda: supabase.table('projects').select('status').eq('user_id', user_id).execute())
+            areas_future = asyncio.to_thread(lambda: supabase.table('areas').select('id').eq('user_id', user_id).execute())
+            profile_future = asyncio.create_task(SupabaseUserService.get_user_profile(user_id))
+
+            tasks_resp, projects_resp, areas_resp, user_profile = await asyncio.gather(
+                tasks_future, projects_future, areas_future, profile_future
+            )
+
+            # Sanitize user profile
             if user_profile:
-                # Remove level and points fields that are no longer needed
                 user_profile.pop('level', None)
                 user_profile.pop('total_points', None)
-            
-            # Get basic stats
-            tasks_response = supabase.table('tasks').select('completed').eq('user_id', user_id).execute()
-            tasks = tasks_response.data or []
-            
-            completed_tasks = len([t for t in tasks if t.get('completed')])
+
+            tasks = tasks_resp.data or []
+            projects = projects_resp.data or []
+            areas = areas_resp.data or []
+
+            completed_tasks = sum(1 for t in tasks if t.get('completed'))
             total_tasks = len(tasks)
-            
-            projects_response = supabase.table('projects').select('status').eq('user_id', user_id).execute()
-            projects = projects_response.data or []
-            completed_projects = len([p for p in projects if p.get('status') == 'completed'])
-            
-            # Get recent incomplete tasks
-            recent_tasks_response = supabase.table('tasks').select('*').eq('user_id', user_id).eq('completed', False).limit(5).execute()
-            recent_tasks = recent_tasks_response.data or []
-            
-            # Get areas count
-            areas_response = supabase.table('areas').select('id').eq('user_id', user_id).execute()
-            areas_count = len(areas_response.data or [])
-            
+            completed_projects = sum(1 for p in projects if p.get('status') == 'completed')
+
+            # Compute recent incomplete tasks from tasks array if needed (avoid extra query)
+            # Here we only return count in stats; UI already handles separate lists elsewhere
+            recent_tasks = []
+
             dashboard_data = {
                 'user': user_profile,
                 'stats': {
@@ -1465,16 +1466,17 @@ class SupabaseDashboardService:
                     'completion_rate': int((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0),
                     'active_projects': len(projects),
                     'completed_projects': completed_projects,
-                    'active_areas': areas_count,
-                    'current_streak': 0,  # Can be calculated based on completed tasks
-                    'habits_today': 0,    # Placeholder
-                    'active_learning': 0  # Placeholder - removed achievements field
+                    'active_areas': len(areas),
+                    'current_streak': 0,
+                    'habits_today': 0,
+                    'active_learning': 0
                 },
                 'recent_tasks': recent_tasks,
-                'areas': []  # Can be added if needed
+                'areas': []
             }
-            
-            logger.info(f"✅ Retrieved dashboard data for user: {user_id}")
+
+            duration_ms = (time.monotonic() - start) * 1000
+            logger.info(f"✅ Retrieved dashboard data for user: {user_id} in {duration_ms:.1f}ms")
             return dashboard_data
             
         except Exception as e:
