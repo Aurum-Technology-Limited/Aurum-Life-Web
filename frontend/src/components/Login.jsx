@@ -262,6 +262,7 @@ const Login = () => {
                 setIsLogin(false);
                 setError('');
                 setMessage(''); // Always clear message when switching to signup
+                setAutoSwitchedDuplicate(false);
               }}
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md border-t border-r border-b ${
                 !isLogin
