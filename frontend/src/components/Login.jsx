@@ -24,6 +24,23 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Effect to finalize duplicate auto-switch experience after tab change
+  useEffect(() => {
+    if (isLogin && pendingAutoSwitchDuplicate) {
+      setJustAutoSwitched(true);
+      setAutoSwitchedDuplicate(true);
+      if (lastRegEmailRef.current) {
+        setFormData(prev => ({ ...prev, email: lastRegEmailRef.current, password: '', confirmPassword: '' }));
+      } else {
+        setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
+      }
+      setTimeout(() => {
+        try { passwordInputRef?.current?.focus(); } catch {}
+      }, 150);
+      setPendingAutoSwitchDuplicate(false);
+    }
+  }, [isLogin, pendingAutoSwitchDuplicate]);
+
 
 
   const handleInputChange = (e) => {
