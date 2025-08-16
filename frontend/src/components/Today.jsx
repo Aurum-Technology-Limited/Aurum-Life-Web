@@ -548,14 +548,75 @@ const Today = memo(() => {
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                 <h2 className="text-xl font-semibold text-white mb-6">Today's Focus</h2>
                 
-                {/* Search Bar for Adding Tasks */}
-                <div className="mb-6">
-                  <TaskSearchBar 
-                    onAddTask={handleAddTaskToFocus}
-                    placeholder="Search for tasks to add to today's focus..."
-                  />
+                {/* Unified Action Bar: Search + Suggest My Focus */}
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-3 sm:space-y-0">
+                  <div className="flex-1">
+                    <TaskSearchBar 
+                      onAddTask={handleAddTaskToFocus}
+                      placeholder="Search for tasks or..."
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await tasksAPI.suggestFocus();
+                        const suggestions = res.data || [];
+                        setAiSuggestions(suggestions);
+                      } catch (e) {
+                        console.error('Suggest focus error:', e);
+                        setAiSuggestions([]);
+                      }
+                    }}
+                    className="inline-flex items-center justify-center bg-yellow-600 hover:bg-yellow-700 text-black font-semibold py-2 px-3 rounded-md text-sm"
+                  >
+                    ✨ Suggest My Focus
+                  </button>
                 </div>
-                
+
+                {/* AI Suggestions List */}
+                {aiSuggestions.length > 0 && (
+                  <div className="mb-6 space-y-2">
+                    {aiSuggestions.map((s) => (
+                      <div key={s.taskId} className="flex items-start justify-between bg-gray-900/50 border border-gray-800 rounded-md p-3">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  // fetch full task by id to add (ensures consistent shape)
+                                  const resp = await tasksAPI.getTask(s.taskId);
+                                  if (resp.data) {
+                                    handleAddTaskToFocus(resp.data);
+                                    setAiSuggestions(prev => prev.filter(x => x.taskId !== s.taskId));
+                                  }
+                                } catch {
+                                  // Fallback: construct minimal task object
+                                  handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
+                                  setAiSuggestions(prev => prev.filter(x => x.taskId !== s.taskId));
+                                }
+                              }}
+                              className="mr-2 p-1.5 text-gray-300 hover:text-yellow-400 hover:bg-gray-800 rounded"
+                              title="Add to Today's Focus"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                            <div>
+                              <div className="text-sm text-white font-medium">{s.title}</div>
+                              <div className="text-xs text-gray-400 mt-0.5">
+                                {s.pillar || s.pillar_name ? `Pillar: ${s.pillar || s.pillar_name}` : null}
+                                {s.area || s.area_name ? ` • Area: ${s.area || s.area_name}` : ''}
+                                {s.project ? ` • Project: ${s.project}` : ''}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {todaysTasks.length === 0 ? (
                   <div
                     ref={drop}
@@ -564,7 +625,7 @@ const Today = memo(() => {
                     <Calendar className="mx-auto h-16 w-16 text-gray-600 mb-4" />
                     <h3 className="text-lg font-medium text-gray-400 mb-2">No tasks selected for today</h3>
                     <p className="text-gray-500 mb-4">
-                      Use the search above to find and add tasks to your intentional daily focus
+                      Use the action bar above to add tasks — search manually or accept AI suggestions.
                     </p>
                   </div>
                 ) : (
