@@ -249,6 +249,10 @@ const Login = () => {
             </button>
           </div>
 
+          {justAutoSwitched && isLogin && (
+            <div data-testid="auto-switched-to-login" className="hidden">auto-switched</div>
+          )}
+
           {error && (
             <div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 rounded">
               {error}
