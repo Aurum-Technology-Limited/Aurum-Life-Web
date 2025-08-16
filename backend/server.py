@@ -731,5 +731,19 @@ async def set_monthly_goal(payload: MonthlyGoalUpdate, current_user: User = Depe
 
 api_router.include_router(auth_router, prefix="/auth")
 
+# ================================
+# ALIGNMENT DASHBOARD ENDPOINT
+# ================================
+@api_router.get("/alignment/dashboard")
+async def get_alignment_dashboard(current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        svc = AlignmentScoreService()
+        data = await svc.get_alignment_dashboard_data(str(current_user.id))
+        return data
+    except Exception as e:
+        logger.error(f"Alignment dashboard error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch alignment dashboard data")
+
+
 # Include the router
 app.include_router(api_router)
