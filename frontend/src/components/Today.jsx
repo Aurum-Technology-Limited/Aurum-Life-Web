@@ -363,18 +363,33 @@ const Today = memo(() => {
     onDataMutation('today', 'add_task', { taskId: task.id });
   };
 
-  const handleRemoveFromFocus = (taskId) => {
-    console.log('🗑️ Removing task from today\'s focus:', taskId);
-    
-    const updatedTasks = todaysTasks.filter(task => task.id !== taskId);
-    setTodaysTasks(updatedTasks);
-    
-    // Update localStorage
-    const taskIds = updatedTasks.map(task => task.id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(taskIds));
-    
+  const [undo, setUndo] = useState({ visible: false, last: null });
+
+  const handleRemoveFromFocus = useCallback((taskId) => {
+    setTodaysTasks(prev => {
+      const removed = prev.find(t => t.id === taskId) || null;
+      const next = prev.filter(t => t.id !== taskId);
+      // Persist
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      // Setup undo
+      setUndo({ visible: true, last: removed });
+      setTimeout(() => setUndo(u => (u.visible ? { ...u, visible: false } : u)), 4000);
+      return next;
+    });
     onDataMutation('today', 'remove_task', { taskId });
-  };
+  }, []);
+
+  const handleUndoRemove = useCallback(() => {
+    setUndo((u) => {
+      if (!u.last) return { visible: false, last: null };
+      setTodaysTasks(prev => {
+        const next = [u.last, ...prev];
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return { visible: false, last: null };
+    });
+  }, []);
 
   const handleStartPomodoro = (task) => {
     setActivePomodoro(task);
