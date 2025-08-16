@@ -228,6 +228,10 @@ const Login = () => {
               onClick={() => {
                 setIsLogin(false); 
                 setError(''); 
+          {justAutoSwitched && isLogin && (
+            <div data-testid="auto-switched-to-login" className="hidden">auto-switched</div>
+          )}
+
                 setMessage(''); // Always clear message when switching to signup
               }}
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md border-t border-r border-b ${
