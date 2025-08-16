@@ -467,7 +467,7 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
       message = detail;
     }
     // Handle object with message property
-    else if (typeof detail === 'object' and detail.message) {
+    else if (typeof detail === 'object' && detail.message) {
       message = detail.message;
     }
     // Handle any other object by converting to string
