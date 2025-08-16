@@ -572,52 +572,37 @@ class TasksDependenciesAPITester:
             return False
 
     def test_step_10_cleanup(self):
-        """Step 10: DELETE /api/tasks/<task.id> and DELETE /api/projects/<project.id> cleanup"""
+        """Step 10: DELETE /api/tasks/<task.id> cleanup (skip project deletion since we used existing project)"""
         print("\n=== STEP 10: CLEANUP RESOURCES ===")
         
         cleanup_success = True
         
-        # Delete task first
+        # Delete task only (we used an existing project, so don't delete it)
         if self.created_task_id:
             endpoint = f'/tasks/{self.created_task_id}'
             result = self.make_request('DELETE', endpoint, use_auth=True)
             
             if result['success'] and result['status_code'] == 200:
                 self.log_test(
-                    "STEP 10A: DELETE TASK",
+                    "STEP 10: DELETE TASK",
                     True,
                     f"DELETE /api/tasks/{self.created_task_id} successful",
                     response_time=result['response_time']
                 )
             else:
                 self.log_test(
-                    "STEP 10A: DELETE TASK",
+                    "STEP 10: DELETE TASK",
                     False,
                     f"DELETE task failed: {result.get('error', 'Unknown error')}",
                     response_time=result['response_time']
                 )
                 cleanup_success = False
-        
-        # Delete project
-        if self.created_project_id:
-            endpoint = f'/projects/{self.created_project_id}'
-            result = self.make_request('DELETE', endpoint, use_auth=True)
-            
-            if result['success'] and result['status_code'] == 200:
-                self.log_test(
-                    "STEP 10B: DELETE PROJECT",
-                    True,
-                    f"DELETE /api/projects/{self.created_project_id} successful",
-                    response_time=result['response_time']
-                )
-            else:
-                self.log_test(
-                    "STEP 10B: DELETE PROJECT",
-                    False,
-                    f"DELETE project failed: {result.get('error', 'Unknown error')}",
-                    response_time=result['response_time']
-                )
-                cleanup_success = False
+        else:
+            self.log_test(
+                "STEP 10: CLEANUP",
+                True,
+                "No task to cleanup (task creation failed)",
+            )
         
         return cleanup_success
 
