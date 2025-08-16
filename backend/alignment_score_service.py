@@ -189,16 +189,30 @@ class AlignmentScoreService:
 
     async def set_user_monthly_goal(self, user_id: str, goal: int) -> bool:
         """
-        Set user's monthly alignment goal
+        Set user's monthly alignment goal with verification readback
         """
         try:
-            response = self.supabase.table('user_profiles')\
-                .update({'monthly_alignment_goal': goal})\
-                .eq('id', user_id)\
+            # Perform update
+            _ = self.supabase.table('user_profiles') \
+                .update({'monthly_alignment_goal': goal}) \
+                .eq('id', user_id) \
                 .execute()
-            
-            return bool(response.data)
-            
+
+            # Read-back to verify persistence (more reliable than relying on update return data)
+            verify = self.supabase.table('user_profiles') \
+                .select('monthly_alignment_goal') \
+                .eq('id', user_id) \
+                .single() \
+                .execute()
+            if verify.data is not None:
+                stored = verify.data.get('monthly_alignment_goal')
+                try:
+                    # Supabase may return Decimal/str; normalize to int
+                    stored_int = int(stored) if stored is not None else None
+                except Exception:
+                    stored_int = None
+                return stored_int == int(goal)
+            return False
         except Exception as e:
             logger.error(f"Error setting monthly goal: {e}")
             return False
