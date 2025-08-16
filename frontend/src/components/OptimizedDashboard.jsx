@@ -212,7 +212,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
       });
 
       // Only show onboarding if user has no data AND hasn't completed onboarding
-      if (totalItems === 0 and !user?.has_completed_onboarding) {
+      if (totalItems === 0 && !user?.has_completed_onboarding) {
         console.log('🎯 New user detected - showing onboarding wizard');
         setShowOnboarding(true);
       } else {
