@@ -121,6 +121,12 @@ const Login = () => {
               setIsLogin(true);
               setJustAutoSwitched(true);
               setAutoSwitchedDuplicate(true);
+              // Clear password field when switching to login for duplicate
+              setFormData(prev => ({
+                ...prev,
+                password: '',
+                confirmPassword: ''
+              }));
               // Focus password shortly after switching to login
               setTimeout(() => {
                 try { passwordInputRef?.current?.focus(); } catch {}
