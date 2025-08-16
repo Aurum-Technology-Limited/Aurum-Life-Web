@@ -333,6 +333,7 @@ const Login = () => {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete={isLogin ? 'current-password' : 'new-password'}
                   required
+                  ref={passwordInputRef}
                   value={formData.password}
                   onChange={handleInputChange}
                   className="block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent pr-10"
