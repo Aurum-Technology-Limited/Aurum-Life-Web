@@ -746,4 +746,28 @@ async def get_alignment_dashboard(current_user: User = Depends(get_current_activ
 
 
 # Include the router
+
+# ================================
+# FRONTEND CATCH-ALL FOR SPA ROUTING
+# ================================
+# Serve index.html for any non-API path so React Router can handle routes like /pillars
+from fastapi.responses import FileResponse
+
+FRONTEND_DIR = Path(__file__).parent.parent / 'frontend' / 'build'
+INDEX_FILE = FRONTEND_DIR / 'index.html'
+
+@app.get('/{full_path:path}')
+async def spa_catch_all(full_path: str):
+    # Only handle non-API paths
+    if full_path.startswith('api'):
+        raise HTTPException(status_code=404, detail='API route not found')
+    try:
+        # If build exists, serve index.html, else return a friendly message
+        if INDEX_FILE.exists():
+            return FileResponse(str(INDEX_FILE))
+        return { 'status': 'ok', 'message': 'SPA route', 'path': full_path }
+    except Exception as e:
+        logger.error(f"SPA catch-all error: {e}")
+        raise HTTPException(status_code=404, detail='Not Found')
+
 app.include_router(api_router)
