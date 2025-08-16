@@ -140,6 +140,7 @@ const Login = () => {
           if (result.duplicate || result.code === 409) {
             setError(result.error || 'An account with this email already exists. Please sign in instead.');
             // Defer UI changes to effect for reliability
+            lastRegEmailRef.current = formData.email;
             setPendingAutoSwitchDuplicate(true);
             setTimeout(() => {
               setIsLogin(true);
