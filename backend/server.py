@@ -525,7 +525,7 @@ async def get_today_view(
         raise HTTPException(status_code=500, detail="Failed to generate Today view")
 
 # ================================
-# PILLARS ENDPOINTS (ULTRA + STANDARD)
+# PILLARS/AREAS/PROJECTS ULTRA ENDPOINTS
 # ================================
 @api_router.get("/ultra/pillars", response_model=List[dict])
 async def ultra_get_pillars(
