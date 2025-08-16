@@ -588,8 +588,8 @@ class SupabasePillarService:
                 update_dict['color'] = pillar_data.color
             if pillar_data.icon is not None:
                 update_dict['icon'] = pillar_data.icon
-            if getattr(pillar_data, 'time_allocation', None) is not None:
-                update_dict['time_allocation_percentage'] = pillar_data.time_allocation  # Map field name
+            if getattr(pillar_data, 'time_allocation_percentage', None) is not None:
+                update_dict['time_allocation_percentage'] = pillar_data.time_allocation_percentage  # Map field name
             if getattr(pillar_data, 'is_active', None) is not None:
                 update_dict['archived'] = not pillar_data.is_active  # Map is_active to archived (inverted)
                 
