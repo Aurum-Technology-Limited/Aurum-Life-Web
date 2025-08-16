@@ -138,6 +138,57 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
   );
 });
 
+// Unified task item used for both suggestions and focus list rows
+const UnifiedTaskItem = ({ task, context, mode = 'focus', onAdd, onToggleComplete, onStartPomodoro, onRemove }) => {
+  const priority = (task.priority || 'medium').toLowerCase();
+  const priorityClass = priority === 'high' ? 'bg-red-500' : priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500';
+  return (
+    <div className="flex items-center justify-between bg-gray-900/50 border border-gray-800 rounded-md p-3">
+      <div className="flex items-start space-x-3">
+        {/* Priority indicator */}
+        <div className={`w-2 h-2 rounded-full mt-2 ${priorityClass}`} aria-hidden="true"></div>
+        <div>
+          <div className="text-sm text-white font-medium">{task.name || task.title}</div>
+          <div className="text-xs text-gray-400 mt-0.5">
+            {context}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center space-x-2">
+        {mode === 'suggestion' ? (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="p-2 text-gray-300 hover:text-yellow-400 hover:bg-gray-800 rounded"
+            title="Add to Today's Focus"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        ) : (
+          <>
+            {!task.completed && (
+              <button
+                onClick={() => onStartPomodoro(task)}
+                className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
+                title="Start Pomodoro"
+              >
+                <Timer className="h-4 w-4" />
+              </button>
+            )}
+            <button
+              onClick={() => onRemove(task.id)}
+              className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+              title="Remove from Today"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 DragTaskItem.displayName = 'DragTaskItem';
 
 const Today = memo(() => {
