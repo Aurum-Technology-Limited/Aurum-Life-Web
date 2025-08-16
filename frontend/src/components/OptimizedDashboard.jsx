@@ -142,7 +142,7 @@ const SimpleAiCoach = React.memo(() => {
                   <span className="text-yellow-400 font-bold">#{index + 1}</span>
                   <span className="text-white font-medium text-sm">{title}</span>
                 </div>
-                {reason and (
+                {reason && (
                   <p className="text-gray-400 text-xs">{reason}</p>
                 )}
               </div>
