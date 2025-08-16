@@ -692,6 +692,20 @@ const Today = memo(() => {
           </div>
         </div>
 
+
+        {undo.visible && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-700 text-white px-4 py-2 rounded shadow-lg flex items-center space-x-3 z-50">
+            <span>Task removed</span>
+            <button
+              type="button"
+              onClick={handleUndoRemove}
+              className="text-yellow-400 hover:text-yellow-300 underline"
+            >
+              Undo
+            </button>
+          </div>
+        )}
+
       </div>
     </DndProvider>
   );
