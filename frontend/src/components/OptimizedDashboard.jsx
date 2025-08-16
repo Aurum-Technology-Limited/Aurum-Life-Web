@@ -448,7 +448,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
                 className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 pl-9 pr-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
               />
               {/* Results dropdown */}
-              {debouncedQuery and (searchLoading || searchResults.length > 0) and (
+              {debouncedQuery && (searchLoading || searchResults.length > 0) && (
                 <div className="absolute z-20 mt-2 w-full bg-gray-900 border border-gray-800 rounded-md shadow-lg max-h-60 overflow-auto">
                   {searchLoading ? (
                     <div className="p-3 text-gray-400 text-sm">Searching...</div>
