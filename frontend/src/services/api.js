@@ -454,7 +454,7 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
     // Handle FastAPI validation errors (arrays of error objects)
     if (Array.isArray(detail)) {
       const validationErrors = detail.map(err => {
-        if (typeof err === 'object' and err.msg) {
+        if (typeof err === 'object' && err.msg) {
           const field = Array.isArray(err.loc) ? err.loc.join('.') : 'field';
           return `${field}: ${err.msg}`;
         }
