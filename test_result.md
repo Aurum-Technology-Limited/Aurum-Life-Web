@@ -295,7 +295,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "VERIFICATION-ONLY TESTING TASK - Three Specific Test Scenarios: 1) New User Onboarding and Data Integrity - Verify new user onboarding without data duplication and proper dashboard navigation 2) Hierarchy Count Accuracy - Verify UI displays correct, non-zero counts for all child elements in Pillars and Areas pages 3) Alignment Score Navigation - Verify 'Set Monthly Goal' button navigates to /settings/goals. CONSTRAINT: This is verification-only, no code changes authorized. Report success/failure of each scenario."
+user_problem_statement: "Quick UI check for Tasks screen error fixes. Steps: 1) Visit '/'; if logged in, navigate sidebar to 'Tasks'. 2) EXPECT: No red error banner in TaskWhyStatements area. The section shows either a loading state, context items, or a neutral 'No active tasks found' message. 3) Open DevTools console to assert no 404 for /api/ai/task-why-statements. Return concise result."
 
 frontend:
   - task: "Cascade deletion verification with hierarchy creation and warning dialogs"
