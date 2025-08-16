@@ -256,7 +256,7 @@ export const projectsAPI = {
       // Fallback to regular endpoint
       return apiClient.get('/projects', { 
         params: { 
-          ...(areaId and { area_id: areaId }),
+          ...(areaId && { area_id: areaId }),
           include_archived: includeArchived
         } 
       });
