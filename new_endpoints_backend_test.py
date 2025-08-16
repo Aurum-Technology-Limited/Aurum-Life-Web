@@ -130,7 +130,7 @@ class NewEndpointsAPITester:
         self.auth_token = token_data.get('access_token')
         
         # Verify token works
-        result = self.make_request('GET', '/api/auth/me', use_auth=True)
+        result = self.make_request('GET', '/auth/me', use_auth=True)
         self.log_test(
             "AUTHENTICATION TOKEN VALIDATION",
             result['success'],
