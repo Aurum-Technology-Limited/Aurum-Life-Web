@@ -242,6 +242,20 @@ const Login = () => {
 >
               Login
             </button>
+          {isLogin && autoSwitchedDuplicate && (
+            <div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded flex items-start justify-between" role="alert" data-testid="duplicate-tip">
+              <span>We found an account with this email. Please sign in.</span>
+              <button
+                type="button"
+                className="ml-4 text-sm underline hover:no-underline"
+                onClick={() => setAutoSwitchedDuplicate(false)}
+                aria-label="Dismiss duplicate tip"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
             <button
               type="button"
               onClick={() => {
