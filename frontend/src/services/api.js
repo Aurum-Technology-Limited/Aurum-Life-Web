@@ -720,7 +720,7 @@ export const alignmentScoreAPI = {
   getDashboardData: () => apiClient.get('/alignment/dashboard'),
   getWeeklyScore: () => apiClient.get('/alignment/weekly-score'),
   getMonthlyScore: () => apiClient.get('/alignment/monthly-score'),
-  setMonthlyGoal: (goal) => apiClient.post('/alignment/monthly-goal', { goal })
+  setMonthlyGoal: (goal) => apiClient.put('/alignment/monthly-goal', { goal })
 };
 
 export default {
