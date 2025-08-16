@@ -294,6 +294,23 @@ const Login = () => {
             {/* Registration fields */}
             {!isLogin && (
               <>
+                <div className="text-sm text-gray-400">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    className="text-yellow-500 hover:text-yellow-400 underline"
+                    onClick={() => {
+                      setIsLogin(true);
+                      setTimeout(() => {
+                        try { passwordInputRef?.current?.focus(); } catch {}
+                      }, 50);
+                    }}
+                    data-testid="signup-signin-instead"
+                  >
+                    Sign in instead
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="firstName" className="block text-sm font-medium text-gray-300">
