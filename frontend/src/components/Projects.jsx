@@ -165,7 +165,8 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   // Use React Query for areas data
   const { 
     data: areasResponse = [], 
-    isLoading: areasLoading 
+    isLoading: areasLoading,
+    refetch: refetchAreasBasic 
   } = useQuery({
     queryKey: ['areas', 'basic'], // Different key to avoid cache conflicts
     queryFn: async () => {
@@ -175,6 +176,20 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  // Ensure Area dropdown is always fresh when opening Project create/edit forms
+  useEffect(() => {
+    if (showCreateForm || showEditForm) {
+      try {
+        queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'areas' });
+      } catch {}
+      Promise.resolve().then(() => {
+        requestAnimationFrame(() => {
+          try { refetchAreasBasic && refetchAreasBasic(); } catch {}
+        });
+      });
+    }
+  }, [showCreateForm, showEditForm, queryClient, refetchAreasBasic]);
   
   // Areas should now be an array
   const areas = Array.isArray(areasResponse) ? areasResponse : [];
