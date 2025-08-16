@@ -4882,7 +4882,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Backend: Today Prioritization API testing completed - comprehensive testing of GET /api/today endpoint with rule-based scoring and optional Gemini coaching"
+    - "Backend: New endpoints testing completed - comprehensive testing of GET /api/tasks/search, GET /api/tasks/suggest-focus, and GET /api/today endpoints with rate limiting validation"
     - "Frontend later: After backend passes, validate Areas creation shows in list and modal buttons clickable."
   stuck_tasks:
     - "None"
