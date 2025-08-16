@@ -331,6 +331,8 @@ const Login = () => {
                 id="email"
                 name="email"
                 type="email"
+                  aria-label={isLogin ? 'Show current password' : 'Show new password'}
+
                 autoComplete="email"
                 required
                 value={formData.email}
