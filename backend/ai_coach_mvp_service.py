@@ -236,6 +236,14 @@ class AiCoachMvpService:
                 'ai_powered': item.get('ai_powered', False)
             })
         
+        # Respect requested top-N limit for response size as well
+        try:
+            limit_n = max(0, int(coaching_top_n))
+        except Exception:
+            limit_n = 3
+        if limit_n > 0:
+            out = out[:limit_n]
+        
         return { 'date': datetime.now(user_tz).isoformat(), 'tasks': out }
     
     # Feature 1: Contextual "Why" Statements
