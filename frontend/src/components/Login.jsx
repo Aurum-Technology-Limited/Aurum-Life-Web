@@ -106,7 +106,16 @@ const Login = () => {
             setIsLogin(true);
           }, 1200);
         } else {
-          setError(result.error || 'Registration failed');
+          // Handle duplicate email auto-switch
+          if (result.duplicate || result.code === 409) {
+            setError(result.error || 'An account with this email already exists. Please sign in instead.');
+            setTimeout(() => {
+              setIsLogin(true);
+              setJustAutoSwitched(true);
+            }, 1200);
+          } else {
+            setError(result.error || 'Registration failed');
+          }
         }
       }
     } catch (error) {
