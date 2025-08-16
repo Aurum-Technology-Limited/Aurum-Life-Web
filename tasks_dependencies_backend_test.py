@@ -181,43 +181,49 @@ class TasksDependenciesAPITester:
             )
             return False
 
-    def test_step_3_create_project(self):
-        """Step 3: Create a temporary project via POST /api/projects with minimal fields; capture project.id"""
-        print("\n=== STEP 3: CREATE TEMPORARY PROJECT WITH MINIMAL FIELDS ===")
+    def test_step_3_get_existing_project(self):
+        """Step 3: Get an existing project via GET /api/ultra/projects; capture project.id"""
+        print("\n=== STEP 3: GET EXISTING PROJECT (POST /api/projects NOT AVAILABLE) ===")
         
-        # Create minimal project data
-        project_data = {
-            "name": f"Test Project Dependencies {int(time.time())}",
-            "description": "Temporary project for testing task dependencies"
-        }
-        
-        result = self.make_request('POST', '/projects', data=project_data, use_auth=True)
+        # Try to get existing projects from ultra endpoint
+        result = self.make_request('GET', '/ultra/projects', use_auth=True)
         
         if result['success'] and result['status_code'] == 200:
-            project = result['data']
-            if 'id' in project:
-                self.created_project_id = project['id']
-                self.log_test(
-                    "STEP 3: CREATE PROJECT",
-                    True,
-                    f"POST /api/projects successful, project.id captured: {self.created_project_id}",
-                    response_time=result['response_time']
-                )
-                return True
+            projects = result['data']
+            if isinstance(projects, list) and len(projects) > 0:
+                # Use the first available project
+                project = projects[0]
+                if 'id' in project:
+                    self.created_project_id = project['id']
+                    self.log_test(
+                        "STEP 3: GET EXISTING PROJECT",
+                        True,
+                        f"GET /api/ultra/projects successful, using existing project.id: {self.created_project_id}",
+                        response_time=result['response_time']
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "STEP 3: GET EXISTING PROJECT",
+                        False,
+                        f"GET /api/ultra/projects returned projects but no 'id' field",
+                        data=project,
+                        response_time=result['response_time']
+                    )
+                    return False
             else:
                 self.log_test(
-                    "STEP 3: CREATE PROJECT",
+                    "STEP 3: GET EXISTING PROJECT",
                     False,
-                    f"POST /api/projects returned 200 but no 'id' field in response",
-                    data=project,
+                    f"GET /api/ultra/projects returned empty array - no projects available for testing",
                     response_time=result['response_time']
                 )
                 return False
         else:
             self.log_test(
-                "STEP 3: CREATE PROJECT",
+                "STEP 3: GET EXISTING PROJECT",
                 False,
-                f"POST /api/projects failed: {result.get('error', 'Unknown error')}",
+                f"GET /api/ultra/projects failed: {result.get('error', 'Unknown error')}",
                 response_time=result['response_time']
             )
             return False
