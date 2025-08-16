@@ -15,6 +15,7 @@ import asyncio
 import uuid
 from datetime import timedelta, datetime
 from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field
 
 # Import security middleware
 from security_middleware import SecurityHeadersMiddleware, CSRFProtectionMiddleware, sanitize_user_input, IDORProtection
