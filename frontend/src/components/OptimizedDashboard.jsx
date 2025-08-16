@@ -193,7 +193,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
     } catch (e) {
       console.warn('Failed to load focus list from storage', e);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // ignore deps lint in this environment
   }, [getFocusStorageKey]);
 
   // Persist focus list when it changes
