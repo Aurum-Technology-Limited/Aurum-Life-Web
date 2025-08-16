@@ -687,7 +687,8 @@ const Today = memo(() => {
                               handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
                             }
                           }}
-                        />
+                          />
+                        </div>
                       );
                     })}
                   </div>
