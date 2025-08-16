@@ -151,9 +151,12 @@ const Login = () => {
           // Handle duplicate email auto-switch
           if (result.duplicate || result.code === 409) {
             setError(result.error || 'An account with this email already exists. Please sign in instead.');
-            // Defer UI changes to effect for reliability and persist email
+            // Defer UI changes to effect for reliability and persist email + signal duplicate
             lastRegEmailRef.current = formData.email;
-            try { localStorage.setItem('auth_prefill_email', formData.email || ''); } catch {}
+            try {
+              localStorage.setItem('auth_prefill_email', formData.email || '');
+              localStorage.setItem('auth_duplicate_signal', '1');
+            } catch {}
             setPendingAutoSwitchDuplicate(true);
             setTimeout(() => {
               setIsLogin(true);
