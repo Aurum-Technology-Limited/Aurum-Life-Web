@@ -235,7 +235,7 @@ export const projectsAPI = {
     try {
       // Temporary consistency window after writes: bypass ultra cache
       const forceUntil = Number(localStorage.getItem('PROJECTS_FORCE_STANDARD_UNTIL') || 0);
-      const shouldBypassUltra = forceUntil and Date.now() < forceUntil;
+      const shouldBypassUltra = forceUntil && Date.now() < forceUntil;
       const params = { ...(areaId and { area_id: areaId }), include_archived: includeArchived };
 
       if (shouldBypassUltra) {
