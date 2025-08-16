@@ -4863,7 +4863,7 @@ test_plan:
     - "Backend: Today Prioritization API testing completed - comprehensive testing of GET /api/today endpoint with rule-based scoring and optional Gemini coaching"
     - "Frontend later: After backend passes, validate Areas creation shows in list and modal buttons clickable."
   stuck_tasks:
-    - "Today API top_n parameter not being respected - returns all 977 tasks instead of limiting to requested number"
+    - "None"
   test_all: false
   test_priority: "high_first"
 
