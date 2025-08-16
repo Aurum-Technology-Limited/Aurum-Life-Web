@@ -658,13 +658,14 @@ const Today = memo(() => {
                       const context = `${s.pillar || s.pillar_name ? `Pillar: ${s.pillar || s.pillar_name}` : ''}${s.area || s.area_name ? `${s.pillar || s.pillar_name ? ' • ' : ''}Area: ${s.area || s.area_name}` : ''}${s.project ? `${(s.pillar || s.pillar_name || s.area || s.area_name) ? ' • ' : ''}Project: ${s.project}` : ''}`;
                       const key = s.taskId || s.id || `${s.title}-${s.project || ''}`;
                       return (
-                        <UnifiedTaskItem
-                          key={key}
-                          task={{ name: s.title, priority: (s.priority || 'medium').toLowerCase(), id: s.taskId }}
-                          context={context}
-                          mode="suggestion"
-                          showAIBadge={true}
-                          onAdd={async () => {
+                        <div data-suggestion-key={key}>
+                          <UnifiedTaskItem
+                            key={key}
+                            task={{ name: s.title, priority: (s.priority || 'medium').toLowerCase(), id: s.taskId }}
+                            context={context}
+                            mode="suggestion"
+                            showAIBadge={true}
+                            onAdd={async () => {
                             const removeFromSuggestions = () => setAiSuggestions(prev => prev.filter(x => (x.taskId || x.id) !== (s.taskId || s.id)));
                             try {
                               // Fade-out animation before removal
