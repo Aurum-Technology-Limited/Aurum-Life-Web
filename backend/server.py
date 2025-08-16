@@ -643,7 +643,7 @@ async def ultra_get_projects(
     try:
         user_id = str(current_user.id)
         projects = await UltraPerformanceProjectService.get_user_projects(
-            user_id, area_id=area_id, include_tasks=include_tasks, include_archived=include_archived
+            user_id, area_id=area_id, include_archived=include_archived
         )
         return [p.dict() if hasattr(p, 'dict') else dict(p) if isinstance(p, dict) else p for p in projects]
     except Exception as e:
