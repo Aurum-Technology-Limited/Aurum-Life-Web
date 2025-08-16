@@ -35,9 +35,7 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
       setError('');
       
       try {
-        const response = await api.get('/tasks/search', {
-          params: { name: query.trim() }
-        });
+        const response = await tasksAPI.searchTasks(query.trim(), 10);
         
         setResults(response.data || []);
         setShowResults(true);
