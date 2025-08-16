@@ -77,9 +77,17 @@ class AiCoachMvpService:
         area_ids = list({p.get('area_id') for p in projects.values() if p.get('area_id')})
         areas = {}
         if area_ids:
-            area_resp = supabase.table('areas').select('id, name, importance').in_('id', area_ids).execute()
+            area_resp = supabase.table('areas').select('id, name, importance, pillar_id').in_('id', area_ids).execute()
             for a in (area_resp.data or []):
                 areas[a['id']] = a
+        
+        # Fetch pillars for those areas (for coaching prompt context)
+        pillar_ids = list({a.get('pillar_id') for a in areas.values() if a.get('pillar_id')})
+        pillars = {}
+        if pillar_ids:
+            pil_resp = supabase.table('pillars').select('id, name').in_('id', pillar_ids).execute()
+            for pil in (pil_resp.data or []):
+                pillars[pil['id']] = pil
         
         # 4) Preload all dependency tasks
         dep_ids = []
