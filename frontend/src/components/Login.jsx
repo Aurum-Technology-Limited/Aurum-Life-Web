@@ -12,6 +12,20 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const passwordInputRef = useRef(null);
   const [autoSwitchedDuplicate, setAutoSwitchedDuplicate] = useState(false);
+
+  // Robust focus helper to minimize flakiness
+  const focusPasswordStable = useCallback(() => {
+    let attempts = 0;
+    const tryFocus = () => {
+      attempts += 1;
+      try { passwordInputRef?.current?.focus(); } catch {}
+      const focused = typeof document !== 'undefined' && document.activeElement && document.activeElement.id === 'password';
+      if (!focused && attempts < 6) {
+        requestAnimationFrame(tryFocus);
+      }
+    };
+    Promise.resolve().then(() => requestAnimationFrame(tryFocus));
+  }, []);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
