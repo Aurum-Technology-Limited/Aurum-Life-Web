@@ -58,6 +58,8 @@
 ##
 ## agent_communication:
     -agent: "main"
+    -message: "Running UI E2E for Today view unification + Dashboard cleanup: 1) Login, 2) Verify Dashboard no longer shows Today's Focus block (search/suggest/list removed), 3) Navigate to Today, verify Unified Action Bar (search placeholder 'Search for tasks or...' + 'Suggest My Focus' button), 4) Click Suggest My Focus and add one suggestion via +, 5) Verify item appears in Today's Focus list, 6) Verify Pomodoro and Morning/Evening Reflection remain, 7) Verify search still works and adds item, 8) No console errors/CORS."
+    -agent: "main"
     -message: "Running frontend E2E for dashboard regression: validate CORS fixed (no CORS errors), Alignment Score loads via /api/alignment-score, Dashboard sections render, Today’s Focus search/suggest/clear still function with persistence. Login with existing test account, navigate to dashboard, and assert no 404/401 in console."
     -agent: "main"
     -message: "Proceeding with frontend E2E for Today’s Focus MVP: verify search dropdown wired to /api/tasks/search (debounced, loading state), selecting a result adds to Focus list (deduped), Suggest My Focus button fetches /api/tasks/suggest-focus and appends up to 3 (deduped), and removal via X works. Login via existing test account, then navigate to dashboard. Tests handle empty data gracefully (assert UI elements/empty state rather than strict counts)."
