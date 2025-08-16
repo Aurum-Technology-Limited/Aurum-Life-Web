@@ -58,6 +58,8 @@
 ##
 ## agent_communication:
     -agent: "main"
+    -message: "Proceeding with frontend E2E for Today’s Focus MVP: verify search dropdown wired to /api/tasks/search (debounced, loading state), selecting a result adds to Focus list (deduped), Suggest My Focus button fetches /api/tasks/suggest-focus and appends up to 3 (deduped), and removal via X works. Login via existing test account, then navigate to dashboard. Tests handle empty data gracefully (assert UI elements/empty state rather than strict counts)."
+    -agent: "main"
     -message: "Frontend auth UX updated: On registration duplicate (HTTP 409), auto-switch to Login tab after 1.2s, prefill email remains, password field auto-focused. Added data-testid hooks: auth-tab-login, auth-tab-login-inactive, auth-tab-signup, auth-tab-signup-inactive, auth-email, auth-password, auto-switched-to-login. Will run frontend E2E after user approval."
     -agent: "main"
     -message: "Proceeding with frontend E2E to validate: 1) Duplicate email auto-switch shows duplicate-tip and is dismissible, 2) Email remains prefilled and password auto-focused, 3) 'Sign in instead' link on Sign Up switches tabs and focuses password. Using existing account marc.alleyne@aurumtechnologyltd.com for duplicate scenario."
