@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import asyncio
 import time
+from cache_service import cache_dashboard_data
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
