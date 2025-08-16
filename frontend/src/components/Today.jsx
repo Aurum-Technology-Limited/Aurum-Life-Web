@@ -15,9 +15,7 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
   const [{ isDragging }, drag] = useDrag({
     type: 'daily-task',
     item: { id: task.id, index },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
   });
 
   const [, drop] = useDrop({
@@ -30,110 +28,18 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
     },
   });
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'text-red-400 bg-red-400/10';
-      case 'medium': return 'text-yellow-400 bg-yellow-400/10';
-      case 'low': return 'text-green-400 bg-green-400/10';
-      default: return 'text-gray-400 bg-gray-400/10';
-    }
-  };
-
-  const formatTime = (timeString) => {
-    if (!timeString) return null;
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
   return (
-    <div
-      ref={(node) => drag(drop(node))}
-      className={`bg-gray-900/50 border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition-all duration-200 cursor-move ${
-        isDragging ? 'opacity-50' : ''
-      } ${task.completed ? 'opacity-60' : ''}`}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex items-start space-x-3 flex-1">
-          <button
-            onClick={() => onToggleComplete(task.id, task.completed)}
-            className="mt-1 text-yellow-400 hover:text-yellow-300 transition-colors"
-          >
-            {task.completed ? (
-              <CheckCircle2 className="h-5 w-5" />
-            ) : (
-              <Circle className="h-5 w-5" />
-            )}
-          </button>
-          
-          <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-1">
-              <h4 className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>
-                {task.name}
-              </h4>
-              <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(task.priority)}`}>
-                {task.priority}
-              </span>
-            </div>
-            
-            {task.description && (
-              <p className={`text-sm ${task.completed ? 'text-gray-600' : 'text-gray-400'} mb-2`}>
-                {task.description}
-              </p>
-            )}
-            
-            <div className="flex items-center space-x-4 text-xs text-gray-500">
-              {task.due_date && (
-                <div className="flex items-center space-x-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>{new Date(task.due_date).toLocaleDateString()}</span>
-                  {task.due_time && (
-                    <>
-                      <Clock className="h-3 w-3 ml-2" />
-                      <span>{formatTime(task.due_time)}</span>
-                    </>
-                  )}
-                </div>
-              )}
-              
-              {task.estimated_duration && (
-                <div className="flex items-center space-x-1">
-                  <Timer className="h-3 w-3" />
-                  <span>{task.estimated_duration}min</span>
-                </div>
-              )}
-              
-              {task.project_name && (
-                <div className="flex items-center space-x-1">
-                  <span className="text-blue-400">{task.project_name}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <GripVertical className="h-4 w-4 text-gray-500" />
-          {!task.completed && (
-            <button
-              onClick={() => onStartPomodoro(task)}
-              className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
-              title="Start Pomodoro"
-            >
-              <Timer className="h-4 w-4" />
-            </button>
-          )}
-          <button
-            onClick={() => onRemove(task.id)}
-            className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
-            title="Remove from Today"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+    <div ref={(node) => drag(drop(node))} className={`cursor-move ${isDragging ? 'opacity-50' : ''}`}>
+      <UnifiedTaskItem
+        task={task}
+        context={task.project_name ? `Project: ${task.project_name}` : ''}
+        mode="focus"
+        showToggle={true}
+        completed={!!task.completed}
+        onToggleComplete={onToggleComplete}
+        onStartPomodoro={onStartPomodoro}
+        onRemove={onRemove}
+      />
     </div>
   );
 });
