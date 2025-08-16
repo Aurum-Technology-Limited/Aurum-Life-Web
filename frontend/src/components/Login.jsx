@@ -7,6 +7,8 @@ const Login = () => {
   const { login, register, forgotPassword, loginWithGoogle, loading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [justAutoSwitched, setJustAutoSwitched] = useState(false);
+  const [pendingAutoSwitchDuplicate, setPendingAutoSwitchDuplicate] = useState(false);
+  const lastRegEmailRef = useRef('');
   const [showPassword, setShowPassword] = useState(false);
   const passwordInputRef = useRef(null);
   const [autoSwitchedDuplicate, setAutoSwitchedDuplicate] = useState(false);
