@@ -369,8 +369,8 @@ const Login = () => {
                     onClick={() => {
                       setIsLogin(true);
                       setTimeout(() => {
-                        try { passwordInputRef?.current?.focus(); } catch {}
-                      }, 50);
+                        focusPasswordStable();
+                      }, 0);
                     }}
                     data-testid="signup-signin-instead"
                   >
