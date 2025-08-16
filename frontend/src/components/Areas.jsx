@@ -572,8 +572,13 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 pointer-events-auto">
-            <div className="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800 pointer-events-auto">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 pointer-events-auto"
+            onClick={(e) => { if (e.target === e.currentTarget) handleCloseModal(); }}
+            onKeyDown={(e) => { if (e.key === 'Escape') handleCloseModal(); }}
+            tabIndex={-1}
+          >
+            <div className="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-white">
                   {editingArea ? 'Edit Area' : 'Create New Area'}
