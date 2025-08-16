@@ -590,6 +590,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
         {/* Modal */}
         {showModal && (
           <div
+            id="area-modal-overlay"
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 pointer-events-auto"
             onClick={(e) => { if (e.target === e.currentTarget) handleCloseModal(); }}
             onKeyDown={(e) => { if (e.key === 'Escape') handleCloseModal(); }}
