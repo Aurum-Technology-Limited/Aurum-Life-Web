@@ -658,9 +658,8 @@ const Today = memo(() => {
                       const context = `${s.pillar || s.pillar_name ? `Pillar: ${s.pillar || s.pillar_name}` : ''}${s.area || s.area_name ? `${s.pillar || s.pillar_name ? ' • ' : ''}Area: ${s.area || s.area_name}` : ''}${s.project ? `${(s.pillar || s.pillar_name || s.area || s.area_name) ? ' • ' : ''}Project: ${s.project}` : ''}`;
                       const key = s.taskId || s.id || `${s.title}-${s.project || ''}`;
                       return (
-                        <div data-suggestion-key={key}>
+                        <div key={key} data-suggestion-key={key}>
                           <UnifiedTaskItem
-                            key={key}
                             task={{ name: s.title, priority: (s.priority || 'medium').toLowerCase(), id: s.taskId }}
                             context={context}
                             mode="suggestion"
