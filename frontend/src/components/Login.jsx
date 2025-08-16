@@ -189,6 +189,8 @@ const Login = () => {
             setPendingAutoSwitchDuplicate(true);
             setTimeout(() => {
               setIsLogin(true);
+              // Improve reliability of focus after tab switch
+              setTimeout(() => focusPasswordStable(), 0);
             }, 1200);
           } else {
             setError(result.error || 'Registration failed');
