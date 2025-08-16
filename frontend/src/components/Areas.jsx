@@ -193,7 +193,8 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   // Get basic pillars data for filtering (separate from main pillars page)
   const { 
     data: pillars = [], 
-    isLoading: pillarsLoading 
+    isLoading: pillarsLoading,
+    refetch: refetchPillarsBasic
   } = useQuery({
     queryKey: ['pillars', 'basic'], // Different query key to avoid cache conflicts
     queryFn: async () => {
@@ -203,6 +204,22 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  // Ensure Pillar dropdown is always fresh when opening Area modal
+  useEffect(() => {
+    if (showModal) {
+      // Invalidate any cached pillars queries and refetch the lightweight list used by the dropdown
+      try {
+        queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'pillars' });
+      } catch {}
+      // Kick a microtask + RAF to refetch to avoid race with modal mount
+      Promise.resolve().then(() => {
+        requestAnimationFrame(() => {
+          try { refetchPillarsBasic && refetchPillarsBasic(); } catch {}
+        });
+      });
+    }
+  }, [showModal, queryClient, refetchPillarsBasic]);
   
   // Create mutations for area operations
   const updateAreaMutation = useMutation({
