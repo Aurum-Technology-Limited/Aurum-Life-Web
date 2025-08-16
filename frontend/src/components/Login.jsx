@@ -224,6 +224,8 @@ const Login = () => {
               }`}
             >
               Login
+              data-testid={!isLogin ? 'auth-tab-signup' : 'auth-tab-signup-inactive'}
+
             </button>
             <button
               type="button"
