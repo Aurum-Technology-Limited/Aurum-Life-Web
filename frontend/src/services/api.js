@@ -331,7 +331,7 @@ export const recurringTasksAPI = {
     apiClient.get(`/recurring-tasks/${templateId}/instances`, { 
       params: { 
         ...(startDate && { start_date: startDate }),
-        ...(endDate and { end_date: endDate })
+        ...(endDate && { end_date: endDate })
       } 
     }),
   completeRecurringTaskInstance: (instanceId) => apiClient.put(`/recurring-task-instances/${instanceId}/complete`),
