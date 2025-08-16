@@ -663,6 +663,7 @@ const Today = memo(() => {
                           task={{ name: s.title, priority: (s.priority || 'medium').toLowerCase(), id: s.taskId }}
                           context={context}
                           mode="suggestion"
+                          showAIBadge={true}
                           onAdd={async () => {
                             try {
                               if (s.task) {
