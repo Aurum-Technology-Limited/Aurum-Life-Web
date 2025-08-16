@@ -23,8 +23,25 @@ export const DataProvider = ({ children }) => {
   }, []);
 
   // Function to be called when data mutations occur
+  const pendingIdsRef = React.useRef(new Set());
+
   const onDataMutation = useCallback((type, action, data) => {
     console.log(`📝 DataContext: Data mutation - ${type} ${action}`, data);
+    // Guard: if mutation references a taskId, ensure it's truthy before triggering refresh
+    const maybeId = data && (data.taskId || data.id);
+    if (maybeId === null || maybeId === undefined || maybeId === 'null' || maybeId === 'undefined') {
+      console.warn('⏭️ Skipping refresh due to invalid task id:', maybeId);
+      return;
+    }
+    // Debounce consecutive refreshes for the same id briefly
+    if (maybeId) {
+      if (pendingIdsRef.current.has(maybeId)) {
+        console.log('⏳ Debounced duplicate refresh for id', maybeId);
+        return;
+      }
+      pendingIdsRef.current.add(maybeId);
+      setTimeout(() => pendingIdsRef.current.delete(maybeId), 600);
+    }
     refreshInsightsData();
   }, [refreshInsightsData]);
 
