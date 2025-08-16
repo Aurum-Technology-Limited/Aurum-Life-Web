@@ -112,6 +112,9 @@ const Login = () => {
               try { passwordInputRef?.current?.focus(); } catch {}
             }, 80);
 
+          // Remember email before switching
+          lastRegEmailRef.current = formData.email;
+
 
             setIsLogin(true);
           }, 1200);
