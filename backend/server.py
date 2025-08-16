@@ -494,6 +494,126 @@ async def decompose_project_with_safeguards(
         logger.error(f"Error in goal decomposition: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate goal breakdown")
 
+
+# WHY statements for tasks (AI-lite, rule-based)
+@api_router.get("/ai/task-why-statements")
+async def ai_task_why_statements(task_ids: Optional[str] = Query(None, description="Comma-separated task IDs to explain"), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+
+        # Parse ids if provided
+        ids_list: Optional[List[str]] = None
+        if task_ids:
+            try:
+                ids_list = [s.strip() for s in task_ids.split(',') if s.strip()]
+            except Exception:
+                ids_list = None
+
+        # Fetch candidate tasks
+        task_query = (
+            supabase.table('tasks')
+            .select('id,name,description,priority,status,due_date,project_id,completed,created_at')
+            .eq('user_id', user_id)
+        )
+        if ids_list:
+            task_query = task_query.in_('id', ids_list)
+        else:
+            # Default: top recent active tasks
+            task_query = task_query.eq('completed', False).order('created_at', desc=True).limit(10)
+
+        t_resp = task_query.execute()
+        tasks = t_resp.data or []
+        if not tasks:
+            return { 'why_statements': [] }
+
+        # Fetch related project/area/pillar names
+        proj_ids = list({t.get('project_id') for t in tasks if t.get('project_id')})
+        projects = {}
+        areas = {}
+        pillars = {}
+        area_ids = []
+        pillar_ids = []
+
+        if proj_ids:
+            p_resp = supabase.table('projects').select('id,name,area_id').in_('id', proj_ids).execute()
+            for p in (p_resp.data or []):
+                projects[p['id']] = p
+                if p.get('area_id'):
+                    area_ids.append(p['area_id'])
+        if area_ids:
+            a_resp = supabase.table('areas').select('id,name,pillar_id').in_('id', list(set(area_ids))).execute()
+            for a in (a_resp.data or []):
+                areas[a['id']] = a
+                if a.get('pillar_id'):
+                    pillar_ids.append(a['pillar_id'])
+        if pillar_ids:
+            r_resp = supabase.table('pillars').select('id,name').in_('id', list(set(pillar_ids))).execute()
+            for r in (r_resp.data or []):
+                pillars[r['id']] = r
+
+        # Compose simple rule-based WHY statements
+        out: List[Dict[str, Any]] = []
+        now = datetime.utcnow()
+        for t in tasks:
+            name = t.get('name') or 'Untitled Task'
+            due = t.get('due_date')
+            priority = (t.get('priority') or 'medium').lower()
+            message_parts = []
+
+            # Due date reasoning
+            days_text = None
+            try:
+                if isinstance(due, str):
+                    # ISO strings typically returned
+                    due_dt = datetime.fromisoformat(due.replace('Z', '+00:00')) if 'Z' in due else datetime.fromisoformat(due)
+                    delta_days = (due_dt - now).days
+                    if delta_days < 0:
+                        message_parts.append('This task is overdue — closing it reduces stress and prevents scope creep.')
+                    elif delta_days == 0:
+                        message_parts.append('Due today — finishing it keeps momentum and avoids last-minute rush.')
+                    elif delta_days <= 3:
+                        message_parts.append(f'Due in {delta_days} day(s) — tackling it early keeps you on track.')
+            except Exception:
+                pass
+
+            # Priority reasoning
+            if priority == 'high':
+                message_parts.append('High-impact item that meaningfully advances your goals.')
+            elif priority == 'medium':
+                message_parts.append('Steady-progress task that moves things forward.')
+            elif priority == 'low':
+                message_parts.append('Quick win to maintain momentum.')
+
+            # Connections
+            proj_name = None
+            area_name = None
+            pillar_name = None
+            if t.get('project_id') and projects.get(t['project_id']):
+                proj = projects[t['project_id']]
+                proj_name = proj.get('name')
+                if proj.get('area_id') and areas.get(proj['area_id']):
+                    area = areas[proj['area_id']]
+                    area_name = area.get('name')
+                    if area.get('pillar_id') and pillars.get(area['pillar_id']):
+                        pillar_name = pillars[area['pillar_id']].get('name')
+
+            why = ' '.join(message_parts) if message_parts else 'Progress on this task contributes to your overall plan.'
+
+            out.append({
+                'task_id': t.get('id'),
+                'task_name': name,
+                'why_statement': why,
+                'project_connection': proj_name,
+                'area_connection': area_name,
+                'pillar_connection': pillar_name
+            })
+
+        return { 'why_statements': out }
+    except Exception as e:
+        logger.error(f"AI task why statements error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate task context")
+
 # ... existing AI endpoints and helpers ...
 
 # ================================
