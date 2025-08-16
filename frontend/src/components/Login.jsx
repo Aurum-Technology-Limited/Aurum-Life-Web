@@ -9,6 +9,7 @@ const Login = () => {
   const [justAutoSwitched, setJustAutoSwitched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const passwordInputRef = useRef(null);
+  const [autoSwitchedDuplicate, setAutoSwitchedDuplicate] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
