@@ -50,6 +50,8 @@
 ## test_plan:
 ##   current_focus:
 ##     - "Backend: Verify Projects 422 fix by testing POST /api/projects with and without area_id, ensure status default maps, and deadline accepts ISO. Verify Areas UI flow by confirming GET /api/areas reflects POST immediately (standard and ultra)."
+## user_problem_statement: "After Pillar create, the Areas modal’s Pillar dropdown is stale and doesn’t show the new Pillar immediately, blocking E2E. Also intermittent flakiness in Login password focus after auto-switch to Login on duplicate signup. Fix dropdown freshness and stabilize focus."
+
 ##     - "Frontend later: After backend passes, validate Areas creation shows in list and modal buttons clickable."
 ##   stuck_tasks:
 ##     - "None"
