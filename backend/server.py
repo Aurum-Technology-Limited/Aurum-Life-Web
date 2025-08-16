@@ -838,6 +838,27 @@ def generate_strategic_review_summary(weekly_points: int, completed_projects: li
     
     return summary
 
+
+# ================================
+# TODAY PRIORITIZATION (MVP)
+# ================================
+@api_router.get("/today")
+async def get_today_view(
+    top_n: int = Query(3, ge=0, le=10),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """
+    Return prioritized tasks for Today view using rule-based scoring and optional Gemini coaching
+    for the top N (default 3). Includes per-task scoring breakdown for verification.
+    """
+    try:
+        user_id = str(current_user.id)
+        result = await ai_coach_mvp.get_today_priorities(user_id, coaching_top_n=top_n)
+        return result
+    except Exception as e:
+        logger.error(f"Error generating Today view: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate Today view")
+
 # New endpoint for Goal Decomposition integration
 @api_router.post("/projects/create-with-tasks")
 async def create_project_with_tasks(
