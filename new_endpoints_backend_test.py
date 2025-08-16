@@ -116,7 +116,7 @@ class NewEndpointsAPITester:
             "password": self.test_user_password
         }
         
-        result = self.make_request('POST', '/auth/login', data=login_data)
+        result = self.make_request('POST', '/api/auth/login', data=login_data)
         self.log_test(
             "USER LOGIN",
             result['success'],
