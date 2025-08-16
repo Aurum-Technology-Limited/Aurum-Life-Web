@@ -98,6 +98,8 @@ const Pillars = memo(({ onSectionChange }) => {
 
       await refetch();
       handleCloseModal();
+      // Safety: remove any lingering overlay by toggling showModal off and letting React unmount it
+      setShowModal(false);
     } catch (error) {
       console.error('Error saving pillar:', error);
       alert(error.response?.data?.detail || 'Error saving pillar');
