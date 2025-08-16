@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """
-Backend Readiness Smoke Test for Production Ingress
-Testing at: https://aurum-overflow-fix.emergent.host/api
+BACKEND SMOKE TEST - COMPREHENSIVE HEALTH CHECK
+Testing backend endpoints to ensure no regressions after frontend updates.
 
-Test Scenarios:
-1) GET / (root) - expect JSON with {message, version, status}
-2) GET /api/alignment/dashboard without token → expect 401
-3) Auth disposable test:
-   - POST /api/auth/register with disposable email
-   - POST /api/auth/login 
-   - GET /api/auth/me with Bearer token
-4) Minimal CRUD check with token:
-   - POST /api/pillars (create)
-   - GET /api/pillars (read with counts)
-   - DELETE /api/pillars/{id} (delete)
-5) Security headers spot-check
+FOCUS AREAS (as per review request):
+1. Health check: GET /api/health and GET /api/ (root) should return 200
+2. Auth: Login with existing test credentials and capture JWT access_token
+3. Core data fetch: With Bearer token, GET /api/pillars, /api/areas, /api/projects, /api/tasks should all return 200 and JSON arrays
+4. Ultra endpoints: GET /api/ultra/pillars, /api/ultra/areas, /api/ultra/projects should return 200
+5. Alignment: GET /api/alignment/dashboard and GET /api/alignment/monthly-goal should return 200
+6. Today endpoints: GET /api/today and GET /api/tasks/suggest-focus should return 200 (rate-limited but allow one)
+7. Ensure average response time under 1500ms
+
+CREDENTIALS: marc.alleyne@aurumtechnologyltd.com / password123
 """
 
 import requests
