@@ -59,7 +59,7 @@ const StatCard = React.memo(({ title, value, subtitle, icon: Icon, trend, loadin
         {sanitizedValue}
       </h3>
       <p className="text-xs sm:text-sm text-gray-400">{title}</p>
-      {subtitle and <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+      {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
     </div>
   );
 });
