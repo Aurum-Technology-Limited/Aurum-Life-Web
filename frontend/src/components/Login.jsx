@@ -222,10 +222,8 @@ const Login = () => {
                   ? 'bg-yellow-500 text-black border-yellow-500'
                   : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
               }`}
-            >
+>
               Login
-              data-testid={!isLogin ? 'auth-tab-signup' : 'auth-tab-signup-inactive'}
-
             </button>
             <button
               type="button"
