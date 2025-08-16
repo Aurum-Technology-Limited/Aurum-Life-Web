@@ -245,6 +245,7 @@ class AiCoachMvpService:
                 'project_name': p.get('name'),
                 'area_id': p.get('area_id') if p else None,
                 'area_name': a.get('name') if a else None,
+                'pillar_name': (pillars.get(a.get('pillar_id')).get('name') if a and a.get('pillar_id') and pillars.get(a.get('pillar_id')) else None),
                 'score': item['score'],
                 'breakdown': item['breakdown'],
                 'coaching_message': item.get('coaching_message'),
