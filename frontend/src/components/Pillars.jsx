@@ -43,6 +43,8 @@ const Pillars = memo(({ onSectionChange }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const submitData = {
         ...formData,
