@@ -77,12 +77,23 @@ load_dotenv(ROOT_DIR / '.env')
 app = FastAPI(title="Aurum Life API - Supabase Only", version="2.0.0")
 
 # CORS middleware - MUST be added BEFORE routers
+# Configure allowed origins with env override; default includes preview and localhost
+frontend_origins_env = os.environ.get('FRONTEND_ALLOWED_ORIGINS')
+if frontend_origins_env:
+    ALLOWED_ORIGINS = [o.strip() for o in frontend_origins_env.split(',') if o.strip()]
+else:
+    ALLOWED_ORIGINS = [
+        'https://my-app.preview.emergentagent.com',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000'
+    ]
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE)
     allow_headers=["*"],  # Allow all headers
+    expose_headers=["Content-Disposition"],
 )
 
 # Security middleware - Add security headers and CSRF protection to all responses
