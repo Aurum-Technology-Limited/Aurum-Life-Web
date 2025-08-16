@@ -169,7 +169,9 @@ export const AuthProvider = ({ children }) => {
       } else if (response.status === 409) {
         return {
           success: false,
-          error: 'An account with this email already exists. Please sign in instead.'
+          error: 'An account with this email already exists. Please sign in instead.',
+          code: 409,
+          duplicate: true
         };
       } else {
         return { 
