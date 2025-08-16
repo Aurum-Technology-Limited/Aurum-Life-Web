@@ -615,17 +615,25 @@ const Today = memo(() => {
                     type="button"
                     onClick={async () => {
                       try {
+                        setSuggestLoading(true);
                         const res = await tasksAPI.suggestFocus();
                         const suggestions = res.data || [];
                         setAiSuggestions(suggestions);
                       } catch (e) {
                         console.error('Suggest focus error:', e);
                         setAiSuggestions([]);
+                      } finally {
+                        setSuggestLoading(false);
                       }
                     }}
-                    className="inline-flex items-center justify-center bg-yellow-600 hover:bg-yellow-700 text-black font-semibold py-2 px-3 rounded-md text-sm"
+                    disabled={suggestLoading}
+                    className={`inline-flex items-center justify-center ${suggestLoading ? 'bg-yellow-700' : 'bg-yellow-600 hover:bg-yellow-700'} text-black font-semibold py-2 px-3 rounded-md text-sm disabled:opacity-60`}
                   >
-                    ✨ Suggest My Focus
+                    {suggestLoading ? (
+                      <span className="inline-flex items-center"><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Suggesting...</span>
+                    ) : (
+                      '✨ Suggest My Focus'
+                    )}
                   </button>
                 </div>
 
