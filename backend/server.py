@@ -603,6 +603,8 @@ async def suggest_focus_tasks(current_user: User = Depends(get_current_active_us
 
 # ... existing endpoints continue ...
 
+# Include the auth router in the api router
+api_router.include_router(auth_router, prefix="/auth")
+
 # Include the router
-app.include_router(auth_router)
 app.include_router(api_router)
