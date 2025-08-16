@@ -599,7 +599,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
       {/* Edit Project Form */}
       {showEditForm && editingProject && (
-        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <div id="project-edit-panel" className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <form onSubmit={handleUpdateProject} className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-white">Edit Project</h3>
