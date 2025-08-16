@@ -150,6 +150,8 @@ const Today = memo(() => {
   const [error, setError] = useState(null);
   const [activePomodoro, setActivePomodoro] = useState(null);
   const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+
 
 
   // Daily Ritual States (moved from DailyRitualManager)
