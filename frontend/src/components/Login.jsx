@@ -119,6 +119,10 @@ const Login = () => {
             setTimeout(() => {
               setIsLogin(true);
               setJustAutoSwitched(true);
+              // Focus password shortly after switching to login
+              setTimeout(() => {
+                try { passwordInputRef?.current?.focus(); } catch {}
+              }, 80);
             }, 1200);
           } else {
             setError(result.error || 'Registration failed');
