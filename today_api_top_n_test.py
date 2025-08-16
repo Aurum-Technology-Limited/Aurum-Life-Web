@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://fcbe964d-a00c-4624-8b03-88a109fb0408.preview.emergentagent.com/api"
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
 
 class TodayAPITopNTester:
     def __init__(self):

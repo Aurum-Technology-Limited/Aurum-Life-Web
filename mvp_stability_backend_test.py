@@ -51,7 +51,7 @@ from typing import Dict, List, Any, Optional
 import uuid
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
 
 class MVPStabilityTester:
     def __init__(self):

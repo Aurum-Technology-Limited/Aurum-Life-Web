@@ -23,7 +23,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://fcbe964d-a00c-4624-8b03-88a109fb0408.preview.emergentagent.com/api"
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
 
 class AuthRegressionTester:
     def __init__(self):
@@ -114,7 +114,7 @@ class AuthRegressionTester:
         print("\n=== TESTING CORS HEADERS FOR LOGIN ENDPOINT ===")
         
         # Test OPTIONS request with Origin header
-        origin = "https://datahierarchy-app.preview.emergentagent.com"
+        origin = "https://focus-planner-3.preview.emergentagent.com"
         result = self.make_request('OPTIONS', '/auth/login', origin=origin)
         
         cors_headers_present = False
@@ -155,7 +155,7 @@ class AuthRegressionTester:
         print("\n=== TESTING CORS HEADERS FOR ME ENDPOINT ===")
         
         # Test OPTIONS request with Origin header
-        origin = "https://datahierarchy-app.preview.emergentagent.com"
+        origin = "https://focus-planner-3.preview.emergentagent.com"
         result = self.make_request('OPTIONS', '/auth/me', origin=origin)
         
         cors_headers_present = False

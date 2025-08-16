@@ -9,7 +9,7 @@ import json
 from datetime import datetime, date, timedelta
 
 # Configuration
-BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password"
 

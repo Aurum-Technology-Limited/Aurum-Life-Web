@@ -19,7 +19,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://fcbe964d-a00c-4624-8b03-88a109fb0408.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://focus-planner-3.preview.emergentagent.com')
 BASE_URL = f"{BACKEND_URL}/api"
 
 # Test credentials

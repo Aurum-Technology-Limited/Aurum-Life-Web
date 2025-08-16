@@ -11,7 +11,7 @@ from datetime import datetime
 import uuid
 
 # Configuration
-BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
 
 class MigrationTester:
     def __init__(self):

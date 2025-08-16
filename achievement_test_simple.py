@@ -12,7 +12,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
 
 class SimpleAchievementTester:
     def __init__(self):

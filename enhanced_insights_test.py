@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration - Use external URL from frontend/.env
-BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com"
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class EnhancedInsightsTestSuite:

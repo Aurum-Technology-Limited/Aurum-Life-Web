@@ -12,7 +12,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://datahierarchy-app.preview.emergentagent.com"
+BASE_URL = "https://focus-planner-3.preview.emergentagent.com"
 TIMEOUT = 30
 
 def log_test_step(step, message):

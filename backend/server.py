@@ -84,10 +84,10 @@ if frontend_origins_env:
     ALLOWED_ORIGINS = [o.strip() for o in frontend_origins_env.split(',') if o.strip()]
 else:
     ALLOWED_ORIGINS = [
-        'https://my-app.preview.emergentagent.com',
+        'https://focus-planner-3.preview.emergentagent.com',
         'http://localhost:3000',
         'http://127.0.0.1:3000',
-        'https://datahierarchy-app.preview.emergentagent.com'
+        'https://focus-planner-3.preview.emergentagent.com'
     ]
 app.add_middleware(
     CORSMiddleware,

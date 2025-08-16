@@ -6,7 +6,7 @@ Debug current user data
 import requests
 import json
 
-BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
 
 def debug_user():
     # Login first
