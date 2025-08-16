@@ -168,14 +168,11 @@ const Login = () => {
           // Auto-switch to login tab after 1200ms for faster flow
           setTimeout(() => {
             setJustAutoSwitched(true);
-            // After auto-switch to login, focus password field shortly after render
-            setTimeout(() => {
-              try { passwordInputRef?.current?.focus(); } catch {}
-            }, 80);
+            // More resilient focusing and state priming
+            focusPasswordStable();
 
-          // Remember email before switching
-          lastRegEmailRef.current = formData.email;
-
+            // Remember email before switching
+            lastRegEmailRef.current = formData.email;
 
             setIsLogin(true);
           }, 1200);
