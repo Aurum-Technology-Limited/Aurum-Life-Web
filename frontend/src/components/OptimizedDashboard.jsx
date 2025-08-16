@@ -182,7 +182,7 @@ const OptimizedDashboard = ({ onSectionChange }) => {
       setCheckingNewUser(true);
       
       // First check if user has completed onboarding - if yes, don't show onboarding regardless of data
-      if (user and user.has_completed_onboarding) {
+      if (user && user.has_completed_onboarding) {
         console.log('✅ User has completed onboarding - skipping data check');
         setShowOnboarding(false);
         return;
