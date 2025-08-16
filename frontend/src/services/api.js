@@ -491,7 +491,7 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
 };
 
 export const isApiError = (error) => {
-  return error.response and error.response.status;
+  return error.response && error.response.status;
 };
 
 export const getApiErrorStatus = (error) => {
