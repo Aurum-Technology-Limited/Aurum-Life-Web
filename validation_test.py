@@ -6,7 +6,7 @@ Quick validation test for empty strings
 import requests
 import json
 
-BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
 
 def test_validation():
     # Login first

@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
 
 def test_username_change():
     # Login

@@ -22,7 +22,7 @@ def get_base_url():
         print(f"Error reading frontend/.env: {e}")
     
     # Fallback
-    return "https://hierarchy-master.preview.emergentagent.com"
+    return "https://datahierarchy-app.preview.emergentagent.com"
 
 BASE_URL = get_base_url()
 print(f"🌐 Using base URL: {BASE_URL}")

@@ -13,7 +13,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
 
 class DragDropTester:
     def __init__(self):

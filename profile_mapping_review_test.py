@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration
-BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
 
 class ProfileMappingReviewTester:
     def __init__(self):

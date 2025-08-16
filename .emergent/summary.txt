@@ -1,94 +1,87 @@
 <analysis>
-The previous AI engineer diligently transformed an MVP React/FastAPI application into a production-ready system. Initial efforts focused on stabilizing E2E tests, resolving critical authentication bugs (e.g., hybrid auth issues, missing user profiles), and addressing frontend display problems (e.g., logo). A major undertaking involved resolving inconsistent CRUD UI updates by implementing robust backend cache invalidation and frontend TanStack Query hydration, including consistency windows.
-
-Key feature additions included a database-backed, timezone-aware login streak system with calendar visualization, requiring significant backend and Supabase schema modifications. The engineer then tackled complex cascade deletion for Pillars, Areas, Projects, and Tasks, ensuring data integrity through both application logic and database foreign key constraints, coupled with clear frontend confirmation dialogs. Hierarchy enforcement was added via  constraints, necessitating frontend form validations.
-
-Most recently, the engineer addressed feedback UI tweaks, extensively troubleshot SendGrid email delivery issues (fixing backend code and guiding the user on external DNS/Microsoft 365 configurations), implemented a flexible demo data seeding endpoint, and reconfigured the Google OAuth flow from Supabase-managed to a custom backend solution, including updating credentials and providing precise Google Cloud Console configuration guidance. The ongoing task is to ensure Google OAuth is fully functional.
+The AI engineer successfully transitioned a basic React/FastAPI MVP into a more robust application, focusing on critical authentication and data consistency issues. Initial efforts stabilized core CRUD operations, fixed frontend display glitches, and implemented sophisticated backend cache invalidation with frontend consistency windows. Key feature additions included a database-backed login streak system and comprehensive cascade deletion for hierarchical entities, enforced by both application logic and database constraints. More recently, the engineer reconfigured Google OAuth to a custom backend flow, resolved SendGrid email delivery issues, and implemented a demo data seeding endpoint. The primary recent focus shifted to debugging and fixing the new user registration, login, and onboarding flow. This involved hardening backend authentication, improving frontend UX (faster transitions, success popups,  attributes), and implementing resilient user data fetching with retries to resolve navigation issues. The latest work added robust duplicate email detection during registration.
 </analysis>
 
 <product_requirements>
-The application's development began with ensuring all UI elements and buttons of a React/FastAPI/MongoDB MVP were functional, supported by comprehensive Playwright E2E tests for core CRUD operations, email, account deletion, and Google OAuth. This foundational work also covered critical login and dashboard loading errors.
+The application's core purpose is to manage hierarchical data (Pillars, Areas, Projects, Tasks) with a focus on user productivity. The initial MVP required functional UI and E2E tests, fixing critical login/dashboard errors, and ensuring Google OAuth worked.
 
-Subsequent product requirements focused on specific enhancements:
-1.  **UI Consistency:** Resolve inconsistent frontend display of new, updated, or deleted entities (Pillars, Areas, Projects, Tasks) caused by stale cache data.
+Recent product requirements addressed by the AI engineer include:
+1.  **UI Consistency:** Resolve inconsistent frontend updates of CRUD operations by implementing cache invalidation and frontend hydration (e.g., consistency windows).
 2.  **Project Creation Fixes:** Address and resolve 422 errors during Project creation due to payload mismatches.
-3.  **Login Streak System:** Implement a robust daily login tracking system, including consecutive day increment/reset, current/best streak display, and a calendar visualization, all backed by the database with timezone awareness.
-4.  **Cascade Deletion:** Ensure consistent cascade deletion across the Pillar-Area-Project-Task hierarchy. This required displaying confirmation warnings with affected entity counts and preventing orphaned records at both the application and database levels.
-5.  **Strict Hierarchy Enforcement:** Enforce a strict hierarchy by adding  constraints on foreign keys in the database. This necessitated corresponding frontend form validations to prevent submission of entities without their required parent (e.g., an Area without a Pillar).
+3.  **Login Streak System:** Implement a daily login tracking system with current/best streak display and a calendar visualization, database-backed with timezone awareness.
+4.  **Cascade Deletion:** Ensure consistent and complete cascade deletion across the Pillar-Area-Project-Task hierarchy, displaying confirmation warnings and preventing orphaned records at both application and database levels ().
+5.  **Strict Hierarchy Enforcement:** Enforce strict parent-child relationships using database  constraints on foreign keys and corresponding frontend form validations.
+6.  **Full New User Flow Fix:** Debug and fix authentication (register, login) and first-time onboarding flow issues, including 401/400 errors, WebSocket failures, ensuring correct navigation to the dashboard, and loading template data.
+7.  **UX Improvements for Auth:** Enhance user experience during registration/login (e.g., faster auto-switch to login, success popups, clear error surfacing).
+8.  **Automated Testing for Auth:** Implement automated E2E tests for the full new user flow, verifying successful login, onboarding, dashboard access, and correct template data.
+9.  **Duplicate Email Prevention:** Prevent users from signing up with an already registered email, providing a clear message and guiding them to log in.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack Development**: React (frontend), FastAPI (backend), Supabase/PostgreSQL (database).
--   **Authentication**: Hybrid JWT, Supabase authentication, custom backend Google OAuth.
--   **API Integration**: Axios for frontend, SendGrid for emails.
--   **Automated Testing**: Playwright for End-to-End (E2E) UI testing.
--   **Caching**: Redis-based ultra endpoints with invalidation and consistency windows.
--   **State Management**: TanStack Query (React Query) for data handling.
--   **Database Management**: PostgreSQL RLS, foreign keys (), schema migrations.
--   **Environment**: Kubernetes container, backend                          RUNNING   pid 48, uptime 0:00:02
+-   **Full-stack Development**: React (frontend), FastAPI (backend), PostgreSQL (Supabase).
+-   **Authentication**: Hybrid JWT, Supabase authentication (admin.create_user, sign_in_with_password), custom backend Google OAuth.
+-   **Data Management**: TanStack Query for frontend state, Redis for backend caching with invalidation.
+-   **Database**: PostgreSQL RLS, foreign keys (),  constraints.
+-   **Testing**: Playwright for E2E tests,  attributes for robustness.
+-   **Service Management**: backend                          RUNNING   pid 48, uptime 0:00:02
 code-server                      RUNNING   pid 50, uptime 0:00:02
 frontend                         STOPPING  
 mongodb                          RUNNING   pid 56, uptime 0:00:02
-supervisor>  for service management.
+supervisor>  for process control in Kubernetes.
 </key_technical_concepts>
 
 <code_architecture>
-The application adheres to a standard full-stack architecture with , , and  directories.
+The application follows a standard full-stack architecture within the  directory, containing , , and .
 
 
 
 **Key Files and Changes:**
 
-*    & : Store environment variables.  was recently updated with , , , and  to support the custom Google OAuth flow and Gemini AI features.  and  were also present and verified.
-*   : Updated to include necessary Python dependencies.
-*   , , : Modified for Supabase token verification and user profile creation for hybrid authentication.
-*   : Logo error handling improved.
-*   : Main FastAPI app. Integrated cache invalidation logic, new streak API endpoints, and stricter payload validation. A new  endpoint was added for populating demo data. The Google OAuth endpoints for  and  were configured to use the custom backend flow.
-*    & :  implemented  and  for Redis cache.  functions integrate cache invalidation on data writes.
-*   :
-    *   : Robust handling of .
-    *   , : Enhanced for cascading deletes across hierarchy.
-*   :  and  changed from  to required for hierarchy enforcement. New models ,  were added for login streaks.
-*   : Modified to correctly handle SendGrid  objects, resolving a critical bug preventing email delivery.
-*   : This module is now actively used for the custom backend Google OAuth flow, with its behavior dictated by environment variables set in .
-*   : Data fetching made resilient, with fallback to standard API.
-*   , , , : Added  attributes. Implemented TanStack Query invalidation/refetching with optimistic updates. Delete confirmations list child entities. Consistency windows added to  and  for immediate UI hydration after CRUD. Form validations added for  and  to enforce hierarchy.
-*   : Displays current/best streak, calendar with login highlights.
-*   : Modified to remove the Feedback will be sent from text and center the Send Feedback button, while keeping text and icon on the same line.
-*   : Modified dashboard data fetching, added streak API calls, and implemented consistency window logic.
-*   : Involved in query key/onSuccess handler updates for data invalidation.
-*   **Supabase Schema Changes (Manual SQL Runs)**:
-    *    table created.
-    *    table modified (added , ).
-    *   RLS policies for .
-    *   Foreign Keys with  added to , , .
-    *    applied to , , .
+-   : Updated with , , ,  for custom Google OAuth and AI.
+-   : Integrated cache invalidation, streak API, stricter validation. Added  for demo data. Configured custom Google OAuth endpoints.
+-   : Crucial for authentication. Modified to use Supabase  with  for registration. Hardened login fallback to legacy JWT if Supabase session is unavailable. Implemented pre-check for existing emails and returns HTTP 409 for duplicates (Email already registered.).
+-   : Functions for CRUD operations, integrated cache invalidation.  and / enhanced for hierarchy and cascade.
+-   : Defined data models;  and  made required. Added ,  models.
+-   : Reviewed for authentication and CSRF.
+-   : Stores frontend environment variables like .
+-   : Main entry point, integrates authentication contexts.
+-   : Manages authentication state. Modified to include retry-aware fetching for  after login to improve user hydration. Handles 409 responses from backend for duplicate email display.
+-   : User login and registration form. Modified for faster auto-switch to login (1.2s) after successful sign-up and to display a visible success alert ().
+-    (acting as ): Controls access to protected routes and handles redirection for onboarding. Modified for defensive onboarding gating, treating undefined  as false and consulting  to ensure onboarding wizard shows correctly.
+-   , , : UI components for managing entities. Modified to add  attributes to select elements for improved E2E test robustness (e.g., , , ).
+-   : Defines templates for the onboarding wizard.
+-   : Contains automated E2E tests for the application.  is updated with test outcomes.
+-   **Supabase Schema Changes (Manual SQL Runs)**: Created , modified , added RLS policies,  foreign keys, and  for hierarchy enforcement.
 </code_architecture>
 
 <pending_tasks>
--   Add optional  attributes to select elements in the UI forms (e.g., , , , ) to further improve the robustness of automated UI tests.
+-   Optionally, add an auto-switch to the Login tab when a user attempts to sign up with an already registered email (HTTP 409 response) after displaying the duplicate account message.
 </pending_tasks>
 
 <current_work>
-The AI engineer has been deeply involved in several critical areas since the initial focus on hierarchy enforcement and cascade deletion.
+The AI engineer has most recently focused on ensuring a seamless and robust new-user experience, specifically addressing the registration, login, and onboarding flow.
 
-Immediately prior to this summary, the engineer was actively engaged in reconfiguring the application's Google OAuth authentication. The user requested to switch from the previously Supabase-managed Google OAuth flow to the application's custom backend Google OAuth flow. This involved:
-1.  **Backend Environment Update**:  was updated to include the new , , and  provided by the user. The  was also updated due to the user switching GCP accounts.
-2.  **Configuration Guidance**: Detailed instructions were provided to the user on how to configure the Google Cloud Console OAuth 2.0 Client (Web application) with the correct  (e.g., ) and, crucially, the precise  (). This was done to resolve persistent  errors during Google login attempts.
-3.  **Backend Service Restart**: The backend service was restarted using backend                          RUNNING   pid 48, uptime 0:00:02
-code-server                      RUNNING   pid 50, uptime 0:00:02
-frontend                         STOPPED   Aug 14 01:05 PM
-mongodb                          RUNNING   pid 56, uptime 0:00:02
-supervisor>  after environment variable changes to ensure they were loaded correctly.
+Key fixes and improvements include:
+1.  **Backend Authentication Hardening:**
+    *   **Registration:** The  endpoint now leverages Supabase's  with , allowing immediate login post-registration.
+    *   **Login Fallback:** The login mechanism in  has been made more resilient. If a Supabase  attempt doesn't yield a session, it explicitly falls back to issuing a legacy JWT, ensuring the frontend always receives a usable token to proceed.
+    *   **Duplicate Email Prevention:** The  endpoint now performs a pre-check using Supabase Admin  for existing emails. If a duplicate is found, it returns an HTTP 409 response with the message Email already registered. Please log in instead. This logic also normalizes other backend duplicate errors to the same 409 response.
 
-Before this, the engineer:
-*   **Seeded Demo Data**: Implemented a new  endpoint in the backend (, ) capable of populating the current user's account with realistic Pillars, Areas, Projects, Tasks, and optionally, login streak history. This endpoint was then executed with  and .
-*   **Troubleshot Email Delivery**: Addressed SendGrid email failures. This involved fixing a bug in  where  was incorrectly handled, causing an . Following the code fix, the issue was identified to be on the recipient's mail server side (Microsoft 365 quarantining), and the engineer provided detailed guidance on configuring SendGrid domain authentication (DKIM, SPF, DMARC) and Microsoft 365 Tenant Allow/Block List spoofing entries.
-*   **Frontend UI Tweaks**: Removed the Feedback will be sent from... text and horizontally centered the Send Feedback button in , while ensuring the button text and icon remained on the same line.
+2.  **Frontend User Experience (UX) Enhancements:**
+    *   **Faster Transition:** After a successful registration, the UI in  now automatically switches to the Login tab faster (approximately 1.2 seconds, down from 3 seconds) to improve flow.
+    *   **Success Feedback:** A visible success alert () is displayed within the auth card upon successful account creation. The system also attempts a browser  (Account Created!) for additional feedback. Similar success messages are shown on successful login.
+    *   **Duplicate Email Messaging:** The  is updated to intercept the backend's 409 response for duplicate emails and display a user-friendly message: An account with this email already exists. Please sign in instead.
+    *   **Resilient User Hydration:**  now includes a  helper that attempts to fetch the user profile via  up to 3 times with a short delay. This mitigates transient issues where the user profile or token verification isn't immediately ready, preventing the user from getting stuck on the login screen.
+    *   **Defensive Onboarding Gating:**  (AppWrapper) now treats an undefined  state as  and consults a  flag, ensuring the onboarding wizard correctly appears for first-time users.
 
-The work is currently at the stage where the Google OAuth configuration has been switched to the backend-managed flow, and the user needs to test the login with the updated Google Cloud Console settings.
+3.  **Automated Testing Enhancements:**
+    *   ** Attributes:**  attributes have been added to select elements in , , and  (e.g., , , ) to enhance the robustness and reliability of automated E2E UI tests.
+
+The work is currently at a state where the authentication and onboarding flow is designed to be robust, handle edge cases like duplicate registrations, and provide clear user feedback. The previous automated frontend E2E run encountered intermittent environment issues (400/401 errors during UI tests, despite successful backend-only runs), indicating potential preview environment instability or strict rate limits. The engineer has offered to re-run E2E tests with  test emails or add client-side validation and retry logic in the E2E harness.
+
+The immediate next step, based on the last interaction, is to decide whether to implement an auto-switch to the Login tab upon detecting a duplicate email during registration.
 </current_work>
 
 <optional_next_step>
-Add  attributes to select elements in frontend UI forms for improved E2E test robustness.
+Implement an auto-switch to the Login tab after detecting a duplicate email during registration (HTTP 409).
 </optional_next_step>

@@ -6,7 +6,7 @@ Debug the authentication routing issue
 import requests
 
 # Test different auth endpoints
-BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com"
+BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com"
 
 endpoints_to_test = [
     "/api/auth/register",

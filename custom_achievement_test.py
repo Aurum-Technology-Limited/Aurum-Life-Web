@@ -41,7 +41,7 @@ import time
 import re
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://hierarchy-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://datahierarchy-app.preview.emergentagent.com/api"
 
 class CustomAchievementSystemTester:
     def __init__(self):
