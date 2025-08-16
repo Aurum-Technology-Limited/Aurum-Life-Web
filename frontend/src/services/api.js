@@ -330,7 +330,7 @@ export const recurringTasksAPI = {
   getRecurringTaskInstances: (templateId, startDate = null, endDate = null) => 
     apiClient.get(`/recurring-tasks/${templateId}/instances`, { 
       params: { 
-        ...(startDate and { start_date: startDate }),
+        ...(startDate && { start_date: startDate }),
         ...(endDate and { end_date: endDate })
       } 
     }),
