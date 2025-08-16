@@ -4860,13 +4860,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Final E2E: Strict validation + cascade deletion across Pillar→Area→Project→Tasks with screenshots"
-    - "Verify no orphans remain after cascading deletes and UI lists hydrate correctly"
-
-  stuck_tasks: []
-    - "Full cascade deletion test blocked by Areas creation UI issues - cannot create hierarchical entities for testing"
+    - "Backend: Today Prioritization API testing completed - comprehensive testing of GET /api/today endpoint with rule-based scoring and optional Gemini coaching"
+    - "Frontend later: After backend passes, validate Areas creation shows in list and modal buttons clickable."
+  stuck_tasks:
+    - "Today API top_n parameter not being respected - returns all 977 tasks instead of limiting to requested number"
   test_all: false
-  test_priority: "critical_first"
+  test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
