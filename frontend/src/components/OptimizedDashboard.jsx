@@ -175,6 +175,38 @@ const OptimizedDashboard = ({ onSectionChange }) => {
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
 
+  // Local persistence key scoped per user
+  const getFocusStorageKey = useCallback(() => (user && user.id ? `FOCUS_LIST_${user.id}` : null), [user]);
+
+  // Hydrate focus list from localStorage when user is ready
+  useEffect(() => {
+    const key = getFocusStorageKey();
+    if (!key) return;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setFocusList(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load focus list from storage', e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getFocusStorageKey]);
+
+  // Persist focus list when it changes
+  useEffect(() => {
+    const key = getFocusStorageKey();
+    if (!key) return;
+    try {
+      localStorage.setItem(key, JSON.stringify(focusList));
+    } catch (e) {
+      console.warn('Failed to persist focus list', e);
+    }
+  }, [focusList, getFocusStorageKey]);
+
   // Check if user is new (has no data) - but respect onboarding completion status
   const checkNewUser = useCallback(async () => {
     try {
