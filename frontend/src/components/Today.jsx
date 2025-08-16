@@ -380,6 +380,7 @@ const Today = memo(() => {
     setUndo((u) => {
       if (!u.last) return { visible: false, last: null };
       setTodaysTasks(prev => {
+        if (prev.some(t => t.id === u.last.id)) return prev; // dedupe guard
         const next = [u.last, ...prev];
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
         return next;
