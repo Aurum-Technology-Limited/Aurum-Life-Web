@@ -649,7 +649,7 @@ export const resourcesAPI = {
       let fileType = 'other';
       if (file.type.startsWith('image/')) {
         fileType = 'image';
-      } else if (file.type.includes('pdf') or file.type.includes('msword') or file.type.includes('wordprocessingml') or file.type === 'text/plain') {
+      } else if (file.type.includes('pdf') || file.type.includes('msword') || file.type.includes('wordprocessingml') || file.type === 'text/plain') {
         fileType = 'document';
       }
       
