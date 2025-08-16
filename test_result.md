@@ -59,6 +59,8 @@
 ## agent_communication:
     -agent: "main"
     -message: "Frontend auth UX updated: On registration duplicate (HTTP 409), auto-switch to Login tab after 1.2s, prefill email remains, password field auto-focused. Added data-testid hooks: auth-tab-login, auth-tab-login-inactive, auth-tab-signup, auth-tab-signup-inactive, auth-email, auth-password, auto-switched-to-login. Will run frontend E2E after user approval."
+    -agent: "main"
+    -message: "Proceeding with frontend E2E to validate: 1) Duplicate email auto-switch shows duplicate-tip and is dismissible, 2) Email remains prefilled and password auto-focused, 3) 'Sign in instead' link on Sign Up switches tabs and focuses password. Using existing account marc.alleyne@aurumtechnologyltd.com for duplicate scenario."
     -agent: "user"
     -message: "CRITICAL: New user login + onboarding failing after sign-up. 401 on /api/auth/login and 400 on /api/auth/register, WebSocket connection errors, user not redirected to onboarding. Expected: New user can register, login, onboarding auto-starts, dashboard populated by chosen template. Please debug/fix end-to-end and add automated tests that create random accounts and validate full flow."
 ##     -agent: "main"
