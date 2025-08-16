@@ -213,15 +213,21 @@ const Login = () => {
             <button
               type="button"
               onClick={() => {
-                setIsLogin(true); 
-                setError(''); 
+                setIsLogin(true);
+                setError('');
                 setMessage(''); // Clear message when manually switching to login
+                // When manually switching to login, focus password and clear auto-switch flag
+                setTimeout(() => {
+                  try { passwordInputRef?.current?.focus(); } catch {}
+                }, 50);
+                setJustAutoSwitched(false);
               }}
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md border ${
                 isLogin
                   ? 'bg-yellow-500 text-black border-yellow-500'
                   : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
               }`}
+              data-testid={isLogin ? 'auth-tab-login' : 'auth-tab-login-inactive'}
 >
               Login
             </button>
