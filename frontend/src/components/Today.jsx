@@ -139,17 +139,31 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
 });
 
 // Unified task item used for both suggestions and focus list rows
-const UnifiedTaskItem = ({ task, context, mode = 'focus', onAdd, onToggleComplete, onStartPomodoro, onRemove }) => {
+const UnifiedTaskItem = ({ task, context, mode = 'focus', onAdd, onToggleComplete, onStartPomodoro, onRemove, showToggle = false, completed = false, showAIBadge = false }) => {
   const priority = (task.priority || 'medium').toLowerCase();
   const priorityClass = priority === 'high' ? 'bg-red-500' : priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500';
   return (
     <div className="flex items-center justify-between bg-gray-900/50 border border-gray-800 rounded-md p-3">
       <div className="flex items-start space-x-3">
+        {showToggle && (
+          <button
+            onClick={() => onToggleComplete && onToggleComplete(task.id, completed)}
+            className="mt-1 text-yellow-400 hover:text-yellow-300 transition-colors"
+            title={completed ? 'Mark as incomplete' : 'Mark as complete'}
+          >
+            {completed ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
+          </button>
+        )}
         {/* Priority indicator */}
         <div className={`w-2 h-2 rounded-full mt-2 ${priorityClass}`} aria-hidden="true"></div>
         <div>
-          <div className="text-sm text-white font-medium">{task.name || task.title}</div>
-          <div className="text-xs text-gray-400 mt-0.5">
+          <div className="flex items-center">
+            <div className={`text-sm font-medium ${completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.name || task.title}</div>
+            {showAIBadge && (
+              <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">AI</span>
+            )}
+          </div>
+          <div className={`text-xs mt-0.5 ${completed ? 'text-gray-600' : 'text-gray-400'}`}>
             {context}
           </div>
         </div>
@@ -166,9 +180,9 @@ const UnifiedTaskItem = ({ task, context, mode = 'focus', onAdd, onToggleComplet
           </button>
         ) : (
           <>
-            {!task.completed && (
+            {!completed && (
               <button
-                onClick={() => onStartPomodoro(task)}
+                onClick={() => onStartPomodoro && onStartPomodoro(task)}
                 className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Start Pomodoro"
               >
@@ -176,7 +190,7 @@ const UnifiedTaskItem = ({ task, context, mode = 'focus', onAdd, onToggleComplet
               </button>
             )}
             <button
-              onClick={() => onRemove(task.id)}
+              onClick={() => onRemove && onRemove(task.id)}
               className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
               title="Remove from Today"
             >
