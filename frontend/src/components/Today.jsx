@@ -665,22 +665,25 @@ const Today = memo(() => {
                           mode="suggestion"
                           showAIBadge={true}
                           onAdd={async () => {
+                            const removeFromSuggestions = () => setAiSuggestions(prev => prev.filter(x => (x.taskId || x.id) !== (s.taskId || s.id)));
                             try {
+                              // Fade-out animation before removal
+                              const row = document.querySelector(`[data-suggestion-key="${key}"]`);
+                              if (row) {
+                                row.style.transition = 'opacity 250ms ease';
+                                row.style.opacity = '0';
+                                setTimeout(() => removeFromSuggestions(), 260);
+                              } else {
+                                removeFromSuggestions();
+                              }
                               if (s.task) {
                                 handleAddTaskToFocus({ ...s.task });
                               } else {
-                                // Fallback: fetch by id or construct minimal
                                 const resp = await tasksAPI.getTask(s.taskId);
-                                if (resp.data) {
-                                  handleAddTaskToFocus(resp.data);
-                                } else {
-                                  handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
-                                }
+                                handleAddTaskToFocus(resp.data || { id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
                               }
                             } catch {
                               handleAddTaskToFocus({ id: s.taskId, name: s.title, priority: (s.priority || 'medium').toLowerCase(), description: s.description, project_name: s.project, due_date: s.dueDate });
-                            } finally {
-                              setAiSuggestions(prev => prev.filter(x => (x.taskId || x.id) !== (s.taskId || s.id)));
                             }
                           }}
                         />
