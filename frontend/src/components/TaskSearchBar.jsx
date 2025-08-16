@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Plus, Loader2 } from 'lucide-react';
-import { api } from '../services/api';
+import { tasksAPI } from '../services/api';
 
 const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to today's focus..." }) => {
   const [query, setQuery] = useState('');
