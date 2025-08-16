@@ -103,6 +103,8 @@ const Login = () => {
 
           // Auto-switch to login tab after 1200ms for faster flow
           setTimeout(() => {
+            setJustAutoSwitched(true);
+
             setIsLogin(true);
           }, 1200);
         } else {
