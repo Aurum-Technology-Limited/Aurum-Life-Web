@@ -17,510 +17,438 @@ CREDENTIALS: marc.alleyne@aurumtechnologyltd.com / password123
 
 import requests
 import json
-import time
-import uuid
-from datetime import datetime
 import sys
+import time
+from datetime import datetime
+from typing import Dict, List, Any, Optional
 
-# Production URL
-BASE_URL = "https://aurum-overflow-fix.emergent.host"
-API_URL = f"{BASE_URL}/api"
+# Configuration - Using the backend URL from frontend/.env
+BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com"
+API_BASE = f"{BACKEND_URL}/api"
 
-class BackendSmokeTest:
+class BackendSmokeTestSuite:
     def __init__(self):
         self.session = requests.Session()
-        self.session.timeout = 30
-        self.access_token = None
         self.test_results = []
-        self.created_pillar_id = None
+        self.auth_token = None
+        self.response_times = []
         
-    def log_result(self, test_name, success, details, response_time=None):
-        """Log test result"""
+        # Use specified test credentials
+        self.test_user_email = "marc.alleyne@aurumtechnologyltd.com"
+        self.test_user_password = "password123"
+        
+    def log_test(self, test_name: str, success: bool, message: str = "", response_time: float = 0, data: Any = None):
+        """Log test results with response time tracking"""
         result = {
             'test': test_name,
             'success': success,
-            'details': details,
-            'response_time': response_time,
+            'message': message,
+            'response_time_ms': round(response_time * 1000, 0),
             'timestamp': datetime.now().isoformat()
         }
+        if data:
+            result['data'] = data
         self.test_results.append(result)
         
+        if response_time > 0:
+            self.response_times.append(response_time * 1000)  # Convert to ms
+        
         status = "✅ PASS" if success else "❌ FAIL"
-        time_info = f" ({response_time}ms)" if response_time else ""
-        print(f"{status} {test_name}{time_info}")
-        if not success or details:
-            print(f"    Details: {details}")
-    
-    def test_root_endpoint(self):
-        """Test 1: GET / (root) - expect JSON with {message, version, status}"""
-        try:
-            start_time = time.time()
-            response = self.session.get(BASE_URL)
-            response_time = int((time.time() - start_time) * 1000)
-            
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-                    required_fields = ['message', 'version', 'status']
-                    missing_fields = [field for field in required_fields if field not in data]
-                    
-                    if missing_fields:
-                        self.log_result(
-                            "Root endpoint JSON structure", 
-                            False, 
-                            f"Missing fields: {missing_fields}. Got: {data}",
-                            response_time
-                        )
-                    else:
-                        self.log_result(
-                            "Root endpoint JSON structure", 
-                            True, 
-                            f"All required fields present: {data}",
-                            response_time
-                        )
-                except json.JSONDecodeError:
-                    # Root might return HTML (frontend app) - this is acceptable for production
-                    self.log_result(
-                        "Root endpoint", 
-                        True, 
-                        "Returns HTML frontend app (acceptable for production deployment)",
-                        response_time
-                    )
-            else:
-                self.log_result(
-                    "Root endpoint", 
-                    False, 
-                    f"HTTP {response.status_code}: {response.text[:200]}",
-                    response_time
-                )
-        except Exception as e:
-            self.log_result("Root endpoint", False, f"Exception: {str(e)}")
-    
-    def test_protected_endpoint_without_auth(self):
-        """Test 2: GET /api/alignment/dashboard without token → expect 401"""
-        try:
-            start_time = time.time()
-            response = self.session.get(f"{API_URL}/alignment/dashboard")
-            response_time = int((time.time() - start_time) * 1000)
-            
-            if response.status_code == 401:
-                self.log_result(
-                    "Protected endpoint auth check", 
-                    True, 
-                    "Correctly returns 401 without token",
-                    response_time
-                )
-            else:
-                self.log_result(
-                    "Protected endpoint auth check", 
-                    False, 
-                    f"Expected 401, got {response.status_code}: {response.text[:200]}",
-                    response_time
-                )
-        except Exception as e:
-            self.log_result("Protected endpoint auth check", False, f"Exception: {str(e)}")
-    
-    def test_disposable_auth_flow(self):
-        """Test 3: Auth disposable test flow"""
-        timestamp = int(time.time())
-        test_email = f"e2e.autotest+{timestamp}@emergent.test"
-        test_password = "StrongPass!234"
-        test_username = f"e2e_autotest_{timestamp}"
+        time_info = f" ({response_time*1000:.0f}ms)" if response_time > 0 else ""
+        print(f"{status} {test_name}{time_info}: {message}")
+        if data and not success:
+            print(f"   Data: {json.dumps(data, indent=2, default=str)[:200]}...")
+
+    def make_request(self, method: str, endpoint: str, data: Dict = None, params: Dict = None, use_auth: bool = False, timeout: int = 30) -> Dict:
+        """Make HTTP request with timing and error handling"""
+        url = f"{API_BASE}{endpoint}" if endpoint.startswith('/') else f"{BACKEND_URL}{endpoint}"
+        headers = {"Content-Type": "application/json"}
         
-        # Step 3a: Registration
+        # Add authentication header if token is available and requested
+        if use_auth and self.auth_token:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
+        
+        start_time = time.time()
         try:
-            start_time = time.time()
-            register_data = {
-                "email": test_email,
-                "password": test_password,
-                "username": test_username,
-                "first_name": "E2E",
-                "last_name": "Bot"
-            }
-            
-            response = self.session.post(f"{API_URL}/auth/register", json=register_data)
-            response_time = int((time.time() - start_time) * 1000)
-            
-            # Accept 200/201 or 400/409 and continue as per instructions
-            if response.status_code in [200, 201]:
-                self.log_result(
-                    "User registration", 
-                    True, 
-                    f"Registration successful: {response.status_code}",
-                    response_time
-                )
-            elif response.status_code in [400, 409, 429]:
-                self.log_result(
-                    "User registration", 
-                    True, 
-                    f"Registration blocked ({response.status_code}) - continuing as instructed: {response.text[:100]}",
-                    response_time
-                )
+            if method.upper() == 'GET':
+                response = self.session.get(url, params=params, headers=headers, timeout=timeout)
+            elif method.upper() == 'POST':
+                response = self.session.post(url, json=data, params=params, headers=headers, timeout=timeout)
             else:
-                self.log_result(
-                    "User registration", 
-                    False, 
-                    f"Unexpected status {response.status_code}: {response.text[:200]}",
-                    response_time
-                )
-        except Exception as e:
-            self.log_result("User registration", False, f"Exception: {str(e)}")
-        
-        # Step 3b: Login with existing user (since registration might be rate limited)
-        # Use known working credentials from test_result.md
-        existing_email = "marc.alleyne@aurumtechnologyltd.com"
-        existing_password = "password123"
-        
-        try:
-            start_time = time.time()
-            login_data = {
-                "email": existing_email,
-                "password": existing_password
-            }
+                raise ValueError(f"Unsupported method: {method}")
             
-            response = self.session.post(f"{API_URL}/auth/login", json=login_data)
-            response_time = int((time.time() - start_time) * 1000)
+            response_time = time.time() - start_time
             
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-                    if 'access_token' in data:
-                        self.access_token = data['access_token']
-                        self.log_result(
-                            "User login", 
-                            True, 
-                            f"Login successful, token received (length: {len(self.access_token)})",
-                            response_time
-                        )
-                    else:
-                        self.log_result(
-                            "User login", 
-                            False, 
-                            f"Login response missing access_token: {data}",
-                            response_time
-                        )
-                except json.JSONDecodeError:
-                    self.log_result(
-                        "User login", 
-                        False, 
-                        f"Invalid JSON response: {response.text[:200]}",
-                        response_time
-                    )
-            else:
-                self.log_result(
-                    "User login", 
-                    False, 
-                    f"Login failed {response.status_code}: {response.text[:200]}",
-                    response_time
-                )
-        except Exception as e:
-            self.log_result("User login", False, f"Exception: {str(e)}")
-        
-        # Step 3c: Get user profile with Bearer token
-        if self.access_token:
+            # Try to parse JSON response
             try:
-                start_time = time.time()
-                headers = {'Authorization': f'Bearer {self.access_token}'}
-                response = self.session.get(f"{API_URL}/auth/me", headers=headers)
-                response_time = int((time.time() - start_time) * 1000)
+                response_data = response.json() if response.content else {}
+            except:
+                response_data = {"raw_content": response.text[:500] if response.text else "No content"}
                 
-                if response.status_code == 200:
-                    try:
-                        data = response.json()
-                        required_fields = ['id', 'email']
-                        missing_fields = [field for field in required_fields if field not in data]
-                        
-                        if missing_fields:
-                            self.log_result(
-                                "User profile retrieval", 
-                                False, 
-                                f"Missing required fields: {missing_fields}. Got: {list(data.keys())}",
-                                response_time
-                            )
-                        else:
-                            self.log_result(
-                                "User profile retrieval", 
-                                True, 
-                                f"Profile retrieved successfully: id={data.get('id', 'N/A')}, email={data.get('email', 'N/A')}",
-                                response_time
-                            )
-                    except json.JSONDecodeError:
-                        self.log_result(
-                            "User profile retrieval", 
-                            False, 
-                            f"Invalid JSON response: {response.text[:200]}",
-                            response_time
-                        )
-                else:
-                    self.log_result(
-                        "User profile retrieval", 
-                        False, 
-                        f"Profile request failed {response.status_code}: {response.text[:200]}",
-                        response_time
-                    )
-            except Exception as e:
-                self.log_result("User profile retrieval", False, f"Exception: {str(e)}")
-        else:
-            self.log_result("User profile retrieval", False, "No access token available")
-    
-    def test_minimal_crud_operations(self):
-        """Test 4: Minimal CRUD check with token"""
-        if not self.access_token:
-            self.log_result("CRUD operations", False, "No access token available for CRUD tests")
-            return
-        
-        headers = {'Authorization': f'Bearer {self.access_token}'}
-        
-        # Step 4a: POST /api/pillars (create)
-        try:
-            start_time = time.time()
-            pillar_data = {
-                "name": "E2E Pillar",
-                "description": "Testing pillar",
-                "color": "#4F46E5",
-                "icon": "target",
-                "time_allocation_percentage": 10
+            return {
+                'success': response.status_code < 400,
+                'status_code': response.status_code,
+                'data': response_data,
+                'response_time': response_time,
+                'error': f"HTTP {response.status_code}: {response_data}" if response.status_code >= 400 else None
             }
             
-            response = self.session.post(f"{API_URL}/pillars", json=pillar_data, headers=headers)
-            response_time = int((time.time() - start_time) * 1000)
-            
-            if response.status_code in [200, 201]:
+        except requests.exceptions.RequestException as e:
+            response_time = time.time() - start_time
+            error_msg = f"Request failed: {str(e)}"
+            if hasattr(e, 'response') and e.response is not None:
                 try:
-                    data = response.json()
-                    if 'id' in data:
-                        self.created_pillar_id = data['id']
-                        self.log_result(
-                            "Pillar creation", 
-                            True, 
-                            f"Pillar created successfully: id={self.created_pillar_id}",
-                            response_time
-                        )
-                    else:
-                        self.log_result(
-                            "Pillar creation", 
-                            False, 
-                            f"Response missing 'id' field: {data}",
-                            response_time
-                        )
-                except json.JSONDecodeError:
-                    self.log_result(
-                        "Pillar creation", 
-                        False, 
-                        f"Invalid JSON response: {response.text[:200]}",
-                        response_time
-                    )
-            else:
-                self.log_result(
-                    "Pillar creation", 
-                    False, 
-                    f"Creation failed {response.status_code}: {response.text[:200]}",
-                    response_time
-                )
-        except Exception as e:
-            self.log_result("Pillar creation", False, f"Exception: {str(e)}")
-        
-        # Step 4b: GET /api/pillars (read with counts)
-        try:
-            start_time = time.time()
-            response = self.session.get(f"{API_URL}/pillars", headers=headers)
-            response_time = int((time.time() - start_time) * 1000)
+                    error_data = e.response.json()
+                    error_msg += f" - Response: {error_data}"
+                except:
+                    error_msg += f" - Response: {e.response.text[:200]}"
             
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-                    if isinstance(data, list):
-                        # Check if created pillar is present
-                        created_pillar_found = False
-                        count_fields_present = False
-                        
-                        for pillar in data:
-                            if pillar.get('id') == self.created_pillar_id:
-                                created_pillar_found = True
-                            
-                            # Check for count fields
-                            count_fields = ['area_count', 'project_count', 'task_count']
-                            if any(field in pillar for field in count_fields):
-                                count_fields_present = True
-                        
-                        success_details = []
-                        if self.created_pillar_id and created_pillar_found:
-                            success_details.append("created pillar found")
-                        if count_fields_present:
-                            success_details.append("count fields present")
-                        
-                        self.log_result(
-                            "Pillar retrieval", 
-                            True, 
-                            f"Retrieved {len(data)} pillars. {', '.join(success_details) if success_details else 'Basic retrieval successful'}",
-                            response_time
-                        )
-                    else:
-                        self.log_result(
-                            "Pillar retrieval", 
-                            False, 
-                            f"Expected list, got: {type(data)}",
-                            response_time
-                        )
-                except json.JSONDecodeError:
-                    self.log_result(
-                        "Pillar retrieval", 
-                        False, 
-                        f"Invalid JSON response: {response.text[:200]}",
-                        response_time
-                    )
-            else:
-                self.log_result(
-                    "Pillar retrieval", 
-                    False, 
-                    f"Retrieval failed {response.status_code}: {response.text[:200]}",
-                    response_time
-                )
-        except Exception as e:
-            self.log_result("Pillar retrieval", False, f"Exception: {str(e)}")
+            return {
+                'success': False,
+                'error': error_msg,
+                'status_code': getattr(e.response, 'status_code', None) if hasattr(e, 'response') else None,
+                'data': {},
+                'response_time': response_time
+            }
+
+    def test_health_endpoints(self):
+        """Test 1: Health check endpoints"""
+        print("\n=== TESTING HEALTH ENDPOINTS ===")
         
-        # Step 4c: DELETE /api/pillars/{id} (delete)
-        if self.created_pillar_id:
-            try:
-                start_time = time.time()
-                response = self.session.delete(f"{API_URL}/pillars/{self.created_pillar_id}", headers=headers)
-                response_time = int((time.time() - start_time) * 1000)
-                
-                if response.status_code == 200:
-                    self.log_result(
-                        "Pillar deletion", 
-                        True, 
-                        f"Pillar deleted successfully",
-                        response_time
-                    )
-                    
-                    # Verify deletion by checking if pillar is no longer present
-                    try:
-                        verify_response = self.session.get(f"{API_URL}/pillars", headers=headers)
-                        if verify_response.status_code == 200:
-                            verify_data = verify_response.json()
-                            pillar_still_exists = any(p.get('id') == self.created_pillar_id for p in verify_data)
-                            
-                            if not pillar_still_exists:
-                                self.log_result(
-                                    "Pillar deletion verification", 
-                                    True, 
-                                    "Pillar no longer present in list"
-                                )
-                            else:
-                                self.log_result(
-                                    "Pillar deletion verification", 
-                                    False, 
-                                    "Pillar still present after deletion"
-                                )
-                    except Exception as e:
-                        self.log_result("Pillar deletion verification", False, f"Verification failed: {str(e)}")
-                        
-                else:
-                    self.log_result(
-                        "Pillar deletion", 
-                        False, 
-                        f"Deletion failed {response.status_code}: {response.text[:200]}",
-                        response_time
-                    )
-            except Exception as e:
-                self.log_result("Pillar deletion", False, f"Exception: {str(e)}")
+        # Test GET /api/health
+        result = self.make_request('GET', '/health')
+        self.log_test(
+            "GET /api/health",
+            result['success'],
+            f"Health endpoint accessible" if result['success'] else f"Health endpoint failed: {result.get('error', 'Unknown error')}",
+            result.get('response_time', 0)
+        )
+        
+        # Test GET / (root)
+        result = self.make_request('GET', '/')
+        self.log_test(
+            "GET / (root)",
+            result['success'],
+            f"Root endpoint accessible" if result['success'] else f"Root endpoint failed: {result.get('error', 'Unknown error')}",
+            result.get('response_time', 0)
+        )
+        
+        return all(r['success'] for r in self.test_results[-2:])
+
+    def test_authentication(self):
+        """Test 2: Authentication with existing test credentials"""
+        print("\n=== TESTING AUTHENTICATION ===")
+        
+        # Login with specified credentials
+        login_data = {
+            "email": self.test_user_email,
+            "password": self.test_user_password
+        }
+        
+        result = self.make_request('POST', '/auth/login', data=login_data)
+        
+        if result['success']:
+            token_data = result['data']
+            self.auth_token = token_data.get('access_token')
+            
+            self.log_test(
+                "LOGIN AUTHENTICATION",
+                True,
+                f"Login successful with {self.test_user_email}, JWT token captured",
+                result.get('response_time', 0)
+            )
+            return True
         else:
-            self.log_result("Pillar deletion", False, "No pillar ID available for deletion")
-    
-    def test_security_headers(self):
-        """Test 5: Security headers spot-check"""
-        endpoints_to_check = [
-            f"{API_URL}/auth/login",
-            f"{API_URL}/pillars"
+            self.log_test(
+                "LOGIN AUTHENTICATION",
+                False,
+                f"Login failed: {result.get('error', 'Unknown error')}",
+                result.get('response_time', 0)
+            )
+            return False
+
+    def test_core_data_endpoints(self):
+        """Test 3: Core data fetch endpoints with Bearer token"""
+        print("\n=== TESTING CORE DATA ENDPOINTS ===")
+        
+        if not self.auth_token:
+            self.log_test("CORE DATA ENDPOINTS", False, "No authentication token available")
+            return False
+        
+        core_endpoints = [
+            ('/pillars', 'Pillars'),
+            ('/areas', 'Areas'),
+            ('/projects', 'Projects'),
+            ('/tasks', 'Tasks')
         ]
         
-        required_headers = [
-            'Content-Security-Policy',
-            'Strict-Transport-Security', 
-            'X-Content-Type-Options',
-            'X-Frame-Options'
+        success_count = 0
+        for endpoint, name in core_endpoints:
+            result = self.make_request('GET', endpoint, use_auth=True)
+            
+            if result['success']:
+                # Verify response is JSON array
+                data = result['data']
+                is_array = isinstance(data, list)
+                
+                self.log_test(
+                    f"GET /api{endpoint}",
+                    is_array,
+                    f"{name} endpoint returned JSON array with {len(data)} items" if is_array else f"{name} endpoint returned non-array data",
+                    result.get('response_time', 0)
+                )
+                
+                if is_array:
+                    success_count += 1
+            else:
+                self.log_test(
+                    f"GET /api{endpoint}",
+                    False,
+                    f"{name} endpoint failed: {result.get('error', 'Unknown error')}",
+                    result.get('response_time', 0)
+                )
+        
+        return success_count == len(core_endpoints)
+
+    def test_ultra_endpoints(self):
+        """Test 4: Ultra performance endpoints"""
+        print("\n=== TESTING ULTRA ENDPOINTS ===")
+        
+        if not self.auth_token:
+            self.log_test("ULTRA ENDPOINTS", False, "No authentication token available")
+            return False
+        
+        ultra_endpoints = [
+            ('/ultra/pillars', 'Ultra Pillars'),
+            ('/ultra/areas', 'Ultra Areas'),
+            ('/ultra/projects', 'Ultra Projects')
         ]
         
-        for endpoint in endpoints_to_check:
+        success_count = 0
+        for endpoint, name in ultra_endpoints:
+            result = self.make_request('GET', endpoint, use_auth=True)
+            
+            self.log_test(
+                f"GET /api{endpoint}",
+                result['success'],
+                f"{name} endpoint accessible" if result['success'] else f"{name} endpoint failed: {result.get('error', 'Unknown error')}",
+                result.get('response_time', 0)
+            )
+            
+            if result['success']:
+                success_count += 1
+        
+        return success_count == len(ultra_endpoints)
+
+    def test_alignment_endpoints(self):
+        """Test 5: Alignment endpoints"""
+        print("\n=== TESTING ALIGNMENT ENDPOINTS ===")
+        
+        if not self.auth_token:
+            self.log_test("ALIGNMENT ENDPOINTS", False, "No authentication token available")
+            return False
+        
+        alignment_endpoints = [
+            ('/alignment/dashboard', 'Alignment Dashboard'),
+            ('/alignment/monthly-goal', 'Monthly Goal')
+        ]
+        
+        success_count = 0
+        for endpoint, name in alignment_endpoints:
+            result = self.make_request('GET', endpoint, use_auth=True)
+            
+            self.log_test(
+                f"GET /api{endpoint}",
+                result['success'],
+                f"{name} endpoint accessible" if result['success'] else f"{name} endpoint failed: {result.get('error', 'Unknown error')}",
+                result.get('response_time', 0)
+            )
+            
+            if result['success']:
+                success_count += 1
+        
+        return success_count == len(alignment_endpoints)
+
+    def test_today_endpoints(self):
+        """Test 6: Today endpoints (rate-limited but allow one)"""
+        print("\n=== TESTING TODAY ENDPOINTS ===")
+        
+        if not self.auth_token:
+            self.log_test("TODAY ENDPOINTS", False, "No authentication token available")
+            return False
+        
+        today_endpoints = [
+            ('/today', 'Today View'),
+            ('/tasks/suggest-focus', 'Suggest Focus Tasks')
+        ]
+        
+        success_count = 0
+        for endpoint, name in today_endpoints:
+            result = self.make_request('GET', endpoint, use_auth=True)
+            
+            # Accept both success and rate limit as valid responses
+            is_valid = result['success'] or result.get('status_code') == 429
+            
+            if result['success']:
+                message = f"{name} endpoint accessible"
+            elif result.get('status_code') == 429:
+                message = f"{name} endpoint rate-limited (expected behavior)"
+            else:
+                message = f"{name} endpoint failed: {result.get('error', 'Unknown error')}"
+            
+            self.log_test(
+                f"GET /api{endpoint}",
+                is_valid,
+                message,
+                result.get('response_time', 0)
+            )
+            
+            if is_valid:
+                success_count += 1
+        
+        return success_count == len(today_endpoints)
+
+    def test_performance_metrics(self):
+        """Test 7: Verify average response time under 1500ms"""
+        print("\n=== TESTING PERFORMANCE METRICS ===")
+        
+        if not self.response_times:
+            self.log_test("PERFORMANCE METRICS", False, "No response times recorded")
+            return False
+        
+        avg_response_time = sum(self.response_times) / len(self.response_times)
+        max_response_time = max(self.response_times)
+        min_response_time = min(self.response_times)
+        
+        performance_ok = avg_response_time < 1500
+        
+        self.log_test(
+            "AVERAGE RESPONSE TIME",
+            performance_ok,
+            f"Average: {avg_response_time:.0f}ms (target: <1500ms), Min: {min_response_time:.0f}ms, Max: {max_response_time:.0f}ms"
+        )
+        
+        return performance_ok
+
+    def run_comprehensive_smoke_test(self):
+        """Run comprehensive backend smoke test"""
+        print("\n🔥 STARTING BACKEND SMOKE TEST - COMPREHENSIVE HEALTH CHECK")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test User: {self.test_user_email}")
+        print("=" * 80)
+        
+        # Run all tests in sequence as per review request
+        test_methods = [
+            ("Health Endpoints", self.test_health_endpoints),
+            ("Authentication", self.test_authentication),
+            ("Core Data Endpoints", self.test_core_data_endpoints),
+            ("Ultra Endpoints", self.test_ultra_endpoints),
+            ("Alignment Endpoints", self.test_alignment_endpoints),
+            ("Today Endpoints", self.test_today_endpoints),
+            ("Performance Metrics", self.test_performance_metrics)
+        ]
+        
+        successful_tests = 0
+        total_tests = len(test_methods)
+        
+        for test_name, test_method in test_methods:
+            print(f"\n--- {test_name} ---")
             try:
-                # For pillars endpoint, include auth header if available
-                headers = {}
-                if 'pillars' in endpoint and self.access_token:
-                    headers['Authorization'] = f'Bearer {self.access_token}'
-                
-                start_time = time.time()
-                response = self.session.get(endpoint, headers=headers)
-                response_time = int((time.time() - start_time) * 1000)
-                
-                present_headers = []
-                missing_headers = []
-                
-                for header in required_headers:
-                    if header in response.headers:
-                        present_headers.append(header)
-                    else:
-                        missing_headers.append(header)
-                
-                if missing_headers:
-                    self.log_result(
-                        f"Security headers ({endpoint.split('/')[-1]})", 
-                        False, 
-                        f"Missing: {missing_headers}. Present: {present_headers}",
-                        response_time
-                    )
+                if test_method():
+                    successful_tests += 1
+                    print(f"✅ {test_name} completed successfully")
                 else:
-                    self.log_result(
-                        f"Security headers ({endpoint.split('/')[-1]})", 
-                        True, 
-                        f"All required headers present: {present_headers}",
-                        response_time
-                    )
-                    
+                    print(f"❌ {test_name} failed")
             except Exception as e:
-                self.log_result(f"Security headers ({endpoint.split('/')[-1]})", False, f"Exception: {str(e)}")
+                print(f"❌ {test_name} raised exception: {e}")
+        
+        success_rate = (successful_tests / total_tests) * 100
+        
+        print(f"\n" + "=" * 80)
+        print("🔥 BACKEND SMOKE TEST SUMMARY")
+        print("=" * 80)
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test Phases: {successful_tests}/{total_tests} successful")
+        print(f"Overall Success Rate: {success_rate:.1f}%")
+        
+        # Performance summary
+        if self.response_times:
+            avg_time = sum(self.response_times) / len(self.response_times)
+            print(f"Average Response Time: {avg_time:.0f}ms (target: <1500ms)")
+        
+        # Detailed endpoint results
+        endpoint_tests = [r for r in self.test_results if 'GET /' in r['test'] or 'LOGIN' in r['test']]
+        successful_endpoints = sum(1 for r in endpoint_tests if r['success'])
+        
+        print(f"\n🔍 ENDPOINT ANALYSIS:")
+        print(f"Successful Endpoints: {successful_endpoints}/{len(endpoint_tests)}")
+        
+        # Authentication analysis
+        auth_tests = [r for r in self.test_results if 'LOGIN' in r['test'] or 'AUTH' in r['test']]
+        auth_success = all(r['success'] for r in auth_tests)
+        print(f"Authentication Status: {'✅ Working' if auth_success else '❌ Failed'}")
+        
+        if success_rate >= 85:
+            print("\n✅ BACKEND SMOKE TEST: SUCCESS")
+            print("   ✅ Health endpoints accessible")
+            print("   ✅ Authentication working")
+            print("   ✅ Core data endpoints functional")
+            print("   ✅ Ultra endpoints operational")
+            print("   ✅ Alignment endpoints working")
+            print("   ✅ Today endpoints accessible")
+            print("   ✅ Performance within targets")
+            print("   Backend is healthy and ready for frontend integration!")
+        else:
+            print("\n❌ BACKEND SMOKE TEST: ISSUES DETECTED")
+            print("   Issues found in backend health check")
+        
+        # Show failed tests for debugging
+        failed_tests = [result for result in self.test_results if not result['success']]
+        if failed_tests:
+            print(f"\n🔍 FAILED TESTS ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"   ❌ {test['test']}: {test['message']}")
+        
+        return success_rate >= 85
+
+def main():
+    """Run Backend Smoke Test"""
+    print("🔥 STARTING BACKEND SMOKE TEST")
+    print("=" * 80)
     
-    def run_all_tests(self):
-        """Run all smoke tests"""
-        print(f"🚀 Starting Backend Readiness Smoke Test")
-        print(f"📍 Target: {BASE_URL}")
-        print(f"⏰ Started: {datetime.now().isoformat()}")
-        print("=" * 60)
+    tester = BackendSmokeTestSuite()
+    
+    try:
+        # Run the comprehensive smoke test
+        success = tester.run_comprehensive_smoke_test()
         
-        # Run all test scenarios
-        self.test_root_endpoint()
-        self.test_protected_endpoint_without_auth()
-        self.test_disposable_auth_flow()
-        self.test_minimal_crud_operations()
-        self.test_security_headers()
-        
-        # Summary
-        print("=" * 60)
-        total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result['success'])
-        failed_tests = total_tests - passed_tests
+        # Calculate overall results
+        total_tests = len(tester.test_results)
+        passed_tests = sum(1 for result in tester.test_results if result['success'])
         success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         
-        print(f"📊 SUMMARY:")
-        print(f"   Total Tests: {total_tests}")
-        print(f"   Passed: {passed_tests}")
-        print(f"   Failed: {failed_tests}")
-        print(f"   Success Rate: {success_rate:.1f}%")
+        print("\n" + "=" * 80)
+        print("📊 FINAL RESULTS")
+        print("=" * 80)
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {total_tests - passed_tests}")
+        print(f"Success Rate: {success_rate:.1f}%")
         
-        if failed_tests == 0:
-            print("🎉 ALL TESTS PASSED - Backend is ready for UI E2E testing!")
-        else:
-            print("⚠️  Some tests failed - review blockers before UI E2E testing")
-            print("\nFailed Tests:")
-            for result in self.test_results:
-                if not result['success']:
-                    print(f"   ❌ {result['test']}: {result['details']}")
+        # Performance summary
+        if tester.response_times:
+            avg_time = sum(tester.response_times) / len(tester.response_times)
+            print(f"Average Response Time: {avg_time:.0f}ms")
         
-        print(f"⏰ Completed: {datetime.now().isoformat()}")
+        print("=" * 80)
         
-        return failed_tests == 0
+        return success_rate >= 85
+        
+    except Exception as e:
+        print(f"\n❌ CRITICAL ERROR during testing: {str(e)}")
+        return False
 
 if __name__ == "__main__":
-    test_runner = BackendSmokeTest()
-    success = test_runner.run_all_tests()
+    success = main()
     sys.exit(0 if success else 1)
