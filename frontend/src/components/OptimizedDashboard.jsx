@@ -480,6 +480,14 @@ const OptimizedDashboard = ({ onSectionChange }) => {
                 className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 pl-9 pr-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
               />
               {/* Results dropdown */}
+            <button
+              type="button"
+              onClick={() => setFocusList([])}
+              className="inline-flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-semibold py-2 px-3 rounded-md text-sm"
+            >
+              Clear Focus
+            </button>
+
               {debouncedQuery && (searchLoading || searchResults.length > 0) && (
                 <div className="absolute z-20 mt-2 w-full bg-gray-900 border border-gray-800 rounded-md shadow-lg max-h-60 overflow-auto">
                   {searchLoading ? (
