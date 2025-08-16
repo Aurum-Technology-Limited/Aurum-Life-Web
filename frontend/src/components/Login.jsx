@@ -120,6 +120,7 @@ const Login = () => {
             setTimeout(() => {
               setIsLogin(true);
               setJustAutoSwitched(true);
+              setAutoSwitchedDuplicate(true);
               // Focus password shortly after switching to login
               setTimeout(() => {
                 try { passwordInputRef?.current?.focus(); } catch {}
