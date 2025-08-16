@@ -203,12 +203,19 @@ class AiCoachMvpService:
                 t = item['task']
                 p = item.get('project') or {}
                 a = item.get('area') or {}
+                pillar_name = ''
+                try:
+                    if a and a.get('pillar_id'):
+                        pil = pillars.get(a['pillar_id'])
+                        pillar_name = pil.get('name') if pil else ''
+                except Exception:
+                    pillar_name = ''
                 prompt = (
                     f"Task: '{t.get('name','')}'\n"
                     f"Project: '{p.get('name','') or 'None'}'\n"
                     f"Area: '{a.get('name','') or 'None'}'\n"
-                    f"Pillar: ''\n"
-                    f"Instruction: In 1-2 sentences, motivate the user by explaining why this task matters today and how it ties to the project/area pillar context."
+                    f"Pillar: '{pillar_name or 'None'}'\n"
+                    f"Instruction: In 1-2 sentences, motivate the user by explaining why this task matters today and how it ties to the project/area/pillar context."
                 )
                 try:
                     msg = UserMessage(text=prompt)
