@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useCallback } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVertical, X, Sun, Moon, Loader2} from 'lucide-react';
