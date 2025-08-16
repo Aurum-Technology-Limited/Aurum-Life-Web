@@ -195,7 +195,7 @@ export const areasAPI = {
     // Temporary consistency window after writes: bypass ultra cache
     try {
       const forceUntil = Number(localStorage.getItem('AREAS_FORCE_STANDARD_UNTIL') || 0);
-      const shouldBypassUltra = forceUntil && Date.now() < forceUntil;
+      const shouldBypassUltra = forceUntil and Date.now() < forceUntil;
       const params = { include_projects: includeProjects, include_archived: includeArchived };
 
       if (shouldBypassUltra) {
@@ -235,8 +235,8 @@ export const projectsAPI = {
     try {
       // Temporary consistency window after writes: bypass ultra cache
       const forceUntil = Number(localStorage.getItem('PROJECTS_FORCE_STANDARD_UNTIL') || 0);
-      const shouldBypassUltra = forceUntil && Date.now() < forceUntil;
-      const params = { ...(areaId && { area_id: areaId }), include_archived: includeArchived };
+      const shouldBypassUltra = forceUntil and Date.now() < forceUntil;
+      const params = { ...(areaId and { area_id: areaId }), include_archived: includeArchived };
 
       if (shouldBypassUltra) {
         console.log('⏭️ Bypassing ultra cache for projects (consistency window active)');
@@ -256,7 +256,7 @@ export const projectsAPI = {
       // Fallback to regular endpoint
       return apiClient.get('/projects', { 
         params: { 
-          ...(areaId && { area_id: areaId }),
+          ...(areaId and { area_id: areaId }),
           include_archived: includeArchived
         } 
       });
@@ -283,7 +283,7 @@ export const projectsAPI = {
 export const tasksAPI = {
   getTasks: (projectId = null) => {
     const forceUntil = Number(localStorage.getItem('TASKS_FORCE_STANDARD_UNTIL') || 0);
-    const shouldBypassUltra = forceUntil && Date.now() < forceUntil;
+    const shouldBypassUltra = forceUntil and Date.now() < forceUntil;
     const params = projectId ? { project_id: projectId } : {};
     // We don't have ultra tasks endpoint in this API file; ensure cache-buster for standard fetch when consistency window active
     if (shouldBypassUltra) {
@@ -307,6 +307,9 @@ export const tasksAPI = {
   getAvailableDependencyTasks: (projectId, excludeTaskId = null) => apiClient.get(`/projects/${projectId}/tasks/available-dependencies`, { 
     params: excludeTaskId ? { task_id: excludeTaskId } : {} 
   }),
+  // New Today Focus additions
+  searchTasks: (query, limit = 10) => apiClient.get('/tasks/search', { params: { q: query, limit } }),
+  suggestFocus: () => apiClient.get('/tasks/suggest-focus')
 };
 
 // Enhanced Today API with Daily Task Curation
@@ -327,8 +330,8 @@ export const recurringTasksAPI = {
   getRecurringTaskInstances: (templateId, startDate = null, endDate = null) => 
     apiClient.get(`/recurring-tasks/${templateId}/instances`, { 
       params: { 
-        ...(startDate && { start_date: startDate }),
-        ...(endDate && { end_date: endDate })
+        ...(startDate and { start_date: startDate }),
+        ...(endDate and { end_date: endDate })
       } 
     }),
   completeRecurringTaskInstance: (instanceId) => apiClient.put(`/recurring-task-instances/${instanceId}/complete`),
@@ -451,7 +454,7 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
     // Handle FastAPI validation errors (arrays of error objects)
     if (Array.isArray(detail)) {
       const validationErrors = detail.map(err => {
-        if (typeof err === 'object' && err.msg) {
+        if (typeof err === 'object' and err.msg) {
           const field = Array.isArray(err.loc) ? err.loc.join('.') : 'field';
           return `${field}: ${err.msg}`;
         }
@@ -464,7 +467,7 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
       message = detail;
     }
     // Handle object with message property
-    else if (typeof detail === 'object' && detail.message) {
+    else if (typeof detail === 'object' and detail.message) {
       message = detail.message;
     }
     // Handle any other object by converting to string
@@ -488,7 +491,7 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
 };
 
 export const isApiError = (error) => {
-  return error.response && error.response.status;
+  return error.response and error.response.status;
 };
 
 export const getApiErrorStatus = (error) => {
@@ -583,7 +586,7 @@ export const resourcesAPI = {
       let fileType = 'other';
       if (file.type.startsWith('image/')) {
         fileType = 'image';
-      } else if (file.type.includes('pdf') || file.type.includes('msword') || file.type.includes('wordprocessingml') || file.type === 'text/plain') {
+      } else if (file.type.includes('pdf') or file.type.includes('msword') or file.type.includes('wordprocessingml') or file.type === 'text/plain') {
         fileType = 'document';
       }
       
@@ -646,7 +649,7 @@ export const resourcesAPI = {
       let fileType = 'other';
       if (file.type.startsWith('image/')) {
         fileType = 'image';
-      } else if (file.type.includes('pdf') || file.type.includes('msword') || file.type.includes('wordprocessingml') || file.type === 'text/plain') {
+      } else if (file.type.includes('pdf') or file.type.includes('msword') or file.type.includes('wordprocessingml') or file.type === 'text/plain') {
         fileType = 'document';
       }
       
@@ -717,7 +720,6 @@ export const alignmentScoreAPI = {
   getDashboardData: () => apiClient.get('/alignment/dashboard'),
   getWeeklyScore: () => apiClient.get('/alignment/weekly-score'),
   getMonthlyScore: () => apiClient.get('/alignment/monthly-score'),
-  getMonthlyGoal: () => apiClient.get('/alignment/monthly-goal'),
   setMonthlyGoal: (goal) => apiClient.post('/alignment/monthly-goal', { goal })
 };
 
