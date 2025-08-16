@@ -688,15 +688,16 @@ const Today = memo(() => {
                 ) : (
                   <div ref={drop} className="space-y-4">
                     {todaysTasks.map((task, index) => (
-                      <DragTaskItem
-                        key={task.id}
-                        task={task}
-                        index={index}
-                        moveTask={moveTask}
-                        onToggleComplete={handleToggleTask}
-                        onStartPomodoro={handleStartPomodoro}
-                        onRemove={handleRemoveFromFocus}
-                      />
+                      <div key={task.id} ref={(node) => {/* DnD wrapper maintains drag behavior */}}>
+                        <DragTaskItem
+                          task={task}
+                          index={index}
+                          moveTask={moveTask}
+                          onToggleComplete={handleToggleTask}
+                          onStartPomodoro={handleStartPomodoro}
+                          onRemove={handleRemoveFromFocus}
+                        />
+                      </div>
                     ))}
                   </div>
                 )}
