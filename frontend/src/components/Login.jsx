@@ -8,6 +8,7 @@ const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [justAutoSwitched, setJustAutoSwitched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const passwordInputRef = useRef(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
