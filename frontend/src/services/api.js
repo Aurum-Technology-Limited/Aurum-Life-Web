@@ -283,7 +283,7 @@ export const projectsAPI = {
 export const tasksAPI = {
   getTasks: (projectId = null) => {
     const forceUntil = Number(localStorage.getItem('TASKS_FORCE_STANDARD_UNTIL') || 0);
-    const shouldBypassUltra = forceUntil and Date.now() < forceUntil;
+    const shouldBypassUltra = forceUntil && Date.now() < forceUntil;
     const params = projectId ? { project_id: projectId } : {};
     // We don't have ultra tasks endpoint in this API file; ensure cache-buster for standard fetch when consistency window active
     if (shouldBypassUltra) {
