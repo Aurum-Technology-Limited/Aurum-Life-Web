@@ -122,20 +122,10 @@ const Login = () => {
           // Handle duplicate email auto-switch
           if (result.duplicate || result.code === 409) {
             setError(result.error || 'An account with this email already exists. Please sign in instead.');
+            // Defer UI changes to effect for reliability
+            setPendingAutoSwitchDuplicate(true);
             setTimeout(() => {
               setIsLogin(true);
-              setJustAutoSwitched(true);
-              setAutoSwitchedDuplicate(true);
-              // Clear password field when switching to login for duplicate
-              setFormData(prev => ({
-                ...prev,
-                password: '',
-                confirmPassword: ''
-              }));
-              // Focus password shortly after switching to login
-              setTimeout(() => {
-                try { passwordInputRef?.current?.focus(); } catch {}
-              }, 80);
             }, 1200);
           } else {
             setError(result.error || 'Registration failed');
