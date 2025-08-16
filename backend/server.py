@@ -616,6 +616,40 @@ async def search_tasks(
         return out
     except HTTPException:
         raise
+
+@api_router.get("/ultra/areas", response_model=List[dict])
+async def ultra_get_areas(
+    include_projects: bool = Query(False, description="Include linked projects"),
+    include_archived: bool = Query(False, description="Include archived areas"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    try:
+        user_id = str(current_user.id)
+        areas = await UltraPerformanceAreaService.get_user_areas(
+            user_id, include_projects=include_projects, include_archived=include_archived
+        )
+        return [a.dict() if hasattr(a, 'dict') else dict(a) if isinstance(a, dict) else a for a in areas]
+    except Exception as e:
+        logger.error(f"Ultra areas error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch areas")
+
+@api_router.get("/ultra/projects", response_model=List[dict])
+async def ultra_get_projects(
+    area_id: Optional[str] = Query(None, description="Filter by area_id"),
+    include_tasks: bool = Query(False, description="Include linked tasks"),
+    include_archived: bool = Query(False, description="Include archived projects"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    try:
+        user_id = str(current_user.id)
+        projects = await UltraPerformanceProjectService.get_user_projects(
+            user_id, area_id=area_id, include_tasks=include_tasks, include_archived=include_archived
+        )
+        return [p.dict() if hasattr(p, 'dict') else dict(p) if isinstance(p, dict) else p for p in projects]
+    except Exception as e:
+        logger.error(f"Ultra projects error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch projects")
+
     except Exception as e:
         logger.error(f"Error in tasks search: {e}")
         raise HTTPException(status_code=500, detail="Failed to search tasks")
