@@ -3,7 +3,7 @@ Clean Supabase-only FastAPI Server
 No MongoDB dependencies, pure Supabase implementation
 """
 
-from fastapi import FastAPI, APIRouter, HTTPException, Query, Depends, status, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Depends, status, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from dotenv import load_dotenv
