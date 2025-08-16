@@ -58,6 +58,8 @@
 ##
 ## agent_communication:
     -agent: "main"
+    -message: "Run E2E for Monthly Goal flow: 1) Login with existing test account, 2) On Dashboard, click Update Goal on Alignment Score card (navigates to Settings > Goals), 3) Read current goal via GET, 4) Enter a new valid value (e.g., 321) in input#monthlyGoal, 5) Click Save Goal, expect loading state and success message, 6) Re-fetch or navigate back to Dashboard to confirm persistence (value change reflected), 7) Assert no console errors (no CORS/401/404 for goal endpoints)."
+    -agent: "main"
     -message: "UI parity update: Focus list now renders via UnifiedTaskItem inside DnD wrapper for exact styling parity. Suggestions display an 'AI' badge. Backend suggest-focus now returns validated tasks with full payload, reducing 404s. Running E2E to verify add-to-focus without extra fetch, unified visuals, and no 404s."
     -agent: "main"
     -message: "Running UI E2E for Today refinements: verify Suggest My Focus loading state (disabled + spinner + 'Suggesting...'), suggestions render with unified TaskItem (priority dot, title, context), no React key warnings in console, + adds to Focus and removes from suggestions, button re-enables post-load. Start from login, navigate to Today."
