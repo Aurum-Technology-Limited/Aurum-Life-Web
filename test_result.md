@@ -58,6 +58,8 @@
 ##
 ## agent_communication:
     -agent: "main"
+    -message: "UI parity update: Focus list now renders via UnifiedTaskItem inside DnD wrapper for exact styling parity. Suggestions display an 'AI' badge. Backend suggest-focus now returns validated tasks with full payload, reducing 404s. Running E2E to verify add-to-focus without extra fetch, unified visuals, and no 404s."
+    -agent: "main"
     -message: "Running UI E2E for Today refinements: verify Suggest My Focus loading state (disabled + spinner + 'Suggesting...'), suggestions render with unified TaskItem (priority dot, title, context), no React key warnings in console, + adds to Focus and removes from suggestions, button re-enables post-load. Start from login, navigate to Today."
     -agent: "main"
     -message: "Running UI E2E for Today view unification + Dashboard cleanup: 1) Login, 2) Verify Dashboard no longer shows Today's Focus block (search/suggest/list removed), 3) Navigate to Today, verify Unified Action Bar (search placeholder 'Search for tasks or...' + 'Suggest My Focus' button), 4) Click Suggest My Focus and add one suggestion via +, 5) Verify item appears in Today's Focus list, 6) Verify Pomodoro and Morning/Evening Reflection remain, 7) Verify search still works and adds item, 8) No console errors/CORS."
