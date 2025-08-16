@@ -48,9 +48,8 @@ const Login = () => {
       } else {
         setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
       }
-      setTimeout(() => {
-        try { passwordInputRef?.current?.focus(); } catch {}
-      }, 150);
+      // Use more resilient focus strategy
+      focusPasswordStable();
       setPendingAutoSwitchDuplicate(false);
     }
   }, [isLogin, pendingAutoSwitchDuplicate]);
