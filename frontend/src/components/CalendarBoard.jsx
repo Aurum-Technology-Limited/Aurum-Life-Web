@@ -292,6 +292,22 @@ const CalendarBoard = () => {
                 >
                   <div className="text-xs text-gray-400 mb-2">Filter by project</div>
                   <div className="max-h-64 overflow-y-auto space-y-1">
+            {/* Legend toggle */}
+            <button className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white" onClick={() => setShowLegend(s => !s)}>Legend</button>
+            {showLegend && (
+              <div className="absolute right-0 top-10 bg-gray-900 border border-gray-700 rounded p-3 z-40 w-64">
+                <div className="text-xs text-gray-400 mb-2">Project Colors</div>
+                <div className="max-h-64 overflow-y-auto space-y-1">
+                  {projects.map(p => (
+                    <div key={p.id} className="flex items-center gap-2 text-sm text-gray-200">
+                      <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: p.color || '#777' }} />
+                      <span className="truncate">{p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
                     {projects.map((p, idx) => (
                       <label key={p.id} className={`flex items-center gap-2 text-sm ${filterActiveIndex===idx?'bg-gray-800':''} text-gray-200 px-1 rounded`}>
                         <input type="checkbox" checked={projectFilterIds.includes(p.id)} onChange={(e) => {
