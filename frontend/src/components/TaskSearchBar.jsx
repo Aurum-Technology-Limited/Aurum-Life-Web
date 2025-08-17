@@ -104,6 +104,23 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
         <input
           type="text"
           value={query}
+          onKeyDown={(e) => {
+            if (!showResults) return;
+            if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              setActiveIndex((prev) => Math.min(prev + 1, results.length - 1));
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              setActiveIndex((prev) => Math.max(prev - 1, 0));
+            } else if (e.key === 'Enter') {
+              if (activeIndex >= 0 && activeIndex < results.length) {
+                e.preventDefault();
+                handleAddTask(results[activeIndex]);
+              }
+            } else if (e.key === 'Escape') {
+              setShowResults(false);
+            }
+          }}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
           className="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 focus:outline-none transition-colors"
