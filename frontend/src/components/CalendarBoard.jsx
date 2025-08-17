@@ -190,6 +190,14 @@ const CalendarBoard = () => {
       setLoading(false);
     }
   }, []);
+  const onCreateAt = useCallback((date) => {
+    setNewTaskTime(date);
+    setNewName('');
+    setNewPriority('medium');
+    setNewProjectId(projects[0]?.id || '');
+    setShowCreate(true);
+  }, [projects]);
+
 
   useEffect(() => { load(); }, [load]);
 
