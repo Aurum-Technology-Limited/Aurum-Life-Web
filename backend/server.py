@@ -360,6 +360,9 @@ ai_coach_mvp = AiCoachMvpService()
 # In-memory rate limiting storage (in production, use Redis)
 rate_limit_storage = {}
 
+# In-memory Today focus storage (per-user task IDs). For MVP only; frontend also keeps localStorage.
+TODAY_FOCUS_MAP: Dict[str, set] = {}
+
 # Generic, endpoint-scoped rate limiter
 # key format: f"{user_id}:{scope}"
 def check_rate_limit_scoped(user_id: str, scope: str, max_per_min: int = 5) -> bool:
