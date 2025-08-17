@@ -194,6 +194,8 @@ class JournalEntry(BaseDocument):
     location: Optional[str] = None  # Optional location
     word_count: int = 0
     reading_time_minutes: int = 0
+    deleted: bool = False
+    deleted_at: Optional[datetime] = None
 
 class JournalEntryCreate(BaseModel):
     title: str
