@@ -975,6 +975,99 @@ async def get_project_drilldown_tasks(
         logger.error(f"Project drilldown error: {e}")
         raise HTTPException(status_code=500, detail="Failed to load project tasks")
 
+@api_router.get("/insights/areas/{area_id}/tasks")
+async def get_area_drilldown_tasks(
+    area_id: str,
+    status: str = Query("all", pattern="^(all|active|completed)$"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        # Get projects in area
+        p_resp = supabase.table('projects').select('id,name').eq('area_id', area_id).eq('user_id', user_id).execute()
+        projects = p_resp.data or []
+        project_ids = [p['id'] for p in projects]
+        proj_lookup = {p['id']: p['name'] for p in projects}
+        tasks = []
+        if project_ids:
+            query = (
+                supabase.table('tasks')
+                .select('id,name,description,priority,status,completed,due_date,project_id')
+                .eq('user_id', user_id)
+                .in_('project_id', project_ids)
+            )
+            if status == 'active':
+                query = query.eq('completed', False)
+            elif status == 'completed':
+                query = query.eq('completed', True)
+            t_resp = query.order('created_at', desc=True).execute()
+            tasks = t_resp.data or []
+            for t in tasks:
+                t['project_name'] = proj_lookup.get(t.get('project_id'))
+        # Area name
+        area_name = None
+        try:
+            a_resp = supabase.table('areas').select('name').eq('id', area_id).single().execute()
+            area_name = (a_resp.data or {}).get('name')
+        except Exception:
+            pass
+        return { 'area_id': area_id, 'area_name': area_name, 'tasks': tasks }
+    except Exception as e:
+        logger.error(f"Area drilldown error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load area tasks")
+
+@api_router.get("/insights/pillars/{pillar_id}/tasks")
+async def get_pillar_drilldown_tasks(
+    pillar_id: str,
+    status: str = Query("all", pattern="^(all|active|completed)$"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        # Get areas under pillar
+        a_resp = supabase.table('areas').select('id,name').eq('pillar_id', pillar_id).eq('user_id', user_id).execute()
+        areas = a_resp.data or []
+        area_ids = [a['id'] for a in areas]
+        # Projects in those areas
+        projects = []
+        project_ids = []
+        proj_lookup = {}
+        if area_ids:
+            p_resp = supabase.table('projects').select('id,name,area_id').in_('area_id', area_ids).eq('user_id', user_id).execute()
+            projects = p_resp.data or []
+            project_ids = [p['id'] for p in projects]
+            proj_lookup = {p['id']: p['name'] for p in projects}
+        # Tasks in those projects
+        tasks = []
+        if project_ids:
+            query = (
+                supabase.table('tasks')
+                .select('id,name,description,priority,status,completed,due_date,project_id')
+                .eq('user_id', user_id)
+                .in_('project_id', project_ids)
+            )
+            if status == 'active':
+                query = query.eq('completed', False)
+            elif status == 'completed':
+                query = query.eq('completed', True)
+            t_resp = query.order('created_at', desc=True).execute()
+            tasks = t_resp.data or []
+            for t in tasks:
+                t['project_name'] = proj_lookup.get(t.get('project_id'))
+        # Pillar name
+        pillar_name = None
+        try:
+            r_resp = supabase.table('pillars').select('name').eq('id', pillar_id).single().execute()
+            pillar_name = (r_resp.data or {}).get('name')
+        except Exception:
+            pass
+        return { 'pillar_id': pillar_id, 'pillar_name': pillar_name, 'tasks': tasks }
+    except Exception as e:
+        logger.error(f"Pillar drilldown error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load pillar tasks")
+
     try:
         user_id = str(current_user.id)
         # Rate limit search to prevent abuse
