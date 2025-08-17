@@ -849,6 +849,13 @@ const Journal = memo(() => {
 
   return (
     <div className="space-y-8">
+      {isSyncing && (
+        <div className="fixed bottom-4 right-4 bg-gray-900 border border-gray-700 text-gray-200 px-3 py-2 rounded flex items-center gap-2 shadow-lg z-50">
+          <Loader2 size={16} className="animate-spin text-yellow-400" />
+          <span>Syncing…</span>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Personal Journal</h1>
