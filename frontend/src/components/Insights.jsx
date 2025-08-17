@@ -401,9 +401,25 @@ const Insights = memo(() => {
                     
                     <div className="text-right">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-gray-400 text-sm">
+                        <button
+                          onClick={async () => {
+                            setDrilldown({ type: 'pillar', payload: { pillar_id: pillar.pillar_id, pillar_name: pillar.pillar_name }, loading: true, items: [], todayIds: [] });
+                            try {
+                              const [tasksResp, todayResp] = await Promise.all([
+                                insightsDrilldownAPI.getPillarTasks(pillar.pillar_id, 'all'),
+                                todayAPI.getTodayView(),
+                              ]);
+                              const todayIds = Array.isArray(todayResp.data) ? todayResp.data.map(x => x.id) : [];
+                              setDrilldown({ type: 'pillar', payload: { pillar_id: pillar.pillar_id, pillar_name: pillar.pillar_name }, loading: false, items: tasksResp.data.tasks || [], todayIds });
+                            } catch (e) {
+                              setDrilldown({ type: 'pillar', payload: { pillar_id: pillar.pillar_id, pillar_name: pillar.pillar_name }, loading: false, items: [], todayIds: [], error: e?.message });
+                            }
+                          }}
+                          className="text-gray-400 text-sm hover:underline"
+                          title="View tasks in this pillar"
+                        >
                           {pillar.task_count} tasks
-                        </span>
+                        </button>
                         <span className="text-yellow-500 font-bold text-lg">
                           {pillar.percentage}%
                         </span>
