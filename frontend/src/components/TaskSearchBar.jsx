@@ -153,7 +153,7 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
             </div>
           ) : (
             <div className="py-2">
-              {results.map((task) => (
+              {results.map((task, idx) => (
                 <div
                   key={task.id}
                   className="px-4 py-3 hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 last:border-b-0"
