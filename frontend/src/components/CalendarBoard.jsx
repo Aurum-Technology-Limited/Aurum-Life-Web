@@ -238,6 +238,56 @@ const CalendarBoard = () => {
             <button className={`px-2 py-1 rounded text-sm ${view==='day'?'bg-gray-800 text-white':'text-gray-300 hover:text-white'}`} onClick={() => setView('day')}>Day</button>
             <button className={`px-2 py-1 rounded text-sm ${view==='week'?'bg-gray-800 text-white':'text-gray-300 hover:text-white'}`} onClick={() => setView('week')}>Week</button>
             <button className={`px-2 py-1 rounded text-sm ${view==='month'?'bg-gray-800 text-white':'text-gray-300 hover:text-white'}`} onClick={() => setView('month')}>Month</button>
+
+        {showCreate && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}>
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+              <div className="text-white font-semibold mb-2">Create Task</div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-gray-400">Name</label>
+                  <input value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" placeholder="Task name" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-400">Priority</label>
+                    <select value={newPriority} onChange={(e) => setNewPriority(e.target.value)} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm">
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400">Project</label>
+                    <select value={newProjectId} onChange={(e) => setNewProjectId(e.target.value)} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm">
+                      <option value="">Unassigned</option>
+                      {projects.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400">When</label>
+                  <input value={newTaskTime ? newTaskTime.toISOString().slice(0,16) : ''} onChange={() => {}} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" disabled />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 rounded" onClick={() => setShowCreate(false)}>Cancel</button>
+                  <button className="px-3 py-1.5 text-sm bg-yellow-600 hover:bg-yellow-700 rounded text-black font-semibold" onClick={async () => {
+                    try {
+                      if (!newName || !newTaskTime) return;
+                      const payload = { name: newName, priority: newPriority, project_id: newProjectId || null, due_date: newTaskTime.toISOString() };
+                      await tasksAPI.createTask(payload);
+                      setShowCreate(false);
+                      await load();
+                    } catch (e) {
+                      console.error('Create task failed', e);
+                    }
+                  }}>Create</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
           </div>
           <div className="flex items-center gap-2">
             <button className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white" onClick={() => setAnchorDate(addDays(anchorDate, view==='day'? -1 : view==='week'? -7 : -30))}>Prev</button>
