@@ -226,6 +226,12 @@ const CalendarBoard = () => {
     return base.filter(t => projectFilterIds.includes(t.project_id));
   }, [tasks, projectFilterIds]);
 
+  const unscheduledTasks = useMemo(() => {
+    const base = tasks.filter(t => !t.due_date);
+    if (!projectFilterIds || projectFilterIds.length === 0) return base;
+    return base.filter(t => projectFilterIds.includes(t.project_id));
+  }, [tasks, projectFilterIds]);
+
   const weekStartDate = useMemo(() => startOfWeek(anchorDate, { weekStartsOn: 0 }), [anchorDate]);
 
   return (
