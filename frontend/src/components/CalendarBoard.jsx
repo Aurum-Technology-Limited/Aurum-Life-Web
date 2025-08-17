@@ -324,6 +324,12 @@ const CalendarBoard = () => {
               )}
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <button className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white" onClick={() => setAnchorDate(addDays(anchorDate, view==='day'? -1 : view==='week'? -7 : -30))}>Prev</button>
+            <div className="text-gray-400 text-sm">{format(anchorDate, view==='month' ? 'MMMM yyyy' : 'EEE MMM d, yyyy')}</div>
+            <button className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white" onClick={() => setAnchorDate(addDays(anchorDate, view==='day'? 1 : view==='week'? 7 : 30))}>Next</button>
+          </div>
+        </div>
 
         {showCreate && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}>
