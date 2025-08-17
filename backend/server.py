@@ -616,6 +616,67 @@ async def ai_task_why_statements(task_ids: Optional[str] = Query(None, descripti
 
 # ... existing AI endpoints and helpers ...
 
+
+@api_router.get("/tasks/{parent_task_id}/subtasks")
+async def get_subtasks(parent_task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        resp = (
+            supabase.table('tasks')
+            .select('id,name,description,status,priority,completed,project_id,parent_task_id')
+            .eq('user_id', user_id)
+            .eq('parent_task_id', parent_task_id)
+            .order('created_at', desc=True)
+            .execute()
+        )
+        items = resp.data or []
+        # Normalize priority/status values to expected frontend format if needed
+        for t in items:
+            # Already stored as lowercase
+            pass
+        return items
+    except Exception as e:
+        logger.error(f"Get subtasks error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load subtasks")
+
+class SubtaskCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    priority: Optional[str] = "medium"
+    category: Optional[str] = "general"
+
+@api_router.post("/tasks/{parent_task_id}/subtasks")
+async def create_subtask(parent_task_id: str, payload: SubtaskCreate = Body(...), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        # Fetch parent to inherit project
+        p_resp = supabase.table('tasks').select('id,project_id').eq('id', parent_task_id).eq('user_id', user_id).single().execute()
+        parent = p_resp.data
+        if not parent:
+            raise HTTPException(status_code=404, detail="Parent task not found")
+        project_id = parent.get('project_id')
+        if not project_id:
+            raise HTTPException(status_code=400, detail="Parent task has no project_id")
+
+        # Build TaskCreate for subtask
+        subtask = TaskCreate(
+            project_id=project_id,
+            parent_task_id=parent_task_id,
+            name=payload.name,
+            description=payload.description or "",
+            priority=payload.priority or 'medium',
+            category=payload.category or 'general'
+        )
+        created = await SupabaseTaskService.create_task(user_id, subtask)
+        return created
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Create subtask error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create subtask")
+
 # ================================
 # TODAY PRIORITIZATION (MVP)
 # ================================
