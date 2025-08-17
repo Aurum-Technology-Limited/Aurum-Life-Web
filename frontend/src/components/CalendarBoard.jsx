@@ -229,7 +229,7 @@ const CalendarBoard = () => {
         )}
 
         {modalOpen && activeTask && (
-          &lt;TaskModal
+          <TaskModal
             task={activeTask}
             isOpen={modalOpen}
             onClose={onCloseTask}
