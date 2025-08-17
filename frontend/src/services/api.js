@@ -339,6 +339,14 @@ export const recurringTasksAPI = {
   generateRecurringTaskInstances: () => apiClient.post('/recurring-tasks/generate-instances')
 };
 
+// Insights Drilldown
+export const insightsDrilldownAPI = {
+  getEisenhowerTasks: (quadrant, scope = 'active', dateRange = 'all_time') =>
+    apiClient.get(`/insights/eisenhower/tasks`, { params: { quadrant, scope, date_range: dateRange } }),
+  getProjectTasks: (projectId, status = 'all') =>
+    apiClient.get(`/insights/projects/${projectId}/tasks`, { params: { status } })
+};
+
 // Insights API (updated with ultra-performance optimization)
 export const insightsAPI = {
   getInsights: async (dateRange = 'all_time', areaId = null) => {
