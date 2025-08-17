@@ -537,8 +537,57 @@ const Insights = memo(() => {
                       {t.description && (
                         <div className="text-xs text-gray-400 mt-1 line-clamp-2">{t.description}</div>
                       )}
-                      <div className="text-xs text-gray-500 mt-1">
-                        {t.status}{t.completed ? ' • Completed' : ''}
+                      <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
+                        <span>
+                          {t.status}{t.completed ? ' • Completed' : ''}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={async () => {
+                              const taskId = t.id || t.taskId;
+                              if (!taskId) return;
+                              try {
+                                // Toggle completed via updateTask
+                                const nextCompleted = !t.completed;
+                                await tasksAPI.updateTask(taskId, { completed: nextCompleted, status: nextCompleted ? 'completed' : (t.status || 'todo') });
+                                // Update local state
+                                setDrilldown((prev) => ({
+                                  ...prev,
+                                  items: prev.items.map((it) => (it.id === taskId || it.taskId === taskId ? { ...it, completed: nextCompleted, status: nextCompleted ? 'completed' : it.status } : it))
+                                }));
+                              } catch (e) {
+                                console.error('Toggle complete failed', e);
+                              }
+                            }}
+                            className={`text-xs px-2 py-0.5 rounded border ${t.completed ? 'text-yellow-400 border-yellow-700 hover:bg-yellow-900/20' : 'text-green-400 border-green-700 hover:bg-green-900/20'}`}
+                            title={t.completed ? 'Mark as active' : 'Mark as completed'}
+                          >
+                            {t.completed ? 'Reopen' : 'Done'}
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const taskId = t.id || t.taskId;
+                              if (!taskId) return;
+                              try {
+                                // Cycle priority: low -> medium -> high -> low
+                                const order = ['low', 'medium', 'high'];
+                                const curr = (t.priority || 'medium').toLowerCase();
+                                const next = order[(order.indexOf(curr) + 1) % order.length];
+                                await tasksAPI.updateTask(taskId, { priority: next });
+                                setDrilldown((prev) => ({
+                                  ...prev,
+                                  items: prev.items.map((it) => (it.id === taskId || it.taskId === taskId ? { ...it, priority: next } : it))
+                                }));
+                              } catch (e) {
+                                console.error('Change priority failed', e);
+                              }
+                            }}
+                            className="text-xs px-2 py-0.5 rounded border text-blue-400 border-blue-700 hover:bg-blue-900/20"
+                            title="Cycle priority"
+                          >
+                            Priority
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
