@@ -179,6 +179,25 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
                       <div className="flex items-center space-x-3 text-xs text-gray-500">
                         {task.project_name && (
                           <span className="text-blue-400">
+            <div className="flex items-center justify-between px-3 py-2 border-t border-gray-700/50 text-xs text-gray-400">
+              <div className="flex items-center gap-2">
+                <span>Rows:</span>
+                <select
+                  value={limit}
+                  onChange={(e) => { setLimit(parseInt(e.target.value)||10); setPage(1); }}
+                  className="bg-gray-800 border border-gray-700 rounded px-1 py-0.5 text-xs text-gray-200"
+                >
+                  {[10, 20, 30, 50].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <button disabled={page<=1} onClick={() => setPage((p)=>Math.max(1,p-1))} className={`px-2 py-0.5 rounded border border-gray-700 ${page<=1?'opacity-50 cursor-not-allowed':'hover:bg-gray-800'}`}>Prev</button>
+                <span>Page {page}</span>
+                <button onClick={() => setPage((p)=>p+1)} className="px-2 py-0.5 rounded border border-gray-700 hover:bg-gray-800">Next</button>
+              </div>
+            </div>
                             📁 {task.project_name}
                           </span>
                         )}
