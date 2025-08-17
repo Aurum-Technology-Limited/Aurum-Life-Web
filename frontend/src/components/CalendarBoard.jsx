@@ -20,8 +20,12 @@ const TaskCard = ({ task, onOpen }) => {
   const [, drag] = useDrag(() => ({ type: ITEM_TYPE, item: { taskId: task.id, task } }), [task]);
   const priority = (task.priority || 'medium').toLowerCase();
   const colorMap = { high: 'border-red-500/60', medium: 'border-yellow-500/60', low: 'border-green-500/60' };
+  // Project color coding (MSTeams-like)
+  const projColor = task.project_color || undefined;
   return (
-    <div ref={drag} onClick={() => onOpen(task)} className={`cursor-move text-xs p-2 rounded bg-gray-900 border ${colorMap[priority] || 'border-gray-700'} shadow-sm hover:bg-gray-800`}>
+    <div ref={drag} onClick={() => onOpen(task)} className={`cursor-move text-xs p-2 rounded bg-gray-900 border ${colorMap[priority] || 'border-gray-700'} shadow-sm hover:bg-gray-800`}
+      style={projColor ? { boxShadow: `inset 2px 0 0 ${projColor}` } : undefined}
+    >
       <div className="truncate text-white">{task.name || 'Untitled'}</div>
       {task.project_name && <div className="text-[10px] text-gray-400 truncate">{task.project_name}</div>}
     </div>
