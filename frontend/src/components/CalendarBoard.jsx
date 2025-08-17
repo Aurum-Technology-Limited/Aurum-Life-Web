@@ -62,7 +62,7 @@ const DayGrid = ({ day, tasks, onDropTask, onOpen, onCreateAt }) => {
           return isSameDay(d, day) && d.getHours() === h;
         });
         return (
-          <TimeSlot key={h} date={slotDate} onDropTask={onDropTask}>
+          <TimeSlot key={h} date={slotDate} onDropTask={onDropTask} onCreateAt={onCreateAt}>
             <div className="absolute left-2 top-1 text-[10px] text-gray-500">{format(slotDate, 'HH:mm')}</div>
             <div className="absolute left-24 right-2 top-1.5 flex flex-col gap-1">
               {slotTasks.map((t) => (
