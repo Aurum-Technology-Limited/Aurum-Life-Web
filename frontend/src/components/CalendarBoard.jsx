@@ -243,6 +243,11 @@ const CalendarBoard = () => {
             <button className={`px-2 py-1 rounded text-sm ${view==='day'?'bg-gray-800 text-white':'text-gray-300 hover:text-white'}`} onClick={() => setView('day')}>Day</button>
             <button className={`px-2 py-1 rounded text-sm ${view==='week'?'bg-gray-800 text-white':'text-gray-300 hover:text-white'}`} onClick={() => setView('week')}>Week</button>
             <button className={`px-2 py-1 rounded text-sm ${view==='month'?'bg-gray-800 text-white':'text-gray-300 hover:text-white'}`} onClick={() => setView('month')}>Month</button>
+            <div className="ml-2 flex items-center gap-1 text-xs text-gray-400">
+              <span>Zoom</span>
+              <button className="px-2 py-0.5 rounded border border-gray-700 hover:bg-gray-800" onClick={onZoomOut}>-</button>
+              <button className="px-2 py-0.5 rounded border border-gray-700 hover:bg-gray-800" onClick={onZoomIn}>+</button>
+            </div>
 
         {showCreate && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}>
