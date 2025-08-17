@@ -622,7 +622,7 @@ const Insights = memo(() => {
                         </span>
                         <div className="flex items-center gap-2">
                           {/* Add/Remove Today inline with simple local guard */}
-                          <InlineTodayAction t={t} setDrilldown={setDrilldown} />
+                          <InlineTodayAction t={t} drilldown={drilldown} setDrilldown={setDrilldown} />
                           <button
                             onClick={async () => {
                               const taskId = t.id || t.taskId;
