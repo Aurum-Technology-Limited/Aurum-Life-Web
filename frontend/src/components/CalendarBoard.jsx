@@ -216,6 +216,8 @@ const CalendarBoard = () => {
     setNewProjectId(projects[0]?.id || '');
     setShowCreate(true);
   }, [projects]);
+  const [showUnscheduled, setShowUnscheduled] = useState(true);
+
 
   const onZoomIn = useCallback(() => setSlotHeight((h) => Math.min(h + 8, 96)), []);
   const onZoomOut = useCallback(() => setSlotHeight((h) => Math.max(h - 8, 24)), []);
