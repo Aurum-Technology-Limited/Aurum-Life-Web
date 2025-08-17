@@ -369,6 +369,22 @@ const Insights = memo(() => {
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div className="h-2 rounded-full transition-all duration-500 bg-teal-500" style={{ width: `${p.completion_percentage}%` }}></div>
                   </div>
+                  <div className="mt-2 flex justify-end">
+                    <button
+                      onClick={async () => {
+                        setDrilldown({ type: 'project', payload: { project_id: p.project_id, project_name: p.project_name }, loading: true, items: [] });
+                        try {
+                          const resp = await insightsDrilldownAPI.getProjectTasks(p.project_id, 'all');
+                          setDrilldown({ type: 'project', payload: { project_id: p.project_id, project_name: p.project_name }, loading: false, items: resp.data.tasks || [] });
+                        } catch (e) {
+                          setDrilldown({ type: 'project', payload: { project_id: p.project_id, project_name: p.project_name }, loading: false, items: [], error: e?.message });
+                        }
+                      }}
+                      className="text-xs text-teal-400 hover:text-teal-300"
+                    >
+                      View tasks
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
