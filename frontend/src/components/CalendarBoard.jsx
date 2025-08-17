@@ -53,7 +53,7 @@ const TimeSlot = ({ date, onDropTask, onCreateAt, children }) => {
 
 const DayGrid = ({ day, tasks, onDropTask, onOpen, onCreateAt, slotHeight }) => {
   return (
-    <div className="grid" style={{ gridTemplateRows: `repeat(${HOURS.length}, 1fr)` }}>
+    <div className="grid" style={{ gridTemplateRows: `repeat(${HOURS.length}, ${slotHeight}px)` }}>
       {HOURS.map((h) => {
         const slotDate = setMinutes(setHours(startOfDay(day), h), 0);
         const slotTasks = tasks.filter((t) => {
