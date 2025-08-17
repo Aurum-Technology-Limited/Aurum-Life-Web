@@ -3,7 +3,7 @@ import { tasksAPI, projectsAPI } from '../services/api';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { format, addDays, startOfWeek, endOfWeek, startOfDay, setHours, setMinutes, isSameDay, parseISO } from 'date-fns';
-import { PlusCircle, Filter } from 'lucide-react';
+import { PlusCircle, Filter, ChevronDown, ChevronRight } from 'lucide-react';
 import { TaskModal } from './Tasks';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i); // 00:00 - 23:00
