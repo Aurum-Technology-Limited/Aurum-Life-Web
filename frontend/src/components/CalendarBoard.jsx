@@ -317,37 +317,28 @@ const CalendarBoard = () => {
                 aria-expanded={showFilter}
                 title="Filter by project"
               >
-            {showFilter && (
-              <div className="absolute right-4 top-16 bg-gray-900 border border-gray-700 rounded p-3 z-50 w-64">
-                <div className="text-xs text-gray-400 mb-2">Filter by project</div>
-                <div className="max-h-64 overflow-y-auto space-y-1">
-                  {projects.map(p => (
-                    <label key={p.id} className="flex items-center gap-2 text-sm text-gray-200">
-                      <input type="checkbox" checked={projectFilterIds.includes(p.id)} onChange={(e) => {
-                        setProjectFilterIds(prev => e.target.checked ? [...new Set([...prev, p.id])] : prev.filter(id => id !== p.id));
-                      }} />
-                      <span className="truncate">{p.name}</span>
-                    </label>
-                  ))}
+                <Filter className="h-4 w-4" />
+                Filter
+              </button>
+              {showFilter && (
+                <div className="absolute right-4 top-16 bg-gray-900 border border-gray-700 rounded p-3 z-50 w-64">
+                  <div className="text-xs text-gray-400 mb-2">Filter by project</div>
+                  <div className="max-h-64 overflow-y-auto space-y-1">
+                    {projects.map(p => (
+                      <label key={p.id} className="flex items-center gap-2 text-sm text-gray-200">
+                        <input type="checkbox" checked={projectFilterIds.includes(p.id)} onChange={(e) => {
+                          setProjectFilterIds(prev => e.target.checked ? [...new Set([...prev, p.id])] : prev.filter(id => id !== p.id));
+                        }} />
+                        <span className="truncate">{p.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button className="text-xs px-2 py-1 bg-gray-800 rounded" onClick={() => setProjectFilterIds([])}>Clear</button>
+                    <button className="text-xs px-2 py-1 bg-yellow-600 text-black rounded" onClick={() => setShowFilter(false)}>Done</button>
+                  </div>
                 </div>
-                <div className="flex justify-end gap-2 mt-2">
-                  <button className="text-xs px-2 py-1 bg-gray-800 rounded" onClick={() => setProjectFilterIds([])}>Clear</button>
-                  <button className="text-xs px-2 py-1 bg-yellow-600 text-black rounded" onClick={() => setShowFilter(false)}>Done</button>
-                </div>
-              </div>
-            )}
-
-                const selected = new Set(projectFilterIds);
-                const next = [];
-                // naive prompt-based selection for MVP
-                const chosen = prompt('Filter by project IDs (comma-separated), or leave empty for all', projectFilterIds.join(','));
-                if (chosen === null) return; // cancelled
-                const ids = chosen.split(',').map(s => s.trim()).filter(Boolean);
-                setProjectFilterIds(ids);
-              }}
-              title="Filter by project"
-            >
-              <Filter className="h-4 w-4" />
+              )}
               Filter
             </button>
             </div>
