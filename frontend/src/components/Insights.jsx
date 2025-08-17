@@ -533,7 +533,25 @@ const Insights = memo(() => {
                   </div>
                   
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-400">{area.task_count} tasks</span>
+                    <button
+                      onClick={async () => {
+                        setDrilldown({ type: 'area', payload: { area_id: area.area_id, area_name: area.area_name }, loading: true, items: [], todayIds: [] });
+                        try {
+                          const [tasksResp, todayResp] = await Promise.all([
+                            insightsDrilldownAPI.getAreaTasks(area.area_id, 'all'),
+                            todayAPI.getTodayView(),
+                          ]);
+                          const todayIds = Array.isArray(todayResp.data) ? todayResp.data.map(x => x.id) : [];
+                          setDrilldown({ type: 'area', payload: { area_id: area.area_id, area_name: area.area_name }, loading: false, items: tasksResp.data.tasks || [], todayIds });
+                        } catch (e) {
+                          setDrilldown({ type: 'area', payload: { area_id: area.area_id, area_name: area.area_name }, loading: false, items: [], todayIds: [], error: e?.message });
+                        }
+                      }}
+                      className="text-sm text-gray-400 hover:underline"
+                      title="View tasks in this area"
+                    >
+                      {area.task_count} tasks
+                    </button>
                     <span className="text-green-500 font-semibold">{area.percentage}%</span>
                   </div>
                   
