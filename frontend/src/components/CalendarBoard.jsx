@@ -6,7 +6,7 @@ import { format, addDays, startOfWeek, endOfWeek, startOfDay, addHours, setHours
 import { List, Calendar as CalIcon, PlusCircle } from 'lucide-react';
 import { TaskModal } from './Tasks';
 
-const HOURS = Array.from({ length: 16 }, (_, i) => 6 + i); // 6:00 - 21:00
+const HOURS = Array.from({ length: 24 }, (_, i) => i); // 00:00 - 23:00
 const ITEM_TYPE = 'TASK_CARD';
 
 const getDateFromISO = (d) => {
