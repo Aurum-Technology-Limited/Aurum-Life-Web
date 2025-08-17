@@ -36,8 +36,17 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
       
       try {
         const response = await tasksAPI.searchTasks(query.trim(), 10);
+        const results = response.data || [];
+        // Normalize shapes from backend
+        const normalized = results.map((r) => ({
+          id: r.id || r.taskId,
+          name: r.name || r.title,
+          description: r.description,
+          project_name: r.project_name || r.project,
+          priority: r.priority
+        })).filter(x => x.id && x.name);
         
-        setResults(response.data || []);
+        setResults(normalized);
         setShowResults(true);
       } catch (err) {
         console.error('Error searching tasks:', err);
