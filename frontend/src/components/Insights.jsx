@@ -234,7 +234,7 @@ const Insights = memo(() => {
           </div>
         </div>
 
-        {/* Eisenhower Matrix (Urgency vs Importance) */}
+        {/* Eisenhower Matrix (2x2 Quadrant Grid) */}
         <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <TrendingUp className="h-6 w-6 text-red-500" />
@@ -242,12 +242,19 @@ const Insights = memo(() => {
           </div>
 
           {eisenhower_matrix ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-800 rounded-lg p-4">
-                <h3 className="text-white font-semibold mb-3">Active Tasks</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="bg-gray-900 p-3 rounded border border-gray-700">
-                    <div className="text-xs text-gray-400 mb-1">Urgent & Important</div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* 2x2 Grid */}
+              <div className="bg-gray-800 rounded-lg p-4 relative">
+                {/* Axis labels */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs text-gray-400">Urgent</div>
+                <div className="absolute -top-3 right-4 text-xs text-gray-500">Not Urgent</div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 origin-left text-xs text-gray-400">Important</div>
+                <div className="absolute left-0 bottom-2 -rotate-90 origin-left text-xs text-gray-500">Not Important</div>
+
+                <div className="grid grid-cols-2 grid-rows-2 gap-3">
+                  {/* Urgent & Important */}
+                  <div className="bg-gray-900 p-3 rounded border border-red-700/50">
+                    <div className="text-[11px] text-red-400 mb-1">Urgent & Important</div>
                     <button
                       onClick={async () => {
                         setDrilldown({ type: 'matrix', payload: { quadrant: 'urgent_important' }, loading: true, items: [], todayIds: [] });
@@ -259,16 +266,18 @@ const Insights = memo(() => {
                           const todayIds = Array.isArray(todayResp.data) ? todayResp.data.map(x => x.id) : [];
                           setDrilldown({ type: 'matrix', payload: { quadrant: 'urgent_important' }, loading: false, items: tasksResp.data.tasks || [], todayIds });
                         } catch (e) {
-                          setDrilldown({ type: 'matrix', payload: { quadrant: 'urgent_important' }, loading: false, items: [], error: e?.message });
+                          setDrilldown({ type: 'matrix', payload: { quadrant: 'urgent_important' }, loading: false, items: [], todayIds: [], error: e?.message });
                         }
                       }}
-                      className="text-2xl font-bold text-red-400 hover:underline"
+                      className="text-3xl font-bold text-red-400 hover:underline"
                     >
                       {eisenhower_matrix.active_counts?.urgent_important || 0}
                     </button>
                   </div>
-                  <div className="bg-gray-900 p-3 rounded border border-gray-700">
-                    <div className="text-xs text-gray-400 mb-1">Important & Not Urgent</div>
+
+                  {/* Important & Not Urgent */}
+                  <div className="bg-gray-900 p-3 rounded border border-green-700/50">
+                    <div className="text-[11px] text-green-400 mb-1">Important & Not Urgent</div>
                     <button
                       onClick={async () => {
                         setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: true, items: [], todayIds: [] });
@@ -280,16 +289,18 @@ const Insights = memo(() => {
                           const todayIds = Array.isArray(todayResp.data) ? todayResp.data.map(x => x.id) : [];
                           setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: false, items: tasksResp.data.tasks || [], todayIds });
                         } catch (e) {
-                          setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: false, items: [], error: e?.message });
+                          setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: false, items: [], todayIds: [], error: e?.message });
                         }
                       }}
-                      className="text-2xl font-bold text-green-400 hover:underline"
+                      className="text-3xl font-bold text-green-400 hover:underline"
                     >
                       {eisenhower_matrix.active_counts?.important_not_urgent || 0}
                     </button>
                   </div>
-                  <div className="bg-gray-900 p-3 rounded border border-gray-700">
-                    <div className="text-xs text-gray-400 mb-1">Urgent & Not Important</div>
+
+                  {/* Urgent & Not Important */}
+                  <div className="bg-gray-900 p-3 rounded border border-yellow-700/50">
+                    <div className="text-[11px] text-yellow-400 mb-1">Urgent & Not Important</div>
                     <button
                       onClick={async () => {
                         setDrilldown({ type: 'matrix', payload: { quadrant: 'urgent_not_important' }, loading: true, items: [], todayIds: [] });
@@ -301,16 +312,18 @@ const Insights = memo(() => {
                           const todayIds = Array.isArray(todayResp.data) ? todayResp.data.map(x => x.id) : [];
                           setDrilldown({ type: 'matrix', payload: { quadrant: 'urgent_not_important' }, loading: false, items: tasksResp.data.tasks || [], todayIds });
                         } catch (e) {
-                          setDrilldown({ type: 'matrix', payload: { quadrant: 'urgent_not_important' }, loading: false, items: [], error: e?.message });
+                          setDrilldown({ type: 'matrix', payload: { quadrant: 'urgent_not_important' }, loading: false, items: [], todayIds: [], error: e?.message });
                         }
                       }}
-                      className="text-2xl font-bold text-yellow-400 hover:underline"
+                      className="text-3xl font-bold text-yellow-400 hover:underline"
                     >
                       {eisenhower_matrix.active_counts?.urgent_not_important || 0}
                     </button>
                   </div>
-                  <div className="bg-gray-900 p-3 rounded border border-gray-700">
-                    <div className="text-xs text-gray-400 mb-1">Not Urgent & Not Important</div>
+
+                  {/* Not Urgent & Not Important */}
+                  <div className="bg-gray-900 p-3 rounded border border-gray-700/50">
+                    <div className="text-[11px] text-gray-400 mb-1">Not Urgent & Not Important</div>
                     <button
                       onClick={async () => {
                         setDrilldown({ type: 'matrix', payload: { quadrant: 'not_urgent_not_important' }, loading: true, items: [], todayIds: [] });
@@ -322,38 +335,33 @@ const Insights = memo(() => {
                           const todayIds = Array.isArray(todayResp.data) ? todayResp.data.map(x => x.id) : [];
                           setDrilldown({ type: 'matrix', payload: { quadrant: 'not_urgent_not_important' }, loading: false, items: tasksResp.data.tasks || [], todayIds });
                         } catch (e) {
-                          setDrilldown({ type: 'matrix', payload: { quadrant: 'not_urgent_not_important' }, loading: false, items: [], error: e?.message });
+                          setDrilldown({ type: 'matrix', payload: { quadrant: 'not_urgent_not_important' }, loading: false, items: [], todayIds: [], error: e?.message });
                         }
                       }}
-                      className="text-2xl font-bold text-gray-400 hover:underline"
+                      className="text-3xl font-bold text-gray-400 hover:underline"
                     >
                       {eisenhower_matrix.active_counts?.not_urgent_not_important || 0}
                     </button>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-gray-800 rounded-lg p-4">
-                <h3 className="text-white font-semibold mb-3">Trend (Last 6 Weeks)</h3>
-                <div className="space-y-2">
-                  {Array.isArray(eisenhower_matrix.trends) && eisenhower_matrix.trends.length > 0 ? (
-                    eisenhower_matrix.trends.map((w) => (
-                      <div key={w.week_start} className="flex items-center justify-between text-sm">
-                        <div className="text-gray-400 w-40">Week of {w.week_start}</div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-red-400">UI: {w.urgent_important}</span>
-                          <span className="text-green-400">IN-U: {w.important_not_urgent}</span>
-                          <span className="text-yellow-400">UN-I: {w.urgent_not_important}</span>
-                          <span className="text-gray-400">NN: {w.not_urgent_not_important}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-gray-500">No trend data yet</div>
-                  )}
-                </div>
                 <div className="mt-3 text-xs text-gray-400">
                   Behavior: {eisenhower_matrix.behavior_summary?.message} (Reactive Index {eisenhower_matrix.behavior_summary?.reactive_index || 0}%)
+                </div>
+              </div>
+
+              {/* 6-week micro-chart for Important completions */}
+              <div className="bg-gray-800 rounded-lg p-4 lg:col-span-2">
+                <h3 className="text-white font-semibold mb-2">Important Completions (6 weeks)</h3>
+                <MicroBarChart
+                  data={(Array.isArray(eisenhower_matrix.trends) ? eisenhower_matrix.trends : []).map(w => ({
+                    label: w.week_start,
+                    value: (w.urgent_important || 0) + (w.important_not_urgent || 0)
+                  }))}
+                  barColor="#10B981" // green for important trajectory
+                />
+                <div className="mt-2 text-xs text-gray-500">
+                  Green shows total completed in Important quadrants each week (Urgent & Important + Important & Not Urgent).
                 </div>
               </div>
             </div>
