@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { BarChart3, Target, CheckCircle, FolderOpen, TrendingUp, Clock, Lightbulb, ArrowRight, Users, Folder, List } from 'lucide-react';
-import { insightsAPI } from '../services/api';
+import { insightsAPI, insightsDrilldownAPI } from '../services/api';
 
 const Insights = memo(() => {
   const [loading, setLoading] = useState(true);
