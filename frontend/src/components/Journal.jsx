@@ -553,6 +553,7 @@ const Journal = memo(() => {
     if (!window.confirm('Are you sure you want to delete this journal entry?')) return;
     
     try {
+      setIsSyncing(true);
       await journalAPI.deleteEntry(entryId);
       setEntries(prev => prev.filter(entry => entry.id !== entryId));
       setViewingEntry(null);
