@@ -303,7 +303,7 @@ const CalendarBoard = () => {
         ) : (
           <div className="overflow-x-auto">
             {view === 'day' && (
-              <DayGrid day={anchorDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} />
+              <DayGrid day={anchorDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} slotHeight={slotHeight} />
             )}
             {view === 'week' && (
               <WeekGrid weekStart={weekStartDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} />
