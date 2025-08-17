@@ -469,8 +469,12 @@ const Insights = memo(() => {
                       onClick={async () => {
                         setDrilldown({ type: 'project', payload: { project_id: p.project_id, project_name: p.project_name }, loading: true, items: [], todayIds: [] });
                         try {
-                          const resp = await insightsDrilldownAPI.getProjectTasks(p.project_id, 'all');
-                          setDrilldown({ type: 'project', payload: { project_id: p.project_id, project_name: p.project_name }, loading: false, items: resp.data.tasks || [] });
+                          const [tasksResp, todayResp] = await Promise.all([
+                            insightsDrilldownAPI.getProjectTasks(p.project_id, 'all'),
+                            todayAPI.getTodayView(),
+                          ]);
+                          const todayIds = Array.isArray(todayResp.data) ? todayResp.data.map(x => x.id) : [];
+                          setDrilldown({ type: 'project', payload: { project_id: p.project_id, project_name: p.project_name }, loading: false, items: tasksResp.data.tasks || [], todayIds });
                         } catch (e) {
                           setDrilldown({ type: 'project', payload: { project_id: p.project_id, project_name: p.project_name }, loading: false, items: [], error: e?.message });
                         }
