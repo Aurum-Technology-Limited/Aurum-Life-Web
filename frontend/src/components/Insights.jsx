@@ -245,11 +245,11 @@ const Insights = memo(() => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* 2x2 Grid */}
               <div className="bg-gray-800 rounded-lg p-4 relative">
-                {/* Axis labels */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs text-gray-400">Urgent</div>
-                <div className="absolute -top-3 right-4 text-xs text-gray-500">Not Urgent</div>
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 origin-left text-xs text-gray-400">Important</div>
-                <div className="absolute left-0 bottom-2 -rotate-90 origin-left text-xs text-gray-500">Not Important</div>
+                {/* Axis labels with arrows */}
+                <div className="absolute -top-3 left-3 text-xs text-gray-400">Urgent →</div>
+                <div className="absolute -top-3 right-3 text-xs text-gray-500">← Not Urgent</div>
+                <div className="absolute -left-2 top-3 -rotate-90 origin-left text-xs text-gray-400">Important ↓</div>
+                <div className="absolute -left-2 bottom-3 -rotate-90 origin-left text-xs text-gray-500">↑ Not Important</div>
 
                 <div className="grid grid-cols-2 grid-rows-2 gap-3">
                   {/* Urgent & Important */}
