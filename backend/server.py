@@ -704,6 +704,59 @@ async def get_today_view(
         return result
     except HTTPException:
         raise
+
+# ================================
+# TODAY FOCUS (MVP storage)
+# ================================
+@api_router.get('/today')
+async def get_today_tasks(current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        ids = list(TODAY_FOCUS_MAP.get(user_id, set()))
+        if not ids:
+            return []
+        supabase = get_supabase_client()
+        resp = supabase.table('tasks').select('id,name,description,priority,status,completed,project_id').in_('id', ids).eq('user_id', user_id).execute()
+        tasks = resp.data or []
+        # enrich with project name
+        proj_ids = list({t.get('project_id') for t in tasks if t.get('project_id')})
+        proj_lookup = {}
+        if proj_ids:
+            pr = supabase.table('projects').select('id,name').in_('id', proj_ids).execute()
+            for p in (pr.data or []):
+                proj_lookup[p['id']] = p['name']
+        for t in tasks:
+            t['project_name'] = proj_lookup.get(t.get('project_id'))
+        return tasks
+    except Exception as e:
+        logger.error(f'Today get error: {e}')
+        return []
+
+@api_router.post('/today/tasks/{task_id}')
+async def add_today_task(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        s = TODAY_FOCUS_MAP.get(user_id, set())
+        s.add(task_id)
+        TODAY_FOCUS_MAP[user_id] = s
+        return { 'status': 'ok' }
+    except Exception as e:
+        logger.error(f'Today add error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to add task to today')
+
+@api_router.delete('/today/tasks/{task_id}')
+async def remove_today_task(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        s = TODAY_FOCUS_MAP.get(user_id, set())
+        if task_id in s:
+            s.remove(task_id)
+            TODAY_FOCUS_MAP[user_id] = s
+        return { 'status': 'ok' }
+    except Exception as e:
+        logger.error(f'Today remove error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to remove task from today')
+
     except Exception as e:
         logger.error(f"Error generating Today view: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate Today view")
