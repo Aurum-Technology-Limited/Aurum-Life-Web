@@ -870,6 +870,38 @@ async def search_tasks(
     current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """User-scoped partial search over task name/description (excludes completed)."""
+    try:
+        user_id = str(current_user.id)
+        # Rate limit search
+        if not check_rate_limit_scoped(user_id, 'tasks_search', 30):
+            raise HTTPException(status_code=429, detail="Search rate limit exceeded. Please wait a moment.")
+        supabase = get_supabase_client()
+        like = f"%{q}%"
+        resp = (
+            supabase.table('tasks')
+            .select('id,name,description,priority,status,completed,project_id')
+            .eq('user_id', user_id)
+            .eq('completed', False)
+            .or_(f"name.ilike.{like},description.ilike.{like}")
+            .limit(limit)
+            .execute()
+        )
+        items = resp.data or []
+        # enrich with project names
+        proj_ids = list({t.get('project_id') for t in items if t.get('project_id')})
+        proj_lookup = {}
+        if proj_ids:
+            pr = supabase.table('projects').select('id,name').in_('id', proj_ids).execute()
+            for p in (pr.data or []):
+                proj_lookup[p['id']] = p['name']
+        for t in items:
+            t['project_name'] = proj_lookup.get(t.get('project_id'))
+        return items
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Search tasks error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search tasks")
 
 # ================================
 # INSIGHTS ENDPOINTS (ULTRA + REGULAR)
