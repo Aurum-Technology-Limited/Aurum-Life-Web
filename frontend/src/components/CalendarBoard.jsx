@@ -145,6 +145,25 @@ const MonthGrid = ({ monthDate, tasks, onOpen }) => {
 };
 
 const CalendarBoard = () => {
+  const [showCreate, setShowCreate] = useState(false);
+  const [newTaskTime, setNewTaskTime] = useState(null);
+  const [newName, setNewName] = useState('');
+  const [newPriority, setNewPriority] = useState('medium');
+  const [newProjectId, setNewProjectId] = useState('');
+  const [projects, setProjects] = useState([]);
+
+  const loadProjects = useCallback(async () => {
+    try {
+      const resp = await projectsAPI.getProjects();
+      setProjects(Array.isArray(resp.data) ? resp.data : []);
+    } catch (e) {
+      console.warn('Projects load failed', e);
+      setProjects([]);
+    }
+  }, []);
+
+  useEffect(() => { loadProjects(); }, [loadProjects]);
+
   const [view, setView] = useState('week'); // day | week | month
   const [anchorDate, setAnchorDate] = useState(new Date());
   const [tasks, setTasks] = useState([]);
