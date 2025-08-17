@@ -359,6 +359,8 @@ class JournalService:
                 date_query["$lte"] = date_to
             query["created_at"] = date_query
         
+        # Exclude soft-deleted
+        query["deleted"] = False
         entries_docs = await find_documents(
             "journal_entries", 
             query,
