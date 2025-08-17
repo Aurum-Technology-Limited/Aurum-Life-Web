@@ -1380,4 +1380,5 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
 
 Tasks.displayName = 'Tasks';
 
+export { TaskModal };
 export default Tasks;
