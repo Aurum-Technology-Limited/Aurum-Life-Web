@@ -380,8 +380,9 @@ export const insightsAPI = {
       return apiClient.get(url);
     }
   },
-  getAreaDrillDown: (areaId, dateRange = 'all_time') => apiClient.get(`/insights/areas/${areaId}?date_range=${dateRange}`),
-  getProjectDrillDown: (projectId, dateRange = 'all_time') => apiClient.get(`/insights/projects/${projectId}?date_range=${dateRange}`),
+  getAreaTasks: (areaId, status = 'all') => apiClient.get(`/insights/areas/${areaId}/tasks`, { params: { status } }),
+  getPillarTasks: (pillarId, status = 'all') => apiClient.get(`/insights/pillars/${pillarId}/tasks`, { params: { status } }),
+  getProjectTasks: (projectId, status = 'all') => apiClient.get(`/insights/projects/${projectId}/tasks`, { params: { status } }),
 };
 
 // Dashboard API (updated with ultra-performance optimization)
