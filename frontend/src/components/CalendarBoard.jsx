@@ -260,6 +260,43 @@ const CalendarBoard = () => {
               <button className="px-2 py-0.5 rounded border border-gray-700 hover:bg-gray-800" onClick={onZoomIn}>+</button>
             </div>
 
+            <div className="relative">
+              <button
+                className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white flex items-center gap-1"
+                onClick={() => setShowFilter((s)=>!s)}
+                onKeyDown={(e) => {
+                  if (!showFilter) return;
+                  if (e.key === 'Escape') setShowFilter(false);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={showFilter}
+                title="Filter by project"
+              >
+                <Filter className="h-4 w-4" />
+                Filter
+              </button>
+              {showFilter && (
+                <div className="absolute right-4 top-16 bg-gray-900 border border-gray-700 rounded p-3 z-50 w-64">
+                  <div className="text-xs text-gray-400 mb-2">Filter by project</div>
+                  <div className="max-h-64 overflow-y-auto space-y-1">
+                    {projects.map(p => (
+                      <label key={p.id} className="flex items-center gap-2 text-sm text-gray-200">
+                        <input type="checkbox" checked={projectFilterIds.includes(p.id)} onChange={(e) => {
+                          setProjectFilterIds(prev => e.target.checked ? [...new Set([...prev, p.id])] : prev.filter(id => id !== p.id));
+                        }} />
+                        <span className="truncate">{p.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button className="text-xs px-2 py-1 bg-gray-800 rounded" onClick={() => setProjectFilterIds([])}>Clear</button>
+                    <button className="text-xs px-2 py-1 bg-yellow-600 text-black rounded" onClick={() => setShowFilter(false)}>Done</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
         {showCreate && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}>
             <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
