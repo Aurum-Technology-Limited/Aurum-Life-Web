@@ -496,6 +496,61 @@ const Insights = memo(() => {
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2">Alignment Insight</h3>
                 <p className="text-gray-300">
+
+      {/* Drilldown Drawer */}
+      {drilldown.type && (
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-950/95 backdrop-blur border-t border-gray-800 p-4 z-50">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-400">
+                {drilldown.type === 'matrix' && (
+                  <>
+                    Quadrant: <span className="text-white font-medium">{drilldown.payload?.quadrant}</span>
+                  </>
+                )}
+                {drilldown.type === 'project' && (
+                  <>
+                    Project: <span className="text-white font-medium">{drilldown.payload?.project_name || drilldown.payload?.project_id}</span>
+                  </>
+                )}
+              </div>
+              <button onClick={() => setDrilldown({ type: null, payload: null, loading: false, items: [] })} className="text-gray-400 hover:text-white text-sm">
+                Close
+              </button>
+            </div>
+            {drilldown.loading ? (
+              <div className="text-gray-500 py-3">Loading...</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
+                {Array.isArray(drilldown.items) && drilldown.items.length > 0 ? (
+                  drilldown.items.map((t) => (
+                    <div key={t.id || t.taskId} className="bg-gray-900 border border-gray-800 rounded p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="text-white font-medium truncate mr-2">{t.name || t.title}</div>
+                        {t.priority && (
+                          <span className="text-xs text-gray-400 border border-gray-700 px-1.5 py-0.5 rounded">{t.priority}</span>
+                        )}
+                      </div>
+                      {t.project_name && (
+                        <div className="text-xs text-gray-500 mt-1">{t.project_name}</div>
+                      )}
+                      {t.description && (
+                        <div className="text-xs text-gray-400 mt-1 line-clamp-2">{t.description}</div>
+                      )}
+                      <div className="text-xs text-gray-500 mt-1">
+                        {t.status}{t.completed ? ' • Completed' : ''}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-500 py-3">No items found</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
                   {alignment_snapshot.pillar_alignment[0]?.percentage > 50 ? (
                     <>
                       You're heavily focused on <strong>{alignment_snapshot.pillar_alignment[0]?.pillar_name}</strong> ({alignment_snapshot.pillar_alignment[0]?.percentage}% of completed tasks). 
