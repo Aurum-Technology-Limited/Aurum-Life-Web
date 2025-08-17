@@ -876,9 +876,9 @@ async def search_tasks(
         if not check_rate_limit_scoped(user_id, 'tasks_search', 30):
             raise HTTPException(status_code=429, detail="Search rate limit exceeded. Please wait a moment.")
         supabase = get_supabase_client()
-        like = f"%{q}%"
-        # Supabase python client does not interpolate % in or_ shortcut well; build explicit RPC via http filter syntax
-        resp = (
+
+        # 1) Text match on task name/description
+        text_resp = (
             supabase
             .table('tasks')
             .select('id,name,description,priority,status,completed,project_id')
@@ -888,12 +888,50 @@ async def search_tasks(
             .limit(limit)
             .execute()
         )
-        items = resp.data or []
-        # enrich with project names
-        proj_ids = list({t.get('project_id') for t in items if t.get('project_id')})
-        proj_lookup = {}
+        text_items = text_resp.data or []
+
+        # 2) Match by project name → fetch tasks in those projects
+        proj_ids = []
+        try:
+            proj_resp = (
+                supabase
+                .table('projects')
+                .select('id')
+                .eq('user_id', user_id)
+                .ilike('name', f'%{q}%')
+                .execute()
+            )
+            proj_ids = [row['id'] for row in (proj_resp.data or []) if row.get('id')]
+        except Exception:
+            proj_ids = []
+
+        project_items = []
         if proj_ids:
-            pr = supabase.table('projects').select('id,name').in_('id', proj_ids).execute()
+            p_tasks_resp = (
+                supabase
+                .table('tasks')
+                .select('id,name,description,priority,status,completed,project_id')
+                .eq('user_id', user_id)
+                .eq('completed', False)
+                .in_('project_id', proj_ids)
+                .limit(limit)
+                .execute()
+            )
+            project_items = p_tasks_resp.data or []
+
+        # Merge and de-duplicate by id
+        by_id: Dict[str, Any] = {}
+        for row in text_items + project_items:
+            rid = row.get('id')
+            if rid and rid not in by_id:
+                by_id[rid] = row
+        items = list(by_id.values())[:limit]
+
+        # Enrich with project names
+        enrich_proj_ids = list({t.get('project_id') for t in items if t.get('project_id')})
+        proj_lookup = {}
+        if enrich_proj_ids:
+            pr = supabase.table('projects').select('id,name').in_('id', enrich_proj_ids).execute()
             for p in (pr.data or []):
                 proj_lookup[p['id']] = p['name']
         for t in items:
