@@ -171,7 +171,7 @@ const CalendarBoard = () => {
 
   // Effects
   useEffect(() => { (async () => { try { const resp = await projectsAPI.getProjects(); setProjects(Array.isArray(resp.data) ? resp.data : []); } catch { setProjects([]); } })(); }, []);
-  const loadTasks = useCallback(async () => { try { setLoading(true); const resp = await tasksAPI.getTasks(); setTasks(Array.isArray(resp.data) ? resp.data : []; } catch { setTasks([]); } finally { setLoading(false); } }, []);
+  const loadTasks = useCallback(async () => { try { setLoading(true); const resp = await tasksAPI.getTasks(); setTasks(Array.isArray(resp.data) ? resp.data : []); } catch { setTasks([]); } finally { setLoading(false); } }, []);
   useEffect(() => { loadTasks(); }, [loadTasks]);
 
   useEffect(() => { try { const raw = localStorage.getItem('calendar_unscheduled_open'); if (raw !== null) setShowUnscheduled(raw === '1'); } catch {} }, []);
