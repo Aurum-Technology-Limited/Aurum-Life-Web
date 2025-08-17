@@ -156,6 +156,8 @@ const Today = memo(() => {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.setItem(STORAGE_DATE_KEY, today);
         setTodaysTasks([]);
+        // Clear stale AI suggestions for a fresh day as well
+        try { localStorage.removeItem(SUGGESTIONS_KEY); } catch {}
       } else {
         // Load tasks from localStorage
         const storedTasks = localStorage.getItem(STORAGE_KEY);
