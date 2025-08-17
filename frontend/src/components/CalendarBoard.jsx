@@ -339,8 +339,6 @@ const CalendarBoard = () => {
                   </div>
                 </div>
               )}
-              Filter
-            </button>
             </div>
           </div>
         )}
