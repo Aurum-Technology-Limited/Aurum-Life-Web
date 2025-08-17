@@ -202,6 +202,14 @@ const CalendarBoard = () => {
     try { if (!activeTask) return; await tasksAPI.updateTask(activeTask.id, updated); await load(); }
     catch {}
     finally { onCloseTask(); }
+  // Persist unscheduled collapse state
+  useEffect(() => {
+    try { const raw = localStorage.getItem('calendar_unscheduled_open'); if (raw !== null) setShowUnscheduled(raw === '1'); } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem('calendar_unscheduled_open', showUnscheduled ? '1' : '0'); } catch {}
+  }, [showUnscheduled]);
+
   }, [activeTask, load, onCloseTask]);
 
   const onDropTask = useCallback(async (taskId, date) => {
