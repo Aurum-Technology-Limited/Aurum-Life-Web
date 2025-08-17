@@ -29,7 +29,7 @@ const TaskCard = ({ task, onOpen }) => {
 };
 
 // Droppable time slot
-const TimeSlot = ({ date, onDropTask, children }) => {
+const TimeSlot = ({ date, onDropTask, onCreateAt, children }) => {
   const [, drop] = useDrop(
     () => ({
       accept: ITEM_TYPE,
