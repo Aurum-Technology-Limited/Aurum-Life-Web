@@ -292,6 +292,36 @@ const Insights = memo(() => {
           )}
         </div>
 
+        {/* Vertical Alignment Progress */}
+        {alignment_progress && Array.isArray(alignment_progress.projects) && alignment_progress.projects.length > 0 && (
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Target className="h-6 w-6 text-teal-500" />
+              <h2 className="text-xl font-semibold text-white">Vertical Alignment Progress</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {alignment_progress.projects.map((p) => (
+                <div key={p.project_id} className="bg-gray-800 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-white font-semibold">{p.project_name}</div>
+                    <div className="text-sm text-gray-400">{p.completion_percentage}%</div>
+                  </div>
+                  <div className="text-xs text-gray-500 mb-2">
+                    {p.pillar_name ? (
+                      <>via {p.area_name || '—'} → {p.pillar_name}</>
+                    ) : (
+                      <>Unaligned</>
+                    )}
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="h-2 rounded-full transition-all duration-500 bg-teal-500" style={{ width: `${p.completion_percentage}%` }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Area Distribution (New Section) */}
         {area_distribution && area_distribution.length > 0 && (
           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8">
