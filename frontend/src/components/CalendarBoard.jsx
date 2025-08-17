@@ -126,6 +126,18 @@ const MonthGrid = ({ monthDate, tasks, onOpen }) => {
         <div key={d} className="text-center text-xs text-gray-400 pb-1">{d}</div>
       ))}
       {days.map((d) => {
+
+const UnscheduledList = ({ tasks, onOpen }) => (
+  <div className="space-y-2">
+    {tasks.length === 0 && (
+      <div className="text-xs text-gray-500">No unscheduled tasks</div>
+    )}
+    {tasks.map((t) => (
+      <TaskCard key={t.id} task={t} onOpen={onOpen} />
+    ))}
+  </div>
+);
+
         const dayTasks = tasks.filter((t) => { const due = getDateFromISO(t.due_date); return due && isSameDay(due, d); });
         return (
           <div key={d.toISOString()} className="min-h-[90px] border border-gray-800 rounded p-1">
