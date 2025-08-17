@@ -358,6 +358,9 @@ const Insights = memo(() => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-white font-semibold">{p.project_name}</div>
                     <div className="text-sm text-gray-400">{p.completion_percentage}%</div>
+
+                {/* InlineTodayAction component injected below */}
+
                   </div>
                   <div className="text-xs text-gray-500 mb-2">
                     {p.pillar_name ? (
