@@ -353,6 +353,14 @@ export const insightsAPI = {
       const response = await apiClient.get(url);
       const duration = Date.now() - startTime;
       console.log(`✅ Ultra insights completed in ${duration}ms`);
+      // Validate shape for UI; if missing core keys, fallback to regular endpoint
+      const data = response?.data || {};
+      if (!data || (!data.alignment_snapshot && !data.eisenhower_matrix)) {
+        console.warn('⚠️ Ultra insights returned unexpected shape; falling back to regular.');
+        let fbUrl = `/insights?date_range=${dateRange}`;
+        if (areaId) fbUrl += `&area_id=${areaId}`;
+        return await apiClient.get(fbUrl);
+      }
       return response;
     } catch (error) {
       console.warn('⚠️ Ultra insights failed, falling back to regular endpoint:', error.message);
