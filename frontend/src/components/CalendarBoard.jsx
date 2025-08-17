@@ -96,7 +96,7 @@ const WeekGrid = ({ weekStart, tasks, onDropTask, onOpen, onCreateAt }) => {
               return isSameDay(due, d) && due.getHours() === h;
             });
             return (
-              <TimeSlot key={d.toISOString() + h} date={slotDate} onDropTask={onDropTask}>
+              <TimeSlot key={d.toISOString() + h} date={slotDate} onDropTask={onDropTask} onCreateAt={onCreateAt}>
                 <div className="px-1">
                   {slotTasks.map((t) => (
                     <TaskCard key={t.id} task={t} onOpen={onOpen} />
