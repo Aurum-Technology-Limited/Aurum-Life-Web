@@ -587,6 +587,22 @@ const Insights = memo(() => {
                           >
                             Priority
                           </button>
+                          <button
+                            onClick={async () => {
+                              const taskId = t.id || t.taskId;
+                              if (!taskId) return;
+                              try {
+                                await todayAPI.addTaskToToday(taskId);
+                              } catch (e) {
+                                console.error('Add to Today failed', e);
+                                return;
+                              }
+                            }}
+                            className="text-xs px-2 py-0.5 rounded border text-yellow-400 border-yellow-700 hover:bg-yellow-900/20"
+                            title="Add to Today"
+                          >
+                            + Today
+                          </button>
                         </div>
                       </div>
                     </div>
