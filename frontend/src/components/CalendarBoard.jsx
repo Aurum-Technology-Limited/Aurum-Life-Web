@@ -38,8 +38,15 @@ const TimeSlot = ({ date, onDropTask, onCreateAt, children }) => {
     [date, onDropTask]
   );
   return (
-    <div ref={drop} className="border-t border-gray-800 h-16 relative">
+    <div ref={drop} className="border-t border-gray-800 h-16 relative" onDoubleClick={() => onCreateAt && onCreateAt(date)}>
       {children}
+      <button
+        className="absolute right-2 top-1 text-gray-600 hover:text-gray-300"
+        title="Create task here"
+        onClick={(e) => { e.stopPropagation(); onCreateAt && onCreateAt(date); }}
+      >
+        <PlusCircle size={14} />
+      </button>
     </div>
   );
 };
