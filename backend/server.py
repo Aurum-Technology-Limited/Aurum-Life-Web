@@ -738,6 +738,14 @@ async def api_update_journal(entry_id: str, entry_data: JournalEntryUpdate, curr
 async def api_delete_journal(entry_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     ok = await JournalService.delete_entry(str(current_user.id), entry_id)
     if not ok:
+        raise HTTPException(status_code=404, detail='Journal entry not found or already deleted')
+    return { 'success': True }
+
+@api_router.post('/journal/{entry_id}/restore')
+async def api_restore_journal(entry_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    # Restore from soft delete
+    ok = await update_document("journal_entries", {"id": entry_id, "user_id": str(current_user.id)}, {"deleted": False, "deleted_at": None})
+    if not ok:
         raise HTTPException(status_code=404, detail='Journal entry not found')
     return { 'success': True }
 
