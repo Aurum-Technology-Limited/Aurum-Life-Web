@@ -285,11 +285,30 @@ const CalendarBoard = () => {
                 Filter
               </button>
               {showFilter && (
-                <div className="absolute right-4 top-16 bg-gray-900 border border-gray-700 rounded p-3 z-50 w-64">
+                <div ref={filterMenuRef} tabIndex={0} className="absolute right-4 top-16 bg-gray-900 border border-gray-700 rounded p-3 z-50 w-64 outline-none"
+                  onKeyDown={(e) => {
+                    const max = projects.length - 1;
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setFilterActiveIndex((i) => Math.min(i + 1, max));
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setFilterActiveIndex((i) => Math.max(i - 1, 0));
+                    } else if (e.key === 'Enter') {
+                      const p = projects[filterActiveIndex];
+                      if (p) {
+                        const checked = !projectFilterIds.includes(p.id);
+                        setProjectFilterIds(prev => checked ? [...new Set([...prev, p.id])] : prev.filter(id => id !== p.id));
+                      }
+                    } else if (e.key === 'Escape') {
+                      setShowFilter(false);
+                    }
+                  }}
+                >
                   <div className="text-xs text-gray-400 mb-2">Filter by project</div>
                   <div className="max-h-64 overflow-y-auto space-y-1">
-                    {projects.map(p => (
-                      <label key={p.id} className="flex items-center gap-2 text-sm text-gray-200">
+                    {projects.map((p, idx) => (
+                      <label key={p.id} className={`flex items-center gap-2 text-sm ${filterActiveIndex===idx?'bg-gray-800':''} text-gray-200 px-1 rounded`}>
                         <input type="checkbox" checked={projectFilterIds.includes(p.id)} onChange={(e) => {
                           setProjectFilterIds(prev => e.target.checked ? [...new Set([...prev, p.id])] : prev.filter(id => id !== p.id));
                         }} />
