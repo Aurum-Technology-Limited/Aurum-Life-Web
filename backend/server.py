@@ -838,7 +838,7 @@ async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current
 
 # ================================
 # TASKS: SEARCH & SUGGEST-FOCUS
-@api_router.get("/tasks/{task_id}")
+@api_router.get("/tasks/{task_id}", include_in_schema=False)
 async def get_task(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
     try:
         user_id = str(current_user.id)
