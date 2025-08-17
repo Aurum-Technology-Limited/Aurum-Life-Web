@@ -866,7 +866,8 @@ async def get_task(task_id: uuid.UUID, current_user: User = Depends(get_current_
 @api_router.get("/tasks/search")
 async def search_tasks(
     q: str = Query(..., min_length=1),
-    limit: int = Query(10, ge=1, le=25),
+    limit: int = Query(10, ge=1, le=50),
+    page: int = Query(1, ge=1),
     current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """User-scoped partial search over task name/description (excludes completed)."""
