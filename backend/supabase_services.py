@@ -1283,6 +1283,19 @@ class SupabaseTaskService:
             
             response = query.execute()
             tasks = response.data or []
+
+            # Enrich with project color/name
+            try:
+                proj_ids = list({t.get('project_id') for t in tasks if t.get('project_id')})
+                if proj_ids:
+                    p_resp = supabase.table('projects').select('id,name,color').in_('id', proj_ids).execute()
+                    p_lookup = {p['id']: p for p in (p_resp.data or [])}
+                    for t in tasks:
+                        if t.get('project_id') and t['project_id'] in p_lookup:
+                            t['project_name'] = p_lookup[t['project_id']].get('name')
+                            t['project_color'] = p_lookup[t['project_id']].get('color')
+            except Exception:
+                pass
             
             # Transform data to match expected format
             status_reverse_mapping = {
