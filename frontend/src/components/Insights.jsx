@@ -188,7 +188,20 @@ const Insights = memo(() => {
                   </div>
                   <div className="bg-gray-900 p-3 rounded border border-gray-700">
                     <div className="text-xs text-gray-400 mb-1">Important & Not Urgent</div>
-                    <div className="text-2xl font-bold text-green-400">{eisenhower_matrix.active_counts?.important_not_urgent || 0}</div>
+                    <button
+                      onClick={async () => {
+                        setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: true, items: [] });
+                        try {
+                          const resp = await insightsDrilldownAPI.getEisenhowerTasks('important_not_urgent', 'active');
+                          setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: false, items: resp.data.tasks || [] });
+                        } catch (e) {
+                          setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: false, items: [], error: e?.message });
+                        }
+                      }}
+                      className="text-2xl font-bold text-green-400 hover:underline"
+                    >
+                      {eisenhower_matrix.active_counts?.important_not_urgent || 0}
+                    </button>
                   </div>
                   <div className="bg-gray-900 p-3 rounded border border-gray-700">
                     <div className="text-xs text-gray-400 mb-1">Urgent & Not Important</div>
