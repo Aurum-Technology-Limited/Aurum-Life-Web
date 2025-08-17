@@ -235,7 +235,7 @@ const CalendarBoard = () => {
             onClose={onCloseTask}
             onSave={onSaveTask}
             loading={false}
-          /&gt;
+          />
         )}
       </div>
     </DndProvider>
