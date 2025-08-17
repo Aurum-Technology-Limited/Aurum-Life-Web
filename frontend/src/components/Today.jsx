@@ -564,6 +564,8 @@ const Today = memo(() => {
                         const res = await tasksAPI.suggestFocus();
                         const suggestions = res.data || [];
                         setAiSuggestions(suggestions);
+                        try { localStorage.setItem(SUGGESTIONS_KEY, JSON.stringify(suggestions)); } catch {}
+
                       } catch (e) {
                         console.error('Suggest focus error:', e);
                         setAiSuggestions([]);
