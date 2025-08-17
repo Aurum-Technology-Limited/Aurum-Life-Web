@@ -228,7 +228,7 @@ const CalendarBoard = () => {
           </div>
         )}
 
-        {modalOpen &amp;&amp; activeTask &amp;&amp; (
+        {modalOpen && activeTask && (
           &lt;TaskModal
             task={activeTask}
             isOpen={modalOpen}
