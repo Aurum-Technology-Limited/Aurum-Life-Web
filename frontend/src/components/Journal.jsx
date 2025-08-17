@@ -513,6 +513,7 @@ const Journal = memo(() => {
       setError(null);
       
       // Add timeout protection for save operations
+      setIsSyncing(true);
       const saveOperation = selectedEntry
         ? journalAPI.updateEntry(selectedEntry.id, formData)
         : journalAPI.createEntry(formData);
