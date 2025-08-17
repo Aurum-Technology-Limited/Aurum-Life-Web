@@ -178,6 +178,8 @@ const CalendarBoard = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
 
+  const [slotHeight, setSlotHeight] = useState(48); // px per hour
+
   const load = useCallback(async () => {
     try {
       setLoading(true);
