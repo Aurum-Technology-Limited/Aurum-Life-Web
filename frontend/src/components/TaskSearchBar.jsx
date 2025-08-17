@@ -156,7 +156,8 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
               {results.map((task, idx) => (
                 <div
                   key={task.id}
-                  className="px-4 py-3 hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 last:border-b-0"
+                  className={`px-4 py-3 transition-colors border-b border-gray-700/50 last:border-b-0 ${activeIndex===idx ? 'bg-gray-700/60' : 'hover:bg-gray-700/50'}`}
+                  onMouseEnter={() => setActiveIndex(idx)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
