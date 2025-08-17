@@ -87,7 +87,7 @@ const WeekGrid = ({ weekStart, tasks, onDropTask, onOpen, onCreateAt, slotHeight
       ))}
       {HOURS.map((h) => (
         <React.Fragment key={h}>
-          <div className="border-t border-gray-800 h-16 text-[10px] text-gray-500 flex items-start justify-end pr-2 pt-1">{String(h).padStart(2, '0')}:00</div>
+          <div className="border-t border-gray-800 text-[10px] text-gray-500 flex items-start justify-end pr-2 pt-1" style={{ height: `${slotHeight}px` }}>{String(h).padStart(2, '0')}:00</div>
           {days.map((d) => {
             const slotDate = setMinutes(setHours(startOfDay(d), h), 0);
             const slotTasks = tasks.filter((t) => {
