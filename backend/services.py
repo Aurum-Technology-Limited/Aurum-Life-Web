@@ -395,7 +395,8 @@ class JournalService:
 
     @staticmethod
     async def delete_entry(user_id: str, entry_id: str) -> bool:
-        return await delete_document("journal_entries", {"id": entry_id, "user_id": user_id})
+        # Soft delete
+        return await update_document("journal_entries", {"id": entry_id, "user_id": user_id}, {"deleted": True, "deleted_at": datetime.utcnow()})
 
     @staticmethod
     async def search_entries(user_id: str, search_term: str, limit: int = 20) -> List[JournalEntryResponse]:
