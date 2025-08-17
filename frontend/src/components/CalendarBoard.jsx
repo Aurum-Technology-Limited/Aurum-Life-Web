@@ -158,6 +158,8 @@ const CalendarBoard = () => {
   const [newPriority, setNewPriority] = useState('medium');
   const [newProjectId, setNewProjectId] = useState('');
   const [projects, setProjects] = useState([]);
+  const [projectFilterIds, setProjectFilterIds] = useState([]); // empty => all
+
 
   const loadProjects = useCallback(async () => {
     try {
