@@ -78,6 +78,22 @@ load_dotenv(ROOT_DIR / '.env')
 # Create the main app
 app = FastAPI(title="Aurum Life API - Supabase Only", version="2.0.0")
 
+
+# Startup/shutdown: connect to Mongo for journal and other persisted features
+@app.on_event("startup")
+async def on_startup():
+    try:
+        await connect_to_mongo()
+    except Exception as e:
+        logger.error(f"Mongo startup failed: {e}")
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    try:
+        await close_mongo_connection()
+    except Exception as e:
+        logger.error(f"Mongo shutdown failed: {e}")
+
 # CORS middleware - MUST be added BEFORE routers
 # Configure allowed origins with env override; default includes preview and localhost
 frontend_origins_env = os.environ.get('FRONTEND_ALLOWED_ORIGINS')
