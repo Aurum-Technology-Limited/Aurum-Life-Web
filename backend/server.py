@@ -882,11 +882,12 @@ async def search_tasks(
         text_resp = (
             supabase
             .table('tasks')
-            .select('id,name,description,priority,status,completed,project_id')
+            .select('id,name,description,priority,status,completed,project_id,created_at')
             .eq('user_id', user_id)
             .eq('completed', False)
             .or_(f"name.ilike.%{q}%,description.ilike.%{q}%")
-            .limit(limit)
+            .order('created_at', desc=True)
+            .range((page-1)*limit, (page*limit)-1)
             .execute()
         )
         text_items = text_resp.data or []
