@@ -877,12 +877,14 @@ async def search_tasks(
             raise HTTPException(status_code=429, detail="Search rate limit exceeded. Please wait a moment.")
         supabase = get_supabase_client()
         like = f"%{q}%"
+        # Supabase python client does not interpolate % in or_ shortcut well; build explicit RPC via http filter syntax
         resp = (
-            supabase.table('tasks')
+            supabase
+            .table('tasks')
             .select('id,name,description,priority,status,completed,project_id')
             .eq('user_id', user_id)
             .eq('completed', False)
-            .or_(f"name.ilike.{like},description.ilike.{like}")
+            .or_(f"name.ilike.%{q}%,description.ilike.%{q}%")
             .limit(limit)
             .execute()
         )
