@@ -308,7 +308,7 @@ export const tasksAPI = {
     params: excludeTaskId ? { task_id: excludeTaskId } : {} 
   }),
   // New Today Focus additions
-  searchTasks: (query, limit = 10) => apiClient.get('/tasks/search', { params: { q: query, limit } }),
+  searchTasks: (query, limit = 10, page = 1) => apiClient.get('/tasks/search', { params: { q: query, limit, page } }),
   suggestFocus: () => apiClient.get('/tasks/suggest-focus')
 };
 
