@@ -5032,6 +5032,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Backend: Subtask endpoints testing completed - comprehensive testing of GET /api/tasks/{task_id}/subtasks and POST /api/tasks/{task_id}/subtasks endpoints with full workflow validation"
     - "Backend: New endpoints testing completed - comprehensive testing of GET /api/tasks/search, GET /api/tasks/suggest-focus, and GET /api/today endpoints with rate limiting validation"
     - "Frontend later: After backend passes, validate Areas creation shows in list and modal buttons clickable."
   stuck_tasks:
