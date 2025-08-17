@@ -2,6 +2,82 @@ import React, { useState, useEffect, memo, useCallback, useMemo, useRef } from '
 import { BarChart3, Target, CheckCircle, FolderOpen, TrendingUp, Clock, Lightbulb, ArrowRight, Users, Folder, List } from 'lucide-react';
 import { insightsAPI, insightsDrilldownAPI, tasksAPI, todayAPI } from '../services/api';
 
+// Helper: Inline Today Add/Remove with toast and Added state
+const InlineTodayAction = ({ t, drilldown, setDrilldown }) => {
+  const [busy, setBusy] = useState(false);
+  const [toast, setToast] = useState(null);
+  const taskId = t.id || t.taskId;
+  if (!taskId) return null;
+
+  const isAdded = Array.isArray(drilldown?.todayIds) && drilldown.todayIds.includes(taskId);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 1500);
+  };
+
+  const add = async () => {
+    if (busy || isAdded) return;
+    try {
+      setBusy(true);
+      await todayAPI.addTaskToToday(taskId);
+      setDrilldown(prev => ({
+        ...prev,
+        todayIds: Array.isArray(prev.todayIds) ? [...new Set([...prev.todayIds, taskId])] : [taskId]
+      }));
+      showToast('Added to Today');
+    } catch (e) {
+      console.error('Add to Today failed', e);
+      showToast('Failed to add');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async () => {
+    if (busy || !isAdded) return;
+    try {
+      setBusy(true);
+      await todayAPI.removeTaskFromToday(taskId);
+      setDrilldown(prev => ({
+        ...prev,
+        todayIds: Array.isArray(prev.todayIds) ? prev.todayIds.filter(id => id !== taskId) : []
+      }));
+      showToast('Removed from Today');
+    } catch (e) {
+      console.error('Remove from Today failed', e);
+      showToast('Failed to remove');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      {!isAdded ? (
+        <button
+          onClick={add}
+          disabled={busy}
+          className={`text-xs px-2 py-0.5 rounded border ${busy ? 'opacity-60 cursor-not-allowed' : 'text-yellow-400 border-yellow-700 hover:bg-yellow-900/20'}`}
+          title="Add to Today"
+        >
+          {busy ? 'Adding...' : '+ Today'}
+        </button>
+      ) : (
+        <button
+          onClick={remove}
+          disabled={busy}
+          className={`text-xs px-2 py-0.5 rounded border ${busy ? 'opacity-60 cursor-not-allowed' : 'text-red-400 border-red-700 hover:bg-red-900/20'}`}
+          title="Remove from Today"
+        >
+          Remove
+        </button>
+      )}
+      {toast && <span className="text-xs text-gray-300">{toast}</span>}
+    </div>
+  );
+};
+
 const Insights = memo(() => {
   const [loading, setLoading] = useState(true);
   const [insightsData, setInsightsData] = useState(null);
