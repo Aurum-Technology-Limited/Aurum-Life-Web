@@ -928,7 +928,9 @@ async def search_tasks(
             rid = row.get('id')
             if rid and rid not in by_id:
                 by_id[rid] = row
-        items = list(by_id.values())[:limit]
+        items = list(by_id.values())
+        # Hard clip to limit again as a safety
+        items = items[:limit]
 
         # Enrich with project names
         enrich_proj_ids = list({t.get('project_id') for t in items if t.get('project_id')})
