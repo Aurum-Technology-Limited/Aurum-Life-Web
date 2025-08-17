@@ -51,7 +51,7 @@ const TimeSlot = ({ date, onDropTask, onCreateAt, children }) => {
   );
 };
 
-const DayGrid = ({ day, tasks, onDropTask, onOpen }) => {
+const DayGrid = ({ day, tasks, onDropTask, onOpen, onCreateAt }) => {
   return (
     <div className="grid" style={{ gridTemplateRows: `repeat(${HOURS.length}, 1fr)` }}>
       {HOURS.map((h) => {
