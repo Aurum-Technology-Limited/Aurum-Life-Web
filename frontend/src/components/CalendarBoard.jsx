@@ -300,6 +300,24 @@ const CalendarBoard = () => {
                   }}>Create</button>
                 </div>
               </div>
+            <button
+              className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white flex items-center gap-1"
+              onClick={() => {
+                // open simple filter dropdown
+                const all = projects.map(p => ({ id: p.id, name: p.name }));
+                const selected = new Set(projectFilterIds);
+                const next = [];
+                // naive prompt-based selection for MVP
+                const chosen = prompt('Filter by project IDs (comma-separated), or leave empty for all', projectFilterIds.join(','));
+                if (chosen === null) return; // cancelled
+                const ids = chosen.split(',').map(s => s.trim()).filter(Boolean);
+                setProjectFilterIds(ids);
+              }}
+              title="Filter by project"
+            >
+              <Filter className="h-4 w-4" />
+              Filter
+            </button>
             </div>
           </div>
         )}
