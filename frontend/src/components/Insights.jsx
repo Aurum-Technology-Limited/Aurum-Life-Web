@@ -272,8 +272,12 @@ const Insights = memo(() => {
                       onClick={async () => {
                         setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: true, items: [], todayIds: [] });
                         try {
-                          const resp = await insightsDrilldownAPI.getEisenhowerTasks('important_not_urgent', 'active');
-                          setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: false, items: resp.data.tasks || [] });
+                          const [tasksResp, todayResp] = await Promise.all([
+                            insightsDrilldownAPI.getEisenhowerTasks('important_not_urgent', 'active'),
+                            todayAPI.getTodayView(),
+                          ]);
+                          const todayIds = Array.isArray(todayResp.data) ? todayResp.data.map(x => x.id) : [];
+                          setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: false, items: tasksResp.data.tasks || [], todayIds });
                         } catch (e) {
                           setDrilldown({ type: 'matrix', payload: { quadrant: 'important_not_urgent' }, loading: false, items: [], error: e?.message });
                         }
