@@ -1512,7 +1512,103 @@ class SupabaseInsightsService:
             completed_projects = [proj for proj in projects_data if proj.get('status') == 'completed']
             total_projects_completed = len(completed_projects)
             
-            # Calculate pillar alignment with real data
+            # ------------------------------
+            # Eisenhower Matrix (Urgency vs Importance)
+            # ------------------------------
+            from datetime import timedelta
+            now = datetime.utcnow()
+            def is_urgent(t: Dict[str, Any]) -> bool:
+                due = t.get('due_date')
+                if not due:
+                    return False
+                try:
+                    if isinstance(due, str):
+                        due_dt = datetime.fromisoformat(due.replace('Z', '+00:00')) if 'Z' in due else datetime.fromisoformat(due)
+                    else:
+                        due_dt = due
+                    return (due_dt - now) <= timedelta(days=2) or due_dt < now
+                except Exception:
+                    return False
+            def is_important(t: Dict[str, Any]) -> bool:
+                pr = (t.get('priority') or '').lower()
+                return pr in ('high', 'medium')  # MVP heuristic
+            def classify_quadrant(t: Dict[str, Any]) -> str:
+                u = is_urgent(t)
+                i = is_important(t)
+                if u and i:
+                    return 'urgent_important'
+                if i and not u:
+                    return 'important_not_urgent'
+                if u and not i:
+                    return 'urgent_not_important'
+                return 'not_urgent_not_important'
+
+            active_tasks = [t for t in tasks_data if not t.get('completed', False)]
+            active_counts = {
+                'urgent_important': 0,
+                'important_not_urgent': 0,
+                'urgent_not_important': 0,
+                'not_urgent_not_important': 0
+            }
+            for t in active_tasks:
+                active_counts[classify_quadrant(t)] += 1
+
+            # Weekly trends for last 6 weeks based on completed_at
+            def week_start(dt: datetime) -> datetime:
+                # Monday as week start
+                return dt - timedelta(days=dt.weekday())
+
+            weeks = []
+            for w in range(6):
+                ws = week_start(now) - timedelta(weeks=w)
+                weeks.append(ws.replace(hour=0, minute=0, second=0, microsecond=0))
+            weeks = sorted(weeks)
+
+            trends = []
+            for ws in weeks:
+                we = ws + timedelta(days=7)
+                bucket = {
+                    'week_start': ws.date().isoformat(),
+                    'urgent_important': 0,
+                    'important_not_urgent': 0,
+                    'urgent_not_important': 0,
+                    'not_urgent_not_important': 0,
+                    'total_completed': 0
+                }
+                for t in completed_tasks:
+                    comp_at = t.get('completed_at') or t.get('updated_at') or t.get('created_at')
+                    if not comp_at:
+                        continue
+                    try:
+                        if isinstance(comp_at, str):
+                            cdt = datetime.fromisoformat(comp_at.replace('Z', '+00:00')) if 'Z' in comp_at else datetime.fromisoformat(comp_at)
+                        else:
+                            cdt = comp_at
+                    except Exception:
+                        continue
+                    if ws <= cdt < we:
+                        q = classify_quadrant(t)
+                        bucket[q] += 1
+                        bucket['total_completed'] += 1
+                trends.append(bucket)
+
+            # Behavior summary
+            reactive_now = active_counts['urgent_important'] + active_counts['urgent_not_important']
+            intentional_now = active_counts['important_not_urgent']
+            reactive_index = round((reactive_now / max(1, (reactive_now + intentional_now))) * 100)
+
+            eisenhower_matrix = {
+                'active_counts': active_counts,
+                'trends': trends,
+                'behavior_summary': {
+                    'reactive_index': reactive_index,
+                    'message': 'More time in Urgent quadrants (reactive)' if reactive_index > 55 else 'Good focus on Important work (intentional)'
+                }
+            }
+
+            # ------------------------------
+            # Pillar alignment (existing)
+            # ------------------------------
             pillar_alignment = []
             if pillars_data and completed_tasks:
                 for pillar in pillars_data:
@@ -1568,15 +1664,9 @@ class SupabaseInsightsService:
                             "projects_count": len(pillar_projects)
                         })
             
-            # Calculate productivity trends (mock for now, can be enhanced with actual date-based analysis)
-            productivity_trends = {
-                "this_week": 85 if total_tasks_completed > 20 else 65,
-                "last_week": 72 if total_tasks_completed > 15 else 55,
-                "monthly_average": 78 if total_tasks_completed > 10 else 60,
-                "trend": "increasing" if total_tasks_completed > 25 else "stable"
-            }
-            
-            # Calculate area distribution
+            # ------------------------------
+            # Area distribution (existing)
+            # ------------------------------
             area_distribution = []
             if areas_data and completed_tasks:
                 for area in areas_data:
@@ -1602,8 +1692,60 @@ class SupabaseInsightsService:
                 
                 # Sort by percentage
                 area_distribution.sort(key=lambda x: x['percentage'], reverse=True)
+
+            # ------------------------------
+            # Alignment progress (vertical): top projects with completion
+            # ------------------------------
+            # Build project completion from tasks_data
+            project_task_map: Dict[str, Dict[str, int]] = {}
+            for t in tasks_data:
+                pid = t.get('project_id')
+                if not pid:
+                    continue
+                entry = project_task_map.setdefault(pid, {'total': 0, 'completed': 0})
+                entry['total'] += 1
+                if t.get('completed') or t.get('status') == 'completed':
+                    entry['completed'] += 1
+            # Map projects to area/pillar
+            project_progress = []
+            proj_lookup = {p['id']: p for p in projects_data}
+            area_lookup = {a['id']: a for a in areas_data}
+            pillar_lookup = {p['id']: p for p in pillars_data}
+            for pid, counts in project_task_map.items():
+                p = proj_lookup.get(pid)
+                if not p:
+                    continue
+                area = area_lookup.get(p.get('area_id')) if p.get('area_id') else None
+                pillar = pillar_lookup.get(area.get('pillar_id')) if area and area.get('pillar_id') else None
+                total = max(1, counts['total'])
+                pct = round((counts['completed'] / total) * 100, 1)
+                project_progress.append({
+                    'project_id': pid,
+                    'project_name': p.get('name'),
+                    'completion_percentage': pct,
+                    'area_name': area.get('name') if area else None,
+                    'pillar_name': pillar.get('name') if pillar else None
+                })
+            # Top 8 projects by completion then by total tasks
+            project_progress = sorted(project_progress, key=lambda x: (-x['completion_percentage'], x['project_name'] or ''))[:8]
+
+            alignment_progress = {
+                'projects': project_progress,
+            }
+
+            # ------------------------------
+            # Productivity trends (placeholder logic)
+            # ------------------------------
+            productivity_trends = {
+                "this_week": 85 if total_tasks_completed > 20 else 65,
+                "last_week": 72 if total_tasks_completed > 15 else 55,
+                "monthly_average": 78 if total_tasks_completed > 10 else 60,
+                "trend": "increasing" if total_tasks_completed > 25 else "stable"
+            }
             
-            # Generate actionable insights
+            # ------------------------------
+            # Strategic feedback
+            # ------------------------------
             insights_text = []
             if pillar_alignment:
                 top_pillar = pillar_alignment[0]
@@ -1614,11 +1756,24 @@ class SupabaseInsightsService:
                 else:
                     insights_text.append("📊 No completed tasks yet. Start by completing some tasks to see your pillar alignment!")
                 
-                # Add recommendations
                 zero_pillars = [p for p in pillar_alignment if p['percentage'] == 0 and p['areas_count'] > 0]
                 if zero_pillars:
                     insights_text.append(f"💡 Consider focusing on {zero_pillars[0]['pillar_name']} - it has {zero_pillars[0]['areas_count']} areas but no completed tasks yet.")
-            
+
+            # Behavior text from matrix
+            if eisenhower_matrix['behavior_summary']['reactive_index'] > 55:
+                insights_text.append("⏱️ You're spending more time on urgent tasks. Try scheduling more Important & Not Urgent tasks to reduce firefighting.")
+            else:
+                insights_text.append("🎯 Great balance! You're prioritizing Important work before it becomes urgent.")
+
+            # TODO: Period-over-period comparisons (simplified)
+            if len(trends) >= 2:
+                this_week = trends[-1]
+                last_week = trends[-2]
+                delta_inu = this_week['important_not_urgent'] - last_week['important_not_urgent']
+                if delta_inu > 0:
+                    insights_text.append(f"📈 You completed {delta_inu} more Important & Not Urgent tasks than last week – strong strategic focus!")
+
             return {
                 "alignment_snapshot": {
                     "total_tasks": total_tasks,
@@ -1630,6 +1785,8 @@ class SupabaseInsightsService:
                 },
                 "productivity_trends": productivity_trends,
                 "area_distribution": area_distribution[:5],  # Top 5 areas
+                "alignment_progress": alignment_progress,
+                "eisenhower_matrix": eisenhower_matrix,
                 "insights_text": insights_text,
                 "recommendations": await SupabaseInsightsService._generate_recommendations(pillars_data, areas_data, projects_data, tasks_data),
                 "generated_at": datetime.utcnow().isoformat()
@@ -1653,6 +1810,8 @@ class SupabaseInsightsService:
                     "trend": "no_data"
                 },
                 "area_distribution": [],
+                "alignment_progress": { 'projects': [] },
+                "eisenhower_matrix": { 'active_counts': { 'urgent_important': 0, 'important_not_urgent': 0, 'urgent_not_important': 0, 'not_urgent_not_important': 0 }, 'trends': [], 'behavior_summary': { 'reactive_index': 0, 'message': 'no_data' } },
                 "insights_text": ["📊 Unable to generate insights. Please try again later."],
                 "recommendations": [],
                 "generated_at": datetime.utcnow().isoformat()
