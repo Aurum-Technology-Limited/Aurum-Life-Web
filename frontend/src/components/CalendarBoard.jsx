@@ -308,7 +308,7 @@ const CalendarBoard = () => {
                   <div className="text-xs text-gray-400 mb-2">Filter by project</div>
                   <div className="max-h-64 overflow-y-auto space-y-1">
                     {projects.map((p, idx) => (
-                      <label key={p.id} className={`flex items-center gap-2 text-sm ${filterActiveIndex===idx?'bg-gray-800':''} text-gray-200 px-1 rounded`}>
+                      <label key={p.id} className={`flex items-center gap-2 text-sm ${filterActiveIndex === idx ? 'bg-gray-800' : ''} text-gray-200 px-1 rounded`}>
                         <input type="checkbox" checked={projectFilterIds.includes(p.id)} onChange={(e) => {
                           setProjectFilterIds(prev => e.target.checked ? [...new Set([...prev, p.id])] : prev.filter(id => id !== p.id));
                         }} />
