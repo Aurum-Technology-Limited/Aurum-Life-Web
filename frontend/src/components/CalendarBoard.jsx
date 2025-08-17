@@ -248,7 +248,7 @@ const CalendarBoard = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 w-full">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <button className={`px-2 py-1 rounded text-sm ${view==='day'?'bg-gray-800 text-white':'text-gray-300 hover:text-white'}`} onClick={() => setView('day')}>Day</button>
