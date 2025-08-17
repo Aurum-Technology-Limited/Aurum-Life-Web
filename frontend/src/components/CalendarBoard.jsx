@@ -163,6 +163,7 @@ const CalendarBoard = () => {
   const [newProjectId, setNewProjectId] = useState('');
   const [projects, setProjects] = useState([]);
   const [projectFilterIds, setProjectFilterIds] = useState([]); // empty => all
+  const [showFilter, setShowFilter] = useState(false);
 
 
   const loadProjects = useCallback(async () => {
