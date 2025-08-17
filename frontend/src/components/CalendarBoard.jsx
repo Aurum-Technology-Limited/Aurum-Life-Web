@@ -155,6 +155,23 @@ const UnscheduledList = ({ tasks, onOpen }) => (
   );
 };
 
+
+// Unscheduled list component using TaskCard for consistent drag behavior
+const UnscheduledList = ({ tasks, onOpen }) => {
+  const list = Array.isArray(tasks) ? tasks : [];
+  return (
+    <div className="space-y-2">
+      {list.length === 0 ? (
+        <div className="text-xs text-gray-500">No unscheduled tasks</div>
+      ) : (
+        list.map((t) => (
+          <TaskCard key={t.id} task={t} onOpen={onOpen} />
+        ))
+      )}
+    </div>
+  );
+};
+
 const CalendarBoard = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [newTaskTime, setNewTaskTime] = useState(null);
