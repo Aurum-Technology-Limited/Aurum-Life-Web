@@ -10,7 +10,7 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
   useEffect(() => {
     fetchWhyStatements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(taskIds || [])]);
+  }, [Array.isArray(taskIds) ? taskIds.join(',') : '']);
 
   const fetchWhyStatements = async () => {
     try {
