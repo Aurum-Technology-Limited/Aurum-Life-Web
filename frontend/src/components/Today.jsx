@@ -204,6 +204,17 @@ const Today = memo(() => {
       setLoading(false);
     }
   };
+  // Load persisted AI suggestions on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SUGGESTIONS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) setAiSuggestions(parsed);
+      }
+    } catch {}
+  }, []);
+
 
   useEffect(() => {
     loadTodaysTasks();
