@@ -12,16 +12,13 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
   const searchTimeoutRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  // Debounced search with 300ms delay
+  // Debounced search with 350ms delay
   useEffect(() => {
-    if (query.trim().length === 0) {
+    const q = (query || '').trim();
+    if (q.length < 2) {
       setResults([]);
       setShowResults(false);
       return;
-    }
-
-    if (query.trim().length < 2) {
-      return; // Don't search for single characters
     }
 
     // Clear existing timeout
@@ -35,7 +32,7 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
       setError('');
       
       try {
-        const response = await tasksAPI.searchTasks(query.trim(), 10);
+        const response = await tasksAPI.searchTasks(q, 10);
         const results = response.data || [];
         // Normalize shapes from backend
         const normalized = results.map((r) => ({
@@ -50,13 +47,13 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
         setShowResults(true);
       } catch (err) {
         console.error('Error searching tasks:', err);
-        setError('Failed to search tasks');
+        setError('Failed to search tasks. Please try again');
         setResults([]);
         setShowResults(false);
       } finally {
         setLoading(false);
       }
-    }, 300); // 300ms debounce delay
+    }, 350); // 350ms debounce delay
 
     // Cleanup timeout on unmount or query change
     return () => {
