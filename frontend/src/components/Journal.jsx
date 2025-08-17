@@ -373,6 +373,7 @@ const Journal = memo(() => {
   const [viewingEntry, setViewingEntry] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState(null);
   
   // New state for advanced features
