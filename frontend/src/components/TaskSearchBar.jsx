@@ -35,7 +35,7 @@ const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to to
       setError('');
       
       try {
-        const response = await tasksAPI.searchTasks(q, 10);
+        const response = await tasksAPI.searchTasks(q, limit, page);
         const results = response.data || [];
         // Normalize shapes from backend
         const normalized = results.map((r) => ({
