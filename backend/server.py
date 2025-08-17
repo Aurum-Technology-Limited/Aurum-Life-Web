@@ -838,6 +838,30 @@ async def delete_pillar(pillar_id: str, current_user: User = Depends(get_current
 
 # ================================
 # TASKS: SEARCH & SUGGEST-FOCUS
+@api_router.get("/tasks/{task_id}")
+async def get_task(task_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        resp = supabase.table('tasks').select('*').eq('id', task_id).eq('user_id', user_id).single().execute()
+        if not resp.data:
+            raise HTTPException(status_code=404, detail="Task not found")
+        task = resp.data
+        # enrich with project name
+        try:
+            if task.get('project_id'):
+                p = supabase.table('projects').select('name').eq('id', task['project_id']).single().execute()
+                task['project_name'] = (p.data or {}).get('name')
+        except Exception:
+            pass
+        return task
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get task error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch task")
+
+
 # ================================
 @api_router.get("/tasks/search")
 async def search_tasks(
