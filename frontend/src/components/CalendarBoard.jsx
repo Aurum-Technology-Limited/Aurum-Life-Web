@@ -254,7 +254,7 @@ const CalendarBoard = () => {
               <DayGrid day={anchorDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} />
             )}
             {view === 'week' && (
-              <WeekGrid weekStart={weekStartDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} />
+              <WeekGrid weekStart={weekStartDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} />
             )}
             {view === 'month' && (
               <MonthGrid monthDate={anchorDate} tasks={scheduledTasks} onOpen={onOpenTask} />
