@@ -217,6 +217,7 @@ const CalendarBoard = () => {
     setShowCreate(true);
   }, [projects]);
   const [showUnscheduled, setShowUnscheduled] = useState(true);
+  const [showLegend, setShowLegend] = useState(false);
 
 
   const onZoomIn = useCallback(() => setSlotHeight((h) => Math.min(h + 8, 96)), []);
