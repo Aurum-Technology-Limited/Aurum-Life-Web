@@ -121,6 +121,7 @@ const Today = memo(() => {
   const [error, setError] = useState(null);
   const [activePomodoro, setActivePomodoro] = useState(null);
   const [aiSuggestions, setAiSuggestions] = useState([]);
+  const SUGGESTIONS_KEY = 'aurum_ai_suggestions';
   const [suggestLoading, setSuggestLoading] = useState(false);
 
 
