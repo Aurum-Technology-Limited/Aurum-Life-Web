@@ -6,6 +6,7 @@ const Insights = memo(() => {
   const [loading, setLoading] = useState(true);
   const [insightsData, setInsightsData] = useState(null);
   const [error, setError] = useState(null);
+  const [drilldown, setDrilldown] = useState({ type: null, payload: null, loading: false, items: [] });
 
   useEffect(() => {
     fetchAlignmentSnapshot();
