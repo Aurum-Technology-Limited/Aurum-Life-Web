@@ -545,6 +545,7 @@ const Journal = memo(() => {
       }
     } finally {
       setModalLoading(false);
+      setIsSyncing(false);
     }
   };
 
