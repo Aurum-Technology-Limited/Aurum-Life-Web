@@ -708,6 +708,112 @@ async def get_today_view(
 # ================================
 # TODAY FOCUS (MVP storage)
 # ================================
+
+# Journal endpoints (persisted via Mongo helpers in services.py)
+@api_router.post('/journal')
+async def api_create_journal(entry_data: JournalEntryCreate, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        entry = await JournalService.create_entry(str(current_user.id), entry_data)
+        return entry
+    except Exception as e:
+        logger.error(f'Journal create error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to create journal entry')
+
+@api_router.get('/journal')
+async def api_get_journal(current_user: User = Depends(get_current_active_user_hybrid), skip: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100), mood_filter: Optional[str] = None, tag_filter: Optional[str] = None, date_from: Optional[datetime] = None, date_to: Optional[datetime] = None):
+    try:
+        return await JournalService.get_user_entries(str(current_user.id), skip, limit, mood_filter, tag_filter, date_from, date_to)
+    except Exception as e:
+        logger.error(f'Journal list error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to load journal entries')
+
+@api_router.put('/journal/{entry_id}')
+async def api_update_journal(entry_id: str, entry_data: JournalEntryUpdate, current_user: User = Depends(get_current_active_user_hybrid)):
+    ok = await JournalService.update_entry(str(current_user.id), entry_id, entry_data)
+    if not ok:
+        raise HTTPException(status_code=404, detail='Journal entry not found')
+    return { 'success': True }
+
+@api_router.delete('/journal/{entry_id}')
+async def api_delete_journal(entry_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    ok = await JournalService.delete_entry(str(current_user.id), entry_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail='Journal entry not found')
+    return { 'success': True }
+
+@api_router.get('/journal/search')
+async def api_search_journal(q: str = Query(...), limit: int = Query(20, ge=1, le=100), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        return await JournalService.search_entries(str(current_user.id), q, limit)
+    except Exception as e:
+        logger.error(f'Journal search error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to search journal entries')
+
+@api_router.get('/journal/on-this-day')
+async def api_on_this_day(date: Optional[datetime] = None, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        return await JournalService.get_on_this_day(str(current_user.id), date)
+    except Exception as e:
+        logger.error(f'Journal OTD error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to fetch entries')
+
+@api_router.get('/journal/insights')
+async def api_journal_insights(current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        return await JournalService.get_journal_insights(str(current_user.id))
+    except Exception as e:
+        logger.error(f'Journal insights error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to load insights')
+
+@api_router.get('/journal/templates')
+async def api_journal_templates(current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        return await JournalService.get_user_templates(str(current_user.id))
+    except Exception as e:
+        logger.error(f'Journal templates error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to load templates')
+
+@api_router.get('/journal/templates/{template_id}')
+async def api_journal_template(template_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    t = await JournalService.get_template(template_id)
+    if not t:
+        raise HTTPException(status_code=404, detail='Template not found')
+    return t
+
+@api_router.post('/journal/templates')
+async def api_create_journal_template(template_data: JournalTemplateCreate, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        return await JournalService.create_template(str(current_user.id), template_data)
+    except Exception as e:
+        logger.error(f'Journal template create error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to create template')
+
+@api_router.put('/journal/templates/{template_id}')
+async def api_update_journal_template(template_id: str, template_data: JournalTemplateUpdate, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        ok = await JournalService.update_template(str(current_user.id), template_id, template_data)
+        if not ok:
+            raise HTTPException(status_code=404, detail='Template not found')
+        return { 'success': True }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f'Journal template update error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to update template')
+
+@api_router.delete('/journal/templates/{template_id}')
+async def api_delete_journal_template(template_id: str, current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        ok = await JournalService.delete_template(str(current_user.id), template_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail='Template not found')
+        return { 'success': True }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f'Journal template delete error: {e}')
+        raise HTTPException(status_code=500, detail='Failed to delete template')
+
 @api_router.get('/today')
 async def get_today_tasks(current_user: User = Depends(get_current_active_user_hybrid)):
     try:
