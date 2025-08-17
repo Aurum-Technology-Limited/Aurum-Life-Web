@@ -813,6 +813,112 @@ async def get_ultra_insights(date_range: str = Query("all_time"), current_user: 
         logger.error(f"Ultra insights error: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch insights")
 
+@api_router.get("/insights/eisenhower/tasks")
+async def get_eisenhower_tasks(
+    quadrant: str = Query(..., pattern="^(urgent_important|important_not_urgent|urgent_not_important|not_urgent_not_important)$"),
+    scope: str = Query("active", pattern="^(active|completed|all)$"),
+    date_range: str = Query("all_time"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    """Return tasks for a specific Eisenhower quadrant. Defaults to active (not completed) tasks."""
+    try:
+        user_id = str(current_user.id)
+        # Fetch user tasks
+        tasks = await SupabaseTaskService.get_user_tasks(user_id)
+        from datetime import timedelta
+        now = datetime.utcnow()
+        def is_urgent(t: Dict[str, Any]) -> bool:
+            due = t.get('due_date')
+            if not due:
+                return False
+            try:
+                if isinstance(due, str):
+                    due_dt = datetime.fromisoformat(due.replace('Z', '+00:00')) if 'Z' in due else datetime.fromisoformat(due)
+                else:
+                    due_dt = due
+                return (due_dt - now) <= timedelta(days=2) or due_dt < now
+            except Exception:
+                return False
+        def is_important(t: Dict[str, Any]) -> bool:
+            pr = (t.get('priority') or '').lower()
+            return pr in ('high', 'medium')
+        def classify_quadrant(t: Dict[str, Any]) -> str:
+            u = is_urgent(t)
+            i = is_important(t)
+            if u and i:
+                return 'urgent_important'
+            if i and not u:
+                return 'important_not_urgent'
+            if u and not i:
+                return 'urgent_not_important'
+            return 'not_urgent_not_important'
+        # Filter by scope
+        filtered = []
+        for t in tasks:
+            if scope == 'active' and (t.get('completed') or t.get('status') == 'completed'):
+                continue
+            if scope == 'completed' and not (t.get('completed') or t.get('status') == 'completed'):
+                continue
+            if classify_quadrant(t) == quadrant:
+                filtered.append(t)
+        # Enrich with project name
+        proj_ids = list({t.get('project_id') for t in filtered if t.get('project_id')})
+        proj_lookup = {}
+        if proj_ids:
+            supabase = get_supabase_client()
+            p_resp = supabase.table('projects').select('id,name').in_('id', proj_ids).execute()
+            for p in (p_resp.data or []):
+                proj_lookup[p['id']] = p['name']
+        out = []
+        for t in filtered:
+            out.append({
+                'id': t.get('id'),
+                'name': t.get('name'),
+                'description': t.get('description'),
+                'priority': t.get('priority'),
+                'status': t.get('status'),
+                'completed': t.get('completed'),
+                'due_date': t.get('due_date'),
+                'project_name': proj_lookup.get(t.get('project_id'))
+            })
+        return { 'tasks': out }
+    except Exception as e:
+        logger.error(f"Eisenhower drilldown error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load Eisenhower tasks")
+
+@api_router.get("/insights/projects/{project_id}/tasks")
+async def get_project_drilldown_tasks(
+    project_id: str,
+    status: str = Query("all", pattern="^(all|active|completed)$"),
+    current_user: User = Depends(get_current_active_user_hybrid)
+):
+    try:
+        user_id = str(current_user.id)
+        supabase = get_supabase_client()
+        query = (
+            supabase.table('tasks')
+            .select('id,name,description,priority,status,completed,due_date,project_id')
+            .eq('user_id', user_id)
+            .eq('project_id', project_id)
+        )
+        if status == 'active':
+            query = query.eq('completed', False)
+        elif status == 'completed':
+            query = query.eq('completed', True)
+        resp = query.order('created_at', desc=True).execute()
+        tasks = resp.data or []
+        # Add project name
+        proj_name = None
+        try:
+            p_resp = supabase.table('projects').select('name').eq('id', project_id).single().execute()
+            proj_name = (p_resp.data or {}).get('name')
+        except Exception:
+            pass
+        return { 'project_id': project_id, 'project_name': proj_name, 'tasks': tasks }
+    except Exception as e:
+        logger.error(f"Project drilldown error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load project tasks")
+
     try:
         user_id = str(current_user.id)
         # Rate limit search to prevent abuse
