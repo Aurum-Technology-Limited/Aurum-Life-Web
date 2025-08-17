@@ -45,6 +45,7 @@ from supabase_services import (
 )
 from supabase_client import get_supabase_client
 from notification_service import NotificationService
+from database import connect_to_mongo, close_mongo_connection, update_document
 from supabase_auth import get_current_active_user, verify_token
 from supabase_auth_endpoints import auth_router
 from hybrid_auth import get_current_active_user_hybrid
