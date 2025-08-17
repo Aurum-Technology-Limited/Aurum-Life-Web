@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { tasksAPI, api as apiClient } from '../services/api';
+import { tasksAPI, projectsAPI } from '../services/api';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { format, addDays, startOfWeek, endOfWeek, startOfDay, addHours, setHours, setMinutes, isSameDay, isWithinInterval, parseISO } from 'date-fns';
