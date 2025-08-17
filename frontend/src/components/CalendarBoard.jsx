@@ -342,6 +342,12 @@ const CalendarBoard = () => {
                   }}>Create</button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+          </div>
+          <div className="flex items-center gap-2">
             <div className="relative">
               <button
                 className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white flex items-center gap-1"
@@ -377,11 +383,6 @@ const CalendarBoard = () => {
                 </div>
               )}
             </div>
-          </div>
-        )}
-
-          </div>
-          <div className="flex items-center gap-2">
             <button className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white" onClick={() => setAnchorDate(addDays(anchorDate, view==='day'? -1 : view==='week'? -7 : -30))}>Prev</button>
             <div className="text-gray-400 text-sm">{format(anchorDate, view==='month' ? 'MMMM yyyy' : 'EEE MMM d, yyyy')}</div>
             <button className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white" onClick={() => setAnchorDate(addDays(anchorDate, view==='day'? 1 : view==='week'? 7 : 30))}>Next</button>
