@@ -790,6 +790,29 @@ async def search_tasks(
     current_user: User = Depends(get_current_active_user_hybrid)
 ):
     """User-scoped partial search over task name/description (excludes completed)."""
+
+# ================================
+# INSIGHTS ENDPOINTS (ULTRA + REGULAR)
+# ================================
+@api_router.get("/insights")
+async def get_insights(date_range: str = Query("all_time"), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        svc = SupabaseInsightsService()
+        data = await svc.get_comprehensive_insights(str(current_user.id), date_range=date_range)
+        return data
+    except Exception as e:
+        logger.error(f"Insights error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch insights")
+
+@api_router.get("/ultra/insights")
+async def get_ultra_insights(date_range: str = Query("all_time"), current_user: User = Depends(get_current_active_user_hybrid)):
+    try:
+        data = await UltraPerformanceInsightsService.get_comprehensive_insights(str(current_user.id), date_range=date_range)
+        return data
+    except Exception as e:
+        logger.error(f"Ultra insights error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch insights")
+
     try:
         user_id = str(current_user.id)
         # Rate limit search to prevent abuse
