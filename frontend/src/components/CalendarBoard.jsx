@@ -305,11 +305,18 @@ const CalendarBoard = () => {
                   }}>Create</button>
                 </div>
               </div>
-            <button
-              className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white flex items-center gap-1"
-              onClick={() => {
-                // open simple filter dropdown
-                const all = projects.map(p => ({ id: p.id, name: p.name }));
+            <div className="relative">
+              <button
+                className="px-2 py-1 rounded text-sm text-gray-300 hover:text-white flex items-center gap-1"
+                onClick={() => setShowFilter((s)=>!s)}
+                onKeyDown={(e) => {
+                  if (!showFilter) return;
+                  if (e.key === 'Escape') setShowFilter(false);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={showFilter}
+                title="Filter by project"
+              >
             {showFilter && (
               <div className="absolute right-4 top-16 bg-gray-900 border border-gray-700 rounded p-3 z-50 w-64">
                 <div className="text-xs text-gray-400 mb-2">Filter by project</div>
