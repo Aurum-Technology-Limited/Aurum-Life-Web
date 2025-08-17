@@ -198,6 +198,9 @@ const CalendarBoard = () => {
     setNewPriority('medium');
     setNewProjectId(projects[0]?.id || '');
     setShowCreate(true);
+  const onZoomIn = useCallback(() => setSlotHeight((h) => Math.min(h + 8, 96)), []);
+  const onZoomOut = useCallback(() => setSlotHeight((h) => Math.max(h - 8, 24)), []);
+
   }, [projects]);
 
 
