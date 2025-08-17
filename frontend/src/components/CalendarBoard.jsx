@@ -76,7 +76,7 @@ const DayGrid = ({ day, tasks, onDropTask, onOpen, onCreateAt }) => {
   );
 };
 
-const WeekGrid = ({ weekStart, tasks, onDropTask, onOpen }) => {
+const WeekGrid = ({ weekStart, tasks, onDropTask, onOpen, onCreateAt }) => {
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   return (
     <div className="grid" style={{ gridTemplateColumns: `80px repeat(7, 1fr)` }}>
