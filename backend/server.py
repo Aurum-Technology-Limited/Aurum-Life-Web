@@ -912,11 +912,12 @@ async def search_tasks(
             p_tasks_resp = (
                 supabase
                 .table('tasks')
-                .select('id,name,description,priority,status,completed,project_id')
+                .select('id,name,description,priority,status,completed,project_id,created_at')
                 .eq('user_id', user_id)
                 .eq('completed', False)
                 .in_('project_id', proj_ids)
-                .limit(limit)
+                .order('created_at', desc=True)
+                .range((page-1)*limit, (page*limit)-1)
                 .execute()
             )
             project_items = p_tasks_resp.data or []
