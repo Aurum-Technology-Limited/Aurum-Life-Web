@@ -352,16 +352,24 @@ const Insights = memo(() => {
 
               {/* 6-week micro-chart for Important completions */}
               <div className="bg-gray-800 rounded-lg p-4 lg:col-span-2">
-                <h3 className="text-white font-semibold mb-2">Important Completions (6 weeks)</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white font-semibold">Important Completions (6 weeks)</h3>
+                  {/* Tiny legend */}
+                  <div className="flex items-center gap-3 text-xs">
+                    <div className="flex items-center gap-1 text-red-400"><span className="w-2 h-2 inline-block rounded-sm bg-red-500" /> UI</div>
+                    <div className="flex items-center gap-1 text-green-400"><span className="w-2 h-2 inline-block rounded-sm bg-green-500" /> IN-U</div>
+                    <div className="flex items-center gap-1 text-gray-400">= Important</div>
+                  </div>
+                </div>
                 <MicroBarChart
                   data={(Array.isArray(eisenhower_matrix.trends) ? eisenhower_matrix.trends : []).map(w => ({
                     label: w.week_start,
                     value: (w.urgent_important || 0) + (w.important_not_urgent || 0)
                   }))}
-                  barColor="#10B981" // green for important trajectory
+                  barColor="#10B981"
                 />
                 <div className="mt-2 text-xs text-gray-500">
-                  Green shows total completed in Important quadrants each week (Urgent & Important + Important & Not Urgent).
+                  Green bars show total completed in Important quadrants each week (Urgent & Important + Important & Not Urgent).
                 </div>
               </div>
             </div>
