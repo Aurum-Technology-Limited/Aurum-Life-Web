@@ -164,6 +164,8 @@ const CalendarBoard = () => {
   const [projects, setProjects] = useState([]);
   const [projectFilterIds, setProjectFilterIds] = useState([]); // empty => all
   const [showFilter, setShowFilter] = useState(false);
+  const [filterActiveIndex, setFilterActiveIndex] = useState(0);
+  const filterMenuRef = React.useRef(null);
 
 
   const loadProjects = useCallback(async () => {
