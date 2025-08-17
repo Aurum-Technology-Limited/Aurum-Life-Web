@@ -167,6 +167,13 @@ const CalendarBoard = () => {
   const [filterActiveIndex, setFilterActiveIndex] = useState(0);
   const filterMenuRef = React.useRef(null);
 
+  useEffect(() => {
+    if (showFilter && filterMenuRef.current) {
+      try { filterMenuRef.current.focus(); } catch {}
+      setFilterActiveIndex(0);
+    }
+  }, [showFilter]);
+
 
   const loadProjects = useCallback(async () => {
     try {
