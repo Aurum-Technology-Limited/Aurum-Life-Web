@@ -5,6 +5,9 @@ import { tasksAPI } from '../services/api';
 const TaskSearchBar = ({ onAddTask, placeholder = "Search for tasks to add to today's focus..." }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState('');
