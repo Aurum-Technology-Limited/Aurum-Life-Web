@@ -312,14 +312,32 @@ const CalendarBoard = () => {
         {loading ? (
           <div className="text-gray-400 text-sm">Loading calendar…</div>
         ) : (
-          <div className="overflow-x-auto">
-            {view === 'day' && (
-              <DayGrid day={anchorDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} slotHeight={slotHeight} />
-            )}
-            {view === 'week' && (
-              <WeekGrid weekStart={weekStartDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} slotHeight={slotHeight} />
-            )}
-            {view === 'month' && (
+          <div className="w-full overflow-x-auto">
+            {(view === 'day' || view === 'week') ? (
+              <div className="grid grid-cols-12 gap-4">
+                {/* Unscheduled sidebar */}
+                <aside className="col-span-3">
+                  <div className="bg-gray-800 border border-gray-700 rounded p-3">
+                    <button className="flex items-center gap-1 text-sm text-gray-200 mb-2" onClick={() => setShowUnscheduled(s => !s)}>
+                      {showUnscheduled ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      Unscheduled
+                    </button>
+                    {showUnscheduled && (
+                      <UnscheduledList tasks={unscheduledTasks} onOpen={onOpenTask} />
+                    )}
+                  </div>
+                </aside>
+                {/* Calendar grid */}
+                <section className="col-span-9">
+                  {view === 'day' && (
+                    <DayGrid day={anchorDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} slotHeight={slotHeight} />
+                  )}
+                  {view === 'week' && (
+                    <WeekGrid weekStart={weekStartDate} tasks={scheduledTasks} onDropTask={onDropTask} onOpen={onOpenTask} onCreateAt={onCreateAt} slotHeight={slotHeight} />
+                  )}
+                </section>
+              </div>
+            ) : (
               <MonthGrid monthDate={anchorDate} tasks={scheduledTasks} onOpen={onOpenTask} />
             )}
           </div>
