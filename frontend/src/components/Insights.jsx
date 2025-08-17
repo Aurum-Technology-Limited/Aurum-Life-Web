@@ -156,6 +156,66 @@ const Insights = memo(() => {
           </div>
         </div>
 
+        {/* Eisenhower Matrix (Urgency vs Importance) */}
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <TrendingUp className="h-6 w-6 text-red-500" />
+            <h2 className="text-xl font-semibold text-white">Eisenhower Matrix</h2>
+          </div>
+
+          {eisenhower_matrix ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gray-800 rounded-lg p-4">
+                <h3 className="text-white font-semibold mb-3">Active Tasks</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="bg-gray-900 p-3 rounded border border-gray-700">
+                    <div className="text-xs text-gray-400 mb-1">Urgent & Important</div>
+                    <div className="text-2xl font-bold text-red-400">{eisenhower_matrix.active_counts?.urgent_important || 0}</div>
+                  </div>
+                  <div className="bg-gray-900 p-3 rounded border border-gray-700">
+                    <div className="text-xs text-gray-400 mb-1">Important & Not Urgent</div>
+                    <div className="text-2xl font-bold text-green-400">{eisenhower_matrix.active_counts?.important_not_urgent || 0}</div>
+                  </div>
+                  <div className="bg-gray-900 p-3 rounded border border-gray-700">
+                    <div className="text-xs text-gray-400 mb-1">Urgent & Not Important</div>
+                    <div className="text-2xl font-bold text-yellow-400">{eisenhower_matrix.active_counts?.urgent_not_important || 0}</div>
+                  </div>
+                  <div className="bg-gray-900 p-3 rounded border border-gray-700">
+                    <div className="text-xs text-gray-400 mb-1">Not Urgent & Not Important</div>
+                    <div className="text-2xl font-bold text-gray-400">{eisenhower_matrix.active_counts?.not_urgent_not_important || 0}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-800 rounded-lg p-4">
+                <h3 className="text-white font-semibold mb-3">Trend (Last 6 Weeks)</h3>
+                <div className="space-y-2">
+                  {Array.isArray(eisenhower_matrix.trends) && eisenhower_matrix.trends.length > 0 ? (
+                    eisenhower_matrix.trends.map((w) => (
+                      <div key={w.week_start} className="flex items-center justify-between text-sm">
+                        <div className="text-gray-400 w-40">Week of {w.week_start}</div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-red-400">UI: {w.urgent_important}</span>
+                          <span className="text-green-400">IN-U: {w.important_not_urgent}</span>
+                          <span className="text-yellow-400">UN-I: {w.urgent_not_important}</span>
+                          <span className="text-gray-400">NN: {w.not_urgent_not_important}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-500">No trend data yet</div>
+                  )}
+                </div>
+                <div className="mt-3 text-xs text-gray-400">
+                  Behavior: {eisenhower_matrix.behavior_summary?.message} (Reactive Index {eisenhower_matrix.behavior_summary?.reactive_index || 0}%)
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">No matrix data available</div>
+          )}
+        </div>
+
         {/* Enhanced Pillar Alignment Distribution */}
         <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 mb-8">
           <div className="flex items-center gap-3 mb-6">
