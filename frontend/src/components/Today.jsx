@@ -598,7 +598,11 @@ const Today = memo(() => {
                             mode="suggestion"
                             showAIBadge={true}
                             onAdd={async () => {
-                            const removeFromSuggestions = () => setAiSuggestions(prev => prev.filter(x => (x.taskId || x.id) !== (s.taskId || s.id)));
+                            const removeFromSuggestions = () => setAiSuggestions(prev => {
+                              const next = prev.filter(x => (x.taskId || x.id) !== (s.taskId || s.id));
+                              try { localStorage.setItem(SUGGESTIONS_KEY, JSON.stringify(next)); } catch {}
+                              return next;
+                            });
                             try {
                               // Fade-out animation before removal
                               const row = document.querySelector(`[data-suggestion-key="${key}"]`);
