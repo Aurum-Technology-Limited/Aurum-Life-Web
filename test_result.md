@@ -2152,7 +2152,7 @@ backend:
         agent: "main"
         comment: "Successfully created PostgreSQL schema with 14 tables, RLS policies, and indexes. All tables created in Supabase database with proper foreign key relationships."
 
-  - task: "Data Migration from MongoDB to Supabase"
+  - task: "Data Migration from MongoDB (legacy, removed) to Supabase"
     implemented: true
     working: true
     file: "simple_migration.py"
