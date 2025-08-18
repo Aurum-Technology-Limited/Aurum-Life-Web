@@ -83,11 +83,10 @@ class JournalService:
     
     @staticmethod
     async def soft_delete_entry(user_id: str, entry_id: str) -> bool:
-        """Soft delete a journal entry - temporarily use hard delete"""
-        # TODO: Implement proper soft delete when columns are added to Supabase table
-        # For now, use hard delete to simulate the functionality
+        """Soft delete a journal entry using Supabase columns"""
         query = {"id": entry_id, "user_id": user_id}
-        return await delete_document("journal_entries", query)
+        update = {"deleted": True, "deleted_at": datetime.utcnow().isoformat()}
+        return await update_document("journal_entries", query, update)
     
     @staticmethod
     async def restore_entry(user_id: str, entry_id: str) -> bool:
