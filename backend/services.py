@@ -76,7 +76,7 @@ class JournalService:
     @staticmethod
     async def update_entry(user_id: str, entry_id: str, entry_data: JournalEntryUpdate) -> bool:
         """Update a journal entry"""
-        query = {"id": entry_id, "user_id": user_id, "deleted": {"$ne": True}}
+        query = {"id": entry_id, "user_id": user_id}
         
         update_dict = entry_data.dict(exclude_unset=True)
         if update_dict:
