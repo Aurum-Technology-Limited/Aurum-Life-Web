@@ -300,4 +300,6 @@ async def seed_hierarchical_data():
     print("🎉 Hierarchical data seeding completed!")
 
 if __name__ == "__main__":
-    asyncio.run(seed_hierarchical_data())
+    print("This script is deprecated. The application is Supabase-only now; MongoDB seed scripts are disabled.")
+    import sys
+    sys.exit(0)
