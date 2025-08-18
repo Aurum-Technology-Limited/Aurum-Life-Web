@@ -347,11 +347,15 @@ const Journal = ({ onSectionChange, sectionParams }) => {
               <input
                 type="text"
                 placeholder="Entry title..."
+                value={newEntryTitle}
+                onChange={(e) => setNewEntryTitle(e.target.value)}
                 className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
               />
               <textarea
                 placeholder="What's on your mind?"
                 rows={8}
+                value={newEntryContent}
+                onChange={(e) => setNewEntryContent(e.target.value)}
                 className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 resize-none"
               />
               <div className="flex justify-end space-x-3">
