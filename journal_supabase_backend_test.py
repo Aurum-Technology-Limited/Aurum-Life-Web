@@ -150,14 +150,14 @@ class JournalSupabaseBackendTester:
         entry1_data = {
             "title": f"Journal Entry 1 - Supabase Test {timestamp}",
             "content": "This is the first journal entry for testing Supabase soft-delete functionality.",
-            "mood": "happy",
+            "mood": "optimistic",
             "tags": ["test", "supabase", "entry1"]
         }
         
         entry2_data = {
             "title": f"Journal Entry 2 - Supabase Test {timestamp}",
             "content": "This is the second journal entry for testing Supabase soft-delete functionality.",
-            "mood": "neutral",
+            "mood": "reflective",
             "tags": ["test", "supabase", "entry2"]
         }
         
