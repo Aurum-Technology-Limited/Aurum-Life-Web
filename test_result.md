@@ -1754,7 +1754,7 @@ agent_communication:
     status_history:
         - working: true
           agent: "main"
-          comment: "Fixed InsightsService using old MongoDB import - updated to use Supabase client. API endpoint now returns comprehensive insights data with 200 OK status."
+          comment: "Fixed InsightsService using old MongoDB (legacy, removed) import - updated to use Supabase client. API endpoint now returns comprehensive insights data with 200 OK status."
         - working: true
           agent: "main"
           comment: "Insights service is already optimized with simplified approach using only user stats query. No N+1 patterns detected in current implementation. Should be performing well."
