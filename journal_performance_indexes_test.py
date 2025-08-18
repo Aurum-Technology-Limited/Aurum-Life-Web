@@ -143,10 +143,14 @@ class JournalPerformanceIndexesTester:
         total_create_time = 0
         
         for i in range(1, 61):  # Create 60 entries
+            # Use valid mood values from MoodEnum
+            moods = ["optimistic", "inspired", "reflective", "challenging", "anxious", "grateful", "excited", "frustrated", "peaceful", "motivated"]
+            mood = moods[i % len(moods)]  # Cycle through valid moods
+            
             entry_data = {
                 "title": f"Performance Test Entry {i}",
                 "content": f"Minimal content for performance testing - Entry {i} created at {timestamp}",
-                "mood": "neutral",
+                "mood": mood,
                 "tags": ["performance", "test", "indexes"]
             }
             
