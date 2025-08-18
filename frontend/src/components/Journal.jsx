@@ -360,7 +360,12 @@ const Journal = ({ onSectionChange, sectionParams }) => {
               />
               <div className="flex justify-end space-x-3">
                 <button
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setNewEntryTitle('');
+                    setNewEntryContent('');
+                    setError(null);
+                  }}
                   className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
                 >
                   Cancel
