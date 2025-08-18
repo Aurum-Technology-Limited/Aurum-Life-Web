@@ -93,7 +93,7 @@ class JournalService:
     @staticmethod
     async def get_entry_by_id(user_id: str, entry_id: str) -> Optional[JournalEntryResponse]:
         """Get a specific journal entry by ID"""
-        doc = await find_document("journal_entries", {"id": entry_id, "user_id": user_id, "deleted": {"$ne": True}})
+        doc = await find_document("journal_entries", {"id": entry_id, "user_id": user_id})
         if doc:
             return await JournalService._build_journal_entry_response(doc)
         return None
