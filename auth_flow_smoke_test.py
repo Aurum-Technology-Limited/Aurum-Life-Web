@@ -13,7 +13,7 @@ def run_auth_flow_smoke_test():
     """Execute comprehensive auth flow smoke test"""
     
     # Step 1: Read frontend/.env and use REACT_APP_BACKEND_URL
-    base_url = "https://productivity-hub-23.preview.emergentagent.com"
+    base_url = "https://taskpilot-2.preview.emergentagent.com"
     print(f"🌐 Using base URL: {base_url}")
     
     # Step 0: Health check first

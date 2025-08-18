@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
+BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com/api"
 TEST_USER_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_USER_PASSWORD = "password"
 

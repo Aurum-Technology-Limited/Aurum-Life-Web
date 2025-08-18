@@ -5,7 +5,7 @@ import aiohttp
 import json
 
 # Configuration
-BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com"
+BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 async def debug_creation_errors():

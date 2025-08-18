@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
+BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com/api"
 
 class FocusedGoalDecompositionTester:
     def __init__(self):

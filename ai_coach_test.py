@@ -34,7 +34,7 @@ import uuid
 import time
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
+BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com/api"
 
 class AiCoachTester:
     def __init__(self):

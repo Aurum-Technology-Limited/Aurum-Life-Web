@@ -4,7 +4,7 @@ AUTH REGISTER ENDPOINT INVESTIGATION - 400 ERROR TESTING
 Testing /api/auth/register endpoint with realistic payloads to investigate 400 errors.
 
 FOCUS AREAS:
-1. Base URL: https://productivity-hub-23.preview.emergentagent.com
+1. Base URL: https://taskpilot-2.preview.emergentagent.com
 2. POST /api/auth/register with realistic payload
 3. Capture full response for 400 errors
 4. Test different scenarios (with/without username, minimal fields)
@@ -25,7 +25,7 @@ from typing import Dict, List, Any
 import time
 
 # Configuration - Using the preview base URL as specified
-BASE_URL = "https://productivity-hub-23.preview.emergentagent.com"
+BASE_URL = "https://taskpilot-2.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class AuthRegisterTester:

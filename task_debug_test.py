@@ -6,7 +6,7 @@ import json
 import os
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://productivity-hub-23.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taskpilot-2.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def test_task_creation_debug():

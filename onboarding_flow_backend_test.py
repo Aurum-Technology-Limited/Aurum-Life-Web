@@ -10,7 +10,7 @@ Test Steps:
 5) GET /api/auth/me -> expect has_completed_onboarding=true
 6) Optionally, seed demo for this user size=light include_streak=false
 
-Base URL: https://productivity-hub-23.preview.emergentagent.com
+Base URL: https://taskpilot-2.preview.emergentagent.com
 """
 
 import requests
@@ -21,7 +21,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://productivity-hub-23.preview.emergentagent.com"
+BASE_URL = "https://taskpilot-2.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class OnboardingBackendTest:

@@ -9,7 +9,7 @@ import json
 import sys
 from datetime import datetime
 
-BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
+BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com/api"
 
 class FinalMandatoryFieldsTest:
     def __init__(self):

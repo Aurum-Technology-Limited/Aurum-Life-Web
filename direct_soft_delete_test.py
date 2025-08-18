@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv('/app/backend/.env')
 
 # Configuration
-BACKEND_URL = "https://4c39e645-0a34-41d8-8c6a-af773c4a507e.preview.emergentagent.com/api"
+BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com/api"
 
 def main():
     """Main execution"""

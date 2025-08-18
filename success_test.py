@@ -6,7 +6,7 @@ Test successful profile update with valid data
 import requests
 import json
 
-BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
+BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com/api"
 
 def test_success():
     # Login first
