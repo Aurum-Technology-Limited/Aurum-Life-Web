@@ -645,6 +645,48 @@ async def delete_journal_entry(entry_id: str, current_user: User = Depends(get_c
         raise HTTPException(status_code=404, detail="Journal entry not found")
     return {"success": True, "message": "Journal entry deleted successfully"}
 
+# New Journal Trash and Restore endpoints
+@api_router.get("/journal/trash", response_model=List[JournalEntryResponse])
+async def get_journal_trash(
+    current_user: User = Depends(get_current_active_user),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get soft-deleted journal entries (trash)"""
+    try:
+        return await JournalService.get_deleted_entries(current_user.id, skip, limit)
+    except Exception as e:
+        logger.error(f"Error getting journal trash: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load trash entries")
+
+@api_router.post("/journal/{entry_id}/restore", response_model=dict)
+async def restore_journal_entry(entry_id: str, current_user: User = Depends(get_current_active_user)):
+    """Restore a soft-deleted journal entry"""
+    try:
+        success = await JournalService.restore_entry(current_user.id, entry_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Journal entry not found or not deleted")
+        return {"success": True, "message": "Journal entry restored successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error restoring journal entry: {e}")
+        raise HTTPException(status_code=500, detail="Failed to restore entry")
+
+@api_router.delete("/journal/{entry_id}/purge", response_model=dict)
+async def purge_journal_entry(entry_id: str, current_user: User = Depends(get_current_active_user)):
+    """Permanently delete a journal entry"""
+    try:
+        success = await JournalService.purge_entry(current_user.id, entry_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Journal entry not found or not soft-deleted")
+        return {"success": True, "message": "Journal entry permanently deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error purging journal entry: {e}")
+        raise HTTPException(status_code=500, detail="Failed to permanently delete entry")
+
 # Journal Templates endpoints
 @api_router.get("/journal/templates", response_model=List[JournalTemplate])
 async def get_journal_templates(current_user: User = Depends(get_current_active_user)):
