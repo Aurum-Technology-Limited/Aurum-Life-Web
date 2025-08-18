@@ -12,7 +12,8 @@ const apiClient = axios.create({
 // Add request interceptor to include auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    // Prefer new key 'auth_token'; fallback to legacy 'token'
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
