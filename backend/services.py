@@ -90,10 +90,10 @@ class JournalService:
     
     @staticmethod
     async def restore_entry(user_id: str, entry_id: str) -> bool:
-        """Restore a soft-deleted journal entry - not implemented yet"""
-        # TODO: Implement proper restore when soft delete is implemented
-        # For now, return False since we're using hard delete
-        return False
+        """Restore a soft-deleted journal entry"""
+        query = {"id": entry_id, "user_id": user_id}
+        update = {"deleted": False, "deleted_at": None}
+        return await update_document("journal_entries", query, update)
     
     @staticmethod
     async def purge_entry(user_id: str, entry_id: str) -> bool:
