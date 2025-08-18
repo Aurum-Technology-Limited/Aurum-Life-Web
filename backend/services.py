@@ -68,12 +68,10 @@ class JournalService:
     
     @staticmethod
     async def purge_entry(user_id: str, entry_id: str) -> bool:
-        """Permanently delete a journal entry (Trash purge)"""
-        # Verify ownership and that it's soft-deleted first
-        doc = await find_document("journal_entries", {"id": entry_id, "user_id": user_id, "deleted": True})
-        if not doc:
-            return False
-        return await delete_document("journal_entries", {"id": entry_id})
+        """Permanently delete a journal entry"""
+        # Since we're using hard delete for soft delete, this is the same operation
+        query = {"id": entry_id, "user_id": user_id}
+        return await delete_document("journal_entries", query)
     
     @staticmethod
     async def update_entry(user_id: str, entry_id: str, entry_data: JournalEntryUpdate) -> bool:
