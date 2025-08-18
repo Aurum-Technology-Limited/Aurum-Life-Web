@@ -226,21 +226,21 @@ class JournalSupabaseIndexesTester:
         
         timestamp = int(time.time())
         
-        # Create first journal entry
+        # Create first journal entry (using valid mood values)
         entry1_data = {
             "title": f"Supabase Index Test Entry 1 - {timestamp}",
             "content": "This is the first test journal entry for Supabase indexes and soft-delete testing. It contains meaningful content to test the full functionality.",
-            "mood": "focused",
+            "mood": "motivated",  # Using valid mood from MoodEnum
             "tags": ["supabase", "indexes", "test"]
         }
         
         success1, id1 = self._create_journal_entry(entry1_data, "Entry 1")
         
-        # Create second journal entry
+        # Create second journal entry (using valid mood values)
         entry2_data = {
             "title": f"Supabase Index Test Entry 2 - {timestamp}",
             "content": "This is the second test journal entry for Supabase indexes and soft-delete testing. It will remain active while the first gets deleted.",
-            "mood": "reflective", 
+            "mood": "reflective",  # Using valid mood from MoodEnum
             "tags": ["supabase", "indexes", "test"]
         }
         
