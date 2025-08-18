@@ -944,15 +944,6 @@ const Journal = memo(() => {
         </div>
       )}
 
-      {/* Informational message when journal backend is not fully available */}
-      {entries.length === 0 && templates.length > 0 && !loading && !error && (
-        <div className="p-4 rounded-lg bg-blue-900/20 border border-blue-500/30 flex items-center space-x-2">
-          <AlertCircle size={20} className="text-blue-400" />
-          <span className="text-blue-400">
-            Journal backend endpoints are being set up. You can use the templates and create entries locally for now.
-          </span>
-        </div>
-      )}
 
       {/* Search and Filter Bar (only for Entries view) */}
       {currentView === 'entries' && (
