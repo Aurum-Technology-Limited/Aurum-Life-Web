@@ -16,73 +16,80 @@ async def create_scoring_indexes():
     """
     Create the critical compound indexes for The Architect's scoring system
     These indexes are the foundation of our sub-200ms performance guarantee
+    
+    DEPRECATED: MongoDB optimizer logic is disabled in Supabase-only runtime
     """
-    try:
-        logger.info("🚀 Creating The Architect's scoring indexes...")
-        tasks_collection = database["tasks"]
-        
-        # 🎯 PRIMARY INDEX: The Today View Compound Index
-        # This is the most critical index - optimizes the main Today view query
-        await tasks_collection.create_index([
-            ("user_id", 1),
-            ("completed", 1),
-            ("current_score", -1),  # Descending for highest scores first
-            ("due_date", 1)
-        ], name="user_active_tasks_by_score", background=True)
-        logger.info("✅ Created PRIMARY index: user_active_tasks_by_score")
-        
-        # 🎯 SECONDARY INDEX: Available Tasks Query Optimization
-        await tasks_collection.create_index([
-            ("user_id", 1),
-            ("completed", 1),
-            ("current_score", -1),
-            ("scheduled_date", 1)
-        ], name="user_available_tasks_score", background=True)
-        logger.info("✅ Created SECONDARY index: user_available_tasks_score")
-        
-        # 🎯 DEPENDENCY INDEX: For efficient dependency lookups
-        await tasks_collection.create_index([
-            ("dependency_task_ids", 1),
-            ("completed", 1),
-            ("current_score", -1)
-        ], name="dependency_score_lookup", background=True)
-        logger.info("✅ Created DEPENDENCY index: dependency_score_lookup")
-        
-        # 🎯 HIERARCHICAL INDEXES: For cascading score updates
-        await tasks_collection.create_index([
-            ("project_id", 1),
-            ("completed", 1),
-            ("current_score", -1)
-        ], name="project_tasks_score_update", background=True)
-        logger.info("✅ Created PROJECT index: project_tasks_score_update")
-        
-        await tasks_collection.create_index([
-            ("area_id", 1),
-            ("completed", 1),
-            ("current_score", -1)
-        ], name="area_tasks_score_update", background=True)
-        logger.info("✅ Created AREA index: area_tasks_score_update")
-        
-        # 🎯 SCORE MAINTENANCE INDEX: For batch operations and analytics
-        await tasks_collection.create_index([
-            ("score_last_updated", 1),
-            ("current_score", -1)
-        ], name="score_maintenance", background=True)
-        logger.info("✅ Created MAINTENANCE index: score_maintenance")
-        
-        # 🎯 USER PERFORMANCE INDEX: For user-specific queries
-        await tasks_collection.create_index([
-            ("user_id", 1),
-            ("score_last_updated", -1)
-        ], name="user_score_tracking", background=True)
-        logger.info("✅ Created USER TRACKING index: user_score_tracking")
-        
-        logger.info("🎉 All scoring indexes created successfully!")
-        return True
-        
-    except Exception as e:
-        logger.error(f"❌ Failed to create scoring indexes: {e}")
-        return False
+    logger.info("⚠️ MongoDB optimizer logic is disabled in Supabase-only runtime")
+    logger.info("✅ Skipping index creation - using Supabase native indexing")
+    return True
+    
+    # DEPRECATED MongoDB code below - commented out for Supabase runtime
+    # try:
+    #     logger.info("🚀 Creating The Architect's scoring indexes...")
+    #     tasks_collection = database["tasks"]
+    #     
+    #     # 🎯 PRIMARY INDEX: The Today View Compound Index
+    #     # This is the most critical index - optimizes the main Today view query
+    #     await tasks_collection.create_index([
+    #         ("user_id", 1),
+    #         ("completed", 1),
+    #         ("current_score", -1),  # Descending for highest scores first
+    #         ("due_date", 1)
+    #     ], name="user_active_tasks_by_score", background=True)
+    #     logger.info("✅ Created PRIMARY index: user_active_tasks_by_score")
+    #     
+    #     # 🎯 SECONDARY INDEX: Available Tasks Query Optimization
+    #     await tasks_collection.create_index([
+    #         ("user_id", 1),
+    #         ("completed", 1),
+    #         ("current_score", -1),
+    #         ("scheduled_date", 1)
+    #     ], name="user_available_tasks_score", background=True)
+    #     logger.info("✅ Created SECONDARY index: user_available_tasks_score")
+    #     
+    #     # 🎯 DEPENDENCY INDEX: For efficient dependency lookups
+    #     await tasks_collection.create_index([
+    #         ("dependency_task_ids", 1),
+    #         ("completed", 1),
+    #         ("current_score", -1)
+    #     ], name="dependency_score_lookup", background=True)
+    #     logger.info("✅ Created DEPENDENCY index: dependency_score_lookup")
+    #     
+    #     # 🎯 HIERARCHICAL INDEXES: For cascading score updates
+    #     await tasks_collection.create_index([
+    #         ("project_id", 1),
+    #         ("completed", 1),
+    #         ("current_score", -1)
+    #     ], name="project_tasks_score_update", background=True)
+    #     logger.info("✅ Created PROJECT index: project_tasks_score_update")
+    #     
+    #     await tasks_collection.create_index([
+    #         ("area_id", 1),
+    #         ("completed", 1),
+    #         ("current_score", -1)
+    #     ], name="area_tasks_score_update", background=True)
+    #     logger.info("✅ Created AREA index: area_tasks_score_update")
+    #     
+    #     # 🎯 SCORE MAINTENANCE INDEX: For batch operations and analytics
+    #     await tasks_collection.create_index([
+    #         ("score_last_updated", 1),
+    #         ("current_score", -1)
+    #     ], name="score_maintenance", background=True)
+    #     logger.info("✅ Created MAINTENANCE index: score_maintenance")
+    #     
+    #     # 🎯 USER PERFORMANCE INDEX: For user-specific queries
+    #     await tasks_collection.create_index([
+    #         ("user_id", 1),
+    #         ("score_last_updated", -1)
+    #     ], name="user_score_tracking", background=True)
+    #     logger.info("✅ Created USER TRACKING index: user_score_tracking")
+    #     
+    #     logger.info("🎉 All scoring indexes created successfully!")
+    #     return True
+    #     
+    # except Exception as e:
+    #     logger.error(f"❌ Failed to create scoring indexes: {e}")
+    #     return False
 
 async def initialize_scoring_system():
     """
