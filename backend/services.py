@@ -47,23 +47,9 @@ class JournalService:
     
     @staticmethod
     async def get_deleted_entries(user_id: str, skip: int = 0, limit: int = 20) -> List[JournalEntryResponse]:
-        """List soft-deleted entries for Trash view"""
-        query = {"user_id": user_id, "deleted": True}
-        docs = await find_documents("journal_entries", query, skip=skip, limit=limit)
-        
-        # Sort by deleted_at desc with fallback to created_at
-        def sort_key(x):
-            dt = x.get("deleted_at") or x.get("created_at")
-            try:
-                return dt if isinstance(dt, datetime) else datetime.fromisoformat(str(dt).replace('Z', '+00:00'))
-            except Exception:
-                return datetime.min
-        docs.sort(key=sort_key, reverse=True)
-        
-        responses = []
-        for doc in docs:
-            responses.append(await JournalService._build_journal_entry_response(doc))
-        return responses
+        """List soft-deleted entries for Trash view - temporarily return empty list"""
+        # TODO: Implement proper soft delete when columns are added to Supabase table
+        return []
     
     @staticmethod
     async def soft_delete_entry(user_id: str, entry_id: str) -> bool:
