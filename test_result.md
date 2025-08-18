@@ -16,6 +16,17 @@
 # 
 ## user_problem_statement: {problem_statement}
 ## backend:
+  - task: "Journal Trash endpoints and Mongo indexes"
+    implemented: true
+    working: false
+    file: "backend/server.py, backend/services.py, backend/database.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "testing"
+        -comment: "Auth endpoints initially 404, fixed by adding prefix in auth router. Journal endpoints implemented, but testing partially blocked due to mixed storage (Supabase vs Mongo) in this environment. New endpoints added: GET /api/journal/trash, DELETE /api/journal/{id}/purge. Mongo index ensure added on startup. Frontend banner removed."
 ##   - task: "Task name"
 ##     implemented: true
 ##     working: true  # or false or "NA"
