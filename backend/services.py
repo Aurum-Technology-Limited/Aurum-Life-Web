@@ -20,17 +20,17 @@ class JournalService:
             "user_id": user_id,
             "word_count": word_count,
             "reading_time_minutes": reading_time_minutes,
-            "deleted": False,
-            "deleted_at": None,
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
         })
         
         # Create the entry
         entry_id = await create_document("journal_entries", entry_dict)
-        entry_dict["id"] = entry_id
-        
-        return JournalEntry(**entry_dict)
+        if entry_id:
+            entry_dict["id"] = entry_id
+            return JournalEntry(**entry_dict)
+        else:
+            raise Exception("Failed to create journal entry - no ID returned")
     
     @staticmethod
     async def get_user_entries(user_id: str, skip: int = 0, limit: int = 20, 
