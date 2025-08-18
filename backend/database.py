@@ -30,18 +30,7 @@ async def connect_to_mongo():
     # db_instance.database = db_instance.client[os.environ.get('DB_NAME', 'aurum_life')]
     db_instance.database = db_instance.client[os.environ.get('DB_NAME', 'aurum_life')]
     
-    # Test connection
-    try:
-        await db_instance.client.admin.command('ping')
-        print("✅ Successfully connected to MongoDB")
-        # Ensure indexes after successful connection
-        try:
-            await ensure_indexes()
-        except Exception as ie:
-            print(f"⚠️ Failed to ensure MongoDB indexes: {ie}")
-    except Exception as e:
-        print(f"❌ Failed to connect to MongoDB: {e}")
-        raise
+    # Deprecated path; no runtime connection attempted\n    # Left in place to keep function signature for any legacy calls
 
 async def close_mongo_connection():
     """Close database connection"""
