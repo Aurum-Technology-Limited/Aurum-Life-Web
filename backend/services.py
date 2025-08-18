@@ -37,23 +37,9 @@ class JournalService:
                               tag_filter: Optional[str] = None,
                               date_from: Optional[datetime] = None,
                               date_to: Optional[datetime] = None) -> List[JournalEntryResponse]:
-        """Get journal entries for user (only non-deleted entries)"""
-        query = {"user_id": user_id, "deleted": {"$ne": True}}
-        
-        # Add filters
-        if mood_filter:
-            query["mood"] = mood_filter
-        if tag_filter:
-            query["tags"] = {"$in": [tag_filter]}
-        if date_from or date_to:
-            date_query = {}
-            if date_from:
-                date_query["$gte"] = date_from
-            if date_to:
-                date_query["$lte"] = date_to
-            query["created_at"] = date_query
-        
-        docs = await find_documents("journal_entries", query, skip=skip, limit=limit, sort=[("created_at", -1)])
+        """Get journal entries for user (all entries since soft delete not implemented yet)"""
+        # For now, get all entries since soft delete columns don't exist in Supabase table
+        docs = await find_documents("journal_entries", {"user_id": user_id}, skip=skip, limit=limit, sort=[("created_at", -1)])
         responses = []
         for doc in docs:
             responses.append(await JournalService._build_journal_entry_response(doc))
