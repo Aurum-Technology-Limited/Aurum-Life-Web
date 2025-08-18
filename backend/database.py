@@ -24,6 +24,11 @@ async def connect_to_mongo():
     try:
         await db_instance.client.admin.command('ping')
         print("✅ Successfully connected to MongoDB")
+        # Ensure indexes after successful connection
+        try:
+            await ensure_indexes()
+        except Exception as ie:
+            print(f"⚠️ Failed to ensure MongoDB indexes: {ie}")
     except Exception as e:
         print(f"❌ Failed to connect to MongoDB: {e}")
         raise
@@ -39,6 +44,26 @@ async def get_collection(collection_name: str):
     """Get a MongoDB collection"""
     db = await get_database()
     return db[collection_name]
+
+# ---- Index management ----
+async def ensure_indexes():
+    """Create required indexes for performance. Safe to run multiple times."""
+    try:
+        coll = await get_collection("journal_entries")
+        # Compound index for common listing: user_id + deleted + created_at desc
+        await coll.create_index([
+            ("user_id", 1),
+            ("deleted", 1),
+            ("created_at", -1)
+        ], name="idx_user_deleted_created_desc")
+        # Single-field index on deleted for Trash queries
+        await coll.create_index("deleted", name="idx_deleted")
+        # Helpful single-field index on user_id
+        await coll.create_index("user_id", name="idx_user_id")
+        print("✅ MongoDB indexes ensured for journal_entries")
+    except Exception as e:
+        # Do not crash the app if index creation fails; just log
+        print(f"⚠️ Mongo index ensure encountered an error: {e}")
 
 # CRUD helpers
 async def create_document(collection_name: str, document: dict):
