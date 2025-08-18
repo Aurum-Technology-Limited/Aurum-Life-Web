@@ -17,6 +17,41 @@ const Journal = ({ onSectionChange, sectionParams }) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [viewingEntry, setViewingEntry] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newEntryTitle, setNewEntryTitle] = useState('');
+  const [newEntryContent, setNewEntryContent] = useState('');
+
+  // Handle create entry
+  const handleCreateEntry = async () => {
+    if (!newEntryTitle.trim() || !newEntryContent.trim()) {
+      setError('Please fill in both title and content');
+      return;
+    }
+
+    try {
+      setIsSyncing(true);
+      const entryData = {
+        title: newEntryTitle.trim(),
+        content: newEntryContent.trim()
+      };
+      
+      const response = await journalAPI.createEntry(entryData);
+      
+      // Add the new entry to the entries list
+      if (response.data) {
+        setEntries(prev => [response.data, ...prev]);
+      }
+      
+      // Reset form and close modal
+      setNewEntryTitle('');
+      setNewEntryContent('');
+      setShowCreateModal(false);
+      setError(null);
+    } catch (err) {
+      setError(handleApiError(err, 'Failed to create entry'));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Fetch entries with fallback
   const fetchEntriesWithFallback = async () => {
