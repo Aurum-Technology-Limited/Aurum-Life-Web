@@ -1,9 +1,13 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-from typing import Optional
+# DEPRECATED: MongoDB client (Supabase-only runtime)
+# from motor.motor_asyncio import AsyncIOMotorClient
+from typing import Optional, TYPE_CHECKING
 import os
 
+if TYPE_CHECKING:
+    from motor.motor_asyncio import AsyncIOMotorClient
+
 class Database:
-    client: Optional[AsyncIOMotorClient] = None
+    client: Optional['AsyncIOMotorClient'] = None
     database = None
 
 db_instance = Database()
