@@ -2029,8 +2029,8 @@ metadata:
 ## STATUS SUMMARY:
 
 ### ✅ RESOLVED ISSUES:
-1. **Insights Backend Error**: Fixed MongoDB import issue in InsightsService - API now returns comprehensive data
-2. **Database Errors**: All MongoDB syntax errors and foreign key constraint violations resolved
+1. **Insights Backend Error**: Fixed MongoDB (legacy, removed) import issue in InsightsService - API now returns comprehensive data
+2. **Database Errors**: All MongoDB (legacy, removed) syntax errors and foreign key constraint violations resolved
 3. **Authentication**: Marc user can login successfully with reset password
 4. **Error Messages**: Eliminated "Error Loading Insights" message - page renders properly
 5. **Performance Monitoring**: Added API performance tracking and slow request detection
