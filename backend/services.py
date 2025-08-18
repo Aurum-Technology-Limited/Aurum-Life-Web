@@ -121,28 +121,32 @@ class JournalService:
     @staticmethod
     async def get_on_this_day(user_id: str, date: datetime) -> List[OnThisDayEntry]:
         """Get journal entries from the same date in previous years"""
-        # Get entries from the same month/day in previous years
+        # Get all entries for the user and filter by date in Python
+        all_docs = await find_documents("journal_entries", {"user_id": user_id}, sort=[("created_at", -1)])
+        
         entries = []
-        for year_offset in range(1, 6):  # Look back 5 years
-            target_date = date.replace(year=date.year - year_offset)
-            start_date = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            end_date = start_date + timedelta(days=1)
-            
-            query = {
-                "user_id": user_id,
-                "deleted": {"$ne": True},
-                "created_at": {"$gte": start_date, "$lt": end_date}
-            }
-            
-            docs = await find_documents("journal_entries", query, sort=[("created_at", -1)])
-            for doc in docs:
-                entries.append(OnThisDayEntry(
-                    id=doc["id"],
-                    title=doc["title"],
-                    content=doc["content"][:200] + "..." if len(doc["content"]) > 200 else doc["content"],
-                    created_at=doc["created_at"],
-                    years_ago=year_offset
-                ))
+        target_month_day = (date.month, date.day)
+        
+        for doc in all_docs:
+            try:
+                # Parse the created_at date
+                created_at = doc["created_at"]
+                if isinstance(created_at, str):
+                    created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                
+                # Check if it's the same month/day but different year
+                if (created_at.month, created_at.day) == target_month_day and created_at.year != date.year:
+                    years_ago = date.year - created_at.year
+                    if years_ago > 0 and years_ago <= 5:  # Look back 5 years max
+                        entries.append(OnThisDayEntry(
+                            id=doc["id"],
+                            title=doc["title"],
+                            content=doc["content"][:200] + "..." if len(doc["content"]) > 200 else doc["content"],
+                            created_at=created_at,
+                            years_ago=years_ago
+                        ))
+            except Exception:
+                continue  # Skip entries with date parsing issues
         
         return entries
     
