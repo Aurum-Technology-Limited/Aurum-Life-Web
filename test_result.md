@@ -46,6 +46,13 @@
 ##         -comment: "Detailed comment about status"
 ##
 ## frontend:
+  - task: "Journal Trash tab end-to-end (Supabase soft-delete)"
+    implemented: true
+    working: pending
+    file: "frontend/src/components/Journal.jsx, frontend/src/services/api.js"
+    priority: "high"
+    notes: "Verify create -> soft delete -> Trash list -> restore -> purge. Banner removed."
+
   - task: "Journal Trash feature implementation"
     implemented: true
     working: true
