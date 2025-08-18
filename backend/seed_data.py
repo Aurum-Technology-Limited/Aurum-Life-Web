@@ -163,4 +163,6 @@ async def seed_database():
     print("🎉 Database seeding completed!")
 
 if __name__ == "__main__":
-    asyncio.run(seed_database())
+    print("This script is deprecated. The application is Supabase-only now; MongoDB seed scripts are disabled.")
+    import sys
+    sys.exit(0)
