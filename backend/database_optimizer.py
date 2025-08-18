@@ -6,7 +6,8 @@ Database migration and optimization utilities
 
 import asyncio
 from datetime import datetime
-from database import database, find_documents, update_document
+# Deprecated: MongoDB optimizer logic is disabled in Supabase-only runtime
+# from database import database, find_documents, update_document
 from scoring_engine import initialize_all_task_scores
 import logging
 
