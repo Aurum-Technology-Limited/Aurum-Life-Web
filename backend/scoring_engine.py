@@ -8,7 +8,7 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from celery_app import app
-from database import find_document, find_documents, update_document
+from supabase_client import find_document, find_documents, update_document
 from models import TaskResponse
 import logging
 
