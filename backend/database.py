@@ -17,11 +17,17 @@ async def get_database():
 
 async def connect_to_mongo():
     """Create database connection"""
-    mongo_url = os.environ.get('MONGO_URL')
-    if not mongo_url:
-        raise ValueError("MONGO_URL environment variable is not set")
+    # DEPRECATED: MongoDB functionality (Supabase-only runtime)
+    raise NotImplementedError("MongoDB functionality deprecated - using Supabase only")
     
-    db_instance.client = AsyncIOMotorClient(mongo_url)
+    # Original MongoDB code (commented out):
+    # mongo_url = os.environ.get('MONGO_URL')
+    # if not mongo_url:
+    #     raise ValueError("MONGO_URL environment variable is not set")
+    # 
+    # from motor.motor_asyncio import AsyncIOMotorClient
+    # db_instance.client = AsyncIOMotorClient(mongo_url)
+    # db_instance.database = db_instance.client[os.environ.get('DB_NAME', 'aurum_life')]
     db_instance.database = db_instance.client[os.environ.get('DB_NAME', 'aurum_life')]
     
     # Test connection
