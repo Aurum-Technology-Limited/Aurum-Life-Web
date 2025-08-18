@@ -101,19 +101,20 @@ class JournalService:
     @staticmethod
     async def search_entries(user_id: str, query: str, limit: int = 20) -> List[JournalEntryResponse]:
         """Search journal entries by content"""
-        search_query = {
-            "user_id": user_id,
-            "deleted": {"$ne": True},
-            "$or": [
-                {"title": {"$regex": query, "$options": "i"}},
-                {"content": {"$regex": query, "$options": "i"}},
-                {"tags": {"$in": [query]}}
-            ]
-        }
+        # For now, get all entries and filter in Python since Supabase query syntax is different
+        docs = await find_documents("journal_entries", {"user_id": user_id}, limit=limit, sort=[("created_at", -1)])
         
-        docs = await find_documents("journal_entries", search_query, limit=limit, sort=[("created_at", -1)])
-        responses = []
+        # Filter entries that match the search query
+        filtered_docs = []
+        query_lower = query.lower()
         for doc in docs:
+            if (query_lower in doc.get("title", "").lower() or 
+                query_lower in doc.get("content", "").lower() or 
+                query_lower in [tag.lower() for tag in doc.get("tags", [])]):
+                filtered_docs.append(doc)
+        
+        responses = []
+        for doc in filtered_docs:
             responses.append(await JournalService._build_journal_entry_response(doc))
         return responses
     
