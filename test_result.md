@@ -2162,7 +2162,7 @@ backend:
     status_history:
       - working: true
         agent: "main"
-        comment: "Successfully migrated users, pillars, areas, projects, tasks, and journal entries from MongoDB to Supabase PostgreSQL. All data verified accessible."
+        comment: "Successfully migrated users, pillars, areas, projects, tasks, and journal entries from MongoDB (legacy, removed) to Supabase PostgreSQL. All data verified accessible."
 
   - task: "Supabase Backend Client Integration"
     implemented: true
