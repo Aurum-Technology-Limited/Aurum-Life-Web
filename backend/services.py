@@ -300,6 +300,13 @@ class JournalService:
                 break
         
         return streak
+    
+    @staticmethod
+    async def initialize_default_templates():
+        """Initialize default journal templates - placeholder implementation"""
+        # This is a placeholder to prevent startup errors
+        # Could be implemented to create default templates
+        pass
 
 
 # Placeholder service classes to satisfy imports
