@@ -37,11 +37,38 @@ class JournalService:
                               tag_filter: Optional[str] = None,
                               date_from: Optional[datetime] = None,
                               date_to: Optional[datetime] = None) -> List[JournalEntryResponse]:
-        """Get journal entries for user (all entries since soft delete not implemented yet)"""
-        # For now, get all entries since soft delete columns don't exist in Supabase table
-        docs = await find_documents("journal_entries", {"user_id": user_id}, skip=skip, limit=limit, sort=[("created_at", -1)])
-        responses = []
+        """Get journal entries for user (default excludes soft-deleted)"""
+        query: Dict[str, Any] = {"user_id": user_id, "deleted": False}
+        # Additional filters (best-effort; if columns exist)
+        if mood_filter:
+            query["mood"] = mood_filter
+        if tag_filter:
+            # Tag filtering on Supabase requires ilike/contains; fallback: client-side filter after fetch
+            pass
+        # Date range handled post-fetch for now due to simplified query builder
+        docs = await find_documents("journal_entries", query, skip=skip, limit=limit, sort=[("created_at", -1)])
+        # Apply extra filters client-side
+        filtered = []
         for doc in docs:
+            ok = True
+            if tag_filter:
+                tags = doc.get("tags", []) or []
+                ok = any(isinstance(t, str) and tag_filter.lower() in t.lower() for t in tags)
+            if ok and (date_from or date_to):
+                try:
+                    ca = doc.get("created_at")
+                    if isinstance(ca, str):
+                        ca = datetime.fromisoformat(ca.replace('Z', '+00:00'))
+                    if date_from and ca < date_from:
+                        ok = False
+                    if date_to and ca > date_to:
+                        ok = False
+                except Exception:
+                    pass
+            if ok:
+                filtered.append(doc)
+        responses = []
+        for doc in filtered:
             responses.append(await JournalService._build_journal_entry_response(doc))
         return responses
     
