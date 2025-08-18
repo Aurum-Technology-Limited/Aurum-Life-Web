@@ -153,8 +153,8 @@ class JournalService:
     @staticmethod
     async def get_journal_insights(user_id: str) -> JournalInsights:
         """Get comprehensive journal analytics and insights"""
-        # Get all non-deleted entries
-        all_entries = await find_documents("journal_entries", {"user_id": user_id, "deleted": {"$ne": True}})
+        # Get all entries for the user
+        all_entries = await find_documents("journal_entries", {"user_id": user_id})
         
         if not all_entries:
             return JournalInsights(
