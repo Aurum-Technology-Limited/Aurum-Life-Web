@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://focus-planner-3.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://productivity-hub-23.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def create_test_user_and_verify_auth():

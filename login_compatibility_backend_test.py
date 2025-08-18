@@ -7,7 +7,7 @@ SPECIFIC REQUIREMENTS FROM REVIEW REQUEST:
 1. Attempt login via /api/auth/login using a recently created user
 2. Verify that the endpoint returns an access_token (either Supabase session token or legacy JWT)
 3. Call /api/auth/me using that token and confirm 200
-4. Use base https://focus-planner-3.preview.emergentagent.com
+4. Use base https://productivity-hub-23.preview.emergentagent.com
 5. If login fails, capture status code and response detail
 
 CREDENTIALS TO TEST:
@@ -23,7 +23,7 @@ from typing import Dict, Any
 import time
 
 # Configuration - Using the specified base URL from review request
-BASE_URL = "https://focus-planner-3.preview.emergentagent.com"
+BASE_URL = "https://productivity-hub-23.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class LoginCompatibilityTester:

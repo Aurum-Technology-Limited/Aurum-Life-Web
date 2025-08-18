@@ -20,7 +20,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
 
 def test_complete_onboarding_flow():
     """Test the complete onboarding flow"""

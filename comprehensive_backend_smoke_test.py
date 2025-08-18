@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Any
 class BackendSmokeTest:
     def __init__(self):
         # Use the working backend URL from existing tests
-        self.base_url = "https://focus-planner-3.preview.emergentagent.com/api"
+        self.base_url = "https://productivity-hub-23.preview.emergentagent.com/api"
         self.session = requests.Session()
         self.auth_token = None
         self.csrf_token = None

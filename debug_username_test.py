@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
 
 def test_username_change():
     # Login

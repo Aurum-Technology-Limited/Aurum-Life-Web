@@ -19,7 +19,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
 
 class PillarHierarchyTester:
     def __init__(self):

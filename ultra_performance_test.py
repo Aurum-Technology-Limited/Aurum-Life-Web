@@ -28,7 +28,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
 
 class UltraPerformanceTester:
     def __init__(self):

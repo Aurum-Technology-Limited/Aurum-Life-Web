@@ -4,7 +4,7 @@ AUTH CORS VALIDATION TESTING
 Testing CORS validation for auth endpoints as requested in review.
 
 FOCUS AREAS:
-1. OPTIONS preflight to /api/auth/login and /api/auth/me with Origin=https://focus-planner-3.preview.emergentagent.com
+1. OPTIONS preflight to /api/auth/login and /api/auth/me with Origin=https://productivity-hub-23.preview.emergentagent.com
 2. Verify 204/200 and Access-Control-Allow-* headers include origin, methods, headers
 3. POST /api/auth/login with JSON body for known test user; verify 200 and access_token
 4. GET /api/auth/me with Bearer token; verify 200 user payload
@@ -19,8 +19,8 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com/api"
-ORIGIN = "https://focus-planner-3.preview.emergentagent.com"
+BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com/api"
+ORIGIN = "https://productivity-hub-23.preview.emergentagent.com"
 
 class AuthCORSValidator:
     def __init__(self):

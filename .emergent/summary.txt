@@ -1,87 +1,121 @@
 <analysis>
-The AI engineer successfully transitioned a basic React/FastAPI MVP into a more robust application, focusing on critical authentication and data consistency issues. Initial efforts stabilized core CRUD operations, fixed frontend display glitches, and implemented sophisticated backend cache invalidation with frontend consistency windows. Key feature additions included a database-backed login streak system and comprehensive cascade deletion for hierarchical entities, enforced by both application logic and database constraints. More recently, the engineer reconfigured Google OAuth to a custom backend flow, resolved SendGrid email delivery issues, and implemented a demo data seeding endpoint. The primary recent focus shifted to debugging and fixing the new user registration, login, and onboarding flow. This involved hardening backend authentication, improving frontend UX (faster transitions, success popups,  attributes), and implementing resilient user data fetching with retries to resolve navigation issues. The latest work added robust duplicate email detection during registration.
+The previous AI engineer successfully transformed a React/FastAPI application from an MVP to a more feature-rich product. Initial efforts centered on authentication flows, including robust duplicate email handling and enhanced user login/registration UX. Subsequently, the engineer built the AI Coach MVP backend for task prioritization and Gemini integration, expanding to unify daily planning on the Today view and simplify the Dashboard.
+
+Significant work involved debugging and fixing regressions across the application. This included resolving CORS issues, 404 errors on core screens (Alignment Score, Pillars/Areas/Projects), and UI modal overlay problems during hierarchical CRUD operations. The engineer systematically addressed new user requirements, such as implementing drilldown capabilities for Insights, enhancing task search with pagination and keyboard navigation, and a major re-architecture of the Dashboard to be calendar-first. Persistent issues with the Journal screen's loading and data integrity were also tackled by properly integrating MongoDB. The engineer demonstrated a methodical approach to feature development, issue resolution, and maintaining system stability through continuous iteration and testing.
 </analysis>
 
 <product_requirements>
-The application's core purpose is to manage hierarchical data (Pillars, Areas, Projects, Tasks) with a focus on user productivity. The initial MVP required functional UI and E2E tests, fixing critical login/dashboard errors, and ensuring Google OAuth worked.
+The application is designed as a productivity tool for managing a hierarchical data structure: Pillars (long-term goals), Areas (categories within pillars), Projects (concrete initiatives), and Tasks (actionable items). The overarching goal is to enhance user productivity through organized planning, strategic alignment, and AI-powered assistance.
 
-Recent product requirements addressed by the AI engineer include:
-1.  **UI Consistency:** Resolve inconsistent frontend updates of CRUD operations by implementing cache invalidation and frontend hydration (e.g., consistency windows).
-2.  **Project Creation Fixes:** Address and resolve 422 errors during Project creation due to payload mismatches.
-3.  **Login Streak System:** Implement a daily login tracking system with current/best streak display and a calendar visualization, database-backed with timezone awareness.
-4.  **Cascade Deletion:** Ensure consistent and complete cascade deletion across the Pillar-Area-Project-Task hierarchy, displaying confirmation warnings and preventing orphaned records at both application and database levels ().
-5.  **Strict Hierarchy Enforcement:** Enforce strict parent-child relationships using database  constraints on foreign keys and corresponding frontend form validations.
-6.  **Full New User Flow Fix:** Debug and fix authentication (register, login) and first-time onboarding flow issues, including 401/400 errors, WebSocket failures, ensuring correct navigation to the dashboard, and loading template data.
-7.  **UX Improvements for Auth:** Enhance user experience during registration/login (e.g., faster auto-switch to login, success popups, clear error surfacing).
-8.  **Automated Testing for Auth:** Implement automated E2E tests for the full new user flow, verifying successful login, onboarding, dashboard access, and correct template data.
-9.  **Duplicate Email Prevention:** Prevent users from signing up with an already registered email, providing a clear message and guiding them to log in.
+Key features implemented or required throughout the trajectory include:
+- **Core CRUD & UI Consistency**: Ensuring robust creation, reading, updating, and deletion of Pillars, Areas, Projects, and Tasks, with consistent frontend updates and proper data hydration. This involved fixing 422 errors, addressing 404s on critical screens, and resolving UI modal issues.
+- **Authentication & User Flow**: Implementing a stable new user registration and login flow, including duplicate email prevention, improved UX (auto-switching, success/error messages), and user hydration.
+- **AI-Powered Prioritization**: Developing a backend service that prioritizes tasks for the Today view using a rule-based algorithm and integrates Gemini 2.0-flash for contextual coaching.
+- **Unified Daily Planning**: Consolidating Suggest My Focus and task search functionalities into a central Today screen, displaying AI suggestions and allowing seamless addition of tasks.
+- **Goal Management**: Correctly implementing the Update Monthly Goal functionality and ensuring the Alignment Score reflects user goals accurately.
+- **Insights & Actionability**: Developing a comprehensive Insights screen with Eisenhower Matrix and Vertical Alignment progress. This evolved to include drilldown capabilities, allowing users to view specific tasks contributing to metrics, and enabling inline actions (mark done, change priority, add/remove from Today) directly from the insights.
+- **Dashboard Redesign**: A major overhaul to create a calendar-first dashboard. This involved removing redundant metrics, adding a full-width alignment progress bar, and integrating a rich calendar component supporting time-based scheduling, drag-and-drop rescheduling, project-based color coding, project filtering, and an Unscheduled tasks sidebar.
+- **Journal Persistence**: Implementing full backend support for Journal entries (CRUD, search, on-this-day, insights, templates) to ensure data persistence, and addressing performance issues by correctly initializing MongoDB connections and adding soft-delete functionality.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack Development**: React (frontend), FastAPI (backend), PostgreSQL (Supabase).
--   **Authentication**: Hybrid JWT, Supabase authentication (admin.create_user, sign_in_with_password), custom backend Google OAuth.
--   **Data Management**: TanStack Query for frontend state, Redis for backend caching with invalidation.
--   **Database**: PostgreSQL RLS, foreign keys (),  constraints.
--   **Testing**: Playwright for E2E tests,  attributes for robustness.
--   **Service Management**: backend                          RUNNING   pid 48, uptime 0:00:02
-code-server                      RUNNING   pid 50, uptime 0:00:02
-frontend                         STOPPING  
-mongodb                          RUNNING   pid 56, uptime 0:00:02
-supervisor>  for process control in Kubernetes.
+- **Full-stack Development**: React (frontend with hooks, contexts, TanStack Query), FastAPI (backend), PostgreSQL (Supabase), MongoDB (for Journal).
+- **Authentication**: Hybrid JWT and Supabase authentication, Google OAuth, CORS.
+- **Data Management**: Redis for caching (backend), PostgreSQL  and  constraints, MongoDB for Journal persistence, localStorage for frontend state.
+- **AI Integration**: Gemini 2.0-flash for contextual coaching (via emergentintegrations), rule-based task prioritization.
+- **UI Libraries**: React DnD for drag-and-drop.
+- **Testing**: Playwright for E2E tests,  for UI elements.
+- **Service Management**: backend                          RUNNING   pid 32, uptime 0:00:03
+code-server                      RUNNING   pid 34, uptime 0:00:03
+frontend                         RUNNING   pid 35, uptime 0:00:03
+mongodb                          RUNNING   pid 38, uptime 0:00:03
+supervisor>  for process control, per-user rate limiting (FastAPI).
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture within the  directory, containing , , and .
+The application resides in the  directory and follows a clear separation between frontend and backend.
 
 
 
 **Key Files and Changes:**
 
--   : Updated with , , ,  for custom Google OAuth and AI.
--   : Integrated cache invalidation, streak API, stricter validation. Added  for demo data. Configured custom Google OAuth endpoints.
--   : Crucial for authentication. Modified to use Supabase  with  for registration. Hardened login fallback to legacy JWT if Supabase session is unavailable. Implemented pre-check for existing emails and returns HTTP 409 for duplicates (Email already registered.).
--   : Functions for CRUD operations, integrated cache invalidation.  and / enhanced for hierarchy and cascade.
--   : Defined data models;  and  made required. Added ,  models.
--   : Reviewed for authentication and CSRF.
--   : Stores frontend environment variables like .
--   : Main entry point, integrates authentication contexts.
--   : Manages authentication state. Modified to include retry-aware fetching for  after login to improve user hydration. Handles 409 responses from backend for duplicate email display.
--   : User login and registration form. Modified for faster auto-switch to login (1.2s) after successful sign-up and to display a visible success alert ().
--    (acting as ): Controls access to protected routes and handles redirection for onboarding. Modified for defensive onboarding gating, treating undefined  as false and consulting  to ensure onboarding wizard shows correctly.
--   , , : UI components for managing entities. Modified to add  attributes to select elements for improved E2E test robustness (e.g., , , ).
--   : Defines templates for the onboarding wizard.
--   : Contains automated E2E tests for the application.  is updated with test outcomes.
--   **Supabase Schema Changes (Manual SQL Runs)**: Created , modified , added RLS policies,  foreign keys, and  for hierarchy enforcement.
+-   ****: The central FastAPI application.
+    -   **Changes**: Implemented ,  (fixed to search by task/project name, rate-limited, UUID-enforced), . Fixed CORS. Added , . Added SPA catch-all route. Added full CRUD for , , , , , . Crucially, added missing core  CRUD endpoints (, , , , , ). Implemented  (rule-based why statements for tasks). Implemented  endpoints (, , ,  for drilldowns). Added full  CRUD, search, on-this-day, insights, and template endpoints. Crucially, established proper MongoDB connection lifecycle (startup/shutdown) to fix Journal performance.
+-   ****: Logic for task prioritization and Gemini integration. Calculates scores and handles LLM calls.
+-   ****: Supabase CRUD operations, cache invalidation, hierarchical relationships.
+    -   **Changes**: , Pillar CRUD. Enhanced  to enrich tasks with  and .  now defaults to exclude soft-deleted entries.
+-   ****: Optimized data retrieval.
+    -   **Changes**: Returns plain dicts for consistency and speed.
+-   ****: Pydantic models.
+    -   **Changes**: Added  and  fields to  for soft-delete.
+-   ****: Handles MongoDB connection.
+    -   **Changes**: Contains , ,  etc., which are now correctly imported and used by .
+-   ****: Contains  logic.
+    -   **Changes**:  functions modified to respect  status for soft-delete and restore.
+-   ****: Main React application, handles routing.
+    -   **Changes**: Switched the  route to render .
+-   ****: Manages authentication state.
+    -   **Changes**: Improved user hydration, handled duplicate email, fixed login function variable collision.
+-   ****: Handles data mutations and refreshes.
+    -   **Changes**: Hardened to prevent invalid/duplicate fetches after optimistic updates.
+-   ****: User login/registration.
+    -   **Changes**: Enhanced with auto-switching, success/error popups, E2E , Sign in instead link. Added robust focus helper for password field stability.
+-   ****: Redesigned dashboard.
+    -   **Changes**: Removed old stat components (streaks, habits, etc.). Now renders  and . Changed to full width.
+-   ****: Central daily planning hub.
+    -   **Changes**: Unified action bar with search and Suggest My Focus. Displays AI suggestions (now persisted via ),  add button, vertical alignment context, AI badge. Introduced . Implemented Undo toast and dedupe guard. Clears suggestions on day rollover.
+-   ****: Displays alignment score details.
+    -   **Changes**: Fetches data from .
+-   ****: New dashboard component for alignment score.
+    -   **Changes**: Created to show a single, full-width progress bar driven by . Added brain icon with dynamic fill, current/goal points, and info tooltip.
+-   ****: New calendar component.
+    -   **Changes**: Implemented full-featured calendar with Day/Week/Month views, 24-hour display, horizontal zoom for hour row height, drag-and-drop rescheduling (updates ), task rendering with priority colors and project colors. Added filter button with proper dropdown (keyboard navigable) for projects. Added collapsible Unscheduled sidebar for tasks without , with drag-and-drop functionality. Included persistence for sidebar collapse state and a project color legend. Numerous JSX and parsing error fixes.
+-   ****: Handles monthly goal updates.
+    -   **Changes**: Wired to use backend's PUT endpoint.
+-   **, , , **: Hierarchical CRUD components.
+    -   **Changes**: Enhanced modal behavior (Esc-to-close, backdrop click-to-close, submission guards).  and  updated for dropdown freshness (invalidate/refetch pillars/areas on modal open).  specifically had a runtime error fixed related to state declarations and useEffect.
+-   ****: Task search functionality.
+    -   **Changes**: Implemented debounce (350ms), minimum query length (2 chars), result normalization, pagination (limit/page selector, prev/next buttons), and keyboard navigation (arrows, Enter to add, Escape to close).
+-   ****: Displays Why These Tasks Matter.
+    -   **Changes**: Improved  dependency handling.
+-   ****: Insights dashboard.
+    -   **Changes**: Implemented Eisenhower Matrix (2x2 grid with specific colors, clickable counts for drilldown), Vertical Alignment Progress. Added Drilldown Drawer for tasks. Implemented inline actions in drawer (Mark Done/Reopen, Cycle Priority, Add/Remove from Today with toast confirmation and Added state). Preloaded Today selection in drawer. Implemented clickable metrics for Pillars/Areas to open drilldown. Added QuickCreateTask modal (name, priority, project, Add to Today checkbox, no project creation). Added 6-week micro-chart for Important completions and axis labels/legend.
+-   ****: Journal UI.
+    -   **Changes**: Added a Syncing... indicator during saves. Ready for soft-delete/restore UI.
+-   ****: Centralized API calls.
+    -   **Changes**: Added  methods. Extended  for  and .
+-   ****: Generic UI component.
+    -   **Created**: To render the 6-week important completions chart in Insights.
 </code_architecture>
 
 <pending_tasks>
--   Optionally, add an auto-switch to the Login tab when a user attempts to sign up with an already registered email (HTTP 409 response) after displaying the duplicate account message.
+- Add MongoDB indexes for journal_entries on user_id, created_at, and deleted to further optimize Journal list performance.
+- Build a Trash tab in the UI with Restore and permanent Delete actions for Journal entries.
 </pending_tasks>
 
 <current_work>
-The AI engineer has most recently focused on ensuring a seamless and robust new-user experience, specifically addressing the registration, login, and onboarding flow.
+The AI engineer has most recently focused on stabilizing the Journal screen's loading and data management, specifically addressing reported slowness and errors.
 
-Key fixes and improvements include:
-1.  **Backend Authentication Hardening:**
-    *   **Registration:** The  endpoint now leverages Supabase's  with , allowing immediate login post-registration.
-    *   **Login Fallback:** The login mechanism in  has been made more resilient. If a Supabase  attempt doesn't yield a session, it explicitly falls back to issuing a legacy JWT, ensuring the frontend always receives a usable token to proceed.
-    *   **Duplicate Email Prevention:** The  endpoint now performs a pre-check using Supabase Admin  for existing emails. If a duplicate is found, it returns an HTTP 409 response with the message Email already registered. Please log in instead. This logic also normalizes other backend duplicate errors to the same 409 response.
+The immediate problem identified was that the Journal screen was loading extremely slowly and throwing errors. The root causes were pinpointed as:
+1.  **Missing MongoDB Connection Initialization**: The FastAPI application was not connecting to MongoDB on startup, leading to intermittent errors and timeouts when Journal services tried to interact with the database.
+2.  **Missing Imports and Incorrect Soft-Delete Filtering**: Necessary database helper functions were not imported where needed in the backend, and the default listing endpoints for Journal entries were not correctly excluding soft-deleted records, potentially adding unnecessary load.
 
-2.  **Frontend User Experience (UX) Enhancements:**
-    *   **Faster Transition:** After a successful registration, the UI in  now automatically switches to the Login tab faster (approximately 1.2 seconds, down from 3 seconds) to improve flow.
-    *   **Success Feedback:** A visible success alert () is displayed within the auth card upon successful account creation. The system also attempts a browser  (Account Created!) for additional feedback. Similar success messages are shown on successful login.
-    *   **Duplicate Email Messaging:** The  is updated to intercept the backend's 409 response for duplicate emails and display a user-friendly message: An account with this email already exists. Please sign in instead.
-    *   **Resilient User Hydration:**  now includes a  helper that attempts to fetch the user profile via  up to 3 times with a short delay. This mitigates transient issues where the user profile or token verification isn't immediately ready, preventing the user from getting stuck on the login screen.
-    *   **Defensive Onboarding Gating:**  (AppWrapper) now treats an undefined  state as  and consults a  flag, ensuring the onboarding wizard correctly appears for first-time users.
+To resolve these issues, the following fixes were implemented:
+-   **Backend ()**:
+    -   Added explicit import statements for , , and  from .
+    -   Configured FastAPI's lifespan events to call  on application startup and  on shutdown, ensuring a proper and persistent database connection.
+-   **Backend ()**:
+    -   Ensured  model includes  and  fields to support soft-deletion.
+-   **Backend ()**:
+    -   Modified  to default its query to , effectively excluding soft-deleted entries from main listings, thus reducing data payload and improving query efficiency.
+    -   Confirmed that  performs a soft-delete (setting  and ).
+    -   The  endpoint was added to allow restoring soft-deleted entries using the  helper.
+-   **Frontend ()**:
+    -   A non-blocking Syncing... indicator was added to provide visual feedback during create/update/delete operations.
 
-3.  **Automated Testing Enhancements:**
-    *   ** Attributes:**  attributes have been added to select elements in , , and  (e.g., , , ) to enhance the robustness and reliability of automated E2E UI tests.
-
-The work is currently at a state where the authentication and onboarding flow is designed to be robust, handle edge cases like duplicate registrations, and provide clear user feedback. The previous automated frontend E2E run encountered intermittent environment issues (400/401 errors during UI tests, despite successful backend-only runs), indicating potential preview environment instability or strict rate limits. The engineer has offered to re-run E2E tests with  test emails or add client-side validation and retry logic in the E2E harness.
-
-The immediate next step, based on the last interaction, is to decide whether to implement an auto-switch to the Login tab upon detecting a duplicate email during registration.
+As a result of these changes, the Journal screen should now load reliably and significantly faster, with saves/updates/deletes performing smoothly. Entries persist correctly, and soft-deleted entries no longer appear in the main view. The system is now robust concerning Journal data.
 </current_work>
 
 <optional_next_step>
-Implement an auto-switch to the Login tab after detecting a duplicate email during registration (HTTP 409).
+Add MongoDB indexes for journal_entries on user_id, created_at, and deleted to optimize list performance.
 </optional_next_step>

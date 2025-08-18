@@ -20,7 +20,7 @@ Edit `/app/frontend/.env` and replace:
 
 ```bash
 # Replace with your actual backend URL:
-REACT_APP_BACKEND_URL=https://focus-planner-3.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://productivity-hub-23.preview.emergentagent.com
 ```
 
 ## 🚀 Restart Services

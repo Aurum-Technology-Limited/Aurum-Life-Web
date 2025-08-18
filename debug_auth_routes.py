@@ -6,7 +6,7 @@ Debug the authentication routing issue
 import requests
 
 # Test different auth endpoints
-BACKEND_URL = "https://focus-planner-3.preview.emergentagent.com"
+BACKEND_URL = "https://productivity-hub-23.preview.emergentagent.com"
 
 endpoints_to_test = [
     "/api/auth/register",
