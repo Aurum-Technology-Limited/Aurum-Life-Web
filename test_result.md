@@ -99,7 +99,7 @@
 ##
 ## agent_communication:
     -agent: "main"
-    -message: "Implementing Journal performance indexes and Trash feature: 1) Ensure MongoDB indexes on journal_entries (user_id, deleted, created_at desc + single-field deleted and user_id) on startup; 2) Add backend endpoints: GET /api/journal/trash, POST /api/journal/{id}/restore (existing), DELETE /api/journal/{id}/purge; 3) Frontend: add Trash tab in Journal with Restore and Delete Forever actions; 4) Remove legacy blue info banner from Journal since endpoints are ready. Proceeding to backend tests first (per protocol) to validate soft-delete list, restore, and purge flows."
+    -message: "Implementing Journal performance indexes and Trash feature: 1) Ensure MongoDB (legacy, removed) indexes on journal_entries (user_id, deleted, created_at desc + single-field deleted and user_id) on startup; 2) Add backend endpoints: GET /api/journal/trash, POST /api/journal/{id}/restore (existing), DELETE /api/journal/{id}/purge; 3) Frontend: add Trash tab in Journal with Restore and Delete Forever actions; 4) Remove legacy blue info banner from Journal since endpoints are ready. Proceeding to backend tests first (per protocol) to validate soft-delete list, restore, and purge flows."
     -agent: "main"
     -message: "Implementing dropdown freshness: In Areas modal, invalidate and refetch ['pillars','basic'] when modal opens; in Projects forms, invalidate and refetch ['areas','basic'] when create/edit opens. Also stabilizing Login auto-switch password focus with resilient focus helper. Will run backend tests per protocol, then proceed to automated frontend tests as requested by user."
     -agent: "main"
