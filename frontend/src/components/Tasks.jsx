@@ -37,7 +37,7 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading }) => {
             />
             <span className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.name}</span>
           </div>
-          {task.description &amp;&amp; (
+          {task.description && (
             <p className="text-sm text-gray-400 mt-1">{task.description}</p>
           )}
         </div>
