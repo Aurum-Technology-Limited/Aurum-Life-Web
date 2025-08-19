@@ -122,7 +122,15 @@ export const insightsAPI = {
 };
 
 export const alignmentScoreAPI = {
-  getDashboardData: () => apiClient.get('/alignment/dashboard'),
+  // Try new dashboard endpoint; gracefully fall back to legacy '/alignment-score'
+  getDashboardData: async () => {
+    try {
+      return await apiClient.get('/alignment/dashboard');
+    } catch (err) {
+      // Fallback for environments where dashboard route is not available
+      return apiClient.get('/alignment-score');
+    }
+  },
   getWeeklyScore: () => apiClient.get('/alignment/weekly-score'),
   getMonthlyScore: () => apiClient.get('/alignment/monthly-score'),
   setMonthlyGoal: (goal) => apiClient.post('/alignment/monthly-goal', { goal }),
