@@ -19,6 +19,7 @@ import { projectsAPI, areasAPI } from '../services/api';
 import { useProjectsQuery, useInvalidateQueries } from '../hooks/useQueries';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import ProjectDecompositionHelper from './ProjectDecompositionHelper';
+import FileAttachment from './ui/FileAttachment';
 
 // Memoized ProjectCard component to prevent unnecessary re-renders
 const ProjectCard = memo(({ project, onEdit, onDelete, onViewTasks, onUpdateStatus }) => {
