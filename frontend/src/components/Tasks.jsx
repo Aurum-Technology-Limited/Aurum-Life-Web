@@ -277,6 +277,23 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
       }
     })
     .filter(task => {
+      // Priority chip
+      if (priorityChip !== 'all') {
+        if ((task.priority || 'medium') !== priorityChip) return false;
+      }
+      // Due chip
+      if (dueChip !== 'all') {
+        const due = task.due_date ? new Date(task.due_date) : null;
+        const now = new Date();
+        const endOfToday = new Date(); endOfToday.setHours(23,59,59,999);
+        const endOfWeek = new Date(); const d = endOfWeek.getDate(); endOfWeek.setDate(d + (7 - endOfWeek.getDay())); endOfWeek.setHours(23,59,59,999);
+        if (dueChip === 'overdue' && !(due && due < now && !task.completed)) return false;
+        if (dueChip === 'today' && !(due && due <= endOfToday)) return false;
+        if (dueChip === 'week' && !(due && due <= endOfWeek)) return false;
+      }
+      return true;
+    })
+    .filter(task => {
       const q = (debouncedSearch || search).trim().toLowerCase();
       if (!q) return true;
       const fields = [task.name, task.description, task.category, activeProjectName]
