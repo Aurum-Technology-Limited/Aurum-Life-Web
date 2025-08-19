@@ -5193,6 +5193,10 @@ agent_communication:
 - agent: "main"
 
 - agent: "main"
+
+- agent: "main"
+  message: "Fixed missing FileAttachment component by adding a minimal placeholder at frontend/src/components/ui/FileAttachment.jsx to unblock runtime. Verified no stray HTML entities remain across src via grep. Ready to re-run frontend E2E for Search UX."
+
   message: "Requesting automated frontend tests focused on new search UX across core hierarchy and regression checks. Steps: 1) Login using marc.alleyne@aurumtechnologyltd.com/password123. 2) Pillars: type a nonsense term (e.g., 'zzqqlmnop'), verify empty-state reflects search; clear input and verify list returns; type a partial match of an existing pillar (e.g., first 3 letters) and verify filtered results; ensure no console errors. 3) Areas: same pattern; verify search filters name/description/pillar_name. 4) Projects: same pattern; verify search filters name/description/area_name; with and without active area filter. 5) Tasks: same pattern; verify search filters name/description/category and respects active project context and status filter; check empty-state text for search. 6) Regression: quick navigate Dashboard, Today (TaskWhyStatements visible), Journal (Templates no 500) to ensure no regressions. Capture 4 screenshots: Pillars with empty search, Pillars with filtered result, Projects with filtered result, Tasks with empty search. Report pass/fail per section and any console warnings/errors."
   message: "Implemented session keep-alive ping in BackendAuthContext (ping /api/health every 2 minutes when token is present) to prevent session timeout during long E2E runs. Refactored Today.jsx to use aiCoachAPI.getTaskWhyStatements and load fresh why statements on mount in addition to persisted localStorage. Confirmed Journal templates hardening and AI endpoints backend. Ready to re-run frontend E2E with longer duration."
 
