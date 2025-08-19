@@ -68,7 +68,7 @@ const Pillars = memo(({ onSectionChange }) => {
   const colorOptions = ['#F4B400', '#4CAF50', '#2196F3', '#FF5722', '#9C27B0', '#FF9800', '#795548', '#607D8B'];
 
   const displayedPillars = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = (debouncedSearch || search).trim().toLowerCase();
     if (!q) return pillars;
     return pillars.filter(p => {
       const name = (p.name || '').toLowerCase();
