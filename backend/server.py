@@ -911,7 +911,7 @@ async def delete_pillar(pillar_id: str, request: Request):
         current_user = await get_current_active_user_hybrid(request)
         logger.info(f"Deleting pillar {pillar_id} for user {current_user.id}")
         
-        success = await PillarService.delete_pillar(current_user.id, pillar_id)
+        success = await SupabasePillarService.delete_pillar(pillar_id, current_user.id)
         if not success:
             raise HTTPException(status_code=404, detail="Pillar not found")
             
