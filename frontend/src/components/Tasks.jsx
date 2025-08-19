@@ -163,7 +163,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [debouncedSearch, priorityChip, dueChip, filter, activeProjectId, page, limit]);
 
   const fetchTasks = async () => {
     try {
