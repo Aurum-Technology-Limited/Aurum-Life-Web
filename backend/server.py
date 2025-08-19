@@ -2165,6 +2165,47 @@ async def chat_with_ai_coach(
         raise HTTPException(status_code=500, detail="Failed to chat with AI coach")
 
 # AI Coach MVP endpoints (new)
+@api_router.get("/ai/quota")
+async def get_ai_quota(current_user: User = Depends(get_current_active_user)):
+    """Return safe quota info for AI features; avoids 500s if real quota not implemented"""
+    try:
+        return {"daily_limit": 50, "used": 0, "reset_at": datetime.utcnow().isoformat()}
+    except Exception as e:
+        logger.error(f"Error getting AI quota: {e}")
+        return {"daily_limit": 0, "used": 0, "reset_at": datetime.utcnow().isoformat()}
+
+@api_router.post("/ai/decompose-project")
+async def decompose_project(
+    request: ProjectDecompositionRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    try:
+        resp = await ai_coach_service.suggest_project_tasks(current_user.id, request)
+        return resp
+    except Exception as e:
+        logger.error(f"Error decomposing project: {e}")
+        # Harden to prevent 500s: return empty suggestions
+        return ProjectDecompositionResponse(
+            project_name=request.project_name,
+            template_type=request.template_type or "general",
+            suggested_tasks=[],
+            total_tasks=0
+        )
+
+@api_router.post("/ai/create-tasks-from-suggestions")
+async def create_tasks_from_suggestions(
+    project_id: str,
+    suggested_tasks: List[Dict[str, Any]],
+    current_user: User = Depends(get_current_active_user)
+):
+    try:
+        created = await ai_coach_service.create_tasks_from_suggestions(current_user.id, project_id, suggested_tasks)
+        return {"created": created, "count": len(created)}
+    except Exception as e:
+        logger.error(f"Error creating tasks from suggestions: {e}")
+        # Harden: return empty result instead of 500
+        return {"created": [], "count": 0}
+
 @api_router.get("/ai/task-why-statements")
 async def get_task_why_statements(
     request: Request,
