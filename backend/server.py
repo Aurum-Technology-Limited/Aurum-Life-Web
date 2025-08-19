@@ -26,6 +26,7 @@ from services import (
     ResourceService, StatsService, PillarService, AreaService, ProjectService,
     ProjectTemplateService, GoogleAuthService
 )
+from supabase_services import SupabasePillarService, SupabaseAreaService, SupabaseProjectService
 from notification_service import notification_service
 from auth import get_current_active_user as old_get_current_active_user, verify_token as old_verify_token, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, verify_password
 from supabase_auth import get_current_active_user, verify_token
