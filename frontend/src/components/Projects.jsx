@@ -437,6 +437,15 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
           )}
         </div>
         <div className="flex items-center space-x-3">
+          {/* Quick filter chips */}
+          <div className="hidden md:flex items-center space-x-2 mr-3">
+            {['all','not_started','in_progress','completed','on_hold'].map(s => (
+              <button key={s} onClick={() => setStatusFilter(s)} className={`px-2 py-1 rounded text-xs ${statusFilter===s? 'bg-yellow-600 text-black':'bg-gray-800 text-gray-300 border border-gray-700'}`}>{s.replace('_',' ')}</button>
+            ))}
+            {['all','high','medium','low'].map(p => (
+              <button key={p} onClick={() => setPriorityFilter(p)} className={`px-2 py-1 rounded text-xs ${priorityFilter===p? 'bg-yellow-600 text-black':'bg-gray-800 text-gray-300 border border-gray-700'}`}>{p}</button>
+            ))}
+          </div>
           <input
             type="text"
             value={search}
