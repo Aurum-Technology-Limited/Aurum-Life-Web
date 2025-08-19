@@ -691,8 +691,8 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
               </form>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 });
