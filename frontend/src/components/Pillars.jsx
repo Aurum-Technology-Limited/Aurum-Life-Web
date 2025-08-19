@@ -416,7 +416,7 @@ const Pillars = memo(({ onSectionChange }) => {
                     max="100"
                     step="0.1"
                     value={formData.time_allocation_percentage}
-                    onChange={(e) =&gt; setFormData({...formData, time_allocation_percentage: e.target.value})}
+                    onChange={(e) => setFormData({...formData, time_allocation_percentage: e.target.value})}
                     className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., 25.0"
                   />
