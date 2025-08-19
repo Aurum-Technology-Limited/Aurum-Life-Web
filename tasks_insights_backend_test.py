@@ -67,8 +67,9 @@ class TasksInsightsBackendTest:
                 def __init__(self, error_exception):
                     self.status_code = 0
                     self.text = str(error_exception)
+                    self.error_exception = error_exception
                 def json(self):
-                    return {"error": str(error_exception)}
+                    return {"error": str(self.error_exception)}
             return MockResponse(e), end_time - start_time
 
     def test_step_1_authentication(self):
