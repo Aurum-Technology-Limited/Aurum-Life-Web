@@ -122,6 +122,33 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const [modalLoading, setModalLoading] = useState(false);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // URL query sync for search
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('tasks_q');
+      if (q && !search) setSearch(q);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (debouncedSearch) {
+        url.searchParams.set('tasks_q', debouncedSearch);
+      } else {
+        url.searchParams.delete('tasks_q');
+      }
+      window.history.replaceState({}, '', url);
+    } catch {}
+  }, [debouncedSearch]);
 
   // Extract project filter from section params
   const activeProjectId = sectionParams?.projectId || null;
