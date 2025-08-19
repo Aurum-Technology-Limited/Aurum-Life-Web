@@ -796,7 +796,7 @@ async def create_pillar(pillar_data: PillarCreate, request: Request):
     """Create a new pillar"""
     try:
         current_user = await get_current_active_user_hybrid(request)
-        return await PillarService.create_pillar(current_user.id, pillar_data)
+        return await SupabasePillarService.create_pillar(current_user.id, pillar_data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
