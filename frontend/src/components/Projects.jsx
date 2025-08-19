@@ -412,7 +412,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
       </div>
 
       {/* Error Display */}
-      {projectsIsError &amp;&amp; (
+      {projectsIsError && (
         <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
           <XIcon className="h-5 w-5 text-red-400" />
           <span className="text-red-400">{projectsError?.message || 'Failed to load projects'}</span>
