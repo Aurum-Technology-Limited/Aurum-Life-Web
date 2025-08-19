@@ -418,7 +418,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
             {filter === 'all' ? (search ? 'Try a different search term' : 'Create your first task to get started') : 
              `Switch to ${filter === 'completed' ? 'active' : 'all'} tasks to see more`}
           </p>
-          {filter === 'all' &amp;&amp; !search &amp;&amp; (
+          {filter === 'all' && !search && (
             <button
               onClick={handleCreateTask}
               className="px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
