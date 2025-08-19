@@ -379,7 +379,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
       </div>
 
       {/* Tasks Grid */}
-      {filteredTasks.length &gt; 0 ? (
+      {filteredTasks.length > 0 ? (
         <div className="space-y-8">
           {/* Task Why Statements - Show insights for active tasks */}
           {filteredTasks.filter(task => !task.completed).length &gt; 0 &amp;&amp; (
