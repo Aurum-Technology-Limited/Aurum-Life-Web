@@ -241,7 +241,7 @@ const Pillars = memo(({ onSectionChange }) => {
               
               <button
                 data-testid={`pillar-delete-${pillar.id}`}
-                onClick={(e) =&gt; {
+                onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(pillar);
                 }}
