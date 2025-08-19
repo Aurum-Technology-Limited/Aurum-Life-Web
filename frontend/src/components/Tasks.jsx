@@ -258,7 +258,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
               : 'Organize your goals and track your productivity'
             }
           </p>
-          {activeProjectName &amp;&amp; onSectionChange &amp;&amp; (
+          {activeProjectName && onSectionChange && (
             <button
               onClick={() => onSectionChange('projects')}
               className="mt-2 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
