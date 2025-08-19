@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://c7dc63d9-3764-48cb-a7be-e97dc0b89cd2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
 
 # Test credentials
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"

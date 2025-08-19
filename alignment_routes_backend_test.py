@@ -20,7 +20,7 @@ from typing import Dict, Any
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://c7dc63d9-3764-48cb-a7be-e97dc0b89cd2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
 
 class AlignmentRoutesBackendTester:
     def __init__(self):

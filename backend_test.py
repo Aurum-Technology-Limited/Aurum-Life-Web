@@ -11,7 +11,7 @@ import io
 from typing import Dict, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://c7dc63d9-3764-48cb-a7be-e97dc0b89cd2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password123"
 

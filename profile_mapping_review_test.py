@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration
-BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
 
 class ProfileMappingReviewTester:
     def __init__(self):

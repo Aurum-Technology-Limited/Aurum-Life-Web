@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://taskpilot-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
 
 def test_username_change():
     # Login
