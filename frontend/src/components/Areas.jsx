@@ -38,7 +38,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 mb-1">
-            {area.pillar_name &amp;&amp; (
+            {area.pillar_name && (
               <div className="flex items-center space-x-1 flex-shrink-0">
                 <Mountain className="h-3 w-3 flex-shrink-0" />
                 <span className="dynamic-text">{area.pillar_name}</span>
