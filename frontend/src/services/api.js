@@ -137,7 +137,20 @@ export const alignmentScoreAPI = {
 };
 
 export const aiCoachAPI = {
-  getTodaysPriorities: () => apiClient.get('/ai/task-why-statements'),
+  getTaskWhyStatements: (taskIds = []) => {
+    const params = taskIds && taskIds.length > 0 ? { task_ids: taskIds.join(',') } : {};
+    return apiClient.get('/ai/task-why-statements', { params });
+  },
+  suggestFocus: (topN = 3) => apiClient.get('/ai/suggest-focus', { params: { top_n: topN } }),
+  decomposeProject: (projectName, projectDescription = '', templateType = 'general') =>
+    apiClient.post('/ai/decompose-project', {
+      project_name: projectName,
+      project_description: projectDescription,
+      template_type: templateType,
+    }),
+  createTasksFromSuggestions: (projectId, suggestedTasks = []) =>
+    apiClient.post('/ai/create-tasks-from-suggestions', { project_id: projectId, suggested_tasks: suggestedTasks }),
+  getQuota: () => apiClient.get('/ai/quota'), // safe fallback endpoint
 };
 
 // Error handling utility
