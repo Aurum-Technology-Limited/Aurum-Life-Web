@@ -174,11 +174,34 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
       setLoading(true);
       setError(null);
       
-      const response = await tasksAPI.getTasks({
-        // Initial load: no filters, but keep API flexible for future
-        returnMeta: false,
-      });
-      setTasks(response.data);
+      // Map UI chips and filters to API params
+      const apiParams = {
+        projectId: activeProjectId || null,
+        q: debouncedSearch || null,
+        status: filter !== 'all' ? filter : null,
+        priority: priorityChip !== 'all' ? priorityChip : null,
+        dueDate: dueChip !== 'all' ? dueChip : null,
+        page,
+        limit,
+        returnMeta: true,
+      };
+
+      const response = await tasksAPI.getTasks(apiParams);
+      const data = response.data;
+      if (data && typeof data === 'object' && Array.isArray(data.tasks)) {
+        setTasks(data.tasks);
+        setTotal(data.total ?? null);
+        setHasMore(Boolean(data.has_more));
+      } else if (Array.isArray(data)) {
+        // Fallback for backward-compat
+        setTasks(data);
+        setTotal(null);
+        setHasMore(false);
+      } else {
+        setTasks([]);
+        setTotal(null);
+        setHasMore(false);
+      }
     } catch (err) {
       setError(handleApiError(err, 'Failed to load tasks'));
     } finally {
