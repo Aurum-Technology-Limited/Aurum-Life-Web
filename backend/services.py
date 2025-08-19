@@ -303,6 +303,12 @@ class JournalService:
         # This is a placeholder to prevent startup errors
         # Could be implemented to create default templates
         pass
+    
+    @staticmethod
+    async def get_user_templates(user_id: str):
+        """Get journal templates for user - placeholder implementation"""
+        # Return empty array to prevent 500 errors during testing
+        return []
 
 
 # Placeholder service classes to satisfy imports
