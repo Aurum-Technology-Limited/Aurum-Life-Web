@@ -363,9 +363,9 @@ class TaskService:
 
         # Due date filter
         if due_date and due_date.lower() in {'overdue', 'today', 'week'}:
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=999999)
-            # Compute end of week (Sunday 23:59:59)
+            # Compute end of week (Sunday 23:59:59) in UTC
             end_of_week = end_of_today + timedelta(days=(6 - end_of_today.weekday()))  # weekday: Mon=0 .. Sun=6
             key = due_date.lower()
             filtered = []
