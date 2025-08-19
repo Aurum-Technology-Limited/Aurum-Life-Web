@@ -384,7 +384,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
           <p className="text-gray-400 mt-1">
             {activeAreaName ? `Projects in ${activeAreaName}` : 'Plan and track your projects'}
           </p>
-          {activeAreaName &amp;&amp; (
+          {activeAreaName && (
             <button
               onClick={() => onSectionChange('areas')}
               className="mt-2 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
