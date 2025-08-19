@@ -320,9 +320,9 @@ const Pillars = memo(({ onSectionChange }) => {
             <p className="text-gray-400 mb-4">
               {search ? 'Try a different search term' : 'Create your first pillar to organize your life domains'}
             </p>
-            {!search &amp;&amp; (
+            {!search && (
               <button
-                onClick={() =&gt; setShowModal(true)}
+                onClick={() => setShowModal(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Create First Pillar
