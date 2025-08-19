@@ -13,7 +13,7 @@ import {
   X
 } from 'lucide-react';
 import { useDataContext } from '../contexts/DataContext';
-import { tasksAPI } from '../services/api';
+import { tasksAPI, handleApiError } from '../services/api';
 import FileAttachment from './ui/FileAttachment';
 import TaskWhyStatements from './TaskWhyStatements';
 
