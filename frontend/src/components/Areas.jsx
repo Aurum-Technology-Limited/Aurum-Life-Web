@@ -219,7 +219,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     : allAreas;
 
   const displayedAreas = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = (debouncedSearch || search).trim().toLowerCase();
     if (!q) return areas;
     return areas.filter(a => {
       const fields = [a.name, a.description, a.pillar_name].map(v => (v || '').toLowerCase());
