@@ -78,7 +78,7 @@ const ProjectCard = memo(({ project, onEdit, onDelete, onViewTasks, onUpdateStat
         </button>
       </div>
 
-      {project.description &amp;&amp; (
+      {project.description && (
         <p className="text-gray-300 text-sm mb-4 line-clamp-2">
           {project.description}
         </p>
