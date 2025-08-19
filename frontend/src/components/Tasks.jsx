@@ -277,7 +277,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
       }
     })
     .filter(task => {
-      const q = search.trim().toLowerCase();
+      const q = (debouncedSearch || search).trim().toLowerCase();
       if (!q) return true;
       const fields = [task.name, task.description, task.category, activeProjectName]
         .map(v => (v || '').toLowerCase());
