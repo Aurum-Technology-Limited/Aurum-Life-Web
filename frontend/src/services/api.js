@@ -69,6 +69,7 @@ export const areasAPI = {
   createArea: (data) => apiClient.post('/areas', data),
   updateArea: (id, data) => apiClient.put(`/areas/${id}`, data),
   deleteArea: (id) => apiClient.delete(`/areas/${id}`),
+  archiveArea: (id, archived) => apiClient.post(`/areas/${id}/archive`, { archived }),
 };
 
 export const projectsAPI = {
@@ -150,7 +151,26 @@ export const aiCoachAPI = {
     }),
   createTasksFromSuggestions: (projectId, suggestedTasks = []) =>
     apiClient.post('/ai/create-tasks-from-suggestions', { project_id: projectId, suggested_tasks: suggestedTasks }),
-  getQuota: () => apiClient.get('/ai/quota'), // safe fallback endpoint
+  getQuota: () => apiClient.get('/ai/quota'),
+};
+
+// -------------- Uploads (chunked) --------------
+export const uploadsAPI = {
+  initiate: ({ filename, size, parentType = null, parentId = null }) =>
+    apiClient.post('/uploads/initiate', { filename, size, parent_type: parentType, parent_id: parentId }),
+  uploadChunk: ({ uploadId, index, total, blob }) => {
+    const form = new FormData();
+    form.append('upload_id', uploadId);
+    form.append('index', String(index));
+    form.append('total_chunks', String(total));
+    form.append('chunk', blob, `chunk_${index}`);
+    return apiClient.post('/uploads/chunk', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  complete: ({ uploadId }) => {
+    const form = new FormData();
+    form.append('upload_id', uploadId);
+    return apiClient.post('/uploads/complete', form);
+  },
 };
 
 // Error handling utility
