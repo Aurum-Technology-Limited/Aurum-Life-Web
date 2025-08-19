@@ -560,8 +560,6 @@ async def get_insights(
 ):
     """Get insights data with fallback to basic analytics"""
     try:
-        # For now, return a simple response indicating insights are being developed
-        # This prevents the frontend from showing errors
         return {
             "message": "Insights endpoint is available but data is being processed",
             "status": "developing",
@@ -572,6 +570,26 @@ async def get_insights(
     except Exception as e:
         logger.error(f"Error getting insights: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Alignment endpoints (support both routes)
+@api_router.get("/alignment/dashboard")
+async def get_alignment_dashboard(current_user: User = Depends(get_current_active_user)):
+    try:
+        data = await alignment_service.get_alignment_dashboard_data(current_user.id)
+        return data
+    except Exception as e:
+        logger.error(f"Error getting alignment dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch alignment dashboard")
+
+@api_router.get("/alignment-score")
+async def get_alignment_score_legacy(current_user: User = Depends(get_current_active_user)):
+    try:
+        # Return the same payload as dashboard for backward compatibility
+        data = await alignment_service.get_alignment_dashboard_data(current_user.id)
+        return data
+    except Exception as e:
+        logger.error(f"Error getting legacy alignment score: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch alignment score")
 
 # Enhanced Journal endpoints
 @api_router.post("/journal", response_model=JournalEntry)
