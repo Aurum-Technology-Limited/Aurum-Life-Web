@@ -174,6 +174,33 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   const [newProjectForDecomposition, setNewProjectForDecomposition] = useState(null);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // URL query sync for search
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('projects_q');
+      if (q && !search) setSearch(q);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (debouncedSearch) {
+        url.searchParams.set('projects_q', debouncedSearch);
+      } else {
+        url.searchParams.delete('projects_q');
+      }
+      window.history.replaceState({}, '', url);
+    } catch {}
+  }, [debouncedSearch]);
   
   const [newProject, setNewProject] = useState({
     name: '',
