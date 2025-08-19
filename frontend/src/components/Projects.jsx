@@ -93,7 +93,7 @@ const ProjectCard = memo(({ project, onEdit, onDelete, onViewTasks, onUpdateStat
         </span>
       </div>
 
-      {project.due_date &amp;&amp; (
+      {project.due_date && (
         <div className="flex items-center text-gray-400 text-sm mb-4">
           <CalendarIcon className="h-4 w-4 mr-1" />
           <span>{new Date(project.due_date).toLocaleDateString()}</span>
