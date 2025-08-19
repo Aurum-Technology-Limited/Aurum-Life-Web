@@ -69,7 +69,44 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading }) => {
 TaskCard.displayName = 'TaskCard';
 
 const TaskModal = memo(({ task, isOpen, onClose, onSave, loading, defaultProjectId }) => {
-  // ... existing modal JSX remains unchanged
+  const [name, setName] = useState(task?.name || '');
+  const [description, setDescription] = useState(task?.description || '');
+
+  useEffect(() => {
+    setName(task?.name || '');
+    setDescription(task?.description || '');
+  }, [task]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-white font-semibold">{task ? 'Edit Task' : 'Create Task'}</div>
+          <button className="text-gray-400 hover:text-white" onClick={onClose}>✕</button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-gray-400">Name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" placeholder="Task name" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400">Description</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" rows={3} placeholder="Optional details" />
+          </div>
+          {/* Visible FileAttachment placeholder */}
+          <FileAttachment parentType="task" parentId={task?.id} parentName={task?.name || name} />
+          <div className="flex justify-end gap-2 pt-2">
+            <button className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 rounded" onClick={onClose}>Cancel</button>
+            <button className="px-3 py-1.5 text-sm bg-yellow-600 hover:bg-yellow-700 rounded text-black font-semibold" disabled={loading || !name.trim()} onClick={() => onSave({ name: name.trim(), description: description.trim() })}>
+              {loading ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 });
 
 TaskModal.displayName = 'TaskModal';
