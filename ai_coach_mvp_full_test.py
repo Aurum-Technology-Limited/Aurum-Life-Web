@@ -86,7 +86,7 @@ async def create_test_data(supabase, user_id: str):
                 'name': f'AI Coach Test Task {i+1}',
                 'description': f'Test task {i+1} for AI Coach MVP testing',
                 'project_id': project_id,
-                'status': 'Not Started',
+                'status': 'todo',
                 'priority': ['high', 'medium', 'low'][i],
                 'completed': False,
                 'created_at': datetime.utcnow().isoformat(),
