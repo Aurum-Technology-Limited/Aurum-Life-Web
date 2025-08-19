@@ -416,4 +416,4 @@ async def get_journal(current_user: User = Depends(get_current_active_user)):
 # Mount the router last
 app.include_router(api_router)
 # Include auth router under /api prefix
-api_router.include_router(auth_router)
+app.include_router(auth_router, prefix="/api")
