@@ -31,29 +31,16 @@ const ProjectDecompositionHelper = ({ projectName, projectDescription, onTasksCr
         return;
       }
 
-      const response = await fetch(`${BACKEND_URL}/api/ai/decompose-project`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          project_name: projectName,
-          project_description: projectDescription,
-          template_type: templateType
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
+      // Use centralized API client
+      try {
+        const { aiCoachAPI } = await import('../services/api');
+        const resp = await aiCoachAPI.decomposeProject(projectName, projectDescription, templateType);
+        const data = resp?.data || {};
         setSuggestions(data.suggested_tasks || []);
-        
-        // Auto-select all suggestions by default
-        const allTaskIds = new Set(data.suggested_tasks.map((_, index) => index));
+        const allTaskIds = new Set((data.suggested_tasks || []).map((_, index) => index));
         setSelectedTasks(allTaskIds);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to generate suggestions');
+      } catch (e) {
+        throw e;
       }
     } catch (err) {
       console.error('Error fetching suggestions:', err);
