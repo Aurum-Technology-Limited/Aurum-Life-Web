@@ -363,22 +363,40 @@ async def get_projects(current_user: User = Depends(get_current_active_user)):
         raise HTTPException(status_code=500, detail="Failed to get projects")
 
 @api_router.get("/tasks")
-async def get_tasks(current_user: User = Depends(get_current_active_user)):
-    """Get user tasks"""
+async def get_tasks(
+    project_id: Optional[str] = Query(default=None),
+    q: Optional[str] = Query(default=None),
+    status: Optional[str] = Query(default=None),
+    priority: Optional[str] = Query(default=None),
+    due_date: Optional[str] = Query(default=None),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get user tasks with optional server-side filters"""
     try:
         task_service = TaskService()
-        tasks = await task_service.get_user_tasks(str(current_user.id))
+        tasks = await task_service.get_user_tasks(
+            str(current_user.id),
+            project_id=project_id,
+            q=q,
+            status=status,
+            priority=priority,
+            due_date=due_date,
+        )
         return tasks
     except Exception as e:
         logger.error(f"Error getting tasks: {e}")
         raise HTTPException(status_code=500, detail="Failed to get tasks")
 
 @api_router.get("/insights")
-async def get_insights(current_user: User = Depends(get_current_active_user)):
+async def get_insights(
+    date_range: Optional[str] = Query(default='all_time'),
+    area_id: Optional[str] = Query(default=None),
+    current_user: User = Depends(get_current_active_user)
+):
     """Get user insights"""
     try:
         insights_service = InsightsService()
-        insights = await insights_service.get_user_insights(str(current_user.id))
+        insights = await insights_service.get_user_insights(str(current_user.id), date_range=date_range, area_id=area_id)
         return insights
     except Exception as e:
         logger.error(f"Error getting insights: {e}")

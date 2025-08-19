@@ -4,6 +4,9 @@ from models import *
 from supabase_client import find_document, find_documents, create_document, update_document, delete_document
 import logging
 
+# New: import Supabase services for tasks and hierarchy lookups
+from supabase_services import SupabaseTaskService, SupabaseProjectService, SupabaseAreaService, SupabasePillarService
+
 logger = logging.getLogger(__name__)
 
 class JournalService:
@@ -311,20 +314,253 @@ class JournalService:
         return []
 
 
-# Placeholder service classes to satisfy imports
-class UserService:
-    pass
-
+# Implemented TaskService to delegate to Supabase and apply server-side filters
 class TaskService:
+    @staticmethod
+    async def get_user_tasks(
+        user_id: str,
+        project_id: Optional[str] = None,
+        q: Optional[str] = None,
+        status: Optional[str] = None,
+        priority: Optional[str] = None,
+        due_date: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Return user's tasks with optional server-side filters.
+        Supported filters: q (search), status (all|active|completed|todo|in_progress|review),
+        priority (low|medium|high), due_date (overdue|today|week), project_id.
+        """
+        # Base fetch via Supabase service (handles user_id, project_id)
+        base_tasks = await SupabaseTaskService.get_user_tasks(user_id, project_id=project_id, completed=None)
+
+        # Normalize helper
+        def parse_dt(val):
+            if not val:
+                return None
+            if isinstance(val, datetime):
+                return val
+            try:
+                # Handle Z-suffixed timestamps
+                return datetime.fromisoformat(str(val).replace('Z', '+00:00'))
+            except Exception:
+                return None
+
+        tasks = base_tasks
+
+        # Status filter
+        if status and status != 'all':
+            s = status.lower()
+            if s in {'active', 'open'}:
+                tasks = [t for t in tasks if not t.get('completed', False)]
+            elif s == 'completed':
+                tasks = [t for t in tasks if t.get('completed', False)]
+            elif s in {'todo', 'in_progress', 'review'}:
+                tasks = [t for t in tasks if (t.get('status') or '').lower() == s]
+
+        # Priority filter
+        if priority and priority.lower() in {'low', 'medium', 'high'}:
+            p = priority.lower()
+            tasks = [t for t in tasks if (t.get('priority') or 'medium').lower() == p]
+
+        # Due date filter
+        if due_date and due_date.lower() in {'overdue', 'today', 'week'}:
+            now = datetime.utcnow()
+            end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+            # Compute end of week (Sunday 23:59:59)
+            end_of_week = end_of_today + timedelta(days=(6 - end_of_today.weekday()))  # weekday: Mon=0 .. Sun=6
+            key = due_date.lower()
+            filtered = []
+            for t in tasks:
+                dd = parse_dt(t.get('due_date'))
+                if not dd:
+                    continue
+                if key == 'overdue' and (dd < now and not t.get('completed', False)):
+                    filtered.append(t)
+                elif key == 'today' and dd <= end_of_today:
+                    filtered.append(t)
+                elif key == 'week' and dd <= end_of_week:
+                    filtered.append(t)
+            tasks = filtered
+
+        # Search filter
+        if q and q.strip():
+            ql = q.strip().lower()
+            def match(t):
+                fields = [t.get('name', ''), t.get('description', ''), t.get('category', '')]
+                return any(ql in str(f).lower() for f in fields if f is not None)
+            tasks = [t for t in tasks if match(t)]
+
+        return tasks
+
+
+class InsightsService:
+    @staticmethod
+    async def get_user_insights(user_id: str, date_range: str = 'all_time', area_id: Optional[str] = None) -> Dict[str, Any]:
+        """Compute a minimal but stable insights payload with Eisenhower matrix and alignment snapshot."""
+        try:
+            # Fetch tasks and hierarchy for enrichment
+            tasks = await SupabaseTaskService.get_user_tasks(user_id)
+            projects = await SupabaseProjectService.get_user_projects(user_id)
+            areas = await SupabaseAreaService.get_user_areas(user_id)
+            pillars = await SupabasePillarService.get_user_pillars(user_id)
+
+            # Build lookup maps
+            proj_by_id = {p['id']: p for p in (projects or [])}
+            area_by_id = {a['id']: a for a in (areas or [])}
+            pillar_by_id = {pl['id']: pl for pl in (pillars or [])}
+
+            # Enrich tasks with project/area/pillar names
+            def get_names(t):
+                pn = an = pln = None
+                pid = t.get('project_id')
+                if pid and pid in proj_by_id:
+                    pn = proj_by_id[pid].get('name')
+                    aid = proj_by_id[pid].get('area_id')
+                    if aid and aid in area_by_id:
+                        an = area_by_id[aid].get('name')
+                        plid = area_by_id[aid].get('pillar_id')
+                        if plid and plid in pillar_by_id:
+                            pln = pillar_by_id[plid].get('name')
+                return pn, an, pln
+
+            # Eisenhower matrix classification
+            now = datetime.utcnow()
+            end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+            urgent_threshold = end_of_today  # Urgent = due by end of today or overdue
+
+            Q1, Q2, Q3, Q4 = [], [], [], []
+            for t in tasks or []:
+                due_str = t.get('due_date')
+                try:
+                    due = datetime.fromisoformat(due_str.replace('Z', '+00:00')) if due_str else None
+                except Exception:
+                    due = None
+                urgent = bool(due and due <= urgent_threshold)
+                important = (t.get('priority', 'medium') == 'high')
+                task_view = {
+                    'id': t.get('id'),
+                    'title': t.get('name'),
+                    'priority': t.get('priority'),
+                    'status': t.get('status'),
+                    'due_date': t.get('due_date'),
+                }
+                pn, an, pln = get_names(t)
+                if pn: task_view['project_name'] = pn
+                if an: task_view['area_name'] = an
+                if pln: task_view['pillar_name'] = pln
+
+                if urgent and important:
+                    Q1.append(task_view)
+                elif important and not urgent:
+                    Q2.append(task_view)
+                elif urgent and not important:
+                    Q3.append(task_view)
+                else:
+                    Q4.append(task_view)
+
+            eisenhower = {
+                'Q1': { 'label': 'Urgent & Important', 'count': len(Q1), 'tasks': Q1 },
+                'Q2': { 'label': 'Important, Not Urgent', 'count': len(Q2), 'tasks': Q2 },
+                'Q3': { 'label': 'Urgent, Not Important', 'count': len(Q3), 'tasks': Q3 },
+                'Q4': { 'label': 'Not Urgent & Not Important', 'count': len(Q4), 'tasks': Q4 },
+            }
+
+            # Alignment snapshot by pillar (based on completed tasks)
+            completed = [t for t in (tasks or []) if t.get('completed')]
+            total_completed = len(completed) or 1  # avoid div-by-zero
+            counts_by_pillar: Dict[str, int] = {}
+            for t in completed:
+                pid = t.get('project_id')
+                aid = proj_by_id.get(pid, {}).get('area_id') if pid else None
+                plid = area_by_id.get(aid, {}).get('pillar_id') if aid else None
+                if plid:
+                    counts_by_pillar[plid] = counts_by_pillar.get(plid, 0) + 1
+            pillar_alignment = []
+            for plid, cnt in counts_by_pillar.items():
+                pillar_alignment.append({
+                    'pillar_id': plid,
+                    'pillar_name': pillar_by_id.get(plid, {}).get('name', 'Unknown'),
+                    'percentage': round((cnt / total_completed) * 100, 1),
+                    'tasks_completed': cnt,
+                })
+            # Sort descending by percentage
+            pillar_alignment.sort(key=lambda x: x['percentage'], reverse=True)
+            alignment_snapshot = {
+                'score': 0,  # placeholder for future scoring
+                'pillar_alignment': pillar_alignment,
+            }
+
+            # Area distribution (top areas by completed tasks)
+            area_counts: Dict[str, int] = {}
+            for t in completed:
+                pid = t.get('project_id')
+                aid = proj_by_id.get(pid, {}).get('area_id') if pid else None
+                if aid:
+                    area_counts[aid] = area_counts.get(aid, 0) + 1
+            total_area_completed = sum(area_counts.values()) or 1
+            area_distribution = []
+            for aid, cnt in area_counts.items():
+                a = area_by_id.get(aid, {})
+                # projects_count in this area
+                projects_in_area = [p for p in (projects or []) if p.get('area_id') == aid]
+                area_distribution.append({
+                    'area_id': aid,
+                    'area_name': a.get('name', 'Unknown'),
+                    'projects_count': len(projects_in_area),
+                    'task_count': cnt,
+                    'percentage': round((cnt / total_area_completed) * 100, 1),
+                    'area_color': a.get('color', '#3B82F6'),
+                    'area_icon': a.get('icon', 'Circle'),
+                })
+            # Sort areas by percentage desc
+            area_distribution.sort(key=lambda x: x['percentage'], reverse=True)
+
+            # Optional human-readable insights
+            insights_text = []
+            if len(Q1) > 0:
+                insights_text.append(f"You have {len(Q1)} urgent and important task(s) to prioritize today.")
+            if pillar_alignment:
+                top = pillar_alignment[0]
+                insights_text.append(f"Most of your recent completions align with '{top['pillar_name']}' ({top['percentage']}%).")
+
+            data = {
+                'eisenhower_matrix': eisenhower,
+                'alignment_snapshot': alignment_snapshot,
+                'area_distribution': area_distribution,
+                'alignment_progress': {},
+                'productivity_trends': {},
+                'insights_text': insights_text,
+                'recommendations': [],
+                'generated_at': datetime.utcnow().isoformat()
+            }
+            return data
+        except Exception as e:
+            logger.error(f"Insights computation failed: {e}")
+            # Return a minimal but valid payload to keep UI stable
+            return {
+                'eisenhower_matrix': {
+                    'Q1': {'label': 'Urgent & Important', 'count': 0, 'tasks': []},
+                    'Q2': {'label': 'Important, Not Urgent', 'count': 0, 'tasks': []},
+                    'Q3': {'label': 'Urgent, Not Important', 'count': 0, 'tasks': []},
+                    'Q4': {'label': 'Not Urgent & Not Important', 'count': 0, 'tasks': []},
+                },
+                'alignment_snapshot': {'score': 0, 'pillar_alignment': []},
+                'area_distribution': [],
+                'alignment_progress': {},
+                'productivity_trends': {},
+                'insights_text': [],
+                'recommendations': [],
+                'generated_at': datetime.utcnow().isoformat()
+            }
+
+
+# Placeholder service classes to satisfy imports (kept for backward compatibility)
+class UserService:
     pass
 
 class CourseService:
     pass
 
 class RecurringTaskService:
-    pass
-
-class InsightsService:
     pass
 
 class ResourceService:
