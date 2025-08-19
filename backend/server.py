@@ -2167,11 +2167,12 @@ async def chat_with_ai_coach(
 # AI Coach MVP endpoints (new)
 @api_router.get("/ai/task-why-statements")
 async def get_task_why_statements(
-    task_ids: Optional[str] = Query(None, description="Comma-separated task IDs to analyze"),
-    current_user: User = Depends(get_current_active_user)
+    request: Request,
+    task_ids: Optional[str] = Query(None, description="Comma-separated task IDs to analyze")
 ):
     """Generate contextual why statements for tasks explaining their vertical alignment"""
     try:
+        current_user = await get_current_active_user_hybrid(request)
         ids_list = []
         if task_ids:
             ids_list = [tid.strip() for tid in task_ids.split(',') if tid.strip()]
@@ -2184,11 +2185,12 @@ async def get_task_why_statements(
 
 @api_router.get("/ai/suggest-focus")
 async def suggest_focus_tasks(
-    top_n: int = Query(3, ge=0, le=10, description="Limit number of suggestions"),
-    current_user: User = Depends(get_current_active_user)
+    request: Request,
+    top_n: int = Query(3, ge=0, le=10, description="Limit number of suggestions")
 ):
     """Return prioritized tasks and optional AI coaching messages"""
     try:
+        current_user = await get_current_active_user_hybrid(request)
         data = await ai_coach_service.get_today_priorities(current_user.id, coaching_top_n=top_n)
         return data
     except Exception as e:
