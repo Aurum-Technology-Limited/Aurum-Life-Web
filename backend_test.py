@@ -59,12 +59,12 @@ class BackendSmokeTest:
             print(f"Request failed: {e}")
             # Create a mock response for error handling
             class MockResponse:
-                def __init__(self):
+                def __init__(self, error):
                     self.status_code = 0
-                    self.text = str(e)
+                    self.text = str(error)
                 def json(self):
-                    return {"error": str(e)}
-            return MockResponse(), end_time - start_time
+                    return {"error": str(error)}
+            return MockResponse(e), end_time - start_time
 
     def test_step_1_login(self):
         """Step 1: POST /api/auth/login with credentials"""
