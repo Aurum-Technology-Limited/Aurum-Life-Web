@@ -344,7 +344,7 @@ const Pillars = memo(({ onSectionChange }) => {
           onKeyDown={(e) => { if (e.key === 'Escape') handleCloseModal(); }}
           tabIndex={-1}
         >
-          <div className="bg-gray-900 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-800" onClick={(e) =&gt; e.stopPropagation()}>
+          <div className="bg-gray-900 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-800" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <h2 className="text-xl font-bold text-white mb-4">
                 {editingPillar ? 'Edit Pillar' : 'Create New Pillar'}
