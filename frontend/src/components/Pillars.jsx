@@ -229,7 +229,7 @@ const Pillars = memo(({ onSectionChange }) => {
             <div className="flex items-center space-x-2">
               <button
                 data-testid={`pillar-edit-${pillar.id}`}
-                onClick={(e) =&gt; {
+                onClick={(e) => {
                   e.stopPropagation();
                   handleEdit(pillar);
                 }}
