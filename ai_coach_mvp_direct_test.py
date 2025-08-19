@@ -33,8 +33,25 @@ async def test_ai_coach_mvp_service():
         service = AiCoachMvpService()
         print("✅ Successfully initialized AiCoachMvpService")
         
-        # Test user ID (from the test account)
-        test_user_id = "marc.alleyne@aurumtechnologyltd.com"  # This might be the user ID format
+        # Get the correct user ID from the database
+        from supabase_client import get_supabase_client
+        supabase = get_supabase_client()
+        
+        # Try to find user by email in users table
+        users_response = supabase.table('users').select('id').eq('email', 'marc.alleyne@aurumtechnologyltd.com').execute()
+        
+        if users_response.data:
+            test_user_id = users_response.data[0]['id']
+            print(f"✅ Found user ID: {test_user_id}")
+        else:
+            # Try user_profiles table
+            profiles_response = supabase.table('user_profiles').select('id').execute()
+            if profiles_response.data:
+                test_user_id = profiles_response.data[0]['id']  # Use first available user
+                print(f"✅ Using first available user ID: {test_user_id}")
+            else:
+                print("❌ No users found in database")
+                return
         
         # Test 1: Generate task why statements (no specific task IDs)
         print("\n📝 Test 1: Generate task why statements (no task IDs)")
