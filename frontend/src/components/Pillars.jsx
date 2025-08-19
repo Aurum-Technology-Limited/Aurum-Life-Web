@@ -215,7 +215,7 @@ const Pillars = memo(({ onSectionChange }) => {
                     <span className="font-medium text-yellow-400">{pillar.task_count || 0}</span>
                     <span>tasks</span>
                   </span>
-                  {pillar.progress_percentage &gt; 0 &amp;&amp; (
+                  {pillar.progress_percentage > 0 && (
                     <span className="text-green-400">{pillar.progress_percentage.toFixed(1)}% complete</span>
                   )}
                   {pillar.created_at &amp;&amp; (
