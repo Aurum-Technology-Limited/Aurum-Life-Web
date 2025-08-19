@@ -10,7 +10,8 @@ import {
   ChevronDown,
   ChevronUp,
   Repeat,
-  X
+  X,
+  FolderOpen
 } from 'lucide-react';
 import { useDataContext } from '../contexts/DataContext';
 import { tasksAPI, handleApiError } from '../services/api';
