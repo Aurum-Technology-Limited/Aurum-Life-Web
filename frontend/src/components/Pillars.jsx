@@ -335,7 +335,7 @@ const Pillars = memo(({ onSectionChange }) => {
       </div>
 
       {/* Create/Edit Modal */}
-      {showModal &amp;&amp; (
+      {showModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
           onClick={(e) =&gt; {
