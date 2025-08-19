@@ -287,7 +287,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
         </div>
       </div>
 
-      {error &amp;&amp; (
+      {error && (
         <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
           <AlertCircle size={20} className="text-red-400" />
           <span className="text-red-400">{error}</span>
