@@ -396,7 +396,7 @@ const Pillars = memo(({ onSectionChange }) => {
                       <button
                         key={color}
                         type="button"
-                        onClick={() =&gt; setFormData({...formData, color})}
+                        onClick={() => setFormData({...formData, color})}
                         className={`w-8 h-8 rounded-full border-2 transition-all ${
                           formData.color === color ? 'border-white scale-110' : 'border-gray-600'
                         }`}
