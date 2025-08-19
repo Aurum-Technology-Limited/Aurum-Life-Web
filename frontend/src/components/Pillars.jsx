@@ -379,7 +379,7 @@ const Pillars = memo(({ onSectionChange }) => {
                 {/* Icon Picker */}
                 <IconPicker
                   value={formData.icon}
-                  onChange={(icon) =&gt; setFormData({...formData, icon})}
+                  onChange={(icon) => setFormData({...formData, icon})}
                   label="Icon"
                   placeholder="🎯"
                   required={false}
