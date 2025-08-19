@@ -328,7 +328,90 @@ async def get_uploaded_file(upload_id: str, filename: str, current_user: User = 
         logger.error(f"get_uploaded_file failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch file")
 
-# Include the rest of the existing endpoints below (alignment, journal, etc.)
+# Essential API endpoints for smoke testing
+@api_router.get("/pillars")
+async def get_pillars(current_user: User = Depends(get_current_active_user)):
+    """Get user pillars"""
+    try:
+        service = SupabasePillarService()
+        pillars = await service.get_user_pillars(str(current_user.id))
+        return pillars
+    except Exception as e:
+        logger.error(f"Error getting pillars: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get pillars")
+
+@api_router.get("/areas")
+async def get_areas(current_user: User = Depends(get_current_active_user)):
+    """Get user areas"""
+    try:
+        service = SupabaseAreaService()
+        areas = await service.get_user_areas(str(current_user.id))
+        return areas
+    except Exception as e:
+        logger.error(f"Error getting areas: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get areas")
+
+@api_router.get("/projects")
+async def get_projects(current_user: User = Depends(get_current_active_user)):
+    """Get user projects"""
+    try:
+        service = SupabaseProjectService()
+        projects = await service.get_user_projects(str(current_user.id))
+        return projects
+    except Exception as e:
+        logger.error(f"Error getting projects: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get projects")
+
+@api_router.get("/tasks")
+async def get_tasks(current_user: User = Depends(get_current_active_user)):
+    """Get user tasks"""
+    try:
+        task_service = TaskService()
+        tasks = await task_service.get_user_tasks(str(current_user.id))
+        return tasks
+    except Exception as e:
+        logger.error(f"Error getting tasks: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get tasks")
+
+@api_router.get("/insights")
+async def get_insights(current_user: User = Depends(get_current_active_user)):
+    """Get user insights"""
+    try:
+        insights_service = InsightsService()
+        insights = await insights_service.get_user_insights(str(current_user.id))
+        return insights
+    except Exception as e:
+        logger.error(f"Error getting insights: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get insights")
+
+@api_router.get("/alignment/dashboard")
+async def get_alignment_dashboard(current_user: User = Depends(get_current_active_user)):
+    """Get alignment dashboard data"""
+    try:
+        return await alignment_service.get_alignment_dashboard(str(current_user.id))
+    except Exception as e:
+        logger.error(f"Error getting alignment dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get alignment dashboard")
+
+@api_router.get("/alignment-score")
+async def get_alignment_score(current_user: User = Depends(get_current_active_user)):
+    """Get alignment score (legacy endpoint)"""
+    try:
+        return await alignment_service.get_alignment_score(str(current_user.id))
+    except Exception as e:
+        logger.error(f"Error getting alignment score: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get alignment score")
+
+@api_router.get("/journal")
+async def get_journal(current_user: User = Depends(get_current_active_user)):
+    """Get user journal entries"""
+    try:
+        journal_service = JournalService()
+        entries = await journal_service.get_user_entries(str(current_user.id))
+        return entries
+    except Exception as e:
+        logger.error(f"Error getting journal entries: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get journal entries")
 
 # Mount the router last
 app.include_router(api_router)
