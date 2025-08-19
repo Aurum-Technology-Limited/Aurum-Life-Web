@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Backend Authentication and Uploads Smoke Test
-Tests the specific 10-step smoke test requirements from the review request.
+Backend Focused Testing for Tasks Filters and Insights Structure
+Tests the specific requirements from the review request:
+1) GET /api/tasks with optional filters (project_id, q, status, priority, due_date)
+2) GET /api/insights with required structure (eisenhower_matrix, alignment_snapshot, area_distribution, generated_at)
+3) Ensure no 500s across these endpoints under authenticated context
 """
 
 import requests
