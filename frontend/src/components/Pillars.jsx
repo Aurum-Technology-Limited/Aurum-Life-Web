@@ -272,7 +272,7 @@ const Pillars = memo(({ onSectionChange }) => {
         <div className="text-center">
           <p className="text-red-400 mb-4">Error loading pillars: {error?.message || 'Unknown error'}</p>
           <button
-            onClick={() =&gt; refetch()}
+            onClick={() => refetch()}
             className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
           >
             Try Again
