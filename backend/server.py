@@ -720,7 +720,8 @@ async def get_journal_templates(current_user: User = Depends(get_current_active_
         return await JournalService.get_user_templates(current_user.id)
     except Exception as e:
         logger.error(f"Error getting journal templates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Harden: return empty list instead of 500 to keep UI stable
+        return []
 
 @api_router.get("/journal/templates/{template_id}", response_model=JournalTemplate)
 async def get_journal_template(template_id: str, current_user: User = Depends(get_current_active_user)):
