@@ -337,10 +337,12 @@ class TaskService:
             if not val:
                 return None
             if isinstance(val, datetime):
-                return val
+                # Normalize to aware UTC
+                return val if val.tzinfo else val.replace(tzinfo=timezone.utc)
             try:
-                # Handle Z-suffixed timestamps
-                return datetime.fromisoformat(str(val).replace('Z', '+00:00'))
+                # Handle Z-suffixed timestamps and normalize to aware UTC
+                dt = datetime.fromisoformat(str(val).replace('Z', '+00:00'))
+                return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
             except Exception:
                 return None
 
