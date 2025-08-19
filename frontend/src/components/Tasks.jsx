@@ -439,7 +439,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
       </div>
 
       {/* Filters */}
-      <div className="flex space-x-2">
+      <div className="flex flex-wrap gap-2 items-center">
         {[
           { key: 'all', label: 'All Tasks' },
           { key: 'active', label: 'Active' },
@@ -461,6 +461,15 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
             {filterOption.label}
           </button>
         ))}
+        {/* Quick chips */}
+        <div className="flex items-center gap-2 ml-2">
+          {['all','high','medium','low'].map(p => (
+            <button key={p} onClick={() => setPriorityChip(p)} className={`px-2 py-1 rounded text-xs ${priorityChip===p? 'bg-yellow-600 text-black':'bg-gray-800 text-gray-300 border border-gray-700'}`}>prio:{p}</button>
+          ))}
+          {['all','overdue','today','week'].map(d => (
+            <button key={d} onClick={() => setDueChip(d)} className={`px-2 py-1 rounded text-xs ${dueChip===d? 'bg-yellow-600 text-black':'bg-gray-800 text-gray-300 border border-gray-700'}`}>due:{d}</button>
+          ))}
+        </div>
       </div>
 
       {/* Tasks Grid */}
