@@ -155,7 +155,16 @@ class AiCoachMvpSmokeTest:
                     print("⚠️ No tasks found in response")
                     return []
             else:
-                print("⚠️ Failed to fetch tasks or empty response")
+                print("⚠️ Failed to fetch tasks")
+                # Try to get task IDs from the why statements response
+                why_result = await self.test_endpoint('GET', '/ai/task-why-statements')
+                if why_result['success'] and why_result['data']:
+                    why_statements = why_result['data'].get('why_statements', [])
+                    if why_statements:
+                        task_ids = [stmt.get('task_id') for stmt in why_statements[:2] if stmt.get('task_id')]
+                        self.existing_task_ids = task_ids
+                        print(f"✅ Extracted {len(task_ids)} task IDs from why statements: {task_ids}")
+                        return task_ids
                 return []
                 
         except Exception as e:
