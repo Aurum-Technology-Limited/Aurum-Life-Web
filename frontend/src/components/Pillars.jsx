@@ -392,7 +392,7 @@ const Pillars = memo(({ onSectionChange }) => {
                     Color
                   </label>
                   <div className="grid grid-cols-4 gap-2">
-                    {colorOptions.map(color =&gt; (
+                    {colorOptions.map(color => (
                       <button
                         key={color}
                         type="button"
