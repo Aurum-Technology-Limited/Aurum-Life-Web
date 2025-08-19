@@ -218,7 +218,7 @@ const Pillars = memo(({ onSectionChange }) => {
                   {pillar.progress_percentage > 0 && (
                     <span className="text-green-400">{pillar.progress_percentage.toFixed(1)}% complete</span>
                   )}
-                  {pillar.created_at &amp;&amp; (
+                  {pillar.created_at && (
                     <span className="text-gray-400">Created {new Date(pillar.created_at).toLocaleDateString()}</span>
                   )}
                 </div>
