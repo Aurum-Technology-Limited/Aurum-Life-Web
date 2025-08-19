@@ -222,7 +222,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
 
   const completedCount = filteredTasksByProject.filter(t => t.completed).length;
   const activeCount = filteredTasksByProject.filter(t => !t.completed).length;
-  const overdueCount = filteredTasksByProject.filter(t => !t.completed &amp;&amp; t.is_overdue).length;
+  const overdueCount = filteredTasksByProject.filter(t => !t.completed && t.is_overdue).length;
 
   if (loading) {
     return (
