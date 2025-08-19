@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useMemo } from 'react';
 import {Plus, Edit2, Trash2, AlertCircle, X, Save, Layers, Archive, ArchiveRestore, Eye, EyeOff, Mountain} from 'lucide-react';
 import { areasAPI, api, pillarsAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
@@ -38,7 +38,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400 mb-1">
-            {area.pillar_name && (
+            {area.pillar_name &amp;&amp; (
               <div className="flex items-center space-x-1 flex-shrink-0">
                 <Mountain className="h-3 w-3 flex-shrink-0" />
                 <span className="dynamic-text">{area.pillar_name}</span>
@@ -47,24 +47,24 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
             <span className="flex-shrink-0">
               {area.projects?.length || 0} projects
             </span>
-            {area.date_created && (
+            {area.date_created &amp;&amp; (
               <span className="text-xs text-gray-500 dynamic-text">
                 Created {new Date(area.date_created).toLocaleDateString()}
               </span>
             )}
           </div>
           {/* Importance Indicator */}
-          {area.importance && (
+          {area.importance &amp;&amp; (
             <div className="mt-2">
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                area.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
-                area.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
-                area.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
+                area.importance &gt;= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
+                area.importance &gt;= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
+                area.importance &gt;= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
                 'bg-gray-800/30 text-gray-400 border border-gray-600'
               }`}>
-                {area.importance >= 5 ? '🔥 Critical' :
-                 area.importance >= 4 ? '⚡ High' :
-                 area.importance >= 3 ? '📊 Medium' :
+                {area.importance &gt;= 5 ? '🔥 Critical' :
+                 area.importance &gt;= 4 ? '⚡ High' :
+                 area.importance &gt;= 3 ? '📊 Medium' :
                  '📝 Low'}
               </span>
             </div>
@@ -110,7 +110,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
     </div>
 
     {/* Description */}
-    {area.description && (
+    {area.description &amp;&amp; (
       <p className="text-gray-400 text-sm mb-4 line-clamp-2">
         {area.description}
       </p>
@@ -121,27 +121,27 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
       <div>
         <p className="text-2xl font-bold text-white">
           {area.project_count ? (area.project_count - (area.completed_project_count || 0)) : 
-           area.projects?.filter(p => p.status && p.status.toLowerCase() === 'active').length || 0}
+           area.projects?.filter(p =&gt; p.status &amp;&amp; p.status.toLowerCase() === 'active').length || 0}
         </p>
         <p className="text-xs text-gray-400">Active Projects</p>
       </div>
       <div>
         <p className="text-2xl font-bold text-white">
           {area.completed_project_count || 
-           area.projects?.filter(p => p.status && p.status.toLowerCase() === 'completed').length || 0}
+           area.projects?.filter(p =&gt; p.status &amp;&amp; p.status.toLowerCase() === 'completed').length || 0}
         </p>
         <p className="text-xs text-gray-400">Completed</p>
       </div>
     </div>
 
     {/* Progress Bar */}
-    {area.projects && area.projects.length > 0 && (
+    {area.projects &amp;&amp; area.projects.length &gt; 0 &amp;&amp; (
       <div className="mt-4">
         <div className="flex justify-between text-xs text-gray-400 mb-2">
           <span>Progress</span>
           <span>
             {Math.round(
-              ((area.projects?.filter(p => p.status === 'completed').length || 0) / 
+              ((area.projects?.filter(p =&gt; p.status === 'completed').length || 0) / 
                area.projects.length) * 100
             )}%
           </span>
@@ -152,7 +152,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
             style={{
               backgroundColor: area.color || '#F4B400',
               width: `${Math.round(
-                ((area.projects?.filter(p => p.status === 'completed').length || 0) / 
+                ((area.projects?.filter(p =&gt; p.status === 'completed').length || 0) / 
                  area.projects.length) * 100
               )}%`
             }}
@@ -171,6 +171,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   const [showModal, setShowModal] = useState(false);
   const [editingArea, setEditingArea] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [search, setSearch] = useState('');
   
   // Extract pillar filter from section params
   const activePillarId = sectionParams?.pillarId || null;
@@ -187,8 +188,17 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   
   // Filter areas by pillar if pillarId is provided
   const areas = activePillarId 
-    ? allAreas.filter(area => area.pillar_id === activePillarId)
+    ? allAreas.filter(area =&gt; area.pillar_id === activePillarId)
     : allAreas;
+
+  const displayedAreas = useMemo(() =&gt; {
+    const q = search.trim().toLowerCase();
+    if (!q) return areas;
+    return areas.filter(a =&gt; {
+      const fields = [a.name, a.description, a.pillar_name].map(v =&gt; (v || '').toLowerCase());
+      return fields.some(f =&gt; f.includes(q));
+    });
+  }, [areas, search]);
   
   // Get basic pillars data for filtering (separate from main pillars page)
   const { 
@@ -197,7 +207,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     refetch: refetchPillarsBasic
   } = useQuery({
     queryKey: ['pillars', 'basic'], // Different query key to avoid cache conflicts
-    queryFn: async () => {
+    queryFn: async () =&gt; {
       const response = await pillarsAPI.getPillars(false, false, false); // Basic pillars without counts
       return response.data; // Ensure we return an array of pillars, not the axios response object
     },
@@ -215,7 +225,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
       // Kick a microtask + RAF to refetch to avoid race with modal mount
       Promise.resolve().then(() => {
         requestAnimationFrame(() => {
-          try { refetchPillarsBasic && refetchPillarsBasic(); } catch {}
+          try { refetchPillarsBasic &amp;&amp; refetchPillarsBasic(); } catch {}
         });
       });
     }
@@ -281,7 +291,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
 
       // Safety refetch after a short delay to avoid any race with ultra-cache
       setTimeout(() => {
-        try { refetchAreas && refetchAreas(); } catch (e) {}
+        try { refetchAreas &amp;&amp; refetchAreas(); } catch (e) {}
       }, 200);
       onDataMutation('area', 'create', newItem);
     },
@@ -357,7 +367,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   useEffect(() => {
     if (loading) {
       console.log('🗂️ Areas: TanStack Query - Loading areas data...');
-    } else if (areas.length >= 0) {
+    } else if (areas.length &gt;= 0) {
       console.log(`🗂️ Areas: TanStack Query - ${areas.length} areas loaded from cache/network`);
     }
   }, [loading, areas.length]);
@@ -461,7 +471,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
           <div className="animate-pulse">
             <div className="h-8 bg-gray-800 rounded mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3].map(i =&gt; (
                 <div key={i} className="h-48 bg-gray-800 rounded-xl"></div>
               ))}
             </div>
@@ -483,7 +493,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
               <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
                 Life Areas
               </h1>
-              {activePillarName && (
+              {activePillarName &amp;&amp; (
                 <>
                   <span className="text-2xl text-gray-500">›</span>
                   <div className="flex items-center space-x-2">
@@ -499,7 +509,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                 : 'Organize your life into meaningful domains'
               }
             </p>
-            {activePillarName && (
+            {activePillarName &amp;&amp; (
               <button
                 onClick={() => onSectionChange('pillars')}
                 className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
@@ -509,6 +519,13 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
             )}
           </div>
           <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) =&gt; setSearch(e.target.value)}
+              placeholder="Search areas..."
+              className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
             {/* Archive Toggle */}
             <button
               onClick={() => setShowArchived(!showArchived)}
@@ -534,7 +551,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
         </div>
 
         {/* Error Display */}
-        {isError && (
+        {isError &amp;&amp; (
           <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -552,29 +569,34 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
         )}
 
         {/* Areas Grid */}
-        {areas.length === 0 ? (
+        {displayedAreas.length === 0 ? (
           <div className="text-center py-12">
             <Layers className="mx-auto h-16 w-16 text-gray-600 mb-4" />
             <h3 className="text-xl font-medium text-gray-400 mb-2">
-              {activePillarName ? `No areas in ${activePillarName} pillar yet` : 'No areas yet'}
+              {search 
+                ? 'No areas match your search'
+                : activePillarName ? `No areas in ${activePillarName} pillar yet` : 'No areas yet'}
             </h3>
             <p className="text-gray-500 mb-6">
-              {activePillarName 
-                ? `Create your first area for the ${activePillarName} pillar`
-                : 'Create your first life area to get started'
-              }
+              {search 
+                ? 'Try a different search term'
+                : activePillarName 
+                  ? `Create your first area for the ${activePillarName} pillar`
+                  : 'Create your first life area to get started'}
             </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-6 py-3 rounded-lg font-medium"
-              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-            >
-              {activePillarName ? `Create Area for ${activePillarName}` : 'Create First Area'}
-            </button>
+            {!search &amp;&amp; (
+              <button
+                onClick={() => setShowModal(true)}
+                className="px-6 py-3 rounded-lg font-medium"
+                style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+              >
+                {activePillarName ? `Create Area for ${activePillarName}` : 'Create First Area'}
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {areas.map((area) => (
+            {displayedAreas.map((area) => (
               <AreaCard 
                 key={area.id}
                 area={area}
@@ -588,15 +610,15 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
         )}
 
         {/* Modal */}
-        {showModal && (
+        {showModal &amp;&amp; (
           <div
             id="area-modal-overlay"
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 pointer-events-auto"
-            onClick={(e) => { if (e.target === e.currentTarget) handleCloseModal(); }}
-            onKeyDown={(e) => { if (e.key === 'Escape') handleCloseModal(); }}
+            onClick={(e) =&gt; { if (e.target === e.currentTarget) handleCloseModal(); }}
+            onKeyDown={(e) =&gt; { if (e.key === 'Escape') handleCloseModal(); }}
             tabIndex={-1}
           >
-            <div className="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800 pointer-events-auto" onClick={(e) =&gt; e.stopPropagation()}>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-white">
                   {editingArea ? 'Edit Area' : 'Create New Area'}
@@ -617,14 +639,14 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => {
+                    onChange={(e) =&gt; {
                       const newValue = e.target.value;
-                      if (newValue.length <= CHARACTER_LIMITS.AREA_NAME) {
+                      if (newValue.length &lt;= CHARACTER_LIMITS.AREA_NAME) {
                         setFormData({ ...formData, name: newValue });
                       }
                     }}
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                    placeholder="e.g., Health & Fitness"
+                    placeholder="e.g., Health &amp; Fitness"
                     maxLength={CHARACTER_LIMITS.AREA_NAME}
                     required
                   />
@@ -639,7 +661,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =&gt; setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     placeholder="Brief description of this life area"
                     rows={3}
@@ -653,7 +675,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                   <select
                     data-testid="area-pillar-select"
                     value={formData.pillar_id}
-                    onChange={(e) => setFormData({ ...formData, pillar_id: e.target.value })}
+                    onChange={(e) =&gt; setFormData({ ...formData, pillar_id: e.target.value })}
                     required
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   >
@@ -669,7 +691,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                 {/* Icon Picker */}
                 <IconPicker
                   value={formData.icon}
-                  onChange={(icon) => setFormData({ ...formData, icon })}
+                  onChange={(icon) =&gt; setFormData({ ...formData, icon })}
                   label="Icon"
                   placeholder="🎯"
                   required={false}
@@ -682,11 +704,11 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                     Color
                   </label>
                   <div className="grid grid-cols-5 gap-2">
-                    {colorOptions.map((color) => (
+                    {colorOptions.map((color) =&gt; (
                       <button
                         key={color}
                         type="button"
-                        onClick={() => setFormData({ ...formData, color })}
+                        onClick={() =&gt; setFormData({ ...formData, color })}
                         className={`w-10 h-10 rounded-lg border-2 transition-all ${
                           formData.color === color
                             ? 'border-white scale-110'
@@ -706,7 +728,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                   <select
                     data-testid="area-importance-select"
                     value={formData.importance}
-                    onChange={(e) => setFormData({ ...formData, importance: parseInt(e.target.value) })}
+                    onChange={(e) =&gt; setFormData({ ...formData, importance: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   >
                     <option value={1}>1 - Low Impact</option>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, memo } from 'react';
+import React, { useState, useEffect, useContext, memo, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDataContext } from '../contexts/DataContext';
 import { api } from '../services/api';
@@ -35,9 +35,20 @@ const Pillars = memo(({ onSectionChange }) => {
     time_allocation_percentage: null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [search, setSearch] = useState('');
 
   // Icon options for pillars - now handled by IconPicker component
   const colorOptions = ['#F4B400', '#4CAF50', '#2196F3', '#FF5722', '#9C27B0', '#FF9800', '#795548', '#607D8B'];
+
+  const displayedPillars = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return pillars;
+    return pillars.filter(p => {
+      const name = (p.name || '').toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      return name.includes(q) || desc.includes(q);
+    });
+  }, [pillars, search]);
 
   // Remove old useEffect and fetchPillars - now handled by TanStack Query
 
@@ -204,10 +215,10 @@ const Pillars = memo(({ onSectionChange }) => {
                     <span className="font-medium text-yellow-400">{pillar.task_count || 0}</span>
                     <span>tasks</span>
                   </span>
-                  {pillar.progress_percentage > 0 && (
+                  {pillar.progress_percentage &gt; 0 &amp;&amp; (
                     <span className="text-green-400">{pillar.progress_percentage.toFixed(1)}% complete</span>
                   )}
-                  {pillar.created_at && (
+                  {pillar.created_at &amp;&amp; (
                     <span className="text-gray-400">Created {new Date(pillar.created_at).toLocaleDateString()}</span>
                   )}
                 </div>
@@ -218,7 +229,7 @@ const Pillars = memo(({ onSectionChange }) => {
             <div className="flex items-center space-x-2">
               <button
                 data-testid={`pillar-edit-${pillar.id}`}
-                onClick={(e) => {
+                onClick={(e) =&gt; {
                   e.stopPropagation();
                   handleEdit(pillar);
                 }}
@@ -230,7 +241,7 @@ const Pillars = memo(({ onSectionChange }) => {
               
               <button
                 data-testid={`pillar-delete-${pillar.id}`}
-                onClick={(e) => {
+                onClick={(e) =&gt; {
                   e.stopPropagation();
                   handleDelete(pillar);
                 }}
@@ -261,7 +272,7 @@ const Pillars = memo(({ onSectionChange }) => {
         <div className="text-center">
           <p className="text-red-400 mb-4">Error loading pillars: {error?.message || 'Unknown error'}</p>
           <button
-            onClick={() => refetch()}
+            onClick={() =&gt; refetch()}
             className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
           >
             Try Again
@@ -281,48 +292,59 @@ const Pillars = memo(({ onSectionChange }) => {
             Organize your life domains and track high-level progress
           </p>
         </div>
-        <button
-          data-testid="pillar-new"
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-        >
-          <Plus className="h-4 w-4" />
-          <span>New Pillar</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) =&gt; setSearch(e.target.value)}
+            placeholder="Search pillars..."
+            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            data-testid="pillar-new"
+            onClick={() =&gt; setShowModal(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Pillar</span>
+          </button>
+        </div>
       </div>
 
       {/* Pillars List */}
       <div className="space-y-3">
-        {pillars.length === 0 ? (
+        {displayedPillars.length === 0 ? (
           <div className="text-center py-12 bg-gray-900 border border-gray-800 rounded-lg">
             <Layers className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">No pillars yet</h3>
+            <h3 className="text-lg font-medium text-white mb-2">No pillars {search ? 'match your search' : 'yet'}</h3>
             <p className="text-gray-400 mb-4">
-              Create your first pillar to organize your life domains
+              {search ? 'Try a different search term' : 'Create your first pillar to organize your life domains'}
             </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Create First Pillar
-            </button>
+            {!search &amp;&amp; (
+              <button
+                onClick={() =&gt; setShowModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Create First Pillar
+              </button>
+            )}
           </div>
         ) : (
-          pillars.map(pillar => renderPillar(pillar))
+          displayedPillars.map(pillar =&gt; renderPillar(pillar))
         )}
       </div>
 
       {/* Create/Edit Modal */}
-      {showModal && (
+      {showModal &amp;&amp; (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={(e) => {
+          onClick={(e) =&gt; {
             if (e.target === e.currentTarget) handleCloseModal();
           }}
-          onKeyDown={(e) => { if (e.key === 'Escape') handleCloseModal(); }}
+          onKeyDown={(e) =&gt; { if (e.key === 'Escape') handleCloseModal(); }}
           tabIndex={-1}
         >
-          <div className="bg-gray-900 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-800" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-gray-900 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-800" onClick={(e) =&gt; e.stopPropagation()}>
             <div className="p-6">
               <h2 className="text-xl font-bold text-white mb-4">
                 {editingPillar ? 'Edit Pillar' : 'Create New Pillar'}
@@ -336,7 +358,7 @@ const Pillars = memo(({ onSectionChange }) => {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) =&gt; setFormData({...formData, name: e.target.value})}
                     className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
@@ -348,7 +370,7 @@ const Pillars = memo(({ onSectionChange }) => {
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) =&gt; setFormData({...formData, description: e.target.value})}
                     className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="3"
                   />
@@ -357,7 +379,7 @@ const Pillars = memo(({ onSectionChange }) => {
                 {/* Icon Picker */}
                 <IconPicker
                   value={formData.icon}
-                  onChange={(icon) => setFormData({...formData, icon})}
+                  onChange={(icon) =&gt; setFormData({...formData, icon})}
                   label="Icon"
                   placeholder="🎯"
                   required={false}
@@ -370,11 +392,11 @@ const Pillars = memo(({ onSectionChange }) => {
                     Color
                   </label>
                   <div className="grid grid-cols-4 gap-2">
-                    {colorOptions.map(color => (
+                    {colorOptions.map(color =&gt; (
                       <button
                         key={color}
                         type="button"
-                        onClick={() => setFormData({...formData, color})}
+                        onClick={() =&gt; setFormData({...formData, color})}
                         className={`w-8 h-8 rounded-full border-2 transition-all ${
                           formData.color === color ? 'border-white scale-110' : 'border-gray-600'
                         }`}
@@ -394,7 +416,7 @@ const Pillars = memo(({ onSectionChange }) => {
                     max="100"
                     step="0.1"
                     value={formData.time_allocation_percentage}
-                    onChange={(e) => setFormData({...formData, time_allocation_percentage: e.target.value})}
+                    onChange={(e) =&gt; setFormData({...formData, time_allocation_percentage: e.target.value})}
                     className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., 25.0"
                   />
