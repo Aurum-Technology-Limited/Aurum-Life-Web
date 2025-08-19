@@ -198,6 +198,10 @@ async def test_fast_endpoint():
 # Supabase Auth endpoints are now handled by auth_router
 # Legacy endpoints removed to prevent conflicts
 
+# Initialize services (singletons)
+alignment_service = AlignmentScoreService()
+ai_coach_service = AiCoachMvpService()
+
 @api_router.post("/auth/google", response_model=GoogleAuthResponse)
 async def google_auth(auth_request: GoogleAuthRequest):
     """Authenticate user with Google OAuth"""
