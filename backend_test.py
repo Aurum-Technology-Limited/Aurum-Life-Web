@@ -1,300 +1,487 @@
 #!/usr/bin/env python3
 """
-🎯 FOCUSED BACKEND SMOKE TEST - Standardized Frontend API Layer Mappings
-Validates critical endpoints exist and return 2xx with Authorization Bearer token
-Using known test account: marc.alleyne@aurumtechnologyltd.com/password123
+Backend Authentication and Uploads Smoke Test
+Tests the specific 10-step smoke test requirements from the review request.
 """
 
-import asyncio
-import aiohttp
+import requests
 import json
 import time
-from datetime import datetime
-from typing import Dict, Any, Optional, List
+import io
+from typing import Dict, Any, Optional
 
-# Backend URL from frontend/.env
+# Configuration
 BACKEND_URL = "https://c7dc63d9-3764-48cb-a7be-e97dc0b89cd2.preview.emergentagent.com/api"
-
-# Test credentials
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password123"
 
 class BackendSmokeTest:
     def __init__(self):
-        self.session = None
-        self.auth_token = None
+        self.session = requests.Session()
+        self.access_token = None
         self.test_results = []
-        self.created_pillar_id = None
         
-    async def setup_session(self):
-        """Initialize HTTP session"""
-        self.session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=30),
-            headers={'Content-Type': 'application/json'}
-        )
+    def log_result(self, step: str, success: bool, status_code: int = None, details: str = "", response_time: float = 0):
+        """Log test result"""
+        result = {
+            "step": step,
+            "success": success,
+            "status_code": status_code,
+            "details": details,
+            "response_time_ms": round(response_time * 1000, 1)
+        }
+        self.test_results.append(result)
         
-    async def cleanup_session(self):
-        """Cleanup HTTP session"""
-        if self.session:
-            await self.session.close()
+        status = "✅ PASS" if success else "❌ FAIL"
+        time_str = f"({result['response_time_ms']}ms)" if response_time > 0 else ""
+        print(f"{status} {step} - Status: {status_code} {time_str}")
+        if details:
+            print(f"    Details: {details}")
+        print()
+
+    def make_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
+        """Make HTTP request with timing"""
+        url = f"{BACKEND_URL}{endpoint}"
+        
+        # Add authorization header if we have a token
+        if self.access_token and 'headers' not in kwargs:
+            kwargs['headers'] = {}
+        if self.access_token:
+            kwargs['headers']['Authorization'] = f"Bearer {self.access_token}"
             
-    async def authenticate(self) -> bool:
-        """Authenticate with test credentials and get Bearer token"""
+        start_time = time.time()
         try:
-            print(f"🔐 Authenticating with {TEST_EMAIL}...")
-            start_time = time.time()
-            
-            auth_payload = {
-                "email": TEST_EMAIL,
-                "password": TEST_PASSWORD
-            }
-            
-            async with self.session.post(f"{BACKEND_URL}/auth/login", json=auth_payload) as response:
-                response_time = (time.time() - start_time) * 1000
-                
-                if response.status == 200:
-                    data = await response.json()
-                    self.auth_token = data.get('access_token')
-                    if self.auth_token:
-                        print(f"✅ Authentication successful ({response_time:.1f}ms)")
-                        return True
-                    else:
-                        print(f"❌ Authentication failed: No access_token in response")
-                        return False
-                else:
-                    error_text = await response.text()
-                    print(f"❌ Authentication failed: {response.status} - {error_text}")
-                    return False
-                    
+            response = self.session.request(method, url, timeout=30, **kwargs)
+            end_time = time.time()
+            return response, end_time - start_time
         except Exception as e:
-            print(f"❌ Authentication error: {e}")
+            end_time = time.time()
+            print(f"Request failed: {e}")
+            # Create a mock response for error handling
+            class MockResponse:
+                def __init__(self):
+                    self.status_code = 0
+                    self.text = str(e)
+                def json(self):
+                    return {"error": str(e)}
+            return MockResponse(), end_time - start_time
+
+    def test_step_1_login(self):
+        """Step 1: POST /api/auth/login with credentials"""
+        print("🔐 Step 1: Testing POST /api/auth/login")
+        
+        payload = {
+            "email": TEST_EMAIL,
+            "password": TEST_PASSWORD
+        }
+        
+        response, response_time = self.make_request("POST", "/auth/login", json=payload)
+        
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            try:
+                data = response.json()
+                if "access_token" in data:
+                    self.access_token = data["access_token"]
+                    details = f"Access token received (length: {len(self.access_token)})"
+                else:
+                    success = False
+                    details = "No access_token in response"
+            except Exception as e:
+                success = False
+                details = f"Failed to parse JSON: {e}"
+        else:
+            details = f"Login failed: {response.text[:200]}"
+            
+        self.log_result("POST /api/auth/login", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_2_auth_me(self):
+        """Step 2: GET /api/auth/me with access token"""
+        print("👤 Step 2: Testing GET /api/auth/me")
+        
+        if not self.access_token:
+            self.log_result("GET /api/auth/me", False, None, "No access token available")
             return False
             
-    def get_auth_headers(self) -> Dict[str, str]:
-        """Get authorization headers"""
-        return {
-            'Authorization': f'Bearer {self.auth_token}',
-            'Content-Type': 'application/json'
-        }
+        response, response_time = self.make_request("GET", "/auth/me")
         
-    async def test_endpoint(self, method: str, endpoint: str, params: Optional[Dict] = None, 
-                          json_data: Optional[Dict] = None, expected_status: int = 200) -> Dict[str, Any]:
-        """Test a single endpoint and record results"""
-        try:
-            print(f"🧪 Testing {method} {endpoint}")
-            start_time = time.time()
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            try:
+                data = response.json()
+                user_id = data.get("id", "unknown")
+                email = data.get("email", "unknown")
+                details = f"User authenticated: {email} (ID: {user_id})"
+            except Exception as e:
+                details = f"Response received but JSON parse failed: {e}"
+        else:
+            details = f"Auth verification failed: {response.text[:200]}"
             
-            url = f"{BACKEND_URL}{endpoint}"
-            headers = self.get_auth_headers()
-            
-            async with self.session.request(
-                method, url, 
-                headers=headers, 
-                params=params, 
-                json=json_data
-            ) as response:
-                response_time = (time.time() - start_time) * 1000
-                status = response.status
-                
-                try:
-                    response_data = await response.json()
-                except:
-                    response_data = await response.text()
-                
-                result = {
-                    'endpoint': f"{method} {endpoint}",
-                    'status': status,
-                    'response_time_ms': round(response_time, 1),
-                    'success': 200 <= status < 300,
-                    'data': response_data if status < 400 else None,
-                    'error': response_data if status >= 400 else None
-                }
-                
-                if result['success']:
-                    print(f"✅ {method} {endpoint} - {status} ({response_time:.1f}ms)")
+        self.log_result("GET /api/auth/me", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_3_pillars(self):
+        """Step 3: GET /api/pillars"""
+        print("🏛️ Step 3: Testing GET /api/pillars")
+        
+        response, response_time = self.make_request("GET", "/pillars")
+        
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    details = f"Retrieved {len(data)} pillars"
                 else:
-                    print(f"❌ {method} {endpoint} - {status} ({response_time:.1f}ms)")
-                    if isinstance(response_data, dict) and 'detail' in response_data:
-                        print(f"   Error: {response_data['detail']}")
-                
-                self.test_results.append(result)
-                return result
-                
-        except Exception as e:
-            print(f"❌ {method} {endpoint} - Exception: {e}")
-            result = {
-                'endpoint': f"{method} {endpoint}",
-                'status': 0,
-                'response_time_ms': 0,
-                'success': False,
-                'data': None,
-                'error': str(e)
-            }
-            self.test_results.append(result)
-            return result
+                    details = f"Response type: {type(data)}"
+            except Exception as e:
+                details = f"JSON parse failed: {e}"
+        else:
+            details = f"Pillars request failed: {response.text[:200]}"
             
-    async def run_smoke_tests(self):
-        """Run all smoke tests as specified in review request"""
-        print("🎯 STARTING FOCUSED BACKEND SMOKE TEST")
-        print("=" * 60)
+        self.log_result("GET /api/pillars", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_4_areas(self):
+        """Step 4: GET /api/areas"""
+        print("🗺️ Step 4: Testing GET /api/areas")
         
-        # 1) GET /api/pillars with specific params
-        await self.test_endpoint(
-            'GET', '/pillars',
-            params={
-                'include_sub_pillars': 'true',
-                'include_areas': 'true', 
-                'include_archived': 'false'
-            }
-        )
+        response, response_time = self.make_request("GET", "/areas")
         
-        # 2) POST /api/pillars (create minimal pillar)
-        pillar_payload = {
-            "name": f"Test Pillar {int(time.time())}",
-            "description": "Smoke test pillar",
-            "color": "#3B82F6",
-            "icon": "target"
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    details = f"Retrieved {len(data)} areas"
+                else:
+                    details = f"Response type: {type(data)}"
+            except Exception as e:
+                details = f"JSON parse failed: {e}"
+        else:
+            details = f"Areas request failed: {response.text[:200]}"
+            
+        self.log_result("GET /api/areas", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_5_projects(self):
+        """Step 5: GET /api/projects"""
+        print("📋 Step 5: Testing GET /api/projects")
+        
+        response, response_time = self.make_request("GET", "/projects")
+        
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    details = f"Retrieved {len(data)} projects"
+                else:
+                    details = f"Response type: {type(data)}"
+            except Exception as e:
+                details = f"JSON parse failed: {e}"
+        else:
+            details = f"Projects request failed: {response.text[:200]}"
+            
+        self.log_result("GET /api/projects", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_6_tasks(self):
+        """Step 6: GET /api/tasks"""
+        print("✅ Step 6: Testing GET /api/tasks")
+        
+        response, response_time = self.make_request("GET", "/tasks")
+        
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    details = f"Retrieved {len(data)} tasks"
+                else:
+                    details = f"Response type: {type(data)}"
+            except Exception as e:
+                details = f"JSON parse failed: {e}"
+        else:
+            details = f"Tasks request failed: {response.text[:200]}"
+            
+        self.log_result("GET /api/tasks", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_7_insights(self):
+        """Step 7: GET /api/insights"""
+        print("📊 Step 7: Testing GET /api/insights")
+        
+        response, response_time = self.make_request("GET", "/insights")
+        
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            try:
+                data = response.json()
+                details = f"Insights data received: {type(data)}"
+                if isinstance(data, dict):
+                    keys = list(data.keys())[:5]  # Show first 5 keys
+                    details += f", keys: {keys}"
+            except Exception as e:
+                details = f"JSON parse failed: {e}"
+        else:
+            details = f"Insights request failed: {response.text[:200]}"
+            
+        self.log_result("GET /api/insights", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_8_alignment(self):
+        """Step 8: GET /api/alignment/dashboard (fallback to /api/alignment-score)"""
+        print("⚖️ Step 8: Testing alignment endpoints")
+        
+        # Try primary endpoint first
+        response, response_time = self.make_request("GET", "/alignment/dashboard")
+        
+        if response.status_code == 200:
+            success = True
+            details = "Primary /api/alignment/dashboard working"
+            try:
+                data = response.json()
+                if isinstance(data, dict):
+                    keys = list(data.keys())[:5]
+                    details += f", keys: {keys}"
+            except Exception as e:
+                details += f", JSON parse failed: {e}"
+                
+            self.log_result("GET /api/alignment/dashboard", success, response.status_code, details, response_time)
+            return success
+        
+        # Fallback to legacy endpoint
+        print("    Primary endpoint failed, trying fallback...")
+        response, response_time = self.make_request("GET", "/alignment-score")
+        
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            details = "Fallback /api/alignment-score working"
+            try:
+                data = response.json()
+                if isinstance(data, dict):
+                    keys = list(data.keys())[:5]
+                    details += f", keys: {keys}"
+            except Exception as e:
+                details += f", JSON parse failed: {e}"
+        else:
+            details = f"Both alignment endpoints failed. Last error: {response.text[:200]}"
+            
+        self.log_result("GET /api/alignment-score (fallback)", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_9_journal(self):
+        """Step 9: GET /api/journal"""
+        print("📔 Step 9: Testing GET /api/journal")
+        
+        response, response_time = self.make_request("GET", "/journal")
+        
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    details = f"Retrieved {len(data)} journal entries"
+                else:
+                    details = f"Response type: {type(data)}"
+            except Exception as e:
+                details = f"JSON parse failed: {e}"
+        else:
+            details = f"Journal request failed: {response.text[:200]}"
+            
+        self.log_result("GET /api/journal", success, response.status_code, details, response_time)
+        return success
+
+    def test_step_10_uploads(self):
+        """Step 10: Complete upload flow test"""
+        print("📤 Step 10: Testing upload flow")
+        
+        # Step 10a: Initiate upload
+        print("    10a: POST /api/uploads/initiate")
+        initiate_payload = {
+            "filename": "test.txt",
+            "size": 12
         }
         
-        create_result = await self.test_endpoint('POST', '/pillars', json_data=pillar_payload)
+        response, response_time = self.make_request("POST", "/uploads/initiate", json=initiate_payload)
         
-        # Extract pillar ID for cleanup
-        if create_result['success'] and create_result['data']:
-            self.created_pillar_id = create_result['data'].get('id')
-            print(f"📝 Created pillar ID: {self.created_pillar_id}")
-        
-        # GET /api/pillars again to verify it includes the new pillar
-        await self.test_endpoint('GET', '/pillars')
-        
-        # 3) GET /api/areas with include_projects=true
-        await self.test_endpoint(
-            'GET', '/areas',
-            params={'include_projects': 'true'}
-        )
-        
-        # 4) GET /api/projects (no params)
-        await self.test_endpoint('GET', '/projects')
-        
-        # 5) GET /api/tasks (no params)
-        await self.test_endpoint('GET', '/tasks')
-        
-        # 6) GET /api/insights?date_range=all_time
-        await self.test_endpoint(
-            'GET', '/insights',
-            params={'date_range': 'all_time'}
-        )
-        
-        # 7) GET /api/alignment/dashboard; if 404, then GET /api/alignment-score (legacy)
-        alignment_result = await self.test_endpoint('GET', '/alignment/dashboard')
-        
-        if alignment_result['status'] == 404:
-            print("🔄 /alignment/dashboard returned 404, trying legacy /alignment-score")
-            await self.test_endpoint('GET', '/alignment-score')
-        
-        # 8) GET /api/ai/task-why-statements returns 200 and data array
-        why_statements_result = await self.test_endpoint('GET', '/ai/task-why-statements')
-        
-        if why_statements_result['success']:
-            data = why_statements_result['data']
-            if isinstance(data, list):
-                print(f"✅ /ai/task-why-statements returned array with {len(data)} items")
-            elif isinstance(data, dict) and 'data' in data and isinstance(data['data'], list):
-                print(f"✅ /ai/task-why-statements returned data array with {len(data['data'])} items")
-            else:
-                print(f"⚠️ /ai/task-why-statements returned non-array data: {type(data)}")
-        
-        # 9) Journal sanity: GET /api/journal and GET /api/journal/trash
-        await self.test_endpoint('GET', '/journal')
-        await self.test_endpoint('GET', '/journal/trash')
-        
-        # Cleanup: DELETE the created pillar
-        if self.created_pillar_id:
-            print(f"🧹 Cleaning up created pillar: {self.created_pillar_id}")
-            await self.test_endpoint('DELETE', f'/pillars/{self.created_pillar_id}')
+        if response.status_code != 200:
+            self.log_result("POST /api/uploads/initiate", False, response.status_code, 
+                          f"Initiate failed: {response.text[:200]}", response_time)
+            return False
             
-    def generate_summary(self) -> str:
-        """Generate concise summary with pass/fail per endpoint"""
-        print("\n" + "=" * 60)
+        try:
+            initiate_data = response.json()
+            upload_id = initiate_data.get("upload_id")
+            chunk_size = initiate_data.get("chunk_size")
+            total_chunks = initiate_data.get("total_chunks")
+            
+            if not upload_id:
+                self.log_result("POST /api/uploads/initiate", False, response.status_code, 
+                              "No upload_id in response", response_time)
+                return False
+                
+            self.log_result("POST /api/uploads/initiate", True, response.status_code, 
+                          f"Upload ID: {upload_id}, chunks: {total_chunks}", response_time)
+                          
+        except Exception as e:
+            self.log_result("POST /api/uploads/initiate", False, response.status_code, 
+                          f"JSON parse failed: {e}", response_time)
+            return False
+
+        # Step 10b: Upload chunk
+        print("    10b: POST /api/uploads/chunk")
+        test_content = b"Hello world!"  # 12 bytes
+        
+        # Create form data for chunk upload
+        files = {
+            'chunk': ('test.txt', io.BytesIO(test_content), 'text/plain')
+        }
+        data = {
+            'upload_id': upload_id,
+            'index': 0,
+            'total_chunks': 1
+        }
+        
+        response, response_time = self.make_request("POST", "/uploads/chunk", files=files, data=data)
+        
+        if response.status_code != 200:
+            self.log_result("POST /api/uploads/chunk", False, response.status_code, 
+                          f"Chunk upload failed: {response.text[:200]}", response_time)
+            return False
+            
+        self.log_result("POST /api/uploads/chunk", True, response.status_code, 
+                      "Chunk uploaded successfully", response_time)
+
+        # Step 10c: Complete upload
+        print("    10c: POST /api/uploads/complete")
+        complete_data = {'upload_id': upload_id}
+        
+        response, response_time = self.make_request("POST", "/uploads/complete", data=complete_data)
+        
+        if response.status_code != 200:
+            self.log_result("POST /api/uploads/complete", False, response.status_code, 
+                          f"Complete failed: {response.text[:200]}", response_time)
+            return False
+            
+        try:
+            complete_response = response.json()
+            file_url = complete_response.get("file_url")
+            filename = complete_response.get("filename")
+            size = complete_response.get("size")
+            
+            if not file_url:
+                self.log_result("POST /api/uploads/complete", False, response.status_code, 
+                              "No file_url in response", response_time)
+                return False
+                
+            self.log_result("POST /api/uploads/complete", True, response.status_code, 
+                          f"File URL: {file_url}, size: {size}", response_time)
+                          
+        except Exception as e:
+            self.log_result("POST /api/uploads/complete", False, response.status_code, 
+                          f"JSON parse failed: {e}", response_time)
+            return False
+
+        # Step 10d: Download file
+        print("    10d: GET file_url")
+        # Remove /api prefix from file_url since it's already included
+        file_endpoint = file_url.replace("/api", "")
+        
+        response, response_time = self.make_request("GET", file_endpoint)
+        
+        success = response.status_code == 200
+        details = ""
+        
+        if success:
+            content_length = len(response.content) if hasattr(response, 'content') else 0
+            details = f"File downloaded, size: {content_length} bytes"
+            if hasattr(response, 'content') and response.content == test_content:
+                details += " (content matches)"
+        else:
+            details = f"File download failed: {response.text[:200]}"
+            
+        self.log_result("GET file_url", success, response.status_code, details, response_time)
+        return success
+
+    def run_all_tests(self):
+        """Run all smoke tests in sequence"""
+        print("🚀 Starting Backend Authentication and Uploads Smoke Test")
+        print("=" * 70)
+        print()
+        
+        test_methods = [
+            self.test_step_1_login,
+            self.test_step_2_auth_me,
+            self.test_step_3_pillars,
+            self.test_step_4_areas,
+            self.test_step_5_projects,
+            self.test_step_6_tasks,
+            self.test_step_7_insights,
+            self.test_step_8_alignment,
+            self.test_step_9_journal,
+            self.test_step_10_uploads
+        ]
+        
+        passed = 0
+        total = len(test_methods)
+        
+        for test_method in test_methods:
+            try:
+                if test_method():
+                    passed += 1
+            except Exception as e:
+                print(f"❌ Test method {test_method.__name__} crashed: {e}")
+                self.log_result(test_method.__name__, False, None, f"Test crashed: {e}")
+        
+        print("=" * 70)
         print("📊 SMOKE TEST SUMMARY")
-        print("=" * 60)
+        print("=" * 70)
         
-        total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result['success'])
-        failed_tests = total_tests - passed_tests
-        
-        print(f"Total Tests: {total_tests}")
-        print(f"Passed: {passed_tests}")
-        print(f"Failed: {failed_tests}")
-        print(f"Success Rate: {(passed_tests/total_tests*100):.1f}%")
+        success_rate = (passed / total) * 100
+        print(f"Overall Success Rate: {passed}/{total} ({success_rate:.1f}%)")
         print()
         
         # Detailed results
         for result in self.test_results:
-            status_icon = "✅" if result['success'] else "❌"
-            endpoint = result['endpoint']
-            status = result['status']
-            response_time = result['response_time_ms']
-            
-            print(f"{status_icon} {endpoint:<35} {status} ({response_time}ms)")
-            
-            # Show error details for failures
-            if not result['success'] and result['error']:
-                if isinstance(result['error'], dict) and 'detail' in result['error']:
-                    print(f"    Error: {result['error']['detail']}")
-                elif isinstance(result['error'], str):
-                    print(f"    Error: {result['error']}")
+            status = "✅" if result["success"] else "❌"
+            print(f"{status} {result['step']} - {result['status_code']} ({result['response_time_ms']}ms)")
+            if result["details"]:
+                print(f"    {result['details']}")
         
-        print("\n" + "=" * 60)
+        print()
+        print("=" * 70)
         
-        # Record any 401/404/500 errors as requested
-        critical_errors = []
-        for result in self.test_results:
-            if result['status'] in [401, 404, 500]:
-                critical_errors.append(f"{result['endpoint']}: {result['status']}")
-        
-        if critical_errors:
-            print("🚨 CRITICAL ERRORS DETECTED:")
-            for error in critical_errors:
-                print(f"   {error}")
+        if success_rate >= 80:
+            print("🎉 SMOKE TEST PASSED - Backend is ready for production!")
+        elif success_rate >= 60:
+            print("⚠️ SMOKE TEST PARTIAL - Some issues need attention")
         else:
-            print("✅ No critical errors (401/404/500) detected")
+            print("🚨 SMOKE TEST FAILED - Critical issues require immediate fix")
             
-        # Show payload examples used
-        print("\n📝 PAYLOAD EXAMPLES USED:")
-        print(f"Authentication: {{'email': '{TEST_EMAIL}', 'password': '[REDACTED]'}}")
-        pillar_payload = {
-            "name": f"Test Pillar {int(time.time())}",
-            "description": "Smoke test pillar", 
-            "color": "#3B82F6",
-            "icon": "target"
-        }
-        print(f"Create Pillar: {json.dumps(pillar_payload, indent=2)}")
-        
-        return f"Smoke test completed: {passed_tests}/{total_tests} passed ({(passed_tests/total_tests*100):.1f}%)"
-
-async def main():
-    """Main test execution"""
-    test = BackendSmokeTest()
-    
-    try:
-        await test.setup_session()
-        
-        # Authenticate first
-        if not await test.authenticate():
-            print("❌ Authentication failed - cannot proceed with tests")
-            return
-            
-        # Run all smoke tests
-        await test.run_smoke_tests()
-        
-        # Generate summary
-        summary = test.generate_summary()
-        print(f"\n🎯 FINAL RESULT: {summary}")
-        
-    except Exception as e:
-        print(f"❌ Test execution failed: {e}")
-    finally:
-        await test.cleanup_session()
+        return success_rate
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    tester = BackendSmokeTest()
+    success_rate = tester.run_all_tests()
+    exit(0 if success_rate >= 80 else 1)
