@@ -281,6 +281,10 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
   // Quick chips for tasks (move above filters to avoid reference errors)
   const [priorityChip, setPriorityChip] = useState('all'); // all, high, medium, low
   const [dueChip, setDueChip] = useState('all'); // all, overdue, today, week
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
 
   const filteredTasks = filteredTasksByProject
     .filter(task => {
