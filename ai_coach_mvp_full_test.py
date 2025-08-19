@@ -149,14 +149,22 @@ async def test_ai_coach_mvp_with_data():
         print("✅ Successfully initialized services")
         
         # Get the correct user ID from the database
-        users_response = supabase.table('users').select('id').eq('email', 'marc.alleyne@aurumtechnologyltd.com').execute()
+        # Try user_profiles table first (this is where active users are)
+        profiles_response = supabase.table('user_profiles').select('id').limit(1).execute()
         
-        if users_response.data:
-            test_user_id = users_response.data[0]['id']
-            print(f"✅ Found user ID: {test_user_id}")
+        if profiles_response.data:
+            test_user_id = profiles_response.data[0]['id']
+            print(f"✅ Using user ID from user_profiles: {test_user_id}")
         else:
-            print("❌ No users found in database")
-            return
+            # Fallback to users table
+            users_response = supabase.table('users').select('id').eq('email', 'marc.alleyne@aurumtechnologyltd.com').execute()
+            
+            if users_response.data:
+                test_user_id = users_response.data[0]['id']
+                print(f"✅ Found user ID from users table: {test_user_id}")
+            else:
+                print("❌ No users found in database")
+                return
         
         # Create test data
         test_data = await create_test_data(supabase, test_user_id)
