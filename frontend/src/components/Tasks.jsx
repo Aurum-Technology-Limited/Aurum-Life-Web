@@ -332,7 +332,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
               <>
                 <span className="text-2xl text-gray-500">›</span>
                 <div className="flex items-center space-x-2">
-                  <FolderIcon className="h-5 w-5 text-yellow-400" />
+                  <FolderOpen className="h-5 w-5 text-yellow-400" />
                   <span className="text-xl font-medium text-yellow-400">{activeProjectName}</span>
                 </div>
               </>
