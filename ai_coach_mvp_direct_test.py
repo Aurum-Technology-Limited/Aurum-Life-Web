@@ -11,9 +11,13 @@ import os
 # Add backend to path
 sys.path.append('/app/backend')
 
-# Set environment variables
-os.environ['SUPABASE_URL'] = 'https://sftppbnqlsumjlrgyzgo.supabase.co'
-os.environ['SUPABASE_ANON_KEY'] = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdHBwYm5xbHN1bWpscmd5emdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MTYwOTksImV4cCI6MjA2OTA5MjA5OX0.EE8EW1fr2GyUo_exh7Sj_kA2mXGWwffxU4aEHXPWjrQ'
+# Load environment variables from .env file
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load environment variables
+env_path = Path('/app/backend/.env')
+load_dotenv(env_path)
 
 async def test_ai_coach_mvp_service():
     """Test AI Coach MVP service directly"""
