@@ -417,6 +417,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Keep-alive ping to avoid session timeout during extended usage
+  useEffect(() => {
+    if (!token) return;
+    const controller = new AbortController();
+    const ping = async () => {
+      try {
+        await fetch(`${BACKEND_URL}/api/health`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          signal: controller.signal,
+        });
+      } catch (_) { /* ignore */ }
+    };
+    // Ping every 2 minutes
+    const id = setInterval(ping, 120000);
+    return () => { clearInterval(id); controller.abort(); };
+  }, [token]);
+
   const value = {
     user,
     loading,
