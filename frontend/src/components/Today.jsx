@@ -124,6 +124,19 @@ const Today = memo(() => {
   const SUGGESTIONS_KEY = 'aurum_ai_suggestions';
   const [suggestLoading, setSuggestLoading] = useState(false);
 
+  const fetchWhyStatements = useCallback(async () => {
+    try {
+      const resp = await aiCoachAPI.getTaskWhyStatements();
+      const data = resp?.data || {};
+      const why = data.why_statements || [];
+      setAiSuggestions(why);
+      try { localStorage.setItem(SUGGESTIONS_KEY, JSON.stringify(why)); } catch {}
+    } catch (e) {
+      console.warn('AI why statements load failed, using empty state');
+      setAiSuggestions([]);
+    }
+  }, []);
+
 
 
   // Daily Ritual States (moved from DailyRitualManager)
