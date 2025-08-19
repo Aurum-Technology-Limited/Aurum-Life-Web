@@ -43,7 +43,7 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading }) => {
         </div>
         <div className="text-right text-xs text-gray-500">
           <div className={priorityColor}>{(task.priority || 'medium').toUpperCase()}</div>
-          {task.due_date &amp;&amp; (
+          {task.due_date && (
             <div>{new Date(task.due_date).toLocaleDateString()}</div>
           )}
         </div>
