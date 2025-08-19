@@ -213,6 +213,10 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     due_date: ''
   });
 
+  // Quick filter chips
+  const [statusFilter, setStatusFilter] = useState('all'); // all, not_started, in_progress, completed, on_hold
+  const [priorityFilter, setPriorityFilter] = useState('all'); // all, high, medium, low
+
   // Memoize filtered projects to prevent recalculation on every render
   const filteredProjects = useMemo(() => {
     return activeAreaId 
