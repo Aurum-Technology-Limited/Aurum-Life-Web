@@ -288,6 +288,10 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const activeCount = filteredTasksByProject.filter(t => !t.completed).length;
   const overdueCount = filteredTasksByProject.filter(t => !t.completed && t.is_overdue).length;
 
+  // Quick chips for tasks
+  const [priorityChip, setPriorityChip] = useState('all'); // all, high, medium, low
+  const [dueChip, setDueChip] = useState('all'); // all, overdue, today, week
+
   if (loading) {
     return (
       <div className="space-y-8">
