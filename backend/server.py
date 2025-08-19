@@ -2164,6 +2164,37 @@ async def chat_with_ai_coach(
         logger.error(f"Error in AI coach chat: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to chat with AI coach")
 
+# AI Coach MVP endpoints (new)
+@api_router.get("/ai/task-why-statements")
+async def get_task_why_statements(
+    task_ids: Optional[str] = Query(None, description="Comma-separated task IDs to analyze"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Generate contextual why statements for tasks explaining their vertical alignment"""
+    try:
+        ids_list = []
+        if task_ids:
+            ids_list = [tid.strip() for tid in task_ids.split(',') if tid.strip()]
+        result = await ai_coach_service.generate_task_why_statements(current_user.id, ids_list or None)
+        # result is a TaskWhyStatementResponse pydantic model or dict-like
+        return result
+    except Exception as e:
+        logger.error(f"Error generating task why statements: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate task why statements")
+
+@api_router.get("/ai/suggest-focus")
+async def suggest_focus_tasks(
+    top_n: int = Query(3, ge=0, le=10, description="Limit number of suggestions"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Return prioritized tasks and optional AI coaching messages"""
+    try:
+        data = await ai_coach_service.get_today_priorities(current_user.id, coaching_top_n=top_n)
+        return data
+    except Exception as e:
+        logger.error(f"Error getting AI focus suggestions: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get AI focus suggestions")
+
 # Achievement endpoints
 # Achievements endpoints - Simplified implementation to prevent 500 errors
 @api_router.get("/achievements")
