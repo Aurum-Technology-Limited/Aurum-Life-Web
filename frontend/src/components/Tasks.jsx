@@ -124,6 +124,10 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
   const [priorityChip, setPriorityChip] = useState('all'); // all, high, medium, low
   const [dueChip, setDueChip] = useState('all'); // all, overdue, today, week
   const [page, setPage] = useState(1);
