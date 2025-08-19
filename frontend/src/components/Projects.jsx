@@ -59,7 +59,7 @@ const ProjectCard = memo(({ project, onEdit, onDelete, onViewTasks, onUpdateStat
             <h3 className="font-semibold text-white group-hover:text-yellow-400 transition-colors">
               {project.name}
             </h3>
-            {project.area_name &amp;&amp; (
+            {project.area_name && (
               <p className="text-sm text-gray-400">{project.area_name}</p>
             )}
           </div>
