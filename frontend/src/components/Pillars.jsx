@@ -330,7 +330,7 @@ const Pillars = memo(({ onSectionChange }) => {
             )}
           </div>
         ) : (
-          displayedPillars.map(pillar =&gt; renderPillar(pillar))
+          displayedPillars.map(pillar => renderPillar(pillar))
         )}
       </div>
 
