@@ -2177,18 +2177,19 @@ async def get_ai_quota(request: Request):
 
 @api_router.post("/ai/decompose-project")
 async def decompose_project(
-    request: ProjectDecompositionRequest,
-    current_user: User = Depends(get_current_active_user)
+    request_data: ProjectDecompositionRequest,
+    request: Request
 ):
     try:
-        resp = await ai_coach_service.suggest_project_tasks(current_user.id, request)
+        current_user = await get_current_active_user_hybrid(request)
+        resp = await ai_coach_service.suggest_project_tasks(current_user.id, request_data)
         return resp
     except Exception as e:
         logger.error(f"Error decomposing project: {e}")
         # Harden to prevent 500s: return empty suggestions
         return ProjectDecompositionResponse(
-            project_name=request.project_name,
-            template_type=request.template_type or "general",
+            project_name=request_data.project_name,
+            template_type=request_data.template_type or "general",
             suggested_tasks=[],
             total_tasks=0
         )
