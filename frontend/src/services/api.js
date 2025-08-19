@@ -84,7 +84,28 @@ export const projectsAPI = {
 };
 
 export const tasksAPI = {
-  getTasks: (projectId = null) => apiClient.get('/tasks', { params: projectId ? { project_id: projectId } : {} }),
+  // Extended to support server-side filters and pagination
+  getTasks: ({
+    projectId = null,
+    q = null,
+    status = null,
+    priority = null,
+    dueDate = null,
+    page = null,
+    limit = null,
+    returnMeta = false,
+  } = {}) => {
+    const params = {};
+    if (projectId) params.project_id = projectId;
+    if (q) params.q = q;
+    if (status) params.status = status;
+    if (priority) params.priority = priority;
+    if (dueDate) params.due_date = dueDate;
+    if (page) params.page = page;
+    if (limit) params.limit = limit;
+    if (returnMeta) params.return_meta = true;
+    return apiClient.get('/tasks', { params });
+  },
   getTask: (taskId) => apiClient.get(`/tasks/${taskId}`),
   createTask: (data) => apiClient.post('/tasks', data),
   updateTask: (taskId, data) => apiClient.put(`/tasks/${taskId}`, data),
