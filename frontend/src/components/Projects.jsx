@@ -213,7 +213,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
         deadline: projectData.due_date ? new Date(projectData.due_date).toISOString() : null,
         priority: projectData.priority || 'medium',
         // area_id is optional; send null if blank to avoid enum/UUID issues
-        ...(projectData.area_id &amp;&amp; projectData.area_id.trim() ? { area_id: projectData.area_id.trim() } : { area_id: null })
+        ...(projectData.area_id && projectData.area_id.trim() ? { area_id: projectData.area_id.trim() } : { area_id: null })
       };
       return fetch(`${backendURL}/api/projects`, {
         method: 'POST',
