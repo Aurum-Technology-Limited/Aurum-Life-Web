@@ -369,12 +369,18 @@ async def get_tasks(
     status: Optional[str] = Query(default=None),
     priority: Optional[str] = Query(default=None),
     due_date: Optional[str] = Query(default=None),
+    page: Optional[int] = Query(default=None, ge=1),
+    limit: Optional[int] = Query(default=None, ge=1, le=200),
+    return_meta: Optional[bool] = Query(default=False),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get user tasks with optional server-side filters"""
+    """Get user tasks with optional server-side filters and pagination.
+    - If page and limit are provided, results are paginated.
+    - If return_meta=true, returns an object with tasks and pagination metadata; otherwise returns an array for backward compatibility.
+    """
     try:
         task_service = TaskService()
-        tasks = await task_service.get_user_tasks(
+        all_tasks = await task_service.get_user_tasks(
             str(current_user.id),
             project_id=project_id,
             q=q,
@@ -382,7 +388,22 @@ async def get_tasks(
             priority=priority,
             due_date=due_date,
         )
-        return tasks
+        # Backward-compatible: no pagination parameters provided
+        if not page or not limit:
+            return all_tasks
+        total = len(all_tasks)
+        start = (page - 1) * limit
+        end = start + limit
+        page_items = all_tasks[start:end]
+        if return_meta:
+            return {
+                "tasks": page_items,
+                "total": total,
+                "page": page,
+                "limit": limit,
+                "has_more": end < total
+            }
+        return page_items
     except Exception as e:
         logger.error(f"Error getting tasks: {e}")
         raise HTTPException(status_code=500, detail="Failed to get tasks")
