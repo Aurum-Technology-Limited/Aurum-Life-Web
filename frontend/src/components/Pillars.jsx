@@ -370,7 +370,7 @@ const Pillars = memo(({ onSectionChange }) => {
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) =&gt; setFormData({...formData, description: e.target.value})}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                     className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="3"
                   />
