@@ -224,6 +224,43 @@ class BackendSmokeTest:
         self.log_result("GET /api/tasks", success, response.status_code, details, response_time)
         return success
 
+    def test_step_6a_tasks_due_date_filters(self):
+        """Step 6a: Test /api/tasks due_date filters after timezone fix"""
+        print("📅 Step 6a: Testing GET /api/tasks due_date filters")
+        
+        due_date_filters = ["overdue", "today", "week"]
+        all_success = True
+        
+        for due_date_value in due_date_filters:
+            print(f"    Testing due_date={due_date_value}")
+            
+            response, response_time = self.make_request("GET", f"/tasks?due_date={due_date_value}")
+            
+            success = response.status_code == 200
+            details = ""
+            
+            if success:
+                try:
+                    data = response.json()
+                    if isinstance(data, list):
+                        details = f"Retrieved {len(data)} tasks for due_date={due_date_value}"
+                    else:
+                        success = False
+                        details = f"Expected array, got {type(data)} for due_date={due_date_value}"
+                except Exception as e:
+                    success = False
+                    details = f"JSON parse failed for due_date={due_date_value}: {e}"
+            else:
+                success = False
+                details = f"Request failed for due_date={due_date_value}: {response.text[:200]}"
+                
+            self.log_result(f"GET /api/tasks?due_date={due_date_value}", success, response.status_code, details, response_time)
+            
+            if not success:
+                all_success = False
+        
+        return all_success
+
     def test_step_7_insights(self):
         """Step 7: GET /api/insights"""
         print("📊 Step 7: Testing GET /api/insights")
