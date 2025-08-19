@@ -221,7 +221,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   }, [projects, activeAreaId]);
 
   const visibleProjects = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = (debouncedSearch || search).trim().toLowerCase();
     if (!q) return filteredProjects;
     return filteredProjects.filter(p => {
       const fields = [p.name, p.description, p.area_name].map(v => (v || '').toLowerCase());
