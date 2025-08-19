@@ -421,6 +421,60 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
       )}
 
       {/* Projects Grid */}
+
+      {/* Simple Create/Edit Modals with visible FileAttachment placeholder */}
+      {showCreateForm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) setShowCreateForm(false); }}>
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-white font-semibold">Create Project</div>
+              <button className="text-gray-400 hover:text-white" onClick={() => setShowCreateForm(false)}>✕</button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-gray-400">Name</label>
+                <input value={newProject.name} onChange={(e) => setNewProject({ ...newProject, name: e.target.value })} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" placeholder="Project name" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400">Description</label>
+                <textarea value={newProject.description} onChange={(e) => setNewProject({ ...newProject, description: e.target.value })} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" rows={3} placeholder="Optional details" />
+              </div>
+              <FileAttachment parentType="project" parentId={null} parentName={newProject.name} />
+              <div className="flex justify-end gap-2 pt-2">
+                <button className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 rounded" onClick={() => setShowCreateForm(false)}>Cancel</button>
+                <button className="px-3 py-1.5 text-sm bg-yellow-600 hover:bg-yellow-700 rounded text-black font-semibold" disabled={!newProject.name.trim()} onClick={() => { createProjectMutation.mutate(newProject); setShowCreateForm(false); }}>Create</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditForm && editingProject && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) setShowEditForm(false); }}>
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-white font-semibold">Edit Project</div>
+              <button className="text-gray-400 hover:text-white" onClick={() => setShowEditForm(false)}>✕</button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-gray-400">Name</label>
+                <input value={editingProject.name} onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" placeholder="Project name" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400">Description</label>
+                <textarea value={editingProject.description || ''} onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" rows={3} placeholder="Optional details" />
+              </div>
+              <FileAttachment parentType="project" parentId={editingProject.id} parentName={editingProject.name} />
+              <div className="flex justify-end gap-2 pt-2">
+                <button className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 rounded" onClick={() => setShowEditForm(false)}>Cancel</button>
+                <button className="px-3 py-1.5 text-sm bg-yellow-600 hover:bg-yellow-700 rounded text-black font-semibold" onClick={() => { updateProjectMutation.mutate({ projectId: editingProject.id, projectData: editingProject }); setShowEditForm(false); }}>Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {visibleProjects.length === 0 ? (
         <div className="text-center py-12 bg-gray-900 border border-gray-800 rounded-lg">
           <FolderIcon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
