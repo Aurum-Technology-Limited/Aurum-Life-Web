@@ -130,6 +130,10 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(null);
   const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
 
   // URL query sync for search
   useEffect(() => {
