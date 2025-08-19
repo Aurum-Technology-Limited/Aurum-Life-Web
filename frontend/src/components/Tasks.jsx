@@ -164,7 +164,10 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
       setLoading(true);
       setError(null);
       
-      const response = await tasksAPI.getTasks();
+      const response = await tasksAPI.getTasks({
+        // Initial load: no filters, but keep API flexible for future
+        returnMeta: false,
+      });
       setTasks(response.data);
     } catch (err) {
       setError(handleApiError(err, 'Failed to load tasks'));
