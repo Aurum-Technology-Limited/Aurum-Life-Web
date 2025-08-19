@@ -36,6 +36,33 @@ const Pillars = memo(({ onSectionChange }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // URL query sync for search
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('pillars_q');
+      if (q && !search) setSearch(q);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (debouncedSearch) {
+        url.searchParams.set('pillars_q', debouncedSearch);
+      } else {
+        url.searchParams.delete('pillars_q');
+      }
+      window.history.replaceState({}, '', url);
+    } catch {}
+  }, [debouncedSearch]);
 
   // Icon options for pillars - now handled by IconPicker component
   const colorOptions = ['#F4B400', '#4CAF50', '#2196F3', '#FF5722', '#9C27B0', '#FF9800', '#795548', '#607D8B'];
