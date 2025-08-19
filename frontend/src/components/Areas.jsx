@@ -47,24 +47,24 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
             <span className="flex-shrink-0">
               {area.projects?.length || 0} projects
             </span>
-            {area.date_created &amp;&amp; (
+            {area.date_created && (
               <span className="text-xs text-gray-500 dynamic-text">
                 Created {new Date(area.date_created).toLocaleDateString()}
               </span>
             )}
           </div>
           {/* Importance Indicator */}
-          {area.importance &amp;&amp; (
+          {area.importance && (
             <div className="mt-2">
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                area.importance &gt;= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
-                area.importance &gt;= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
-                area.importance &gt;= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
+                area.importance >= 5 ? 'bg-red-900/30 text-red-300 border border-red-600' :
+                area.importance >= 4 ? 'bg-orange-900/30 text-orange-300 border border-orange-600' :
+                area.importance >= 3 ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-600' :
                 'bg-gray-800/30 text-gray-400 border border-gray-600'
               }`}>
-                {area.importance &gt;= 5 ? '🔥 Critical' :
-                 area.importance &gt;= 4 ? '⚡ High' :
-                 area.importance &gt;= 3 ? '📊 Medium' :
+                {area.importance >= 5 ? '🔥 Critical' :
+                 area.importance >= 4 ? '⚡ High' :
+                 area.importance >= 3 ? '📊 Medium' :
                  '📝 Low'}
               </span>
             </div>
@@ -110,7 +110,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
     </div>
 
     {/* Description */}
-    {area.description &amp;&amp; (
+    {area.description && (
       <p className="text-gray-400 text-sm mb-4 line-clamp-2">
         {area.description}
       </p>
@@ -121,27 +121,27 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
       <div>
         <p className="text-2xl font-bold text-white">
           {area.project_count ? (area.project_count - (area.completed_project_count || 0)) : 
-           area.projects?.filter(p =&gt; p.status &amp;&amp; p.status.toLowerCase() === 'active').length || 0}
+           area.projects?.filter(p => p.status && p.status.toLowerCase() === 'active').length || 0}
         </p>
         <p className="text-xs text-gray-400">Active Projects</p>
       </div>
       <div>
         <p className="text-2xl font-bold text-white">
           {area.completed_project_count || 
-           area.projects?.filter(p =&gt; p.status &amp;&amp; p.status.toLowerCase() === 'completed').length || 0}
+           area.projects?.filter(p => p.status && p.status.toLowerCase() === 'completed').length || 0}
         </p>
         <p className="text-xs text-gray-400">Completed</p>
       </div>
     </div>
 
     {/* Progress Bar */}
-    {area.projects &amp;&amp; area.projects.length &gt; 0 &amp;&amp; (
+    {area.projects && area.projects.length > 0 && (
       <div className="mt-4">
         <div className="flex justify-between text-xs text-gray-400 mb-2">
           <span>Progress</span>
           <span>
             {Math.round(
-              ((area.projects?.filter(p =&gt; p.status === 'completed').length || 0) / 
+              ((area.projects?.filter(p => p.status === 'completed').length || 0) / 
                area.projects.length) * 100
             )}%
           </span>
@@ -152,7 +152,7 @@ const AreaCard = memo(({ area, onSectionChange, onArchive, onEdit, onDelete }) =
             style={{
               backgroundColor: area.color || '#F4B400',
               width: `${Math.round(
-                ((area.projects?.filter(p =&gt; p.status === 'completed').length || 0) / 
+                ((area.projects?.filter(p => p.status === 'completed').length || 0) / 
                  area.projects.length) * 100
               )}%`
             }}
@@ -188,15 +188,15 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   
   // Filter areas by pillar if pillarId is provided
   const areas = activePillarId 
-    ? allAreas.filter(area =&gt; area.pillar_id === activePillarId)
+    ? allAreas.filter(area => area.pillar_id === activePillarId)
     : allAreas;
 
-  const displayedAreas = useMemo(() =&gt; {
+  const displayedAreas = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return areas;
-    return areas.filter(a =&gt; {
-      const fields = [a.name, a.description, a.pillar_name].map(v =&gt; (v || '').toLowerCase());
-      return fields.some(f =&gt; f.includes(q));
+    return areas.filter(a => {
+      const fields = [a.name, a.description, a.pillar_name].map(v => (v || '').toLowerCase());
+      return fields.some(f => f.includes(q));
     });
   }, [areas, search]);
   
@@ -207,7 +207,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     refetch: refetchPillarsBasic
   } = useQuery({
     queryKey: ['pillars', 'basic'], // Different query key to avoid cache conflicts
-    queryFn: async () =&gt; {
+    queryFn: async () => {
       const response = await pillarsAPI.getPillars(false, false, false); // Basic pillars without counts
       return response.data; // Ensure we return an array of pillars, not the axios response object
     },
@@ -225,7 +225,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
       // Kick a microtask + RAF to refetch to avoid race with modal mount
       Promise.resolve().then(() => {
         requestAnimationFrame(() => {
-          try { refetchPillarsBasic &amp;&amp; refetchPillarsBasic(); } catch {}
+          try { refetchPillarsBasic && refetchPillarsBasic(); } catch {}
         });
       });
     }
@@ -291,7 +291,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
 
       // Safety refetch after a short delay to avoid any race with ultra-cache
       setTimeout(() => {
-        try { refetchAreas &amp;&amp; refetchAreas(); } catch (e) {}
+        try { refetchAreas && refetchAreas(); } catch (e) {}
       }, 200);
       onDataMutation('area', 'create', newItem);
     },
@@ -367,7 +367,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
   useEffect(() => {
     if (loading) {
       console.log('🗂️ Areas: TanStack Query - Loading areas data...');
-    } else if (areas.length &gt;= 0) {
+    } else if (areas.length >= 0) {
       console.log(`🗂️ Areas: TanStack Query - ${areas.length} areas loaded from cache/network`);
     }
   }, [loading, areas.length]);
@@ -434,6 +434,19 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
     }
   };
 
+  const handleEdit = (area) => {
+    setEditingArea(area);
+    setFormData({
+      name: area.name,
+      description: area.description,
+      color: area.color,
+      icon: area.icon,
+      pillar_id: area.pillar_id,
+      importance: area.importance || 3
+    });
+    setShowModal(true);
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingArea(null);
@@ -442,245 +455,154 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
       description: '',
       color: '#F4B400',
       icon: '🎯',
-      pillar_id: activePillarId || '', // Reset to active pillar if present
+      pillar_id: activePillarId || '',
       importance: 3
     });
   };
 
-  const handleEdit = (area) => {
-    console.log('🗂️ Areas: Starting edit for area:', area);
-    setEditingArea(area);
-    const editFormData = {
-      name: area.name,
-      description: area.description || '',
-      color: area.color || '#F4B400',
-      icon: area.icon || '🎯', // Use emoji icon
-      pillar_id: area.pillar_id || '',
-      importance: area.importance || 3
-    };
-    console.log('🗂️ Areas: Setting edit form data:', editFormData);
-    setFormData(editFormData);
-    setShowModal(true);
-  };
-
   if (loading) {
-    console.log('🗂️ Areas: Rendering loading state');
     return (
-      <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-800 rounded mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map(i =&gt; (
-                <div key={i} className="h-48 bg-gray-800 rounded-xl"></div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  console.log('🗂️ Areas: Rendering main component, areas length:', areas.length, 'error:', error);
-
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="flex items-center space-x-3">
-              <h1 className="text-3xl font-bold" style={{ color: '#F4B400' }}>
-                Life Areas
-              </h1>
-              {activePillarName &amp;&amp; (
-                <>
-                  <span className="text-2xl text-gray-500">›</span>
-                  <div className="flex items-center space-x-2">
-                    <Mountain className="h-5 w-5 text-blue-400" />
-                    <span className="text-xl font-medium text-blue-400">{activePillarName}</span>
-                  </div>
-                </>
-              )}
-            </div>
-            <p className="text-gray-400 mt-1">
-              {activePillarName 
-                ? `Areas within the ${activePillarName} pillar`
-                : 'Organize your life into meaningful domains'
-              }
-            </p>
-            {activePillarName &amp;&amp; (
-              <button
-                onClick={() => onSectionChange('pillars')}
-                className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                ← Back to all pillars
-              </button>
-            )}
-          </div>
-          <div className="flex items-center space-x-4">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) =&gt; setSearch(e.target.value)}
-              placeholder="Search areas..."
-              className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            />
-            {/* Archive Toggle */}
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Areas</h1>
+          <p className="text-gray-400 mt-1">
+            {activePillarName ? `Areas in ${activePillarName}` : 'Organize your life into focused areas'}
+          </p>
+          {activePillarName && (
             <button
-              onClick={() => setShowArchived(!showArchived)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                showArchived 
-                  ? 'bg-gray-700 text-white border border-gray-600' 
-                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
-              }`}
+              onClick={() => onSectionChange('pillars')}
+              className="mt-2 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
             >
-              {showArchived ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              <span>{showArchived ? 'Hide Archived' : 'Show Archived'}</span>
+              ← Back to all pillars
             </button>
-            <button
-              data-testid="area-new"
-              onClick={() => setShowModal(true)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
-              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-            >
-              <Plus className="h-5 w-5" />
-              <span>New Area</span>
-            </button>
-          </div>
+          )}
         </div>
+        <div className="flex items-center space-x-3">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search areas..."
+            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`px-3 py-2 rounded-lg transition-colors ${
+              showArchived 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+            title={showArchived ? 'Hide archived areas' : 'Show archived areas'}
+          >
+            {showArchived ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+          <button
+            data-testid="area-new"
+            onClick={() => setShowModal(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Area</span>
+          </button>
+        </div>
+      </div>
 
-        {/* Error Display */}
-        {isError &amp;&amp; (
-          <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-                <span className="text-red-400">{error?.message || 'Failed to load areas'}</span>
-              </div>
-              <button
-                onClick={() => refetchAreas()}
-                className="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        )}
+      {/* Error Display */}
+      {isError && (
+        <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
+          <AlertCircle className="h-5 w-5 text-red-400" />
+          <span className="text-red-400">{error?.message || 'Failed to load areas'}</span>
+        </div>
+      )}
 
-        {/* Areas Grid */}
+      {/* Areas Grid */}
+      <div className="space-y-4">
         {displayedAreas.length === 0 ? (
-          <div className="text-center py-12">
-            <Layers className="mx-auto h-16 w-16 text-gray-600 mb-4" />
-            <h3 className="text-xl font-medium text-gray-400 mb-2">
-              {search 
-                ? 'No areas match your search'
-                : activePillarName ? `No areas in ${activePillarName} pillar yet` : 'No areas yet'}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {search 
-                ? 'Try a different search term'
-                : activePillarName 
-                  ? `Create your first area for the ${activePillarName} pillar`
-                  : 'Create your first life area to get started'}
+          <div className="text-center py-12 bg-gray-900 border border-gray-800 rounded-lg">
+            <Layers className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">No areas {search ? 'match your search' : 'yet'}</h3>
+            <p className="text-gray-400 mb-4">
+              {search ? 'Try a different search term' : 'Create your first area to organize your projects'}
             </p>
-            {!search &amp;&amp; (
+            {!search && (
               <button
                 onClick={() => setShowModal(true)}
-                className="px-6 py-3 rounded-lg font-medium"
-                style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                {activePillarName ? `Create Area for ${activePillarName}` : 'Create First Area'}
+                Create First Area
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedAreas.map((area) => (
-              <AreaCard 
-                key={area.id}
-                area={area}
-                onSectionChange={onSectionChange}
-                onArchive={handleArchive}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
+          displayedAreas.map(area => (
+            <AreaCard
+              key={area.id}
+              area={area}
+              onSectionChange={onSectionChange}
+              onArchive={handleArchive}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))
         )}
+      </div>
 
-        {/* Modal */}
-        {showModal &amp;&amp; (
-          <div
-            id="area-modal-overlay"
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 pointer-events-auto"
-            onClick={(e) =&gt; { if (e.target === e.currentTarget) handleCloseModal(); }}
-            onKeyDown={(e) =&gt; { if (e.key === 'Escape') handleCloseModal(); }}
-            tabIndex={-1}
-          >
-            <div className="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800 pointer-events-auto" onClick={(e) =&gt; e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-white">
-                  {editingArea ? 'Edit Area' : 'Create New Area'}
-                </h2>
-                <button
-                  onClick={handleCloseModal}
-                  className="p-2 text-gray-400 hover:text-white rounded-lg"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
+      {/* Create/Edit Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-800">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-white mb-4">
+                {editingArea ? 'Edit Area' : 'Create New Area'}
+              </h2>
+              
               <form onSubmit={handleSubmit} className="space-y-4" data-testid="area-form">
-                <div className="input-with-counter">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Name
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Name *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) =&gt; {
-                      const newValue = e.target.value;
-                      if (newValue.length &lt;= CHARACTER_LIMITS.AREA_NAME) {
-                        setFormData({ ...formData, name: newValue });
-                      }
-                    }}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                    placeholder="e.g., Health &amp; Fitness"
-                    maxLength={CHARACTER_LIMITS.AREA_NAME}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
-                  <div className={getCharacterCounterData(formData.name, CHARACTER_LIMITS.AREA_NAME).className}>
-                    {getCharacterCounterData(formData.name, CHARACTER_LIMITS.AREA_NAME).count}/{CHARACTER_LIMITS.AREA_NAME}
-                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Description
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) =&gt; setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                    placeholder="Brief description of this life area"
-                    rows={3}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="3"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Pillar
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Pillar *
                   </label>
                   <select
-                    data-testid="area-pillar-select"
                     value={formData.pillar_id}
-                    onChange={(e) =&gt; setFormData({ ...formData, pillar_id: e.target.value })}
+                    onChange={(e) => setFormData({...formData, pillar_id: e.target.value})}
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   >
                     <option value="">Select a pillar</option>
-                    {pillars.map((pillar) => (
+                    {pillars.map(pillar => (
                       <option key={pillar.id} value={pillar.id}>
                         {pillar.icon} {pillar.name}
                       </option>
@@ -691,7 +613,7 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                 {/* Icon Picker */}
                 <IconPicker
                   value={formData.icon}
-                  onChange={(icon) =&gt; setFormData({ ...formData, icon })}
+                  onChange={(icon) => setFormData({...formData, icon})}
                   label="Icon"
                   placeholder="🎯"
                   required={false}
@@ -700,19 +622,17 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                 />
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Color
                   </label>
                   <div className="grid grid-cols-5 gap-2">
-                    {colorOptions.map((color) =&gt; (
+                    {colorOptions.map(color => (
                       <button
                         key={color}
                         type="button"
-                        onClick={() =&gt; setFormData({ ...formData, color })}
-                        className={`w-10 h-10 rounded-lg border-2 transition-all ${
-                          formData.color === color
-                            ? 'border-white scale-110'
-                            : 'border-gray-600 hover:border-gray-500'
+                        onClick={() => setFormData({...formData, color})}
+                        className={`w-8 h-8 rounded-full border-2 transition-all ${
+                          formData.color === color ? 'border-white scale-110' : 'border-gray-600'
                         }`}
                         style={{ backgroundColor: color }}
                       />
@@ -720,29 +640,24 @@ const Areas = memo(({ onSectionChange, sectionParams }) => {
                   </div>
                 </div>
 
-                {/* Importance Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Importance Level
                   </label>
                   <select
-                    data-testid="area-importance-select"
                     value={formData.importance}
-                    onChange={(e) =&gt; setFormData({ ...formData, importance: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    onChange={(e) => setFormData({...formData, importance: parseInt(e.target.value)})}
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value={1}>1 - Low Impact</option>
-                    <option value={2}>2 - Minor Impact</option>
-                    <option value={3}>3 - Medium Impact</option>
-                    <option value={4}>4 - High Impact</option>
-                    <option value={5}>5 - Critical Impact</option>
+                    <option value={1}>1 - Very Low</option>
+                    <option value={2}>2 - Low</option>
+                    <option value={3}>3 - Medium</option>
+                    <option value={4}>4 - High</option>
+                    <option value={5}>5 - Critical</option>
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    How important is this area to your overall life goals?
-                  </p>
                 </div>
 
-                <div className="flex space-x-4 pt-4">
+                <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
                     onClick={handleCloseModal}
