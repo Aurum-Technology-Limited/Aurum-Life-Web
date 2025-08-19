@@ -2196,11 +2196,13 @@ async def decompose_project(
 
 @api_router.post("/ai/create-tasks-from-suggestions")
 async def create_tasks_from_suggestions(
-    project_id: str,
-    suggested_tasks: List[Dict[str, Any]],
-    current_user: User = Depends(get_current_active_user)
+    request_body: dict,
+    request: Request
 ):
     try:
+        current_user = await get_current_active_user_hybrid(request)
+        project_id = request_body.get("project_id", "")
+        suggested_tasks = request_body.get("suggested_tasks", [])
         created = await ai_coach_service.create_tasks_from_suggestions(current_user.id, project_id, suggested_tasks)
         return {"created": created, "count": len(created)}
     except Exception as e:
