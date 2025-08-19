@@ -226,12 +226,23 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
   const visibleProjects = useMemo(() => {
     const q = (debouncedSearch || search).trim().toLowerCase();
-    if (!q) return filteredProjects;
-    return filteredProjects.filter(p => {
+    let list = filteredProjects;
+
+    // Status chip
+    if (statusFilter !== 'all') {
+      list = list.filter(p => (p.status || 'not_started') === statusFilter);
+    }
+    // Priority chip
+    if (priorityFilter !== 'all') {
+      list = list.filter(p => (p.priority || 'medium') === priorityFilter);
+    }
+
+    if (!q) return list;
+    return list.filter(p => {
       const fields = [p.name, p.description, p.area_name].map(v => (v || '').toLowerCase());
       return fields.some(f => f.includes(q));
     });
-  }, [filteredProjects, search]);
+  }, [filteredProjects, search, debouncedSearch, statusFilter, priorityFilter]);
 
   // Create project mutation
   const createProjectMutation = useMutation({
