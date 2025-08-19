@@ -219,7 +219,7 @@ const Today = memo(() => {
       setLoading(false);
     }
   };
-  // Load persisted AI suggestions on mount
+  // Load persisted AI suggestions on mount, then refresh from server
   useEffect(() => {
     try {
       const raw = localStorage.getItem(SUGGESTIONS_KEY);
@@ -228,7 +228,9 @@ const Today = memo(() => {
         if (Array.isArray(parsed) && parsed.length > 0) setAiSuggestions(parsed);
       }
     } catch {}
-  }, []);
+    // Refresh from server
+    fetchWhyStatements();
+  }, [fetchWhyStatements]);
 
 
   useEffect(() => {
