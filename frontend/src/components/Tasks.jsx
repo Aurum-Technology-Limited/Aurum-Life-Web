@@ -269,6 +269,10 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
     }
   };
 
+  // Quick chips for tasks (move above filters to avoid reference errors)
+  const [priorityChip, setPriorityChip] = useState('all'); // all, high, medium, low
+  const [dueChip, setDueChip] = useState('all'); // all, overdue, today, week
+
   const filteredTasks = filteredTasksByProject
     .filter(task => {
       switch (filter) {
@@ -305,10 +309,6 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const completedCount = filteredTasksByProject.filter(t => t.completed).length;
   const activeCount = filteredTasksByProject.filter(t => !t.completed).length;
   const overdueCount = filteredTasksByProject.filter(t => !t.completed && t.is_overdue).length;
-
-  // Quick chips for tasks
-  const [priorityChip, setPriorityChip] = useState('all'); // all, high, medium, low
-  const [dueChip, setDueChip] = useState('all'); // all, overdue, today, week
 
   if (loading) {
     return (
