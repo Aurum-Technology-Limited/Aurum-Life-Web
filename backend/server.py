@@ -2166,9 +2166,10 @@ async def chat_with_ai_coach(
 
 # AI Coach MVP endpoints (new)
 @api_router.get("/ai/quota")
-async def get_ai_quota(current_user: User = Depends(get_current_active_user)):
+async def get_ai_quota(request: Request):
     """Return safe quota info for AI features; avoids 500s if real quota not implemented"""
     try:
+        current_user = await get_current_active_user_hybrid(request)
         return {"daily_limit": 50, "used": 0, "reset_at": datetime.utcnow().isoformat()}
     except Exception as e:
         logger.error(f"Error getting AI quota: {e}")
