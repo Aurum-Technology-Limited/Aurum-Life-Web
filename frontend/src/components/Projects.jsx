@@ -425,7 +425,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
           <FolderIcon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-white mb-2">{search ? 'No projects match your search' : 'No projects yet'}</h3>
           <p className="text-gray-400 mb-4">{search ? 'Try a different search term' : 'Create your first project to get started'}</p>
-          {!search &amp;&amp; (
+          {!search && (
             <button
               onClick={() => setShowCreateForm(true)}
               className="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors"
