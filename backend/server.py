@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 import logging
 import asyncio
-from typing import List, Optional
+from typing import List, Optional, Optional as TypingOptional
 from datetime import timedelta, datetime
 import time
 import uuid
