@@ -245,14 +245,32 @@ class AuthRegistrationTest:
                         self.access_token = data["access_token"]
                         self.refresh_token = data.get("refresh_token")
                         print(f"✅ Working credentials login successful!")
+                        self.log_result("Working credentials login", True, response.status_code, 
+                                      f"Login successful with {working_credentials['email']}", response_time)
                         
                         # Test auth verification with working credentials
                         response, response_time = self.make_request("GET", "/auth/me")
                         if response.status_code == 200:
                             print(f"✅ Auth verification successful with working credentials!")
+                            self.log_result("Working credentials auth", True, response.status_code, 
+                                          "Auth verification successful", response_time)
                             passed += 1  # Count this as a partial success
+                        else:
+                            print(f"❌ Auth verification failed with working credentials")
+                            self.log_result("Working credentials auth", False, response.status_code, 
+                                          "Auth verification failed", response_time)
+                    else:
+                        print(f"❌ No access token in working credentials response")
+                        self.log_result("Working credentials login", False, response.status_code, 
+                                      "No access token in response", response_time)
                 except Exception as e:
                     print(f"❌ Working credentials test failed: {e}")
+                    self.log_result("Working credentials login", False, response.status_code, 
+                                  f"Exception: {e}", response_time)
+            else:
+                print(f"❌ Working credentials login failed: {response.status_code}")
+                self.log_result("Working credentials login", False, response.status_code, 
+                              f"Login failed: {response.text[:200]}", response_time)
         
         print("=" * 70)
         print("📊 AUTHENTICATION TEST SUMMARY")
