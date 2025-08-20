@@ -99,6 +99,18 @@ async def get_current_active_user_hybrid(request: Request) -> User:
                 if user_id is None:
                     raise HTTPException(status_code=401, detail="Could not validate credentials")
                 
+                # Restrict legacy JWT usage to preserved test account only
+                try:
+                    PRESERVED_TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
+                    legacy_user = await supabase_manager.find_document("users", {"id": user_id})
+                    if legacy_user:
+                        if (legacy_user.get('email') or '').lower() != PRESERVED_TEST_EMAIL:
+                            raise HTTPException(status_code=401, detail="Legacy tokens are no longer supported. Please create a new account.")
+                except HTTPException:
+                    raise
+                except Exception as e:
+                    logger.info(f"Legacy user validation skipped/failed: {e}")
+                
                 logger.info("✅ Verified legacy JWT token for API endpoint")
             except Exception as legacy_error:
                 logger.info(f"Legacy token verification failed: {legacy_error}")
