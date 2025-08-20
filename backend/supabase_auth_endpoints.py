@@ -163,62 +163,24 @@ async def login_user(user_credentials: UserLogin):
             logger.info(f"Supabase auth failed: {supabase_error}")
             logger.info("Attempting legacy authentication fallback...")
             
-            # 1) Try legacy users table by email
-            legacy_user = await supabase_manager.find_document("users", {"email": user_credentials.email})
-            
-            # 2) If not in legacy table, discover auth user by email and bootstrap legacy + profile
-            if not legacy_user:
-                auth_user_id = await get_supabase_auth_user_id(user_credentials.email)
-                if auth_user_id:
-                    # Create minimal legacy user and profile for seamless fallback
-                    username = user_credentials.email.split('@')[0]
-                    try:
-                        await supabase_manager.create_document("users", {
-                            "id": auth_user_id,
-                            "username": username,
-                            "email": user_credentials.email,
-                            "first_name": "",
-                            "last_name": "",
-                            "password_hash": None,
-                            "google_id": None,
-                            "profile_picture": None,
-                            "is_active": True,
-                            "level": 1,
-                            "total_points": 0,
-                            "current_streak": 0
-                        })
-                    except Exception as e:
-                        logger.info(f"Legacy user bootstrap skipped/failed: {e}")
-                    try:
-                        # Ensure user_profiles exists
-                        prof = await supabase_manager.find_document("user_profiles", {"id": auth_user_id})
-                        if not prof:
-                            await supabase_manager.create_document("user_profiles", {
-                                'id': auth_user_id,
-                                'username': username,
-                                'first_name': '',
-                                'last_name': '',
-                                'is_active': True,
-                                'level': 1,
-                                'total_points': 0,
-                                'current_streak': 0
-                            })
-                    except Exception as e:
-                        logger.info(f"Profile bootstrap skipped/failed: {e}")
-                    legacy_user = {"id": auth_user_id, "email": user_credentials.email, "username": username}
-            
+            # 1) Try legacy users table by email ONLY for the preserved test account; otherwise block legacy path
+            legacy_user = None
+            PRESERVED_TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
+            if user_credentials.email.lower() == PRESERVED_TEST_EMAIL:
+                legacy_user = await supabase_manager.find_document("users", {"email": user_credentials.email})
+
+            # If a legacy user is found for the preserved account, allow legacy login
             if legacy_user:
-                # Verify password only if a legacy password hash exists; otherwise allow (Supabase handled auth)
                 if legacy_user.get('password_hash'):
                     from auth import verify_password
                     if not verify_password(user_credentials.password, legacy_user['password_hash']):
                         logger.warning(f"Invalid password for legacy user {user_credentials.email}")
                         raise HTTPException(status_code=401, detail="Invalid credentials")
-                
+
                 # Prefer Supabase Auth ID when available
                 auth_user_id = await get_supabase_auth_user_id(user_credentials.email)
                 chosen_id = auth_user_id or legacy_user['id']
-                
+
                 # Ensure user_profiles exists for chosen_id
                 try:
                     prof = await supabase_manager.find_document("user_profiles", {"id": chosen_id})
@@ -233,17 +195,19 @@ async def login_user(user_credentials: UserLogin):
                             'total_points': 0,
                             'current_streak': 0
                         })
-                        logger.info("✅ Bootstrapped user_profiles for login user")
+                        logger.info("✅ Bootstrapped user_profiles for preserved legacy user")
                 except Exception as e:
                     logger.info(f"Profile bootstrap skipped/failed: {e}")
-                
-                # Issue legacy JWT using chosen_id
+
                 from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
                 from datetime import timedelta
                 access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
                 access_token = create_access_token(data={"sub": chosen_id}, expires_delta=access_token_expires)
-                logger.info(f"✅ Hybrid authentication successful for {user_credentials.email} (user_id: {chosen_id})")
+                logger.info(f"✅ Hybrid authentication successful (preserved legacy account): {user_credentials.email}")
                 return {"access_token": access_token, "token_type": "bearer"}
+
+            # For all other users, prevent legacy fallback and require Supabase credentials
+            raise HTTPException(status_code=401, detail="Invalid credentials. Please create a new account.")
         
         # If both methods fail
         raise HTTPException(status_code=401, detail="Invalid credentials")
