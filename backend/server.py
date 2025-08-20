@@ -386,8 +386,8 @@ class AdminMigrateLegacyRequest(BaseModel):
 @api_router.post("/admin/migrate-legacy-to-supabase")
 async def migrate_legacy_to_supabase(payload: AdminMigrateLegacyRequest, current_user: User = Depends(get_current_active_user)):
     try:
-        expected_token = os.environ.get('ADMIN_PURGE_TOKEN')
-        if not expected_token or payload.admin_token != expected_token:
+        expected_token = get_admin_token()
+        if payload.admin_token != expected_token:
             raise HTTPException(status_code=401, detail="Invalid admin token")
         email = (payload.legacy_email or '').strip().lower()
         if not email:
