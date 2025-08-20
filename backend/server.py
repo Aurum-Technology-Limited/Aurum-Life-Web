@@ -472,7 +472,7 @@ async def migrate_legacy_to_supabase(payload: AdminMigrateLegacyRequest):
             if not payload.dry_run:
                 try:
                     if legacy_user:
-                        await supabase_manager.delete_document("users", {"id": legacy_id})
+                        await supabase_manager.delete_document("users", legacy_id)
                         migration_result['legacy_user_deleted'] = True
                 except Exception as e:
                     migration_result['legacy_user_deleted'] = False
