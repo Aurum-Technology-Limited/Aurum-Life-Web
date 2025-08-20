@@ -131,9 +131,13 @@ export const AuthProvider = ({ children }) => {
         
       } else {
         setLoading(false);
+        let errMsg = loginData.detail || 'Login failed';
+        if (/legacy/i.test(errMsg)) {
+          errMsg = 'Your old account is no longer supported. Please create a new account.';
+        }
         return { 
           success: false, 
-          error: loginData.detail || 'Login failed' 
+          error: errMsg 
         };
       }
       
