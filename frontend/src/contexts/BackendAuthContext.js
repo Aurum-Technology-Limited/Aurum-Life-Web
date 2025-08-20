@@ -22,22 +22,17 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('auth_token'));
 
-  // helper
   const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
-  // Check if user is authenticated on app load
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('auth_token');
       const storedRefresh = localStorage.getItem('refresh_token');
       const exp = Number(localStorage.getItem('auth_token_exp') || 0);
-
-      // If token expired but refresh exists, try refresh first
       if ((!storedToken || (exp && Date.now() > exp)) && storedRefresh) {
         try {
           const r = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refresh_token: storedRefresh })
           });
           if (r.ok) {
@@ -48,36 +43,9 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (_) {}
       }
-
       const freshToken = localStorage.getItem('auth_token');
       if (freshToken) {
-        try {
-          let userData = null;
-          for (let i = 0; i < 3; i++) {
-            const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
-              headers: {
-                'Authorization': `Bearer ${freshToken}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            if (response.ok) {
-              userData = await response.json();
-              break;
-            }
-            await sleep(300);
-          }
-          if (userData) {
-            setUser(userData);
-            setToken(freshToken);
-          } else {
-            localStorage.removeItem('auth_token');
-            setToken(null); setUser(null);
-          }
-        } catch (error) {
-          console.error('Auth verification failed:', error);
-          localStorage.removeItem('auth_token');
-          setToken(null); setUser(null);
-        }
+        await refreshUserInternal(freshToken);
       }
       setLoading(false);
     };
@@ -89,10 +57,7 @@ export const AuthProvider = ({ children }) => {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         const userResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' }
         });
         if (userResponse.ok) {
           const userData = await userResponse.json();
@@ -107,6 +72,26 @@ export const AuthProvider = ({ children }) => {
       await sleep(delayMs);
     }
     return { ok: false, error: lastErr };
+  };
+
+  const refreshUserInternal = async (authToken) => {
+    try {
+      const { ok, data } = await fetchUserWithRetry(authToken, 3, 400);
+      if (ok) {
+        setUser(data);
+        setToken(authToken);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const refreshUser = async () => {
+    const t = localStorage.getItem('auth_token');
+    if (!t) return false;
+    return await refreshUserInternal(t);
   };
 
   const login = async (email, password) => {
@@ -125,15 +110,9 @@ export const AuthProvider = ({ children }) => {
         if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
         localStorage.setItem('auth_token_exp', String(Date.now() + expiresIn * 1000));
         setToken(authToken);
-        const { ok, data: profileData, error } = await fetchUserWithRetry(authToken, 3, 400);
-        if (ok) {
-          setUser(profileData);
-          setLoading(false);
-          return { success: true, message: 'Login successful!' };
-        } else {
-          setLoading(false);
-          throw new Error(error?.message || 'Failed to get user profile');
-        }
+        const ok = await refreshUserInternal(authToken);
+        setLoading(false);
+        return ok ? { success: true, message: 'Login successful!' } : { success: false, error: 'Failed to get user profile' };
       } else {
         setLoading(false);
         let errMsg = loginData.detail || 'Login failed';
@@ -167,7 +146,7 @@ export const AuthProvider = ({ children }) => {
   const scheduleRefresh = () => {
     const exp = Number(localStorage.getItem('auth_token_exp') || 0);
     if (!exp) return;
-    const msUntil = exp - Date.now() - 60000; // refresh 60s before expiry
+    const msUntil = exp - Date.now() - 60000;
     if (msUntil <= 0) {
       doRefresh();
       return;
@@ -190,10 +169,8 @@ export const AuthProvider = ({ children }) => {
         if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
         if (data.expires_in) localStorage.setItem('auth_token_exp', String(Date.now() + data.expires_in * 1000));
         setToken(data.access_token);
-        // Optionally refresh user data
-        await fetchUserWithRetry(data.access_token, 1, 0);
+        await refreshUserInternal(data.access_token);
       } else {
-        // If refresh fails, force logout
         await logout();
       }
     } catch (e) {
@@ -201,14 +178,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Auto-schedule token refresh when token/exp changes
   useEffect(() => {
     if (!token) return;
     const cleanup = scheduleRefresh();
     return () => { if (cleanup) cleanup(); };
   }, [token]);
 
-  // Keep-alive ping (doesn't replace refresh)
   useEffect(() => {
     if (!token) return;
     const controller = new AbortController();
@@ -230,6 +205,7 @@ export const AuthProvider = ({ children }) => {
     token,
     login,
     logout,
+    refreshUser,
   };
 
   return (

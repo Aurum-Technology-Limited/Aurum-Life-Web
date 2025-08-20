@@ -3,11 +3,11 @@ Supabase Authentication Endpoints
 Replaces traditional JWT auth with Supabase Auth integration
 """
 
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, status, Request, Depends
 from pydantic import BaseModel
 from supabase_client import supabase_manager
-from supabase_auth import verify_token
-from models import UserCreate, UserLogin, UserResponse
+from supabase_auth import verify_token, get_current_active_user
+from models import UserCreate, UserLogin, UserResponse, User
 import logging
 
 logger = logging.getLogger(__name__)
@@ -102,22 +102,18 @@ async def login_user(user_credentials: UserLogin):
 
 @auth_router.post("/refresh")
 async def refresh_session(payload: RefreshRequest):
-    """Refresh access token using Supabase refresh token."""
     try:
         supabase = supabase_manager.get_client()
-        # Newer supabase-py clients expose refresh_session via auth
         refreshed = None
         try:
             refreshed = supabase.auth.refresh_session({"refresh_token": payload.refresh_token})
         except Exception as e:
             logger.info(f"Primary refresh method failed: {e}")
-            # Fallback: set_session if available
             try:
                 refreshed = supabase.auth.set_session({"refresh_token": payload.refresh_token, "access_token": ""})
             except Exception as e2:
                 logger.error(f"Fallback refresh failed: {e2}")
                 raise HTTPException(status_code=401, detail="Failed to refresh session")
-        # Normalize output
         session = getattr(refreshed, 'session', None) or getattr(refreshed, 'data', None) or refreshed
         access_token = getattr(session, 'access_token', None) if session else None
         refresh_token = getattr(session, 'refresh_token', None) if session else None
@@ -178,3 +174,28 @@ async def get_current_user_profile(request: Request):
     except Exception as e:
         logger.error(f"Get user profile error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get user profile")
+
+@auth_router.post("/complete-onboarding")
+async def complete_onboarding(current_user: User = Depends(get_current_active_user)):
+    try:
+        user_id = str(current_user.id)
+        profile = await supabase_manager.find_document("user_profiles", {"id": user_id})
+        if not profile:
+            await supabase_manager.create_document("user_profiles", {
+                'id': user_id,
+                'username': '',
+                'first_name': '',
+                'last_name': '',
+                'is_active': True,
+                'level': 2,
+                'total_points': 0,
+                'current_streak': 0
+            })
+        else:
+            level = profile.get('level', 1)
+            if level < 2:
+                await supabase_manager.update_document("user_profiles", {"id": user_id}, {"level": 2})
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Failed to complete onboarding: {e}")
+        raise HTTPException(status_code=500, detail="Failed to complete onboarding")
