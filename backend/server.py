@@ -36,30 +36,6 @@ from ai_coach_mvp_service import AiCoachMvpService
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Secure dir for admin token persistence (kept for any future admin ops)
-SECURE_DIR = Path('/app/secure')
-try:
-    SECURE_DIR.mkdir(parents=True, exist_ok=True)
-except Exception:
-    pass
-ADMIN_TOKEN_FILE = SECURE_DIR / 'admin_token.txt'
-
-def get_admin_token() -> str:
-    token = os.environ.get('ADMIN_PURGE_TOKEN')
-    if token:
-        return token
-    try:
-        if ADMIN_TOKEN_FILE.exists():
-            return ADMIN_TOKEN_FILE.read_text(encoding='utf-8').strip()
-    except Exception:
-        pass
-    try:
-        import secrets
-        token = secrets.token_urlsafe(48)
-        ADMIN_TOKEN_FILE.write_text(token, encoding='utf-8')
-        return token
-    except Exception:
-        return 'admin-token-fallback'
 
 # Create the main app
 app = FastAPI(title="Aurum Life API", version="1.0.0")
