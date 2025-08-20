@@ -63,11 +63,11 @@ class LegacyAdminRemovalSmokeTest:
             print(f"Request failed: {e}")
             # Create a mock response for error handling
             class MockResponse:
-                def __init__(self, err):
+                def __init__(self, error_msg):
                     self.status_code = 0
-                    self.text = str(err)
+                    self.text = str(error_msg)
                 def json(self):
-                    return {"error": str(err)}
+                    return {"error": str(error_msg)}
             return MockResponse(e), end_time - start_time
 
     def test_health_check(self):
