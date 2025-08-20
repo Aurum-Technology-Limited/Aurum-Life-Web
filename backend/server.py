@@ -371,7 +371,7 @@ async def purge_legacy_users(payload: AdminPurgeRequest):
             return result
         deleted = 0
         for u in to_delete:
-            ok = await supabase_manager.delete_document("users", {"id": u.get('id')})
+            ok = await supabase_manager.delete_document("users", u.get('id'))
             if ok:
                 deleted += 1
         result["deleted"] = deleted
