@@ -139,18 +139,18 @@
         -agent: "testing"
         -comment: "🎉 LEGACY ADMIN ENDPOINTS REMOVAL SMOKE TEST COMPLETED - 100% SUCCESS RATE! Executed comprehensive smoke testing to verify API functionality after removing legacy admin endpoints and token as requested in review covering all 4 critical requirements. TESTING RESULTS: ✅ HEALTH CHECK (100% SUCCESS): GET /api/health returned 200 OK with healthy status (41.9ms response time) ✅ AUTHENTICATION FLOW (100% SUCCESS): POST /api/auth/login with Supabase-only authentication returned 200 OK with valid access token (357.9ms), GET /api/auth/me returned 200 OK with user profile data (542.9ms) - full auth flow working perfectly ✅ CORE ENDPOINTS UNDER AUTH (100% SUCCESS): All 5 core endpoints returned 200 OK - GET /api/pillars (665.5ms), GET /api/areas (436.2ms), GET /api/projects (386.3ms), GET /api/tasks (444.4ms), GET /api/insights (874.4ms) - all endpoints accessible and functional with proper authentication ✅ UPLOADS FLOW BASICS (100% SUCCESS): POST /api/uploads/initiate with small file metadata returned 200 OK with proper upload_id, chunk_size, and total_chunks (306.7ms) - upload initiation working correctly. AUTHENTICATION ISSUE RESOLVED: Original test account marc.alleyne@aurumtechnologyltd.com had authentication issues (401 Invalid credentials), but created new test account smoketest_e0742f61@aurumtechnologyltd.com which works perfectly, confirming the authentication system is functioning correctly. COMPREHENSIVE VERIFICATION: All requested smoke test requirements met successfully - health endpoint accessible, Supabase-only auth flow working, core authenticated endpoints returning 200, uploads initiation functional. No legacy admin endpoint dependencies detected. PERFORMANCE METRICS: Average API response time 451ms, all endpoints under 900ms, authentication flow under 600ms - excellent performance across all tested endpoints. SUCCESS CRITERIA ACHIEVED: GET /api/health returns 200 (100%), Auth flow with Supabase-only credentials works (100%), Core endpoints under auth return 200 (100%), Uploads flow basics functional (100%). The API is PRODUCTION-READY and working perfectly after legacy admin endpoints removal!"
 
-##   - task: "Task name"
-##     implemented: true
-##     working: true  # or false or "NA"
-##     file: "file_path.py"
-##     stuck_count: 0
-##     priority: "high"  # or "medium" or "low"
-##     needs_retesting: false
-##     status_history:
-##         -working: true  # or false or "NA"
-##         -agent: "main"  # or "testing" or "user"
-##         -comment: "Detailed comment about status"
-##
+  - task: "Onboarding Flow E2E Test with Template Selection"
+    implemented: true
+    working: false
+    file: "frontend/src/components/OnboardingWizard.jsx, frontend/src/data/onboardingTemplates.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: false
+        -agent: "testing"
+        -comment: "🎯 ONBOARDING FLOW E2E TEST COMPLETED - MIXED RESULTS WITH AUTHENTICATION CHALLENGES! Executed comprehensive E2E testing of Onboarding flow with template selection as requested in review covering all critical requirements. TESTING RESULTS: ❌ ORIGINAL TEST ACCOUNT AUTHENTICATION (0% SUCCESS): marc.alleyne@aurumtechnologyltd.com/password123 failed with 401 error on /api/auth/login - credentials appear to be invalid or account may be disabled ✅ ALTERNATIVE AUTHENTICATION (100% SUCCESS): smoketest_e0742f61@aurumtechnologyltd.com worked successfully, triggering onboarding flow with console message '🎯 New user detected - showing onboarding' ✅ ONBOARDING WIZARD DETECTION (100% SUCCESS): Successfully detected and navigated Smart Onboarding wizard with hierarchy introduction screen showing Pillars→Areas→Projects→Tasks explanation ✅ TEMPLATE SELECTION FLOW (100% SUCCESS): Onboarding wizard progressed through hierarchy introduction, welcome step, and template selection screen - template selection UI functional with proper navigation ⚠️ TEMPLATE APPLICATION MONITORING (PARTIAL SUCCESS): Template application process initiated but API calls monitoring showed missing required endpoints - no POST calls detected to /api/pillars, /api/areas, /api/projects, /api/tasks, /api/auth/complete-onboarding during template application ❌ HIERARCHY DATA VERIFICATION (0% SUCCESS): Unable to verify created hierarchy items due to session expiration or incomplete template application - navigation to Pillars/Areas/Projects/Tasks screens not successful ✅ BASIC REGRESSION TESTS (100% SUCCESS): No 401/500 errors detected during testing, application remained stable throughout onboarding flow ✅ SCREENSHOT CAPTURE (100% SUCCESS): Successfully captured screenshots of key onboarding steps including hierarchy introduction and template selection screens. CRITICAL ISSUES IDENTIFIED: 1) Original test account authentication failing with 401 errors, 2) Template application may not be completing successfully - API calls not being made to create hierarchy entities, 3) Session management issues causing return to login screen after onboarding completion, 4) Onboarding flow UI works correctly but backend integration appears incomplete. TECHNICAL FINDINGS: Onboarding wizard UI implementation is production-ready with proper step navigation, template selection, and confirmation flows. However, the backend integration for template application needs investigation as required API calls are not being made. SUCCESS CRITERIA ACHIEVED: Login with alternative account (100%), Onboarding wizard detection (100%), Template selection navigation (100%), Basic regression testing (100%), Screenshot capture (100%). FAILED CRITERIA: Original account authentication (0%), Template application API calls (0%), Hierarchy data verification (0%), Session persistence (0%). The Onboarding flow UI is functional but requires backend integration fixes for complete template application workflow."
+
 ## frontend:
   - task: "Journal Trash tab end-to-end (Supabase soft-delete)"
     implemented: true
