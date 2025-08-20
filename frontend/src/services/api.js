@@ -17,6 +17,62 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+let isRefreshing = false;
+let refreshSubscribers = [];
+const onRefreshed = (newToken) => {
+  refreshSubscribers.forEach((cb) => cb(newToken));
+  refreshSubscribers = [];
+};
+const addRefreshSubscriber = (cb) => {
+  refreshSubscribers.push(cb);
+};
+
+async function refreshToken() {
+  if (isRefreshing) return null;
+  isRefreshing = true;
+  try {
+    const rt = localStorage.getItem('refresh_token');
+    if (!rt) throw new Error('No refresh token');
+    const base = (process.env.REACT_APP_BACKEND_URL || '') + '/api';
+    const resp = await axios.post(base + '/auth/refresh', { refresh_token: rt }, { headers: { 'Content-Type': 'application/json' } });
+    if (resp.status === 200 && resp.data?.access_token) {
+      localStorage.setItem('auth_token', resp.data.access_token);
+      if (resp.data.refresh_token) localStorage.setItem('refresh_token', resp.data.refresh_token);
+      // store expiry timestamp if provided
+      if (resp.data.expires_in) {
+        const expAt = Date.now() + resp.data.expires_in * 1000;
+        localStorage.setItem('auth_token_exp', String(expAt));
+      }
+      return resp.data.access_token;
+    }
+    throw new Error('Refresh failed');
+  } finally {
+    isRefreshing = false;
+  }
+}
+
+// Response interceptor: attempt refresh on 401 once
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const newToken = await refreshToken();
+        if (newToken) {
+          onRefreshed(newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return apiClient(originalRequest);
+        }
+      } catch (e) {
+        // fallthrough
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // -------------- Journal API --------------
 export const journalAPI = {
   getEntries: (skip = 0, limit = 20, moodFilter = null, tagFilter = null, dateFrom = null, dateTo = null) => {
@@ -36,7 +92,6 @@ export const journalAPI = {
   searchEntries: (query, limit = 20) => apiClient.get('/journal/search', { params: { q: query, limit } }),
   getInsights: () => apiClient.get('/journal/insights'),
   getOnThisDay: (date = null) => apiClient.get('/journal/on-this-day', { params: date ? { date } : {} }),
-  // Templates
   getTemplates: () => apiClient.get('/journal/templates'),
   getTemplate: (templateId) => apiClient.get(`/journal/templates/${templateId}`),
   createTemplate: (templateData) => apiClient.post('/journal/templates', templateData),
@@ -84,10 +139,8 @@ export const projectsAPI = {
 };
 
 export const tasksAPI = {
-  // Extended to support server-side filters and pagination (backward compatible)
   getTasks: (arg = {}) => {
     const params = {};
-    // Backward compatibility: if arg is a string/uuid treat as projectId
     if (typeof arg === 'string') {
       if (arg) params.project_id = arg;
     } else if (arg && typeof arg === 'object') {
@@ -118,19 +171,15 @@ export const tasksAPI = {
   deleteTask: (taskId) => apiClient.delete(`/tasks/${taskId}`),
   searchTasks: (q, limit = 20, page = 1) => apiClient.get('/tasks/search', { params: { q, limit, page } }),
   moveTaskColumn: (taskId, newColumn) => apiClient.post(`/tasks/${taskId}/move`, { column: newColumn }),
-  // Subtasks
   getSubtasks: (taskId) => apiClient.get(`/tasks/${taskId}/subtasks`),
   createSubtask: (taskId, data) => apiClient.post(`/tasks/${taskId}/subtasks`, data),
-  // Dependencies
   getAvailableDependencyTasks: (projectId, excludeTaskId = null) =>
     apiClient.get('/tasks/available-dependencies', { params: { project_id: projectId, exclude_task_id: excludeTaskId } }),
   getTaskDependencies: (taskId) => apiClient.get(`/tasks/${taskId}/dependencies`),
   updateTaskDependencies: (taskId, dependencyIds = []) => apiClient.post(`/tasks/${taskId}/dependencies`, { dependency_task_ids: dependencyIds }),
-  // AI helpers
   suggestFocus: () => apiClient.get('/ai/suggest-focus'),
 };
 
-// Recurring tasks (used by RecurringTasks component)
 export const recurringTasksAPI = {
   getRecurringTasks: () => apiClient.get('/tasks/recurring'),
   createRecurringTask: (data) => apiClient.post('/tasks/recurring', data),
@@ -139,7 +188,6 @@ export const recurringTasksAPI = {
   generateRecurringTaskInstances: () => apiClient.post('/tasks/recurring/generate'),
 };
 
-// -------------- Dashboard / Insights / Alignment / AI Coach --------------
 export const dashboardAPI = {
   getDashboard: () => apiClient.get('/dashboard'),
 };
@@ -150,12 +198,10 @@ export const insightsAPI = {
 };
 
 export const alignmentScoreAPI = {
-  // Try new dashboard endpoint; gracefully fall back to legacy '/alignment-score'
   getDashboardData: async () => {
     try {
       return await apiClient.get('/alignment/dashboard');
     } catch (err) {
-      // Fallback for environments where dashboard route is not available
       return apiClient.get('/alignment-score');
     }
   },
@@ -181,7 +227,6 @@ export const aiCoachAPI = {
   getQuota: () => apiClient.get('/ai/quota'),
 };
 
-// -------------- Uploads (chunked) --------------
 export const uploadsAPI = {
   initiate: ({ filename, size, parentType = null, parentId = null }) =>
     apiClient.post('/uploads/initiate', { filename, size, parent_type: parentType, parent_id: parentId }),
@@ -200,7 +245,6 @@ export const uploadsAPI = {
   },
 };
 
-// Error handling utility
 export const handleApiError = (error, defaultMessage = 'An error occurred') => {
   if (error?.response) {
     return error.response.data?.message || error.response.data?.detail || defaultMessage;
@@ -211,6 +255,5 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
   }
 };
 
-// Named and default exports for compatibility
 export const api = apiClient;
 export default apiClient;

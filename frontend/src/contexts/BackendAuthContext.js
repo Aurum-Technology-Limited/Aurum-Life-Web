@@ -22,21 +22,41 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('auth_token'));
 
+  // helper
+  const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
   // Check if user is authenticated on app load
   useEffect(() => {
     const initializeAuth = async () => {
-      const sleep = (ms) => new Promise(res => setTimeout(res, ms));
       const storedToken = localStorage.getItem('auth_token');
-      
-      if (storedToken) {
+      const storedRefresh = localStorage.getItem('refresh_token');
+      const exp = Number(localStorage.getItem('auth_token_exp') || 0);
+
+      // If token expired but refresh exists, try refresh first
+      if ((!storedToken || (exp && Date.now() > exp)) && storedRefresh) {
         try {
-          // Verify token with backend
-          // Retry a couple of times because profile bootstrap may lag
+          const r = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: storedRefresh })
+          });
+          if (r.ok) {
+            const data = await r.json();
+            localStorage.setItem('auth_token', data.access_token);
+            if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
+            if (data.expires_in) localStorage.setItem('auth_token_exp', String(Date.now() + data.expires_in * 1000));
+          }
+        } catch (_) {}
+      }
+
+      const freshToken = localStorage.getItem('auth_token');
+      if (freshToken) {
+        try {
           let userData = null;
           for (let i = 0; i < 3; i++) {
             const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
               headers: {
-                'Authorization': `Bearer ${storedToken}`,
+                'Authorization': `Bearer ${freshToken}`,
                 'Content-Type': 'application/json'
               }
             });
@@ -46,31 +66,23 @@ export const AuthProvider = ({ children }) => {
             }
             await sleep(300);
           }
-
           if (userData) {
             setUser(userData);
-            setToken(storedToken);
+            setToken(freshToken);
           } else {
-            // Token is invalid, clear it
             localStorage.removeItem('auth_token');
-            setToken(null);
-            setUser(null);
+            setToken(null); setUser(null);
           }
         } catch (error) {
           console.error('Auth verification failed:', error);
           localStorage.removeItem('auth_token');
-          setToken(null);
-          setUser(null);
+          setToken(null); setUser(null);
         }
       }
-      
       setLoading(false);
     };
-
     initializeAuth();
   }, []);
-
-  const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
   const fetchUserWithRetry = async (authToken, maxAttempts = 3, delayMs = 500) => {
     let lastErr = null;
@@ -100,328 +112,103 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      
       const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-
       const loginData = await response.json();
-
       if (response.ok && loginData.access_token) {
         const authToken = loginData.access_token;
-        
-        // Store token
+        const refreshToken = loginData.refresh_token;
+        const expiresIn = loginData.expires_in || 3600;
         localStorage.setItem('auth_token', authToken);
+        if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
+        localStorage.setItem('auth_token_exp', String(Date.now() + expiresIn * 1000));
         setToken(authToken);
-
-        // Get user profile
         const { ok, data: profileData, error } = await fetchUserWithRetry(authToken, 3, 400);
         if (ok) {
           setUser(profileData);
-          setLoading(false); // AFTER setting user
+          setLoading(false);
           return { success: true, message: 'Login successful!' };
         } else {
           setLoading(false);
           throw new Error(error?.message || 'Failed to get user profile');
         }
-        
       } else {
         setLoading(false);
         let errMsg = loginData.detail || 'Login failed';
-        if (/legacy/i.test(errMsg)) {
-          errMsg = 'Your old account is no longer supported. Please create a new account.';
-        }
-        return { 
-          success: false, 
-          error: errMsg 
-        };
+        if (/legacy/i.test(errMsg)) errMsg = 'Your old account is no longer supported. Please create a new account.';
+        return { success: false, error: errMsg };
       }
-      
     } catch (error) {
       console.error('Login error:', error);
       setLoading(false);
-      return { 
-        success: false, 
-        error: 'Network error. Please try again.' 
-      };
-    }
-  };
-
-  const register = async (userData) => {
-    try {
-      setLoading(true);
-      
-      const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userData)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        return { 
-          success: true, 
-          message: data.message || 'Registration successful! You can now log in.'
-        };
-      } else if (response.status === 409) {
-        return {
-          success: false,
-          error: 'An account with this email already exists. Please sign in instead.',
-          code: 409,
-          duplicate: true
-        };
-      } else {
-        return { 
-          success: false, 
-          error: data.detail || 'Registration failed' 
-        };
-      }
-      
-    } catch (error) {
-      console.error('Registration error:', error);
-      return { 
-        success: false, 
-        error: 'Network error. Please try again.' 
-      };
-    } finally {
-      setLoading(false);
+      return { success: false, error: 'Network error. Please try again.' };
     }
   };
 
   const logout = async () => {
     try {
-      // Clear local storage
       localStorage.removeItem('auth_token');
-      setToken(null);
-      setUser(null);
-      
-      // Optional: Call backend logout endpoint if it exists
-      if (token) {
-        try {
-          await fetch(`${BACKEND_URL}/api/auth/logout`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-        } catch (error) {
-          // Logout endpoint might not exist, that's okay
-          console.log('Backend logout not available');
-        }
-      }
-      
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('auth_token_exp');
+      setToken(null); setUser(null);
       return { success: true };
-      
     } catch (error) {
       console.error('Logout error:', error);
-      // Still clear local state even if backend call fails
       localStorage.removeItem('auth_token');
-      setToken(null);
-      setUser(null);
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('auth_token_exp');
+      setToken(null); setUser(null);
       return { success: true };
     }
   };
 
-  const updateProfile = async (profileData) => {
+  const scheduleRefresh = () => {
+    const exp = Number(localStorage.getItem('auth_token_exp') || 0);
+    if (!exp) return;
+    const msUntil = exp - Date.now() - 60000; // refresh 60s before expiry
+    if (msUntil <= 0) {
+      doRefresh();
+      return;
+    }
+    const id = setTimeout(() => doRefresh(), msUntil);
+    return () => clearTimeout(id);
+  };
+
+  const doRefresh = async () => {
+    const rt = localStorage.getItem('refresh_token');
+    if (!rt) return;
     try {
-      if (!token) {
-        throw new Error('Not authenticated');
-      }
-      
-      const response = await fetch(`${BACKEND_URL}/api/auth/profile`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(profileData)
+      const r = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: rt })
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUser({ ...user, ...data });
-        return { 
-          success: true, 
-          message: 'Profile updated successfully!' 
-        };
+      if (r.ok) {
+        const data = await r.json();
+        localStorage.setItem('auth_token', data.access_token);
+        if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
+        if (data.expires_in) localStorage.setItem('auth_token_exp', String(Date.now() + data.expires_in * 1000));
+        setToken(data.access_token);
+        // Optionally refresh user data
+        await fetchUserWithRetry(data.access_token, 1, 0);
       } else {
-        // Handle different error types properly
-        let errorMessage = 'Profile update failed';
-        
-        if (response.status === 422 && data.detail && Array.isArray(data.detail)) {
-          // Parse Pydantic validation errors
-          const validationErrors = data.detail.map(err => {
-            const field = Array.isArray(err.loc) ? err.loc[err.loc.length - 1] : 'field';
-            const fieldName = field === 'username' ? 'Username' 
-                            : field === 'first_name' ? 'First Name'
-                            : field === 'last_name' ? 'Last Name' 
-                            : field;
-            return `${fieldName}: ${err.msg || 'Invalid value'}`;
-          });
-          errorMessage = validationErrors.join(', ');
-        } else if (response.status === 429) {
-          // Rate limiting error
-          errorMessage = data.detail || 'Username can only be changed once every 7 days';
-        } else if (response.status === 409) {
-          // Username already taken
-          errorMessage = data.detail || 'Username is already taken';
-        } else if (typeof data.detail === 'string') {
-          errorMessage = data.detail;
-        }
-        
-        return { 
-          success: false, 
-          error: errorMessage 
-        };
+        // If refresh fails, force logout
+        await logout();
       }
-      
-    } catch (error) {
-      console.error('Profile update error:', error);
-      return { 
-        success: false, 
-        error: 'Network error. Please try again.' 
-      };
+    } catch (e) {
+      await logout();
     }
   };
 
-  const forgotPassword = async (email) => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      });
+  // Auto-schedule token refresh when token/exp changes
+  useEffect(() => {
+    if (!token) return;
+    const cleanup = scheduleRefresh();
+    return () => { if (cleanup) cleanup(); };
+  }, [token]);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        return { 
-          success: true, 
-          message: data.message || 'Password reset email sent!' 
-        };
-      } else {
-        return { 
-          success: false, 
-          error: data.detail || 'Password reset failed' 
-        };
-      }
-      
-    } catch (error) {
-      console.error('Forgot password error:', error);
-      return { 
-        success: false, 
-        error: 'Network error. Please try again.' 
-      };
-    }
-  };
-
-  const loginWithGoogle = async (credentialResponse) => {
-    try {
-      setLoading(true);
-      
-      // Use the access token to get user info directly
-      if (credentialResponse?.userInfo) {
-        // We already have user info, create our own session
-        const userData = {
-          id: credentialResponse.userInfo.id,
-          email: credentialResponse.userInfo.email,
-          name: credentialResponse.userInfo.name,
-          picture: credentialResponse.userInfo.picture
-        };
-        
-        // Create session token locally (simplified approach)
-        const sessionToken = `google_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
-        // Store token and user data
-        localStorage.setItem('auth_token', sessionToken);
-        setToken(sessionToken);
-        setUser(userData);
-        
-        return { 
-          success: true, 
-          message: 'Google login successful!'
-        };
-      } else {
-        return { 
-          success: false, 
-          error: 'Failed to get user information from Google' 
-        };
-      }
-      
-    } catch (error) {
-      console.error('Google login error:', error);
-      return { 
-        success: false, 
-        error: 'Network error. Please try again.' 
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleCallback = async (sessionId) => {
-    // This method is no longer needed with the new Google OAuth flow
-    // but keeping it for backward compatibility
-    console.warn('handleGoogleCallback is deprecated with new Google OAuth flow');
-    return { 
-      success: false, 
-      error: 'This method is no longer supported'
-    };
-  };
-
-  const refreshUser = async () => {
-    try {
-      if (!token) {
-        console.log('No token available for user refresh');
-        return { success: false, error: 'Not authenticated' };
-      }
-
-      console.log('🔄 Refreshing user data from backend...');
-      
-      const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        console.log('✅ User data refreshed successfully', userData);
-        return { 
-          success: true, 
-          data: userData 
-        };
-      } else {
-        console.error('Failed to refresh user data:', response.status);
-        return { 
-          success: false, 
-          error: 'Failed to refresh user data' 
-        };
-      }
-      
-    } catch (error) {
-      console.error('Refresh user error:', error);
-      return { 
-        success: false, 
-        error: 'Network error. Please try again.' 
-      };
-    }
-  };
-
-  // Keep-alive ping to avoid session timeout during extended usage
+  // Keep-alive ping (doesn't replace refresh)
   useEffect(() => {
     if (!token) return;
     const controller = new AbortController();
@@ -431,9 +218,8 @@ export const AuthProvider = ({ children }) => {
           headers: { 'Authorization': `Bearer ${token}` },
           signal: controller.signal,
         });
-      } catch (_) { /* ignore */ }
+      } catch (_) {}
     };
-    // Ping every 2 minutes
     const id = setInterval(ping, 120000);
     return () => { clearInterval(id); controller.abort(); };
   }, [token]);
@@ -443,13 +229,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     token,
     login,
-    register,
     logout,
-    updateProfile,
-    refreshUser,
-    forgotPassword,
-    loginWithGoogle,
-    handleGoogleCallback
   };
 
   return (

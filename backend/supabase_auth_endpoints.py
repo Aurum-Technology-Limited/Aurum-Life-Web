@@ -1,26 +1,26 @@
 """
 Supabase Authentication Endpoints
-Replaces traditional JWT auth endpoints with Supabase Auth integration
+Replaces traditional JWT auth with Supabase Auth integration
 """
 
 from fastapi import APIRouter, HTTPException, status, Request
+from pydantic import BaseModel
 from supabase_client import supabase_manager
 from supabase_auth import verify_token
 from models import UserCreate, UserLogin, UserResponse
-from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Create router for auth endpoints with /auth prefix
 auth_router = APIRouter(prefix="/auth", tags=["authentication"])
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 @auth_router.post("/register", response_model=UserResponse)
 async def register_user(user_data: UserCreate):
-    """Register a new user with Supabase Auth"""
     try:
         supabase = supabase_manager.get_client()
-        # Pre-check for email exists
         try:
             existing = supabase.auth.admin.list_users()
             existing_users = existing.users if hasattr(existing, 'users') else (existing.get('users') if isinstance(existing, dict) else existing)
@@ -80,7 +80,6 @@ async def register_user(user_data: UserCreate):
 
 @auth_router.post("/login")
 async def login_user(user_credentials: UserLogin):
-    """Login user via Supabase Auth only"""
     try:
         supabase = supabase_manager.get_client()
         auth_response = supabase.auth.sign_in_with_password({
@@ -90,11 +89,10 @@ async def login_user(user_credentials: UserLogin):
         if getattr(auth_response, 'session', None) and getattr(auth_response.session, 'access_token', None):
             return {
                 "access_token": auth_response.session.access_token,
-                "refresh_token": auth_response.session.refresh_token,
+                "refresh_token": getattr(auth_response.session, 'refresh_token', None),
                 "token_type": "bearer",
-                "expires_in": auth_response.session.expires_in
+                "expires_in": getattr(auth_response.session, 'expires_in', 3600)
             }
-        # If no session provided
         raise HTTPException(status_code=401, detail="Invalid credentials")
     except HTTPException:
         raise
@@ -102,9 +100,44 @@ async def login_user(user_credentials: UserLogin):
         logger.error(f"Login error: {e}")
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+@auth_router.post("/refresh")
+async def refresh_session(payload: RefreshRequest):
+    """Refresh access token using Supabase refresh token."""
+    try:
+        supabase = supabase_manager.get_client()
+        # Newer supabase-py clients expose refresh_session via auth
+        refreshed = None
+        try:
+            refreshed = supabase.auth.refresh_session({"refresh_token": payload.refresh_token})
+        except Exception as e:
+            logger.info(f"Primary refresh method failed: {e}")
+            # Fallback: set_session if available
+            try:
+                refreshed = supabase.auth.set_session({"refresh_token": payload.refresh_token, "access_token": ""})
+            except Exception as e2:
+                logger.error(f"Fallback refresh failed: {e2}")
+                raise HTTPException(status_code=401, detail="Failed to refresh session")
+        # Normalize output
+        session = getattr(refreshed, 'session', None) or getattr(refreshed, 'data', None) or refreshed
+        access_token = getattr(session, 'access_token', None) if session else None
+        refresh_token = getattr(session, 'refresh_token', None) if session else None
+        expires_in = getattr(session, 'expires_in', None) if session else 3600
+        if not access_token:
+            raise HTTPException(status_code=401, detail="Failed to refresh session")
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token or payload.refresh_token,
+            "token_type": "bearer",
+            "expires_in": expires_in
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Refresh session error: {e}")
+        raise HTTPException(status_code=401, detail="Failed to refresh session")
+
 @auth_router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(request: Request):
-    """Get current user profile - Supabase token only"""
     try:
         authorization = request.headers.get("Authorization")
         if not authorization or not authorization.startswith("Bearer "):
@@ -117,7 +150,6 @@ async def get_current_user_profile(request: Request):
             raise HTTPException(status_code=401, detail="Could not validate credentials")
         profile = await supabase_manager.find_document("user_profiles", {"id": user_id})
         if not profile:
-            # Create minimal profile if missing
             username = current_user.email.split('@')[0] if hasattr(current_user, 'email') else 'user'
             await supabase_manager.create_document("user_profiles", {
                 'id': user_id,
