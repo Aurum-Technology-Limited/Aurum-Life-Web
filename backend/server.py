@@ -345,8 +345,8 @@ class AdminPurgeRequest(BaseModel):
 @api_router.post("/admin/purge-legacy-users")
 async def purge_legacy_users(payload: AdminPurgeRequest, current_user: User = Depends(get_current_active_user)):
     try:
-        expected_token = os.environ.get('ADMIN_PURGE_TOKEN')
-        if not expected_token or payload.admin_token != expected_token:
+        expected_token = get_admin_token()
+        if payload.admin_token != expected_token:
             raise HTTPException(status_code=401, detail="Invalid admin token")
         preserve = (payload.preserve_email or '').strip().lower()
         if not preserve:
