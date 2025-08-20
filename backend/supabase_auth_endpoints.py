@@ -17,6 +17,12 @@ auth_router = APIRouter(prefix="/auth", tags=["authentication"])
 class RefreshRequest(BaseModel):
     refresh_token: str
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class UpdatePasswordRequest(BaseModel):
+    new_password: str
+
 @auth_router.post("/register", response_model=UserResponse)
 async def register_user(user_data: UserCreate):
     try:
@@ -131,6 +137,31 @@ async def refresh_session(payload: RefreshRequest):
     except Exception as e:
         logger.error(f"Refresh session error: {e}")
         raise HTTPException(status_code=401, detail="Failed to refresh session")
+
+@auth_router.post("/forgot-password")
+async def forgot_password(payload: ForgotPasswordRequest):
+    """Send password reset email via Supabase."""
+    try:
+        supabase = supabase_manager.get_client()
+        # Use project Site URL settings for redirect; no hardcoded URL
+        resp = supabase.auth.reset_password_for_email(payload.email)
+        # supabase-py returns data or raises; treat as success if no exception
+        return {"success": True, "message": "If an account exists, a password reset email has been sent."}
+    except Exception as e:
+        logger.error(f"Forgot password error: {e}")
+        # Always mask existence of email for security
+        raise HTTPException(status_code=200, detail="If an account exists, a password reset email has been sent.")
+
+@auth_router.post("/update-password")
+async def update_password(payload: UpdatePasswordRequest, current_user: User = Depends(get_current_active_user)):
+    """Update password for the current authenticated user (used after reset link)."""
+    try:
+        supabase = supabase_manager.get_client()
+        res = supabase.auth.update_user({"password": payload.new_password})
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Update password error: {e}")
+        raise HTTPException(status_code=400, detail="Failed to update password")
 
 @auth_router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(request: Request):

@@ -126,6 +126,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const forgotPassword = async (email) => {
+    try {
+      const r = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      if (r.ok) {
+        return { success: true, message: 'If an account exists, a password reset email has been sent.' };
+      }
+      const data = await (async () => { try { return await r.json(); } catch { return {}; } })();
+      return { success: false, error: data?.detail || 'Failed to send password reset email' };
+    } catch (e) {
+      return { success: false, error: 'Network error. Please try again.' };
+    }
+  };
+
   const logout = async () => {
     try {
       localStorage.removeItem('auth_token');
@@ -204,6 +220,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     token,
     login,
+    forgotPassword,
     logout,
     refreshUser,
   };
