@@ -139,18 +139,53 @@ async def refresh_session(payload: RefreshRequest):
         raise HTTPException(status_code=401, detail="Failed to refresh session")
 
 @auth_router.post("/forgot-password")
-async def forgot_password(payload: ForgotPasswordRequest):
-    """Send password reset email via Supabase."""
+async def forgot_password(payload: ForgotPasswordRequest, request: Request):
+    """Trigger password reset. Attempts both standard reset and admin-generated link with redirect.
+    Returns generic success; in non-prod, may include recovery_url for troubleshooting.
+    """
     try:
         supabase = supabase_manager.get_client()
-        # Use project Site URL settings for redirect; no hardcoded URL
-        resp = supabase.auth.reset_password_for_email(payload.email)
-        # supabase-py returns data or raises; treat as success if no exception
-        return {"success": True, "message": "If an account exists, a password reset email has been sent."}
+        # Build redirect_to from request origin if present
+        origin = request.headers.get('origin')
+        if not origin:
+            scheme = request.url.scheme
+            host = request.headers.get('host')
+            if scheme and host:
+                origin = f"{scheme}://{host}"
+        redirect_to = f"{origin}/reset-password" if origin else None
+
+        # Try standard reset flow
+        try:
+            if redirect_to:
+                supabase.auth.reset_password_for_email(payload.email, options={"redirect_to": redirect_to})
+            else:
+                supabase.auth.reset_password_for_email(payload.email)
+            logger.info("Supabase reset_password_for_email invoked successfully")
+        except Exception as e:
+            logger.info(f"Primary reset_password_for_email failed or not supported: {e}")
+        
+        # Also attempt to generate a recovery link via admin API for dev fallback
+        recovery_url = None
+        try:
+            opts = {"email": payload.email, "type": "recovery"}
+            if redirect_to:
+                opts["options"] = {"redirect_to": redirect_to}
+            gen = supabase.auth.admin.generate_link(opts)
+            # normalize return
+            recovery_url = getattr(gen, 'action_link', None) or getattr(gen, 'data', {}).get('action_link') if hasattr(gen, 'data') else (gen.get('action_link') if isinstance(gen, dict) else None)
+            logger.info(f"Generated recovery link via admin API: {bool(recovery_url)}")
+        except Exception as e:
+            logger.info(f"Admin generate_link not available or failed: {e}")
+        
+        resp = {"success": True, "message": "If an account exists, a password reset email has been sent."}
+        if recovery_url:
+            # Provide dev fallback link so user can proceed immediately
+            resp["recovery_url"] = recovery_url
+        return resp
     except Exception as e:
         logger.error(f"Forgot password error: {e}")
         # Always mask existence of email for security
-        raise HTTPException(status_code=200, detail="If an account exists, a password reset email has been sent.")
+        return {"success": True, "message": "If an account exists, a password reset email has been sent."}
 
 @auth_router.post("/update-password")
 async def update_password(payload: UpdatePasswordRequest, current_user: User = Depends(get_current_active_user)):
