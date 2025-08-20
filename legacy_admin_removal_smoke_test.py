@@ -16,7 +16,7 @@ from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL from frontend/.env
 BACKEND_URL = "https://31e11061-3a9b-4b56-884b-e50264312c7d.preview.emergentagent.com/api"
-TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
+TEST_EMAIL = "smoketest_e0742f61@aurumtechnologyltd.com"
 TEST_PASSWORD = "password123"
 
 class LegacyAdminRemovalSmokeTest:
