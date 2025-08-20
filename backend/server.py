@@ -444,7 +444,7 @@ async def migrate_legacy_to_supabase(payload: AdminMigrateLegacyRequest):
             if not prof:
                 await supabase_manager.create_document("user_profiles", profile_payload)
             else:
-                await supabase_manager.update_document("user_profiles", {'id': supa_id}, profile_payload)
+                await supabase_manager.update_document("user_profiles", supa_id, profile_payload)
         # Migrate references
         tables = [
             'pillars', 'areas', 'projects', 'tasks', 'journal_entries', 'user_stats',
