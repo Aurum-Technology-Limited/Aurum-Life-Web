@@ -17,11 +17,11 @@ BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
 
 # Test user data as specified in the review request
 TEST_USER_DATA = {
-    "email": "marc.alleyne.test@gmail.com",  # Using a different email to avoid conflicts
+    "email": "marc.alleyne@gmail.com",
     "password": "Test$1920",
     "first_name": "Marc",
     "last_name": "Alleyne",
-    "username": "Marcymoo"
+    "username": "MarcymooUnique"  # Using a unique username to avoid conflicts
 }
 
 class AuthRegistrationTest:
