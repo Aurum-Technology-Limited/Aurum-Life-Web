@@ -229,7 +229,7 @@ class AuthRegistrationTest:
             print("🔄 TESTING WITH KNOWN WORKING CREDENTIALS")
             print("=" * 70)
             
-            # Test with known working credentials
+            # Test with known working credentials from test_result.md
             working_credentials = {
                 "email": "marc.alleyne@aurumtechnologyltd.com",
                 "password": "password123"
@@ -271,6 +271,56 @@ class AuthRegistrationTest:
                 print(f"❌ Working credentials login failed: {response.status_code}")
                 self.log_result("Working credentials login", False, response.status_code, 
                               f"Login failed: {response.text[:200]}", response_time)
+                
+            # If working credentials also failed, try creating a new account with unique credentials
+            if not self.access_token:
+                print("\n" + "=" * 70)
+                print("🆕 TESTING NEW ACCOUNT CREATION")
+                print("=" * 70)
+                
+                import time
+                unique_suffix = str(int(time.time()))
+                new_user_data = {
+                    "email": f"testuser{unique_suffix}@example.com",
+                    "password": "Test$1920",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "username": f"testuser{unique_suffix}"
+                }
+                
+                print(f"🆕 Creating new test account: {new_user_data['email']}")
+                response, response_time = self.make_request("POST", "/auth/register", json=new_user_data)
+                
+                if response.status_code == 200:
+                    print(f"✅ New account created successfully!")
+                    self.log_result("New account creation", True, response.status_code, 
+                                  f"Account created: {new_user_data['email']}", response_time)
+                    
+                    # Try to login with new account
+                    login_data = {
+                        "email": new_user_data["email"],
+                        "password": new_user_data["password"]
+                    }
+                    
+                    response, response_time = self.make_request("POST", "/auth/login", json=login_data)
+                    if response.status_code == 200:
+                        try:
+                            data = response.json()
+                            if "access_token" in data:
+                                self.access_token = data["access_token"]
+                                self.refresh_token = data.get("refresh_token")
+                                print(f"✅ New account login successful!")
+                                self.log_result("New account login", True, response.status_code, 
+                                              f"Login successful with new account", response_time)
+                                passed += 1
+                        except Exception as e:
+                            print(f"❌ New account login failed: {e}")
+                            self.log_result("New account login", False, response.status_code, 
+                                          f"Exception: {e}", response_time)
+                else:
+                    print(f"❌ New account creation failed: {response.status_code}")
+                    self.log_result("New account creation", False, response.status_code, 
+                                  f"Creation failed: {response.text[:200]}", response_time)
         
         print("=" * 70)
         print("📊 AUTHENTICATION TEST SUMMARY")
