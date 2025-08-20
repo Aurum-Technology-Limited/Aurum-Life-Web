@@ -424,16 +424,18 @@ class InsightsService:
                             pln = pillar_by_id[plid].get('name')
                 return pn, an, pln
 
-            # Eisenhower matrix classification
-            now = datetime.utcnow()
+            # Eisenhower matrix classification (timezone-safe)
+            now = datetime.now(timezone.utc)
             end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=999999)
-            urgent_threshold = end_of_today  # Urgent = due by end of today or overdue
+            urgent_threshold = end_of_today
 
             Q1, Q2, Q3, Q4 = [], [], [], []
             for t in tasks or []:
                 due_str = t.get('due_date')
                 try:
-                    due = datetime.fromisoformat(due_str.replace('Z', '+00:00')) if due_str else None
+                    due = datetime.fromisoformat(str(due_str).replace('Z', '+00:00')) if due_str else None
+                    if due and not due.tzinfo:
+                        due = due.replace(tzinfo=timezone.utc)
                 except Exception:
                     due = None
                 urgent = bool(due and due <= urgent_threshold)
@@ -484,14 +486,13 @@ class InsightsService:
                     'percentage': round((cnt / total_completed) * 100, 1),
                     'tasks_completed': cnt,
                 })
-            # Sort descending by percentage
             pillar_alignment.sort(key=lambda x: x['percentage'], reverse=True)
             alignment_snapshot = {
                 'score': 0,  # placeholder for future scoring
                 'pillar_alignment': pillar_alignment,
             }
 
-            # Area distribution (top areas by completed tasks)
+            # Area distribution
             area_counts: Dict[str, int] = {}
             for t in completed:
                 pid = t.get('project_id')
@@ -502,7 +503,6 @@ class InsightsService:
             area_distribution = []
             for aid, cnt in area_counts.items():
                 a = area_by_id.get(aid, {})
-                # projects_count in this area
                 projects_in_area = [p for p in (projects or []) if p.get('area_id') == aid]
                 area_distribution.append({
                     'area_id': aid,
@@ -513,10 +513,8 @@ class InsightsService:
                     'area_color': a.get('color', '#3B82F6'),
                     'area_icon': a.get('icon', 'Circle'),
                 })
-            # Sort areas by percentage desc
             area_distribution.sort(key=lambda x: x['percentage'], reverse=True)
 
-            # Optional human-readable insights
             insights_text = []
             if len(Q1) > 0:
                 insights_text.append(f"You have {len(Q1)} urgent and important task(s) to prioritize today.")
@@ -532,7 +530,7 @@ class InsightsService:
                 'productivity_trends': {},
                 'insights_text': insights_text,
                 'recommendations': [],
-                'generated_at': datetime.utcnow().isoformat()
+                'generated_at': datetime.now(timezone.utc).isoformat()
             }
             return data
         except Exception as e:
@@ -551,7 +549,7 @@ class InsightsService:
                 'productivity_trends': {},
                 'insights_text': [],
                 'recommendations': [],
-                'generated_at': datetime.utcnow().isoformat()
+                'generated_at': datetime.now(timezone.utc).isoformat()
             }
 
 
