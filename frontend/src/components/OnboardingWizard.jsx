@@ -51,54 +51,113 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
       setError('');
       console.log('🎯 Onboarding: Starting template application...', templateData.name);
 
-      // Create entities in the correct hierarchical order
+      // Preload existing data to avoid duplicates
+      const existingPillarsResp = await api.get('/pillars');
+      const existingPillars = existingPillarsResp.data || [];
+      const pillarByName = new Map(existingPillars.map(p => [String(p.name).toLowerCase(), p]));
+
+      // Create entities in the correct hierarchical order with de-duplication
       for (const pillarData of templateData.pillars) {
-        // 1. Create Pillar
-        console.log('🏛️ Creating pillar:', pillarData.name);
-        const pillarResponse = await api.post('/pillars', {
-          name: pillarData.name,
-          description: pillarData.description,
-          icon: pillarData.icon,
-          color: pillarData.color,
-          time_allocation_percentage: pillarData.time_allocation_percentage || null
-        });
-        
-        const pillarId = pillarResponse.data.id;
-        onDataMutation('pillar', 'create', pillarResponse.data);
+        // 1. Create or reuse Pillar
+        const keyName = String(pillarData.name).toLowerCase();
+        let pillarId;
+        let pillarObj = pillarByName.get(keyName);
+        if (pillarObj) {
+          console.log('🏛️ Reusing existing pillar:', pillarData.name);
+          pillarId = pillarObj.id;
+        } else {
+          console.log('🏛️ Creating pillar:', pillarData.name);
+          const pillarResponse = await api.post('/pillars', {
+            name: pillarData.name,
+            description: pillarData.description,
+            icon: pillarData.icon,
+            color: pillarData.color,
+            time_allocation_percentage: pillarData.time_allocation_percentage || null
+          });
+          pillarObj = pillarResponse.data;
+          pillarId = pillarObj.id;
+          pillarByName.set(keyName, pillarObj);
+          onDataMutation('pillar', 'create', pillarObj);
+        }
+
+        // Preload areas and projects for de-dupe within this loop
+        const areasResp = await api.get('/areas');
+        const allAreas = areasResp.data || [];
+        const areasForPillar = allAreas.filter(a => a.pillar_id === pillarId);
+        const areaByName = new Map(areasForPillar.map(a => [String(a.name).toLowerCase(), a]));
+
+        const projectsResp = await api.get('/projects');
+        const allProjects = projectsResp.data || [];
+        const projectsByAreaId = new Map();
+        for (const proj of allProjects) {
+          const arr = projectsByAreaId.get(proj.area_id) || [];
+          arr.push(proj);
+          projectsByAreaId.set(proj.area_id, arr);
+        }
 
         // 2. Create Areas within this Pillar
         for (const areaData of pillarData.areas) {
-          console.log('🎯 Creating area:', areaData.name);
-          const areaResponse = await api.post('/areas', {
-            name: areaData.name,
-            description: areaData.description,
-            icon: areaData.icon,
-            color: areaData.color,
-            importance: areaData.importance,
-            pillar_id: pillarId
-          });
-          
-          const areaId = areaResponse.data.id;
-          onDataMutation('area', 'create', areaResponse.data);
+          const areaKey = String(areaData.name).toLowerCase();
+          let areaId;
+          let areaObj = areaByName.get(areaKey);
+          if (areaObj) {
+            console.log('🎯 Reusing area:', areaData.name);
+            areaId = areaObj.id;
+          } else {
+            console.log('🎯 Creating area:', areaData.name);
+            const areaResponse = await api.post('/areas', {
+              name: areaData.name,
+              description: areaData.description,
+              icon: areaData.icon,
+              color: areaData.color,
+              pillar_id: pillarId
+            });
+            areaObj = areaResponse.data;
+            areaId = areaObj.id;
+            areaByName.set(areaKey, areaObj);
+            onDataMutation('area', 'create', areaObj);
+          }
+
+          // Prepare projects map for this area
+          const existingProjects = projectsByAreaId.get(areaId) || [];
+          const projectByName = new Map(existingProjects.map(p => [String(p.name).toLowerCase(), p]));
 
           // 3. Create Projects within this Area
           for (const projectData of areaData.projects) {
-            console.log('📁 Creating project:', projectData.name);
-            const projectResponse = await api.post('/projects', {
-              name: projectData.name,
-              description: projectData.description,
-              icon: projectData.icon,
-              priority: projectData.priority,
-              importance: projectData.importance,
-              status: 'Not Started',
-              area_id: areaId
-            });
-            
-            const projectId = projectResponse.data.id;
-            onDataMutation('project', 'create', projectResponse.data);
+            const projKey = String(projectData.name).toLowerCase();
+            let projectId;
+            let projectObj = projectByName.get(projKey);
+            if (projectObj) {
+              console.log('📁 Reusing project:', projectData.name);
+              projectId = projectObj.id;
+            } else {
+              console.log('📁 Creating project:', projectData.name);
+              const projectResponse = await api.post('/projects', {
+                name: projectData.name,
+                description: projectData.description,
+                icon: projectData.icon,
+                priority: projectData.priority,
+                status: 'Not Started',
+                area_id: areaId
+              });
+              projectObj = projectResponse.data;
+              projectId = projectObj.id;
+              projectByName.set(projKey, projectObj);
+              onDataMutation('project', 'create', projectObj);
+            }
+
+            // Fetch existing tasks for this project to avoid duplicates
+            const tasksResp = await api.get('/tasks', { params: { project_id: projectId } });
+            const existingTasks = tasksResp.data || [];
+            const taskByName = new Map(existingTasks.map(t => [String(t.name).toLowerCase(), t]));
 
             // 4. Create Tasks within this Project
             for (const taskData of projectData.tasks) {
+              const taskKey = String(taskData.name).toLowerCase();
+              if (taskByName.has(taskKey)) {
+                console.log('✅ Skipping duplicate task:', taskData.name);
+                continue;
+              }
               console.log('✅ Creating task:', taskData.name);
               const taskResponse = await api.post('/tasks', {
                 name: taskData.name,
@@ -107,7 +166,7 @@ const OnboardingWizard = ({ onComplete, onClose }) => {
                 status: 'todo',
                 project_id: projectId
               });
-              
+              taskByName.set(taskKey, taskResponse.data);
               onDataMutation('task', 'create', taskResponse.data);
             }
           }
