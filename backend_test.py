@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Backend Focused Testing for Tasks Filters and Insights Structure
+Backend Smoke Test - Legacy Admin Endpoints Removal Verification
 Tests the specific requirements from the review request:
-1) GET /api/tasks with optional filters (project_id, q, status, priority, due_date)
-2) GET /api/insights with required structure (eisenhower_matrix, alignment_snapshot, area_distribution, generated_at)
-3) Ensure no 500s across these endpoints under authenticated context
+1) GET /api/health -> 200
+2) Auth flow (Supabase-only): POST /api/auth/login with marc.alleyne@aurumtechnologyltd.com/password123 -> 200; then GET /api/auth/me -> 200
+3) Core endpoints under auth: GET /api/pillars, /api/areas, /api/projects, /api/tasks, /api/insights -> 200
+4) Uploads flow basics: POST /api/uploads/initiate (small file meta) -> 200
 """
 
 import requests
@@ -13,8 +14,8 @@ import time
 import io
 from typing import Dict, Any, Optional
 
-# Configuration
-BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
+# Configuration - Use the correct backend URL from frontend/.env
+BACKEND_URL = "https://31e11061-3a9b-4b56-884b-e50264312c7d.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password123"
 
