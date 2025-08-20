@@ -124,6 +124,13 @@ async def get_current_active_user_hybrid(request: Request) -> User:
                     if legacy_user:
                         if (legacy_user.get('email') or '').lower() != PRESERVED_TEST_EMAIL:
                             raise HTTPException(status_code=401, detail="Legacy tokens are no longer supported. Please create a new account.")
+                    else:
+                        # If no legacy user found, check if this is the preserved test account by looking up user_profiles
+                        user_profile = await supabase_manager.find_document("user_profiles", {"id": user_id})
+                        if not user_profile:
+                            raise HTTPException(status_code=401, detail="Legacy tokens are no longer supported. Please create a new account.")
+                        # Allow the preserved test account even if no legacy user record exists
+                        logger.info(f"Allowing preserved test account with Supabase Auth ID: {user_id}")
                 except HTTPException:
                     raise
                 except Exception as e:
