@@ -391,7 +391,7 @@ class AdminMigrateLegacyRequest(BaseModel):
     dry_run: bool = True
 
 @api_router.post("/admin/migrate-legacy-to-supabase")
-async def migrate_legacy_to_supabase(payload: AdminMigrateLegacyRequest, current_user: User = Depends(get_current_active_user)):
+async def migrate_legacy_to_supabase(payload: AdminMigrateLegacyRequest):
     try:
         expected_token = get_admin_token()
         if payload.admin_token != expected_token:
