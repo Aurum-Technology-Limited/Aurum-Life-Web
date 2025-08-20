@@ -80,27 +80,8 @@ async def register_user(user_data: UserCreate):
             }
             await supabase_manager.create_document("user_profiles", profile_data)
             
-            # Also create user in legacy users table for backward compatibility
-            legacy_user_data = {
-                "id": user_id,
-                "username": user_data.username or user_data.email.split('@')[0],
-                "email": user_data.email,
-                "first_name": user_data.first_name,
-                "last_name": user_data.last_name,
-                "password_hash": None,  # Supabase Auth handles password
-                "google_id": None,
-                "profile_picture": None,
-                "is_active": True,
-                "level": 1,
-                "total_points": 0,
-                "current_streak": 0
-            }
-            try:
-                await supabase_manager.create_document("users", legacy_user_data)
-                logger.info(f"✅ User {user_id} synchronized to legacy users table")
-            except Exception as legacy_error:
-                logger.error(f"⚠️ Failed to create legacy user record: {legacy_error}")
-                # Don't fail registration if legacy table insert fails
+            # IMPORTANT: Do NOT create legacy users going forward. We are removing legacy user data.
+            # (Existing legacy test account is preserved separately.)
             
             return UserResponse(
                 id=user_id,
