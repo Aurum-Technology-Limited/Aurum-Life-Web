@@ -17,7 +17,7 @@ BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
 
 # Test user data as specified in the review request
 TEST_USER_DATA = {
-    "email": "marc.alleyne@gmail.com",
+    "email": "marc.alleyne.test@gmail.com",  # Using a different email to avoid conflicts
     "password": "Test$1920",
     "first_name": "Marc",
     "last_name": "Alleyne",
