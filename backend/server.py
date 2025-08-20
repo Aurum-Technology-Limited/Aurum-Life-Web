@@ -350,7 +350,7 @@ class AdminPurgeRequest(BaseModel):
     dry_run: bool = True
 
 @api_router.post("/admin/purge-legacy-users")
-async def purge_legacy_users(payload: AdminPurgeRequest, current_user: User = Depends(get_current_active_user)):
+async def purge_legacy_users(payload: AdminPurgeRequest):
     try:
         expected_token = get_admin_token()
         if payload.admin_token != expected_token:
