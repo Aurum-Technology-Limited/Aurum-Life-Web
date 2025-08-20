@@ -465,6 +465,50 @@ async def get_journal(current_user: User = Depends(get_current_active_user)):
         logger.error(f"Error getting journal entries: {e}")
         raise HTTPException(status_code=500, detail="Failed to get journal entries")
 
+# Admin-protected one-off purge for legacy users
+class AdminPurgeRequest(BaseModel):
+    admin_token: str
+    preserve_email: str
+    dry_run: bool = True
+
+@api_router.post("/admin/purge-legacy-users")
+async def purge_legacy_users(payload: AdminPurgeRequest, current_user: User = Depends(get_current_active_user)):
+    try:
+        # Verify admin token from env
+        expected_token = os.environ.get('ADMIN_PURGE_TOKEN')
+        if not expected_token or payload.admin_token != expected_token:
+            raise HTTPException(status_code=401, detail="Invalid admin token")
+        # Validate preserve email
+        preserve = (payload.preserve_email or '').strip().lower()
+        if not preserve:
+            raise HTTPException(status_code=400, detail="preserve_email is required")
+        # Fetch legacy users
+        users = await supabase_manager.find_documents("users", {})
+        to_delete = [u for u in (users or []) if (u.get('email') or '').lower() != preserve]
+        result = {
+            "total_legacy_users": len(users or []),
+            "to_delete_count": len(to_delete),
+            "preserved": preserve
+        }
+        if payload.dry_run:
+            result["status"] = "dry_run"
+            result["sample_delete_ids"] = [u.get('id') for u in to_delete[:10]]
+            return result
+        # Perform deletion
+        deleted = 0
+        for u in to_delete:
+            ok = await supabase_manager.delete_document("users", {"id": u.get('id')})
+            if ok:
+                deleted += 1
+        result["deleted"] = deleted
+        result["status"] = "completed"
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Purge legacy users failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to purge legacy users")
+
 # Mount the router last
 app.include_router(api_router)
 # Include auth router under /api prefix
