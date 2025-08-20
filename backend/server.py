@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
+from pydantic import BaseModel
 from pathlib import Path
 import os
 import logging
