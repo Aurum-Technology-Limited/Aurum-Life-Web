@@ -10,7 +10,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://31e11061-3a9b-4b56-884b-e50264312c7d.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
 
 def create_new_test_account():
     """Create a new test account with unique email"""

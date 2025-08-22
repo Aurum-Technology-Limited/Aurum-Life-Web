@@ -6,7 +6,7 @@ Debug the authentication routing issue
 import requests
 
 # Test different auth endpoints
-BACKEND_URL = "https://prodforge-1.preview.emergentagent.com"
+BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com"
 
 endpoints_to_test = [
     "/api/auth/register",

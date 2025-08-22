@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv('/app/backend/.env')
 
 # Configuration
-BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
 
 def main():
     """Main execution"""

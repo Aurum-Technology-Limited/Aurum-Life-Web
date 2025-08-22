@@ -6,7 +6,7 @@ Check User Schema
 import requests
 import json
 
-BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
 
 def check_schema():
     # Login

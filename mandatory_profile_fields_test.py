@@ -27,7 +27,7 @@ from typing import Dict, List, Any
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://prodforge-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
 
 class MandatoryProfileFieldsTester:
     def __init__(self):
