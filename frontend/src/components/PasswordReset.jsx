@@ -101,88 +101,88 @@ const PasswordReset = () => {
   };
 
   return (
-    &lt;div className="min-h-screen bg-[#0B0D14] flex flex-col justify-center py-12 sm:px-6 lg:px-8"&gt;
-      &lt;div className="sm:mx-auto sm:w-full sm:max-w-md"&gt;
-        &lt;div className="flex justify-center mb-6"&gt;
-          &lt;div className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold text-xl"&gt;
+    <div className="min-h-screen bg-[#0B0D14] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center mb-6">
+          <div className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold text-xl">
             AL
-          &lt;/div&gt;
-        &lt;/div&gt;
-        &lt;h2 className="text-center text-3xl font-extrabold text-white"&gt;
+          </div>
+        </div>
+        <h2 className="text-center text-3xl font-extrabold text-white">
           Reset your password
-        &lt;/h2&gt;
-        &lt;p className="mt-2 text-center text-sm text-gray-400"&gt;
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-400">
           Enter a new password for your account
-        &lt;/p&gt;
-      &lt;/div&gt;
+        </p>
+      </div>
 
-      &lt;div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"&gt;
-        &lt;div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10"&gt;
-          {error &amp;&amp; (
-            &lt;div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 rounded"&gt;{error}&lt;/div&gt;
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {error && (
+            <div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 rounded">{error}</div>
           )}
-          {message &amp;&amp; (
-            &lt;div className="mb-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded"&gt;{message}&lt;/div&gt;
+          {message && (
+            <div className="mb-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded">{message}</div>
           )}
 
-          {!token &amp;&amp; (
-            &lt;div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded"&gt;
+          {!token && (
+            <div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded">
               We couldn't find a reset token in your link. Please navigate from the latest password reset email.
-            &lt;/div&gt;
+            </div>
           )}
 
-          &lt;form className="space-y-6" onSubmit={handleSubmit}&gt;
-            &lt;div&gt;
-              &lt;label htmlFor="newPassword" className="block text-sm font-medium text-gray-300"&gt;New Password&lt;/label&gt;
-              &lt;input
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300">New Password</label>
+              <input
                 id="newPassword"
                 name="newPassword"
                 type="password"
                 autoComplete="new-password"
                 required
                 value={newPassword}
-                onChange={(e) =&gt; setNewPassword(e.target.value)}
+                onChange={(e) => setNewPassword(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 placeholder="Enter new password"
-              /&gt;
-            &lt;/div&gt;
+              />
+            </div>
 
-            &lt;div&gt;
-              &lt;label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300"&gt;Confirm Password&lt;/label&gt;
-              &lt;input
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">Confirm Password</label>
+              <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 required
                 value={confirmPassword}
-                onChange={(e) =&gt; setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 placeholder="Re-enter new password"
-              /&gt;
-            &lt;/div&gt;
+              />
+            </div>
 
-            &lt;div className="flex items-center justify-between"&gt;
-              &lt;button
+            <div className="flex items-center justify-between">
+              <button
                 type="button"
-                onClick={() =&gt; { window.location.href = '/'; }}
+                onClick={() => { window.location.href = '/'; }}
                 className="text-sm text-gray-300 hover:text-gray-200"
-              &gt;
+              >
                 Back to login
-              &lt;/button&gt;
+              </button>
 
-              &lt;button
+              <button
                 type="submit"
                 disabled={submitting || !token}
                 className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              &gt;
+              >
                 {submitting ? 'Updating...' : 'Update password'}
-              &lt;/button&gt;
-            &lt;/div&gt;
-          &lt;/form&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 
