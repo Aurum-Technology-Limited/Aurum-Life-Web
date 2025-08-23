@@ -448,8 +448,8 @@ const Login = () => {
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-gray-300">
                     Username
-                  &lt;/label&gt;
-                  &lt;input
+                  </label>
+                  <input
                     id="username"
                     name="username"
                     type="text"
@@ -457,16 +457,16 @@ const Login = () => {
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                     placeholder="johndoe (optional)"
-                  /&gt;
-                &lt;/div&gt;
-              &lt;/&gt;
+                  />
+                </div>
+              </>
             )}
 
-            &lt;div&gt;
-              &lt;label htmlFor="email" className="block text-sm font-medium text-gray-300"&gt;
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 Email Address
-              &lt;/label&gt;
-              &lt;input
+              </label>
+              <input
                 id="email"
                 name="email"
                 type="email"
