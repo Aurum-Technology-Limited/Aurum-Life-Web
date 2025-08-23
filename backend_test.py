@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """
-Backend Smoke Test - Legacy Admin Endpoints Removal Verification
+Backend Test - Password Reset Flow with Dev Fallback
 Tests the specific requirements from the review request:
-1) GET /api/health -> 200
-2) Auth flow (Supabase-only): POST /api/auth/login with marc.alleyne@aurumtechnologyltd.com/password123 -> 200; then GET /api/auth/me -> 200
-3) Core endpoints under auth: GET /api/pillars, /api/areas, /api/projects, /api/tasks, /api/insights -> 200
-4) Uploads flow basics: POST /api/uploads/initiate (small file meta) -> 200
+1) POST /api/auth/forgot-password with dev fallback enabled
+2) GET /api/health to confirm backend is healthy
 """
 
 import requests
