@@ -227,6 +227,21 @@ export const aiCoachAPI = {
   getQuota: () => apiClient.get('/ai/quota'),
 };
 
+// Temporary minimal stubs to satisfy Insights imports without breaking the app.
+// These return empty datasets and can be replaced with real backend routes later.
+export const todayAPI = {
+  getTodayView: async () => ({ data: [] }),
+  addTaskToToday: async (_taskId) => ({ data: { success: true } }),
+  removeTaskFromToday: async (_taskId) => ({ data: { success: true } }),
+};
+
+export const insightsDrilldownAPI = {
+  getEisenhowerTasks: async (_quadrant, _state) => ({ data: { tasks: [] } }),
+  getPillarTasks: async (_pillarId, _scope) => ({ data: { tasks: [] } }),
+  getProjectTasks: async (_projectId, _scope) => ({ data: { tasks: [] } }),
+  getAreaTasks: async (_areaId, _scope) => ({ data: { tasks: [] } }),
+};
+
 export const uploadsAPI = {
   initiate: ({ filename, size, parentType = null, parentId = null }) =>
     apiClient.post('/uploads/initiate', { filename, size, parent_type: parentType, parent_id: parentId }),
