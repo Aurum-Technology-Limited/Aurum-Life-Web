@@ -1,8 +1,11 @@
 import axios from 'axios';
+import { getBackendBaseUrl } from './baseUrl';
+
+const BASE_URL = getBackendBaseUrl();
 
 // Central API client (axios)
 const apiClient = axios.create({
-  baseURL: (process.env.REACT_APP_BACKEND_URL || '') + '/api',
+  baseURL: (BASE_URL || '') + '/api',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -33,12 +36,11 @@ async function refreshToken() {
   try {
     const rt = localStorage.getItem('refresh_token');
     if (!rt) throw new Error('No refresh token');
-    const base = (process.env.REACT_APP_BACKEND_URL || '') + '/api';
+    const base = (BASE_URL || '') + '/api';
     const resp = await axios.post(base + '/auth/refresh', { refresh_token: rt }, { headers: { 'Content-Type': 'application/json' } });
     if (resp.status === 200 && resp.data?.access_token) {
       localStorage.setItem('auth_token', resp.data.access_token);
       if (resp.data.refresh_token) localStorage.setItem('refresh_token', resp.data.refresh_token);
-      // store expiry timestamp if provided
       if (resp.data.expires_in) {
         const expAt = Date.now() + resp.data.expires_in * 1000;
         localStorage.setItem('auth_token_exp', String(expAt));
@@ -225,37 +227,6 @@ export const aiCoachAPI = {
   createTasksFromSuggestions: (projectId, suggestedTasks = []) =>
     apiClient.post('/ai/create-tasks-from-suggestions', { project_id: projectId, suggested_tasks: suggestedTasks }),
   getQuota: () => apiClient.get('/ai/quota'),
-};
-
-// Temporary minimal stubs to satisfy Insights imports without breaking the app.
-// These return empty datasets and can be replaced with real backend routes later.
-export const todayAPI = {
-  getTodayView: async () => ({ data: [] }),
-  addTaskToToday: async (_taskId) => ({ data: { success: true } }),
-  removeTaskFromToday: async (_taskId) => ({ data: { success: true } }),
-};
-
-export const insightsDrilldownAPI = {
-  getEisenhowerTasks: async (_quadrant, _state) => ({ data: { tasks: [] } }),
-  getPillarTasks: async (_pillarId, _scope) => ({ data: { tasks: [] } }),
-  getProjectTasks: async (_projectId, _scope) => ({ data: { tasks: [] } }),
-  getAreaTasks: async (_areaId, _scope) => ({ data: { tasks: [] } }),
-};
-
-export const notificationsAPI = {
-  getNotifications: async () => ({ data: [] }),
-  markAsRead: async (_id) => ({ data: { success: true } }),
-  subscribe: async (_channel) => ({ data: { success: true } }),
-  updateSettings: async (_settings) => ({ data: { success: true } }),
-  getSettings: async () => ({ data: {} }),
-};
-
-export const projectTemplatesAPI = {
-  list: async () => ({ data: [] }),
-  get: async (_id) => ({ data: null }),
-  create: async (_data) => ({ data: { success: true } }),
-  update: async (_id, _data) => ({ data: { success: true } }),
-  remove: async (_id) => ({ data: { success: true } }),
 };
 
 export const uploadsAPI = {

@@ -4,6 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getBackendBaseUrl } from '../services/baseUrl';
 
 const AuthContext = createContext();
 
@@ -15,7 +16,7 @@ export const useAuth = () => {
   return context;
 };
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+const BACKEND_URL = getBackendBaseUrl();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -129,7 +130,7 @@ export const AuthProvider = ({ children }) => {
   const forgotPassword = async (email) => {
     try {
       const r = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Origin': (typeof window !== 'undefined' ? window.location.origin : '') },
         body: JSON.stringify({ email })
       });
       const data = await (async () => { try { return await r.json(); } catch { return {}; } })();

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { getBackendBaseUrl } from '../services/baseUrl';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+const BACKEND_URL = getBackendBaseUrl();
 
 function parseHashParams(hash) {
   const res = {};
@@ -33,7 +34,6 @@ const PasswordReset = () => {
     const hashParams = parseHashParams(window.location.hash || '');
     const queryParams = parseQueryParams(window.location.search || '');
 
-    // Prefer access_token if present, else fallback to token
     const accessToken = hashParams.access_token || queryParams.access_token || queryParams.token || '';
     const type = hashParams.type || queryParams.type || '';
 
@@ -86,7 +86,6 @@ const PasswordReset = () => {
       if (resp.ok) {
         setMessage('Password updated successfully. Redirecting to login...');
         setTimeout(() => {
-          // Do not persist the reset token; simply send user to login
           window.location.href = '/';
         }, 1600);
       } else {
