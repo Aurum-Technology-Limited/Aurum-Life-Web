@@ -294,11 +294,11 @@ const Login = () => {
         </p>
       </div>
 
-      &lt;div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"&gt;
-        &lt;div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10"&gt;
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {/* Toggle between Login and Sign Up */}
-          &lt;div className="flex mb-6"&gt;
-            &lt;button
+          <div className="flex mb-6">
+            <button
               type="button"
               onClick={() => {
                 setIsLogin(true);
@@ -316,10 +316,10 @@ const Login = () => {
                   : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
               }`}
               data-testid={isLogin ? 'auth-tab-login' : 'auth-tab-login-inactive'}
-            &gt;
+            >
               Login
-            &lt;/button&gt;
-            &lt;button
+            </button>
+            <button
               type="button"
               onClick={() => {
                 setIsLogin(false);
@@ -333,10 +333,10 @@ const Login = () => {
                   : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
               }`}
               data-testid={!isLogin ? 'auth-tab-signup' : 'auth-tab-signup-inactive'}
-            &gt;
+            >
               Sign Up
-            &lt;/button&gt;
-          &lt;/div&gt;
+            </button>
+          </div>
 
           {/* Duplicate email tip - moved outside button container */}
           {isLogin && autoSwitchedDuplicate && (
