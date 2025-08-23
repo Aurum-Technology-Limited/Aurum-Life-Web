@@ -519,7 +519,7 @@ const Login = () => {
                   Confirm Password
                 </label>
                 <div className="mt-1 relative">
-                  &lt;input
+                  <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showPassword ? 'text' : 'password'}
@@ -529,11 +529,9 @@ const Login = () => {
                     onChange={handleInputChange}
                     className="block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                     placeholder="Confirm your password"
-                  data-testid="auth-google"
-
-                  /&gt;
-                &lt;/div&gt;
-              &lt;/div&gt;
+                  />
+                </div>
+              </div>
             )}
 
             {isLogin && (
