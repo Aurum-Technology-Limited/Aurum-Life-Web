@@ -141,7 +141,7 @@ async def refresh_session(payload: RefreshRequest):
 @auth_router.post("/forgot-password")
 async def forgot_password(payload: ForgotPasswordRequest, request: Request):
     """Trigger password reset. Attempts both standard reset and admin-generated link with redirect.
-    Returns generic success; in non-prod, may include recovery_url for troubleshooting.
+    In preview/local environments, always include a recovery_url fallback so users can proceed without email.
     """
     try:
         supabase = supabase_manager.get_client()
@@ -154,7 +154,15 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
                 origin = f"{scheme}://{host}"
         redirect_to = f"{origin}/reset-password" if origin else None
 
-        # Try standard reset flow
+        # Determine if we should force include recovery_url for dev/preview domains
+        dev_like = False
+        try:
+            if origin:
+                dev_like = (".preview.emergentagent.com" in origin) or ("localhost" in origin)
+        except Exception:
+            dev_like = False
+
+        # Try standard reset flow (this triggers the provider to send an email)
         try:
             if redirect_to:
                 supabase.auth.reset_password_for_email(payload.email, options={"redirect_to": redirect_to})
@@ -164,23 +172,32 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
         except Exception as e:
             logger.info(f"Primary reset_password_for_email failed or not supported: {e}")
         
-        # Also attempt to generate a recovery link via admin API for dev fallback
+        # Generate a recovery link via admin API (does not send email). Always attempt; include in response for dev_like.
         recovery_url = None
+        gen_error = None
         try:
             opts = {"email": payload.email, "type": "recovery"}
             if redirect_to:
                 opts["options"] = {"redirect_to": redirect_to}
             gen = supabase.auth.admin.generate_link(opts)
             # normalize return
-            recovery_url = getattr(gen, 'action_link', None) or getattr(gen, 'data', {}).get('action_link') if hasattr(gen, 'data') else (gen.get('action_link') if isinstance(gen, dict) else None)
+            if hasattr(gen, 'data') and isinstance(gen.data, dict):
+                recovery_url = gen.data.get('action_link') or gen.data.get('properties', {}).get('action_link')
+            if not recovery_url:
+                recovery_url = getattr(gen, 'action_link', None)
+            if not recovery_url and isinstance(gen, dict):
+                recovery_url = gen.get('action_link') or gen.get('data', {}).get('action_link')
             logger.info(f"Generated recovery link via admin API: {bool(recovery_url)}")
         except Exception as e:
+            gen_error = str(e)
             logger.info(f"Admin generate_link not available or failed: {e}")
         
         resp = {"success": True, "message": "If an account exists, a password reset email has been sent."}
-        if recovery_url:
-            # Provide dev fallback link so user can proceed immediately
+        if recovery_url and dev_like:
+            # Provide dev fallback link so user can proceed immediately on preview/local
             resp["recovery_url"] = recovery_url
+        if dev_like and not recovery_url and gen_error:
+            resp["debug"] = {"recovery_generate_error": gen_error}
         return resp
     except Exception as e:
         logger.error(f"Forgot password error: {e}")
