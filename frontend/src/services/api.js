@@ -242,6 +242,14 @@ export const insightsDrilldownAPI = {
   getAreaTasks: async (_areaId, _scope) => ({ data: { tasks: [] } }),
 };
 
+export const notificationsAPI = {
+  getNotifications: async () => ({ data: [] }),
+  markAsRead: async (_id) => ({ data: { success: true } }),
+  subscribe: async (_channel) => ({ data: { success: true } }),
+  updateSettings: async (_settings) => ({ data: { success: true } }),
+  getSettings: async () => ({ data: {} }),
+};
+
 export const uploadsAPI = {
   initiate: ({ filename, size, parentType = null, parentId = null }) =>
     apiClient.post('/uploads/initiate', { filename, size, parent_type: parentType, parent_id: parentId }),
