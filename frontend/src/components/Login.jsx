@@ -358,26 +358,26 @@ const Login = () => {
           )}
 
           {error && (
-            &lt;div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 rounded"&gt;
+            <div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 rounded">
               {error}
-            &lt;/div&gt;
+            </div>
           )}
           {message && (
-            &lt;div className="mb-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded" role="alert" data-testid="auth-success"&gt;
+            <div className="mb-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded" role="alert" data-testid="auth-success">
               {message}
-            &lt;/div&gt;
+            </div>
           )}
 
           {/* Temporary recovery link helper */}
           {recoveryUrl && (
-            &lt;div className="mb-4 p-3 bg-amber-900 border border-amber-700 text-amber-200 rounded" role="alert"&gt;
-              &lt;div className="mb-2 font-medium"&gt;Having trouble receiving the email? Use the direct reset link below (temporary).&lt;/div&gt;
-              &lt;div className="flex flex-col sm:flex-row gap-2"&gt;
-                &lt;button
+            <div className="mb-4 p-3 bg-amber-900 border border-amber-700 text-amber-200 rounded" role="alert">
+              <div className="mb-2 font-medium">Having trouble receiving the email? Use the direct reset link below (temporary).</div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
                   type="button"
                   onClick={() => { window.location.href = recoveryUrl; }}
                   className="px-3 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
-                &gt;
+                >
                   Open reset link
                 &lt;/button&gt;
                 &lt;button
