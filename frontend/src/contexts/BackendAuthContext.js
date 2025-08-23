@@ -226,7 +226,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    &lt;AuthContext.Provider value={value}&gt;
+    <AuthContext.Provider value={value}>
       {children}
     &lt;/AuthContext.Provider&gt;
   );
