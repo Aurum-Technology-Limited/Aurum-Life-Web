@@ -497,27 +497,28 @@ const Login = () => {
                   className="block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent pr-10"
                   placeholder="Enter your password"
                   data-testid="auth-password"
-                /&gt;
-                &lt;button
+                />
+                <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
-                &gt;
+                  aria-label={isLogin ? 'Show current password' : 'Show new password'}
+                >
                   {showPassword ? (
-                    &lt;EyeOffIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" /&gt;
+                    <EyeOffIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" />
                   ) : (
-                    &lt;EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" /&gt;
+                    <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" />
                   )}
-                &lt;/button&gt;
-              &lt;/div&gt;
-            &lt;/div&gt;
+                </button>
+              </div>
+            </div>
 
             {!isLogin && (
-              &lt;div&gt;
-                &lt;label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300"&gt;
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
                   Confirm Password
-                &lt;/label&gt;
-                &lt;div className="mt-1 relative"&gt;
+                </label>
+                <div className="mt-1 relative">
                   &lt;input
                     id="confirmPassword"
                     name="confirmPassword"
