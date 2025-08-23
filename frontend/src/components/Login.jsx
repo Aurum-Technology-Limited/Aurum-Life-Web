@@ -535,29 +535,29 @@ const Login = () => {
             )}
 
             {isLogin && (
-              &lt;div className="flex justify-end"&gt;
-                &lt;button
+              <div className="flex justify-end">
+                <button
                   type="button"
                   onClick={handleForgotPassword}
                   className="text-sm text-yellow-500 hover:text-yellow-400"
                   disabled={isSubmitting}
-                &gt;
+                >
                   Forgot password?
-                &lt;/button&gt;
-              &lt;/div&gt;
+                </button>
+              </div>
             )}
 
-            &lt;div&gt;
-              &lt;button
+            <div>
+              <button
                 type="submit"
                 disabled={isSubmitting || loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              &gt;
+              >
                 {(isSubmitting || loading) ? (
-                  &lt;span className="flex items-center"&gt;
-                    &lt;svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" fill="none" viewBox="0 0 24 24"&gt;
-                      &lt;circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"&gt;&lt;/circle&gt;
-                      &lt;path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"&gt;&lt;/path&gt;
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     &lt;/svg&gt;
                     {isLogin ? 'Signing in...' : 'Creating account...'}
                   &lt;/span&gt;
