@@ -47,7 +47,7 @@ const PasswordReset = () => {
   }, [info]);
 
   const validatePassword = (pwd) => {
-    if (!pwd || pwd.length &lt; 8) return 'Password must be at least 8 characters long';
+    if (!pwd || pwd.length < 8) return 'Password must be at least 8 characters long';
     if (!/[A-Z]/.test(pwd)) return 'Password must include at least one uppercase letter';
     if (!/[0-9]/.test(pwd)) return 'Password must include at least one number';
     return '';
