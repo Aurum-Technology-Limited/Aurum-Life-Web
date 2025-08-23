@@ -150,7 +150,6 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
         ))}
       </div>
 
-      {/* Summary footer */}
       <div className="mt-4 p-3 bg-gray-900 rounded-lg">
         <p className="text-xs text-gray-400 text-center">
           Showing context for {displayedStatements.length} of {whyStatements.length} active tasks
