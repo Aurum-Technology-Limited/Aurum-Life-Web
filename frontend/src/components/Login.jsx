@@ -426,13 +426,13 @@ const Login = () => {
                       onChange={handleInputChange}
                       className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                       placeholder="John"
-                    /&gt;
-                  &lt;/div&gt;
-                  &lt;div&gt;
-                    &lt;label htmlFor="lastName" className="block text-sm font-medium text-gray-300"&gt;
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-300">
                       Last Name
-                    &lt;/label&gt;
-                    &lt;input
+                    </label>
+                    <input
                       id="lastName"
                       name="lastName"
                       type="text"
@@ -441,12 +441,12 @@ const Login = () => {
                       onChange={handleInputChange}
                       className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                       placeholder="Doe"
-                    /&gt;
-                  &lt;/div&gt;
-                &lt;/div&gt;
+                    />
+                  </div>
+                </div>
 
-                &lt;div&gt;
-                  &lt;label htmlFor="username" className="block text-sm font-medium text-gray-300"&gt;
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-300">
                     Username
                   &lt;/label&gt;
                   &lt;input
