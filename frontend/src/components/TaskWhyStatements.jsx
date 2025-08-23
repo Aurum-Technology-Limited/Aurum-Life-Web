@@ -7,51 +7,51 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
   const [error, setError] = useState(null);
   const [expanded, setExpanded] = useState(showAll);
 
+  // Re-fetch when the set of taskIds changes (robust dependency as string)
   useEffect(() => {
-    fetchWhyStatements();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Array.isArray(taskIds) ? taskIds.join(',') : '']);
+    const fetchWhyStatements = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const fetchWhyStatements = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+        const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+        const token = localStorage.getItem('auth_token');
 
-      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
-      const token = localStorage.getItem('auth_token');
-
-      if (!token) {
-        setError('Authentication required');
-        return;
-      }
-
-      // Build URL with task IDs if provided
-      let url = `${BACKEND_URL}/api/ai/task-why-statements`;
-      if (taskIds && taskIds.length > 0) {
-        url += `?task_ids=${taskIds.join(',')}`;
-      }
-
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+        if (!token) {
+          setError('Authentication required');
+          return;
         }
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        setWhyStatements(data.why_statements || []);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to load task context');
+        // Build URL with task IDs if provided
+        let url = `${BACKEND_URL}/api/ai/task-why-statements`;
+        if (taskIds && taskIds.length > 0) {
+          url += `?task_ids=${taskIds.join(',')}`;
+        }
+
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setWhyStatements(data.why_statements || []);
+        } else {
+          const errorData = await (async () => { try { return await response.json(); } catch { return {}; } })();
+          setError(errorData.detail || 'Failed to load task context');
+        }
+      } catch (err) {
+        console.error('Error fetching why statements:', err);
+        setError('Network error occurred');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching why statements:', err);
-      setError('Network error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchWhyStatements();
+  }, [Array.isArray(taskIds) ? taskIds.join(',') : '']);
 
   const handleToggleExpanded = () => {
     setExpanded(!expanded);
