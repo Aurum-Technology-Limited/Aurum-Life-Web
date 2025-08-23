@@ -125,8 +125,7 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
                 <h4 className="font-medium text-white mb-1">{statement.task_name}</h4>
                 <p className="text-gray-300 text-sm leading-relaxed">{statement.why_statement}</p>
                 
-                {/* Show project and pillar connections if available */}
-                {(statement.project_connection || statement.pillar_connection) && (
+                {(statement.project_connection || statement.pillar_connection || statement.area_connection) && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {statement.project_connection && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-900 text-blue-200">
