@@ -340,21 +340,21 @@ const Login = () => {
 
           {/* Duplicate email tip - moved outside button container */}
           {isLogin && autoSwitchedDuplicate && (
-            &lt;div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded flex items-start justify-between" role="alert" data-testid="duplicate-tip"&gt;
-              &lt;span&gt;We found an account with this email. Please sign in.&lt;/span&gt;
-              &lt;button
+            <div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded flex items-start justify-between" role="alert" data-testid="duplicate-tip">
+              <span>We found an account with this email. Please sign in.</span>
+              <button
                 type="button"
                 className="ml-4 text-sm underline hover:no-underline"
                 onClick={() => setAutoSwitchedDuplicate(false)}
                 aria-label="Dismiss duplicate tip"
-              &gt;
+              >
                 Dismiss
-              &lt;/button&gt;
-            &lt;/div&gt;
+              </button>
+            </div>
           )}
 
           {justAutoSwitched && isLogin && (
-            &lt;div data-testid="auto-switched-to-login" className="hidden"&gt;auto-switched&lt;/div&gt;
+            <div data-testid="auto-switched-to-login" className="hidden">auto-switched</div>
           )}
 
           {error && (
