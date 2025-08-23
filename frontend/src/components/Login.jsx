@@ -379,16 +379,16 @@ const Login = () => {
                   className="px-3 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
                 >
                   Open reset link
-                &lt;/button&gt;
-                &lt;button
+                </button>
+                <button
                   type="button"
                   onClick={handleCopy}
                   className="px-3 py-2 bg-gray-700 text-gray-200 rounded hover:bg-gray-600 border border-gray-600"
-                &gt;
+                >
                   {copied ? 'Copied!' : 'Copy link'}
-                &lt;/button&gt;
-              &lt;/div&gt;
-            &lt;/div&gt;
+                </button>
+              </div>
+            </div>
           )}
 
           &lt;form className="space-y-6" onSubmit={handleSubmit}&gt;
