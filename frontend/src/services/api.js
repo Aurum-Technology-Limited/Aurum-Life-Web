@@ -250,6 +250,14 @@ export const notificationsAPI = {
   getSettings: async () => ({ data: {} }),
 };
 
+export const projectTemplatesAPI = {
+  list: async () => ({ data: [] }),
+  get: async (_id) => ({ data: null }),
+  create: async (_data) => ({ data: { success: true } }),
+  update: async (_id, _data) => ({ data: { success: true } }),
+  remove: async (_id) => ({ data: { success: true } }),
+};
+
 export const uploadsAPI = {
   initiate: ({ filename, size, parentType = null, parentId = null }) =>
     apiClient.post('/uploads/initiate', { filename, size, parent_type: parentType, parent_id: parentId }),
