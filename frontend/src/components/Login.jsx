@@ -470,8 +470,6 @@ const Login = () => {
                 id="email"
                 name="email"
                 type="email"
-                  aria-label={isLogin ? 'Show current password' : 'Show new password'}
-
                 autoComplete="email"
                 required
                 value={formData.email}
@@ -479,15 +477,15 @@ const Login = () => {
                 className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 placeholder="Enter your email"
                 data-testid="auth-email"
-              /&gt;
-            &lt;/div&gt;
+              />
+            </div>
 
-            &lt;div&gt;
-              &lt;label htmlFor="password" className="block text-sm font-medium text-gray-300"&gt;
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Password
-              &lt;/label&gt;
-              &lt;div className="mt-1 relative"&gt;
-                &lt;input
+              </label>
+              <div className="mt-1 relative">
+                <input
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
