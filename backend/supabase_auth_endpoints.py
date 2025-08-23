@@ -180,12 +180,14 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
             if redirect_to:
                 opts["options"] = {"redirect_to": redirect_to}
             gen = supabase.auth.admin.generate_link(opts)
-            # normalize return
-            if hasattr(gen, 'data') and isinstance(gen.data, dict):
+            # normalize return - check for different response structures
+            if hasattr(gen, 'properties') and hasattr(gen.properties, 'action_link'):
+                recovery_url = gen.properties.action_link
+            elif hasattr(gen, 'data') and isinstance(gen.data, dict):
                 recovery_url = gen.data.get('action_link') or gen.data.get('properties', {}).get('action_link')
-            if not recovery_url:
-                recovery_url = getattr(gen, 'action_link', None)
-            if not recovery_url and isinstance(gen, dict):
+            elif hasattr(gen, 'action_link'):
+                recovery_url = gen.action_link
+            elif isinstance(gen, dict):
                 recovery_url = gen.get('action_link') or gen.get('data', {}).get('action_link')
             logger.info(f"Generated recovery link via admin API: {bool(recovery_url)}")
         except Exception as e:
