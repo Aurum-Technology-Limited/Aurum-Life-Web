@@ -1,225 +1,188 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/BackendAuthContext';
-import { Eye, EyeOff, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+
+function parseHashParams(hash) {
+  const res = {};
+  if (!hash) return res;
+  const h = hash.startsWith('#') ? hash.slice(1) : hash;
+  const parts = h.split('&');
+  for (const p of parts) {
+    const [k, v] = p.split('=');
+    if (k) res[decodeURIComponent(k)] = decodeURIComponent(v || '');
+  }
+  return res;
+}
+
+function parseQueryParams(search) {
+  const params = new URLSearchParams(search || '');
+  const res = {};
+  for (const [k, v] of params.entries()) res[k] = v;
+  return res;
+}
 
 const PasswordReset = () => {
-  const { supabase } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [token, setToken] = useState('');
-  
-  const [formData, setFormData] = useState({
-    password: '',
-    confirmPassword: ''
-  });
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const info = useMemo(() => {
+    const hashParams = parseHashParams(window.location.hash || '');
+    const queryParams = parseQueryParams(window.location.search || '');
+
+    // Prefer access_token if present, else fallback to token
+    const accessToken = hashParams.access_token || queryParams.access_token || queryParams.token || '';
+    const type = hashParams.type || queryParams.type || '';
+
+    return { accessToken, type, hashParams, queryParams };
+  }, []);
 
   useEffect(() => {
-    // Get token from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const resetToken = urlParams.get('token');
-    
-    if (resetToken) {
-      setToken(resetToken);
-    } else {
-      setError('Invalid or missing reset token');
+    if (info.accessToken) {
+      setToken(info.accessToken);
     }
-  }, []);
+  }, [info]);
+
+  const validatePassword = (pwd) => {
+    if (!pwd || pwd.length &lt; 8) return 'Password must be at least 8 characters long';
+    if (!/[A-Z]/.test(pwd)) return 'Password must include at least one uppercase letter';
+    if (!/[0-9]/.test(pwd)) return 'Password must include at least one number';
+    return '';
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setMessage('');
 
-    // Validate passwords
-    if (formData.password !== formData.confirmPassword) {
+    if (!token) {
+      setError('Missing or invalid reset token. Please use the password reset link from your email.');
+      return;
+    }
+
+    const validation = validatePassword(newPassword);
+    if (validation) {
+      setError(validation);
+      return;
+    }
+    if (newPassword !== confirmPassword) {
       setError('Passwords do not match');
-      setLoading(false);
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      setLoading(false);
-      return;
-    }
-
+    setSubmitting(true);
     try {
-      // Use Supabase to update password
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: formData.password
+      const resp = await fetch(`${BACKEND_URL}/api/auth/update-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ new_password: newPassword })
       });
-
-      if (updateError) {
-        setError(updateError.message || 'Failed to reset password');
-      } else {
-        setSuccess(true);
-        // Redirect to login after 3 seconds
+      if (resp.ok) {
+        setMessage('Password updated successfully. Redirecting to login...');
         setTimeout(() => {
+          // Do not persist the reset token; simply send user to login
           window.location.href = '/';
-        }, 3000);
+        }, 1600);
+      } else {
+        const data = await (async () => { try { return await resp.json(); } catch { return {}; } })();
+        setError(data?.detail || 'Failed to update password. Your link may have expired. Try requesting a new reset email.');
       }
-    } catch (error) {
-      console.error('Password reset error:', error);
-      setError('Network error occurred');
+    } catch (e) {
+      setError('Network error. Please try again.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0D14' }}>
-        <div className="w-full max-w-md p-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="h-8 w-8 text-white" />
-            </div>
-            
-            <h1 className="text-2xl font-bold text-white mb-4">Password Reset Successful!</h1>
-            <p className="text-gray-400 mb-6">
-              Your password has been successfully updated. You will be redirected to the login page shortly.
-            </p>
-            
-            <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
-              <div className="bg-yellow-500 h-2 rounded-full animate-pulse" style={{ width: '100%' }}></div>
-            </div>
-            
-            <p className="text-sm text-gray-500">
-              Redirecting in 3 seconds...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0B0D14' }}>
-      <div className="w-full max-w-md p-8">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Aurum Life</h1>
-          <p className="text-gray-400">Reset Your Password</p>
-        </div>
+    &lt;div className="min-h-screen bg-[#0B0D14] flex flex-col justify-center py-12 sm:px-6 lg:px-8"&gt;
+      &lt;div className="sm:mx-auto sm:w-full sm:max-w-md"&gt;
+        &lt;div className="flex justify-center mb-6"&gt;
+          &lt;div className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold text-xl"&gt;
+            AL
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;h2 className="text-center text-3xl font-extrabold text-white"&gt;
+          Reset your password
+        &lt;/h2&gt;
+        &lt;p className="mt-2 text-center text-sm text-gray-400"&gt;
+          Enter a new password for your account
+        &lt;/p&gt;
+      &lt;/div&gt;
 
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-white mb-2">Create New Password</h2>
-          <p className="text-gray-400 text-sm">
-            Enter your new password below. Make sure it's strong and secure.
-          </p>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-900/20 border border-red-600 rounded-lg flex items-center">
-            <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
-            <span className="text-red-400 text-sm">{error}</span>
-          </div>
-        )}
-
-        {/* Password Reset Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              New Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full pl-10 pr-12 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                placeholder="Enter new password"
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-white"
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Password must be at least 6 characters long
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Confirm New Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full pl-10 pr-12 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                placeholder="Confirm new password"
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-white"
-              >
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Password Strength Indicator */}
-          {formData.password && (
-            <div className="space-y-2">
-              <div className="text-sm text-gray-300">Password Strength:</div>
-              <div className="flex space-x-1">
-                <div className={`h-2 w-1/4 rounded ${formData.password.length >= 6 ? 'bg-red-500' : 'bg-gray-600'}`}></div>
-                <div className={`h-2 w-1/4 rounded ${formData.password.length >= 8 ? 'bg-yellow-500' : 'bg-gray-600'}`}></div>
-                <div className={`h-2 w-1/4 rounded ${formData.password.length >= 10 && /[A-Z]/.test(formData.password) ? 'bg-yellow-500' : 'bg-gray-600'}`}></div>
-                <div className={`h-2 w-1/4 rounded ${formData.password.length >= 12 && /[A-Z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password) ? 'bg-green-500' : 'bg-gray-600'}`}></div>
-              </div>
-              <div className="text-xs text-gray-500">
-                {formData.password.length < 6 && 'Too short'}
-                {formData.password.length >= 6 && formData.password.length < 8 && 'Weak'}
-                {formData.password.length >= 8 && formData.password.length < 10 && 'Fair'}
-                {formData.password.length >= 10 && /[A-Z]/.test(formData.password) && 'Good'}
-                {formData.password.length >= 12 && /[A-Z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password) && 'Strong'}
-              </div>
-            </div>
+      &lt;div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"&gt;
+        &lt;div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10"&gt;
+          {error &amp;&amp; (
+            &lt;div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 rounded"&gt;{error}&lt;/div&gt;
+          )}
+          {message &amp;&amp; (
+            &lt;div className="mb-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded"&gt;{message}&lt;/div&gt;
           )}
 
-          <button
-            type="submit"
-            disabled={loading || !token}
-            className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-700 text-gray-900 font-semibold rounded-lg transition-colors"
-          >
-            {loading ? 'Updating Password...' : 'Update Password'}
-          </button>
-        </form>
+          {!token &amp;&amp; (
+            &lt;div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded"&gt;
+              We couldn't find a reset token in your link. Please navigate from the latest password reset email.
+            &lt;/div&gt;
+          )}
 
-        {/* Back to Login */}
-        <div className="mt-6 text-center">
-          <a
-            href="/"
-            className="text-yellow-500 hover:text-yellow-400 text-sm"
-          >
-            ← Back to Login
-          </a>
-        </div>
+          &lt;form className="space-y-6" onSubmit={handleSubmit}&gt;
+            &lt;div&gt;
+              &lt;label htmlFor="newPassword" className="block text-sm font-medium text-gray-300"&gt;New Password&lt;/label&gt;
+              &lt;input
+                id="newPassword"
+                name="newPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={newPassword}
+                onChange={(e) =&gt; setNewPassword(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                placeholder="Enter new password"
+              /&gt;
+            &lt;/div&gt;
 
-        {/* Footer */}
-        <div className="mt-8 text-center text-sm text-gray-400">
-          <p>Secure password reset powered by Supabase</p>
-        </div>
-      </div>
-    </div>
+            &lt;div&gt;
+              &lt;label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300"&gt;Confirm Password&lt;/label&gt;
+              &lt;input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(e) =&gt; setConfirmPassword(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                placeholder="Re-enter new password"
+              /&gt;
+            &lt;/div&gt;
+
+            &lt;div className="flex items-center justify-between"&gt;
+              &lt;button
+                type="button"
+                onClick={() =&gt; { window.location.href = '/'; }}
+                className="text-sm text-gray-300 hover:text-gray-200"
+              &gt;
+                Back to login
+              &lt;/button&gt;
+
+              &lt;button
+                type="submit"
+                disabled={submitting || !token}
+                className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              &gt;
+                {submitting ? 'Updating...' : 'Update password'}
+              &lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
   );
 };
 

@@ -12,6 +12,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const passwordInputRef = useRef(null);
   const [autoSwitchedDuplicate, setAutoSwitchedDuplicate] = useState(false);
+  const [recoveryUrl, setRecoveryUrl] = useState('');
+  const [copied, setCopied] = useState(false);
 
   // Robust focus helper to minimize flakiness
   const focusPasswordStable = useCallback(() => {
@@ -83,10 +85,6 @@ const Login = () => {
     }
   }, [isLogin]);
 
-
-
-
-
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -95,6 +93,8 @@ const Login = () => {
     // Clear errors when user starts typing
     setError('');
     setMessage('');
+    setRecoveryUrl('');
+    setCopied(false);
   };
 
   const handleSubmit = async (e) => {
@@ -215,10 +215,21 @@ const Login = () => {
     const result = await forgotPassword(formData.email);
     if (result.success) {
       setMessage(result.message);
+      if (result.recovery_url) {
+        setRecoveryUrl(result.recovery_url);
+      }
     } else {
       setError(result.error);
     }
     setIsSubmitting(false);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(recoveryUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
   };
 
   const googleLogin = useGoogleLogin({
@@ -268,26 +279,26 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0D14] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold text-xl">
+    &lt;div className="min-h-screen bg-[#0B0D14] flex flex-col justify-center py-12 sm:px-6 lg:px-8"&gt;
+      &lt;div className="sm:mx-auto sm:w-full sm:max-w-md"&gt;
+        &lt;div className="flex justify-center mb-6"&gt;
+          &lt;div className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold text-xl"&gt;
             AL
-          </div>
-        </div>
-        <h2 className="text-center text-3xl font-extrabold text-white">
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;h2 className="text-center text-3xl font-extrabold text-white"&gt;
           Aurum Life
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-400">
+        &lt;/h2&gt;
+        &lt;p className="mt-2 text-center text-sm text-gray-400"&gt;
           Transform your potential into gold
-        </p>
-      </div>
+        &lt;/p&gt;
+      &lt;/div&gt;
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      &lt;div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"&gt;
+        &lt;div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10"&gt;
           {/* Toggle between Login and Sign Up */}
-          <div className="flex mb-6">
-            <button
+          &lt;div className="flex mb-6"&gt;
+            &lt;button
               type="button"
               onClick={() => {
                 setIsLogin(true);
@@ -305,10 +316,10 @@ const Login = () => {
                   : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
               }`}
               data-testid={isLogin ? 'auth-tab-login' : 'auth-tab-login-inactive'}
-            >
+            &gt;
               Login
-            </button>
-            <button
+            &lt;/button&gt;
+            &lt;button
               type="button"
               onClick={() => {
                 setIsLogin(false);
@@ -322,48 +333,71 @@ const Login = () => {
                   : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
               }`}
               data-testid={!isLogin ? 'auth-tab-signup' : 'auth-tab-signup-inactive'}
-            >
+            &gt;
               Sign Up
-            </button>
-          </div>
+            &lt;/button&gt;
+          &lt;/div&gt;
 
           {/* Duplicate email tip - moved outside button container */}
           {isLogin && autoSwitchedDuplicate && (
-            <div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded flex items-start justify-between" role="alert" data-testid="duplicate-tip">
-              <span>We found an account with this email. Please sign in.</span>
-              <button
+            &lt;div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded flex items-start justify-between" role="alert" data-testid="duplicate-tip"&gt;
+              &lt;span&gt;We found an account with this email. Please sign in.&lt;/span&gt;
+              &lt;button
                 type="button"
                 className="ml-4 text-sm underline hover:no-underline"
                 onClick={() => setAutoSwitchedDuplicate(false)}
                 aria-label="Dismiss duplicate tip"
-              >
+              &gt;
                 Dismiss
-              </button>
-            </div>
+              &lt;/button&gt;
+            &lt;/div&gt;
           )}
 
           {justAutoSwitched && isLogin && (
-            <div data-testid="auto-switched-to-login" className="hidden">auto-switched</div>
+            &lt;div data-testid="auto-switched-to-login" className="hidden"&gt;auto-switched&lt;/div&gt;
           )}
 
           {error && (
-            <div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 rounded">
+            &lt;div className="mb-4 p-3 bg-red-900 border border-red-700 text-red-300 rounded"&gt;
               {error}
-            </div>
+            &lt;/div&gt;
           )}
           {message && (
-            <div className="mb-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded" role="alert" data-testid="auth-success">
+            &lt;div className="mb-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded" role="alert" data-testid="auth-success"&gt;
               {message}
-            </div>
+            &lt;/div&gt;
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Temporary recovery link helper */}
+          {recoveryUrl && (
+            &lt;div className="mb-4 p-3 bg-amber-900 border border-amber-700 text-amber-200 rounded" role="alert"&gt;
+              &lt;div className="mb-2 font-medium"&gt;Having trouble receiving the email? Use the direct reset link below (temporary).&lt;/div&gt;
+              &lt;div className="flex flex-col sm:flex-row gap-2"&gt;
+                &lt;button
+                  type="button"
+                  onClick={() => { window.location.href = recoveryUrl; }}
+                  className="px-3 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
+                &gt;
+                  Open reset link
+                &lt;/button&gt;
+                &lt;button
+                  type="button"
+                  onClick={handleCopy}
+                  className="px-3 py-2 bg-gray-700 text-gray-200 rounded hover:bg-gray-600 border border-gray-600"
+                &gt;
+                  {copied ? 'Copied!' : 'Copy link'}
+                &lt;/button&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          )}
+
+          &lt;form className="space-y-6" onSubmit={handleSubmit}&gt;
             {/* Registration fields */}
             {!isLogin && (
-              <>
-                <div className="text-sm text-gray-400">
+              &lt;&gt;
+                &lt;div className="text-sm text-gray-400"&gt;
                   Already have an account?{' '}
-                  <button
+                  &lt;button
                     type="button"
                     className="text-yellow-500 hover:text-yellow-400 underline"
                     onClick={() => {
@@ -373,17 +407,17 @@ const Login = () => {
                       }, 0);
                     }}
                     data-testid="signup-signin-instead"
-                  >
+                  &gt;
                     Sign in instead
-                  </button>
-                </div>
+                  &lt;/button&gt;
+                &lt;/div&gt;
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-300">
+                &lt;div className="grid grid-cols-2 gap-4"&gt;
+                  &lt;div&gt;
+                    &lt;label htmlFor="firstName" className="block text-sm font-medium text-gray-300"&gt;
                       First Name
-                    </label>
-                    <input
+                    &lt;/label&gt;
+                    &lt;input
                       id="firstName"
                       name="firstName"
                       type="text"
@@ -392,13 +426,13 @@ const Login = () => {
                       onChange={handleInputChange}
                       className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                       placeholder="John"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-300">
+                    /&gt;
+                  &lt;/div&gt;
+                  &lt;div&gt;
+                    &lt;label htmlFor="lastName" className="block text-sm font-medium text-gray-300"&gt;
                       Last Name
-                    </label>
-                    <input
+                    &lt;/label&gt;
+                    &lt;input
                       id="lastName"
                       name="lastName"
                       type="text"
@@ -407,15 +441,15 @@ const Login = () => {
                       onChange={handleInputChange}
                       className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                       placeholder="Doe"
-                    />
-                  </div>
-                </div>
+                    /&gt;
+                  &lt;/div&gt;
+                &lt;/div&gt;
 
-                <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-300">
+                &lt;div&gt;
+                  &lt;label htmlFor="username" className="block text-sm font-medium text-gray-300"&gt;
                     Username
-                  </label>
-                  <input
+                  &lt;/label&gt;
+                  &lt;input
                     id="username"
                     name="username"
                     type="text"
@@ -423,16 +457,16 @@ const Login = () => {
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                     placeholder="johndoe (optional)"
-                  />
-                </div>
-              </>
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/&gt;
             )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+            &lt;div&gt;
+              &lt;label htmlFor="email" className="block text-sm font-medium text-gray-300"&gt;
                 Email Address
-              </label>
-              <input
+              &lt;/label&gt;
+              &lt;input
                 id="email"
                 name="email"
                 type="email"
@@ -445,15 +479,15 @@ const Login = () => {
                 className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 placeholder="Enter your email"
                 data-testid="auth-email"
-              />
-            </div>
+              /&gt;
+            &lt;/div&gt;
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+            &lt;div&gt;
+              &lt;label htmlFor="password" className="block text-sm font-medium text-gray-300"&gt;
                 Password
-              </label>
-              <div className="mt-1 relative">
-                <input
+              &lt;/label&gt;
+              &lt;div className="mt-1 relative"&gt;
+                &lt;input
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
@@ -465,28 +499,28 @@ const Login = () => {
                   className="block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent pr-10"
                   placeholder="Enter your password"
                   data-testid="auth-password"
-                />
-                <button
+                /&gt;
+                &lt;button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
-                >
+                &gt;
                   {showPassword ? (
-                    <EyeOffIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    &lt;EyeOffIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" /&gt;
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    &lt;EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-300" /&gt;
                   )}
-                </button>
-              </div>
-            </div>
+                &lt;/button&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
 
             {!isLogin && (
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
+              &lt;div&gt;
+                &lt;label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300"&gt;
                   Confirm Password
-                </label>
-                <div className="mt-1 relative">
-                  <input
+                &lt;/label&gt;
+                &lt;div className="mt-1 relative"&gt;
+                  &lt;input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showPassword ? 'text' : 'password'}
@@ -498,86 +532,86 @@ const Login = () => {
                     placeholder="Confirm your password"
                   data-testid="auth-google"
 
-                  />
-                </div>
-              </div>
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
             )}
 
             {isLogin && (
-              <div className="flex justify-end">
-                <button
+              &lt;div className="flex justify-end"&gt;
+                &lt;button
                   type="button"
                   onClick={handleForgotPassword}
                   className="text-sm text-yellow-500 hover:text-yellow-400"
                   disabled={isSubmitting}
-                >
+                &gt;
                   Forgot password?
-                </button>
-              </div>
+                &lt;/button&gt;
+              &lt;/div&gt;
             )}
 
-            <div>
-              <button
+            &lt;div&gt;
+              &lt;button
                 type="submit"
                 disabled={isSubmitting || loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              &gt;
                 {(isSubmitting || loading) ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                  &lt;span className="flex items-center"&gt;
+                    &lt;svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" fill="none" viewBox="0 0 24 24"&gt;
+                      &lt;circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"&gt;&lt;/circle&gt;
+                      &lt;path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"&gt;&lt;/path&gt;
+                    &lt;/svg&gt;
                     {isLogin ? 'Signing in...' : 'Creating account...'}
-                  </span>
+                  &lt;/span&gt;
                 ) : (
                   isLogin ? 'Sign In' : 'Create Account'
                 )}
-              </button>
-            </div>
+              &lt;/button&gt;
+            &lt;/div&gt;
 
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-600" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-800 text-gray-400">Or continue with</span>
-                </div>
-              </div>
+            &lt;div className="mt-6"&gt;
+              &lt;div className="relative"&gt;
+                &lt;div className="absolute inset-0 flex items-center"&gt;
+                  &lt;div className="w-full border-t border-gray-600" /&gt;
+                &lt;/div&gt;
+                &lt;div className="relative flex justify-center text-sm"&gt;
+                  &lt;span className="px-2 bg-gray-800 text-gray-400"&gt;Or continue with&lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
 
-              <div className="mt-6">
-                <button
+              &lt;div className="mt-6"&gt;
+                &lt;button
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isSubmitting}
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-sm font-medium text-gray-300 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
+                &gt;
+                  &lt;svg className="w-5 h-5 mr-2" viewBox="0 0 24 24"&gt;
+                    &lt;path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/&gt;
+                    &lt;path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/&gt;
+                    &lt;path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/&gt;
+                    &lt;path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/&gt;
+                  &lt;/svg&gt;
                   Sign in with Google
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
+                &lt;/button&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
 
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-400">
+      &lt;div className="mt-8 text-center"&gt;
+        &lt;p className="text-sm text-gray-400"&gt;
           Welcome to your personal growth journey
-        </p>
+        &lt;/p&gt;
         {message && (
-          <div className="mt-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded max-w-md mx-auto">
+          &lt;div className="mt-4 p-3 bg-green-900 border border-green-700 text-green-300 rounded max-w-md mx-auto"&gt;
             {message}
-          </div>
+          &lt;/div&gt;
         )}
-      </div>
-    </div>
+      &lt;/div&gt;
+    &lt;/div&gt;
   );
 };
 

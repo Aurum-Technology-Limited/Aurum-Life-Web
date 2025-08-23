@@ -132,10 +132,10 @@ export const AuthProvider = ({ children }) => {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
-      if (r.ok) {
-        return { success: true, message: 'If an account exists, a password reset email has been sent.' };
-      }
       const data = await (async () => { try { return await r.json(); } catch { return {}; } })();
+      if (r.ok) {
+        return { success: true, message: data?.message || 'If an account exists, a password reset email has been sent.', recovery_url: data?.recovery_url };
+      }
       return { success: false, error: data?.detail || 'Failed to send password reset email' };
     } catch (e) {
       return { success: false, error: 'Network error. Please try again.' };
@@ -226,9 +226,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    &lt;AuthContext.Provider value={value}&gt;
       {children}
-    </AuthContext.Provider>
+    &lt;/AuthContext.Provider&gt;
   );
 };
 
