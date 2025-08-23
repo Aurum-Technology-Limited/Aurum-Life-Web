@@ -391,13 +391,13 @@ const Login = () => {
             </div>
           )}
 
-          &lt;form className="space-y-6" onSubmit={handleSubmit}&gt;
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Registration fields */}
             {!isLogin && (
-              &lt;&gt;
-                &lt;div className="text-sm text-gray-400"&gt;
+              <>
+                <div className="text-sm text-gray-400">
                   Already have an account?{' '}
-                  &lt;button
+                  <button
                     type="button"
                     className="text-yellow-500 hover:text-yellow-400 underline"
                     onClick={() => {
@@ -407,17 +407,17 @@ const Login = () => {
                       }, 0);
                     }}
                     data-testid="signup-signin-instead"
-                  &gt;
+                  >
                     Sign in instead
-                  &lt;/button&gt;
-                &lt;/div&gt;
+                  </button>
+                </div>
 
-                &lt;div className="grid grid-cols-2 gap-4"&gt;
-                  &lt;div&gt;
-                    &lt;label htmlFor="firstName" className="block text-sm font-medium text-gray-300"&gt;
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-300">
                       First Name
-                    &lt;/label&gt;
-                    &lt;input
+                    </label>
+                    <input
                       id="firstName"
                       name="firstName"
                       type="text"
