@@ -57,8 +57,9 @@ class PasswordResetTest:
                 def __init__(self, error_msg):
                     self.status_code = 0
                     self.text = str(error_msg)
+                    self.error_msg = error_msg
                 def json(self):
-                    return {"error": str(error_msg)}
+                    return {"error": str(self.error_msg)}
             return MockResponse(e), end_time - start_time
 
     def test_health_check(self):
