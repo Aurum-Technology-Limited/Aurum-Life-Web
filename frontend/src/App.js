@@ -101,7 +101,7 @@ function App() {
     document.title = `${sectionTitle} | Aurum Life`;
   }, [activeSection]);
 
-  // Check if we're on password reset page (robust with URL change detection)
+  // Check if we're on password reset page OR have password reset error params
   useEffect(() => {
     const checkPasswordResetPage = () => {
       const pathname = window.location.pathname;
@@ -109,8 +109,13 @@ function App() {
       
       console.log('🔍 Checking password reset page. Pathname:', pathname, 'Hash:', hash);
       
-      if (pathname === '/reset-password') {
-        console.log('✅ Password reset page detected');
+      // Check if we're on the reset page OR if we have reset-related hash params
+      const isResetPage = pathname === '/reset-password';
+      const hasResetError = hash.includes('error=access_denied') || hash.includes('otp_expired') || hash.includes('type=recovery');
+      const hasResetToken = hash.includes('access_token') || hash.includes('type=recovery');
+      
+      if (isResetPage || hasResetError || hasResetToken) {
+        console.log('✅ Password reset page detected (page or hash params)');
         setIsPasswordResetPage(true);
       } else {
         console.log('❌ Not password reset page');
