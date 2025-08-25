@@ -250,6 +250,20 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
         # Always mask existence of email for security
         return {"success": True, "message": "If an account exists, a password reset email has been sent."}
 
+@auth_router.get("/debug-supabase-config")
+async def debug_supabase_config():
+    """Debug endpoint to check Supabase configuration"""
+    try:
+        supabase = supabase_manager.get_client()
+        return {
+            "supabase_url": os.getenv('SUPABASE_URL'),
+            "expected_site_url": "https://prodflow-auth.preview.emergentagent.com",
+            "expected_redirect_url": "https://prodflow-auth.preview.emergentagent.com/reset-password",
+            "message": "Check these URLs match your Supabase Auth URL Configuration exactly"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 @auth_router.post("/update-password")
 async def update_password(payload: UpdatePasswordRequest, current_user: User = Depends(get_current_active_user)):
     """Update password for the current authenticated user (used after reset link)."""
