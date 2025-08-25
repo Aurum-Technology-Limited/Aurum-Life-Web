@@ -10,6 +10,9 @@ from supabase_auth import verify_token, get_current_active_user
 from models import UserCreate, UserLogin, UserResponse, User
 import logging
 import os
+import secrets
+import hashlib
+from datetime import datetime, timedelta
 import re
 import urllib.parse
 
