@@ -187,7 +187,7 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
         try:
             opts = {"email": payload.email, "type": "recovery"}
             if redirect_to:
-                opts["options"] = {"redirect_to": redirect_to}
+                opts["options"] = {"redirectTo": redirect_to}
             gen = supabase.auth.admin.generate_link(opts)
             # normalize return - check for different response structures
             if hasattr(gen, 'properties') and hasattr(gen.properties, 'action_link'):
