@@ -368,60 +368,6 @@ const Login = () => {
             </div>
           )}
 
-          {/* Microsoft 365 SMTP diagnostics (shown after Forgot Password triggers a message) */}
-          {isLogin && message && (
-            <div className="mb-4 p-3 bg-gray-800 border border-blue-800 text-gray-200 rounded">
-              <details open>
-                <summary className="cursor-pointer text-blue-300">Troubleshooting Microsoft 365 SMTP</summary>
-                <ul className="list-disc pl-5 mt-2 text-sm text-gray-300 space-y-1">
-                  <li>
-                    Enable "Authenticated SMTP" for the sending mailbox:
-                    Microsoft 365 Admin Center → Users → Active users → Select mailbox → Mail → Manage email apps.
-                  </li>
-                  <li>
-                    If MFA is enabled on that mailbox, create an App Password and use it in Supabase SMTP settings,
-                    or use a non‑MFA service account permitted to send mail.
-                  </li>
-                  <li>
-                    Supabase SMTP settings: host <code>smtp.office365.com</code>, port <code>587</code>, security <code>STARTTLS/TLS</code>,
-                    username = full mailbox address, and From address must match that mailbox (licensed, not just an alias).
-                  </li>
-                  <li>
-                    Exchange Admin Center → Policies → Outbound spam filter: confirm the account isn’t blocked from sending.
-                  </li>
-                  <li>
-                    Supabase Auth → URL Configuration: set Site URL to your app’s origin and add <code>/reset-password</code> under Additional Redirect URLs.
-                  </li>
-                  <li>
-                    Still failing? Try host <code>smtp-mail.outlook.com</code> and check message trace/quarantine in the Security portal.
-                  </li>
-                </ul>
-              </details>
-            </div>
-          )}
-
-          {/* Temporary recovery link helper */}
-          {recoveryUrl && (
-            <div className="mb-4 p-3 bg-amber-900 border border-amber-700 text-amber-200 rounded" role="alert">
-              <div className="mb-2 font-medium">Having trouble receiving the email? Use the direct reset link below (temporary).</div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <button
-                  type="button"
-                  onClick={() => { window.location.href = recoveryUrl; }}
-                  className="px-3 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
-                >
-                  Open reset link
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="px-3 py-2 bg-gray-700 text-gray-200 rounded hover:bg-gray-600 border border-gray-600"
-                >
-                  {copied ? 'Copied!' : 'Copy link'}
-                </button>
-              </div>
-            </div>
-          )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Registration fields */}
