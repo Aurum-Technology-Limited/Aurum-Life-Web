@@ -251,6 +251,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     token,
     login,
+    register,
     forgotPassword,
     logout,
     refreshUser,
