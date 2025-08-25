@@ -212,12 +212,56 @@ async def debug_supabase_config():
         return {"error": str(e)}
 
 @auth_router.post("/update-password")
-async def update_password(payload: UpdatePasswordRequest, current_user: User = Depends(get_current_active_user)):
-    """Update password for the current authenticated user (used after reset link)."""
+async def update_password(payload: UpdatePasswordRequest, request: Request):
+    """Update password using recovery token (for password reset flow)."""
     try:
+        # Get the token from Authorization header
+        authorization = request.headers.get("Authorization")
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="No authorization token provided")
+        
+        token = authorization.split(" ")[1]
+        logger.info("Attempting password update with recovery token")
+        
+        # Use Supabase to update password directly with the recovery token
         supabase = supabase_manager.get_client()
-        res = supabase.auth.update_user({"password": payload.new_password})
-        return {"success": True}
+        
+        # Set the session with the recovery token and update password
+        try:
+            # First verify the token by setting a temporary session
+            session_response = supabase.auth.set_session(access_token=token, refresh_token=None)
+            logger.info(f"Session set successfully: {bool(session_response)}")
+            
+            # Now update the password
+            result = supabase.auth.update_user({"password": payload.new_password})
+            logger.info(f"Password update result: {bool(result)}")
+            
+            return {"success": True, "message": "Password updated successfully"}
+        except Exception as e:
+            logger.error(f"Password update failed: {e}")
+            # Try alternative method - direct admin password update
+            try:
+                # Get user info from token first
+                user_response = supabase.auth.get_user(token)
+                user = user_response.user if hasattr(user_response, 'user') else user_response
+                user_id = user.id if hasattr(user, 'id') else None
+                
+                if user_id:
+                    # Use admin API to update password
+                    admin_result = supabase.auth.admin.update_user_by_id(
+                        user_id, 
+                        {"password": payload.new_password}
+                    )
+                    logger.info(f"Admin password update successful: {bool(admin_result)}")
+                    return {"success": True, "message": "Password updated successfully"}
+                else:
+                    raise Exception("Could not extract user ID from token")
+            except Exception as e2:
+                logger.error(f"Admin password update failed: {e2}")
+                raise HTTPException(status_code=400, detail="Failed to update password. Token may have expired.")
+        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Update password error: {e}")
         raise HTTPException(status_code=400, detail="Failed to update password")
