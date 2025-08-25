@@ -34,6 +34,11 @@ const PasswordReset = () => {
     const hashParams = parseHashParams(window.location.hash || '');
     const queryParams = parseQueryParams(window.location.search || '');
 
+    // Check for error conditions first
+    const error = hashParams.error || queryParams.error || '';
+    const errorCode = hashParams.error_code || queryParams.error_code || '';
+    const errorDescription = hashParams.error_description || queryParams.error_description || '';
+
     // Supabase recovery URLs typically use these parameter patterns:
     // ?token=...&type=recovery or #access_token=...&type=recovery
     const accessToken = hashParams.access_token || queryParams.access_token || 
@@ -48,10 +53,13 @@ const PasswordReset = () => {
       hashParams,
       queryParams,
       extractedToken: accessToken,
-      extractedType: type
+      extractedType: type,
+      error,
+      errorCode,
+      errorDescription
     });
 
-    return { accessToken, type, hashParams, queryParams };
+    return { accessToken, type, hashParams, queryParams, error, errorCode, errorDescription };
   }, []);
 
   useEffect(() => {
