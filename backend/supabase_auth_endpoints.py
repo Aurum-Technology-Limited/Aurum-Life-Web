@@ -176,12 +176,11 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
         # Try standard reset flow (this triggers the provider to send an email)
         try:
             if redirect_to:
-                # Add longer expiry for password reset tokens
+                # Use more specific options for better compatibility
                 supabase.auth.reset_password_for_email(
                     payload.email, 
-                    options={
-                        "redirect_to": redirect_to,
-                        "captcha_token": None  # Add if needed
+                    {
+                        "redirectTo": redirect_to  # Use redirectTo instead of redirect_to
                     }
                 )
             else:
@@ -190,22 +189,23 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
         except Exception as e:
             logger.info(f"Primary reset_password_for_email failed or not supported: {e}")
         
-        # Generate a recovery link via admin API with longer expiry
+        # Generate a recovery link via admin API with more specific options
         recovery_url = None
         gen_error = None
         try:
+            # Use the exact format Supabase expects
             opts = {
-                "email": payload.email, 
+                "email": payload.email,
                 "type": "recovery",
-                # Try to set longer expiry - this might not work with all Supabase versions
-                "options": {
-                    "redirect_to": redirect_to,
-                    "ttl": 3600  # 1 hour in seconds
-                }
             }
+            
+            # Only add redirect options if we have a valid redirect_to
             if redirect_to:
-                opts["options"]["redirectTo"] = redirect_to
+                opts["redirectTo"] = redirect_to
+                
             gen = supabase.auth.admin.generate_link(opts)
+            logger.info(f"Admin generate_link called with opts: {opts}")
+            
             # normalize return - check for different response structures
             if hasattr(gen, 'properties') and hasattr(gen.properties, 'action_link'):
                 recovery_url = gen.properties.action_link
@@ -215,6 +215,10 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
                 recovery_url = gen.action_link
             elif isinstance(gen, dict):
                 recovery_url = gen.get('action_link') or gen.get('data', {}).get('action_link')
+                
+            logger.info(f"Generated recovery link structure: {type(gen)}")
+            logger.info(f"Recovery URL before processing: {recovery_url}")
+            
             # Fix for localhost redirect URL - replace localhost with correct preview domain
             if recovery_url and redirect_to:
                 # Replace any localhost or 127.0.0.1 redirect_to parameters with the correct domain
@@ -228,7 +232,10 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
             logger.info(f"Generated recovery link via admin API: {bool(recovery_url)}")
         except Exception as e:
             gen_error = str(e)
-            logger.info(f"Admin generate_link not available or failed: {e}")
+            logger.error(f"Admin generate_link failed: {e}")
+            # Log more details about the error
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
         
         resp = {"success": True, "message": "If an account exists, a password reset email has been sent."}
         if recovery_url and dev_like:
