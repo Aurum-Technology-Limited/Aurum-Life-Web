@@ -204,32 +204,42 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
             if redirect_to:
                 opts["redirectTo"] = redirect_to
                 
+            logger.info(f"About to call admin.generate_link with: {opts}")
             gen = supabase.auth.admin.generate_link(opts)
-            logger.info(f"Admin generate_link called with opts: {opts}")
+            logger.info(f"Admin generate_link response type: {type(gen)}")
+            logger.info(f"Admin generate_link response: {gen}")
             
             # normalize return - check for different response structures
             if hasattr(gen, 'properties') and hasattr(gen.properties, 'action_link'):
                 recovery_url = gen.properties.action_link
+                logger.info("Found recovery URL in gen.properties.action_link")
             elif hasattr(gen, 'data') and isinstance(gen.data, dict):
                 recovery_url = gen.data.get('action_link') or gen.data.get('properties', {}).get('action_link')
+                logger.info("Found recovery URL in gen.data")
             elif hasattr(gen, 'action_link'):
                 recovery_url = gen.action_link
+                logger.info("Found recovery URL in gen.action_link")
             elif isinstance(gen, dict):
                 recovery_url = gen.get('action_link') or gen.get('data', {}).get('action_link')
+                logger.info("Found recovery URL in dict format")
                 
-            logger.info(f"Generated recovery link structure: {type(gen)}")
-            logger.info(f"Recovery URL before processing: {recovery_url}")
+            logger.info(f"Raw recovery URL: {recovery_url}")
             
             # Fix for localhost redirect URL - replace localhost with correct preview domain
             if recovery_url and redirect_to:
+                original_url = recovery_url
                 # Replace any localhost or 127.0.0.1 redirect_to parameters with the correct domain
                 recovery_url = re.sub(
                     r'redirect_to=([^&]*(?:localhost|127\.0\.0\.1)[^&]*)',
                     f'redirect_to={urllib.parse.quote(redirect_to, safe="")}',
                     recovery_url
                 )
-                logger.info(f"Fixed recovery URL redirect_to parameter: {recovery_url}")
+                if original_url != recovery_url:
+                    logger.info(f"URL redirect_to parameter fixed: {original_url} -> {recovery_url}")
+                else:
+                    logger.info("No localhost redirect_to parameter found to fix")
             
+            logger.info(f"Final recovery URL: {recovery_url}")
             logger.info(f"Generated recovery link via admin API: {bool(recovery_url)}")
         except Exception as e:
             gen_error = str(e)
