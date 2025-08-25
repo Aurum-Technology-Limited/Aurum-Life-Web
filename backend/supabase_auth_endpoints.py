@@ -161,6 +161,7 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
             origin = "https://prodflow-auth.preview.emergentagent.com"
             
         redirect_to = f"{origin}/reset-password" if origin else None
+        logger.info(f"Forgot password redirect URL: {redirect_to}")
 
         # Determine if we should force include recovery_url for dev/preview domains
         dev_like = False
