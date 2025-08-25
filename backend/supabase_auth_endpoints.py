@@ -146,9 +146,7 @@ async def refresh_session(payload: RefreshRequest):
 
 @auth_router.post("/forgot-password")
 async def forgot_password(payload: ForgotPasswordRequest, request: Request):
-    """Trigger password reset. Attempts both standard reset and admin-generated link with redirect.
-    In preview/local environments, always include a recovery_url fallback so users can proceed without email.
-    """
+    """Trigger password reset using only Supabase's standard method (no admin API)"""
     try:
         supabase = supabase_manager.get_client()
         # Build redirect_to from request origin if present, with fallback to preview domain
@@ -169,94 +167,30 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
         redirect_to = f"{origin}/reset-password" if origin else None
         logger.info(f"Forgot password redirect URL: {redirect_to}")
 
-        # Determine if we should force include recovery_url for dev/preview domains
-        dev_like = False
-        try:
-            if origin:
-                dev_like = (".preview.emergentagent.com" in origin) or ("localhost" in origin)
-        except Exception:
-            dev_like = False
-
-        # Try standard reset flow (this triggers the provider to send an email)
+        # Use ONLY the standard reset method - avoid admin API which may cause token issues
         try:
             if redirect_to:
-                # Use more specific options for better compatibility
+                # Use the standard reset method with correct option name
                 supabase.auth.reset_password_for_email(
                     payload.email, 
                     {
-                        "redirectTo": redirect_to  # Use redirectTo instead of redirect_to
+                        "redirectTo": redirect_to  # Use redirectTo as per Supabase docs
                     }
                 )
             else:
                 supabase.auth.reset_password_for_email(payload.email)
-            logger.info("Supabase reset_password_for_email invoked successfully")
+            logger.info("Supabase reset_password_for_email invoked successfully with redirectTo")
         except Exception as e:
-            logger.info(f"Primary reset_password_for_email failed or not supported: {e}")
-        
-        # Generate a recovery link via admin API with more specific options
-        recovery_url = None
-        gen_error = None
-        try:
-            # Use the exact format Supabase expects
-            opts = {
-                "email": payload.email,
-                "type": "recovery",
-            }
-            
-            # Only add redirect options if we have a valid redirect_to
-            if redirect_to:
-                opts["redirectTo"] = redirect_to
-                
-            logger.info(f"About to call admin.generate_link with: {opts}")
-            gen = supabase.auth.admin.generate_link(opts)
-            logger.info(f"Admin generate_link response type: {type(gen)}")
-            logger.info(f"Admin generate_link response: {gen}")
-            
-            # normalize return - check for different response structures
-            if hasattr(gen, 'properties') and hasattr(gen.properties, 'action_link'):
-                recovery_url = gen.properties.action_link
-                logger.info("Found recovery URL in gen.properties.action_link")
-            elif hasattr(gen, 'data') and isinstance(gen.data, dict):
-                recovery_url = gen.data.get('action_link') or gen.data.get('properties', {}).get('action_link')
-                logger.info("Found recovery URL in gen.data")
-            elif hasattr(gen, 'action_link'):
-                recovery_url = gen.action_link
-                logger.info("Found recovery URL in gen.action_link")
-            elif isinstance(gen, dict):
-                recovery_url = gen.get('action_link') or gen.get('data', {}).get('action_link')
-                logger.info("Found recovery URL in dict format")
-                
-            logger.info(f"Raw recovery URL: {recovery_url}")
-            
-            # Fix for localhost redirect URL - replace localhost with correct preview domain
-            if recovery_url and redirect_to:
-                original_url = recovery_url
-                # Replace any localhost or 127.0.0.1 redirect_to parameters with the correct domain
-                recovery_url = re.sub(
-                    r'redirect_to=([^&]*(?:localhost|127\.0\.0\.1)[^&]*)',
-                    f'redirect_to={urllib.parse.quote(redirect_to, safe="")}',
-                    recovery_url
-                )
-                if original_url != recovery_url:
-                    logger.info(f"URL redirect_to parameter fixed: {original_url} -> {recovery_url}")
-                else:
-                    logger.info("No localhost redirect_to parameter found to fix")
-            
-            logger.info(f"Final recovery URL: {recovery_url}")
-            logger.info(f"Generated recovery link via admin API: {bool(recovery_url)}")
-        except Exception as e:
-            gen_error = str(e)
-            logger.error(f"Admin generate_link failed: {e}")
-            # Log more details about the error
-            import traceback
-            logger.error(f"Full traceback: {traceback.format_exc()}")
+            logger.error(f"Standard reset_password_for_email failed: {e}")
+            # Try fallback without redirect
+            try:
+                supabase.auth.reset_password_for_email(payload.email)
+                logger.info("Fallback reset_password_for_email (no redirect) successful")
+            except Exception as e2:
+                logger.error(f"All reset_password_for_email attempts failed: {e2}")
+                raise HTTPException(status_code=500, detail="Failed to send password reset email")
         
         resp = {"success": True, "message": "If an account exists, a password reset email has been sent."}
-        if recovery_url and dev_like:
-            # Provide dev fallback link so user can proceed immediately on preview/local
-            resp["recovery_url"] = recovery_url
-        if dev_like and not recovery_url and gen_error:
-            resp["debug"] = {"recovery_generate_error": gen_error}
         return resp
     except Exception as e:
         logger.error(f"Forgot password error: {e}")
