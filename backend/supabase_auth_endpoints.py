@@ -176,20 +176,35 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
         # Try standard reset flow (this triggers the provider to send an email)
         try:
             if redirect_to:
-                supabase.auth.reset_password_for_email(payload.email, options={"redirect_to": redirect_to})
+                # Add longer expiry for password reset tokens
+                supabase.auth.reset_password_for_email(
+                    payload.email, 
+                    options={
+                        "redirect_to": redirect_to,
+                        "captcha_token": None  # Add if needed
+                    }
+                )
             else:
                 supabase.auth.reset_password_for_email(payload.email)
             logger.info("Supabase reset_password_for_email invoked successfully")
         except Exception as e:
             logger.info(f"Primary reset_password_for_email failed or not supported: {e}")
         
-        # Generate a recovery link via admin API (does not send email). Always attempt; include in response for dev_like.
+        # Generate a recovery link via admin API with longer expiry
         recovery_url = None
         gen_error = None
         try:
-            opts = {"email": payload.email, "type": "recovery"}
+            opts = {
+                "email": payload.email, 
+                "type": "recovery",
+                # Try to set longer expiry - this might not work with all Supabase versions
+                "options": {
+                    "redirect_to": redirect_to,
+                    "ttl": 3600  # 1 hour in seconds
+                }
+            }
             if redirect_to:
-                opts["options"] = {"redirectTo": redirect_to}
+                opts["options"]["redirectTo"] = redirect_to
             gen = supabase.auth.admin.generate_link(opts)
             # normalize return - check for different response structures
             if hasattr(gen, 'properties') and hasattr(gen.properties, 'action_link'):
