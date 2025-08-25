@@ -143,6 +143,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (userData) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        setLoading(false);
+        return { success: true, message: 'Account created successfully!' };
+      } else {
+        setLoading(false);
+        const isDuplicate = response.status === 409 || (data.detail && data.detail.toLowerCase().includes('already exists'));
+        return { 
+          success: false, 
+          error: data.detail || 'Registration failed',
+          duplicate: isDuplicate,
+          code: response.status
+        };
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setLoading(false);
+      return { success: false, error: 'Network error. Please try again.' };
+    }
+  };
+
   const logout = async () => {
     try {
       localStorage.removeItem('auth_token');
