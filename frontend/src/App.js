@@ -101,14 +101,44 @@ function App() {
     document.title = `${sectionTitle} | Aurum Life`;
   }, [activeSection]);
 
-  // Check if we're on password reset page (robust)
+  // Check if we're on password reset page (robust with URL change detection)
   useEffect(() => {
-    const pathname = window.location.pathname;
-    if (pathname === '/reset-password') {
-      setIsPasswordResetPage(true);
-    } else {
-      setIsPasswordResetPage(false);
-    }
+    const checkPasswordResetPage = () => {
+      const pathname = window.location.pathname;
+      const hash = window.location.hash;
+      
+      console.log('🔍 Checking password reset page. Pathname:', pathname, 'Hash:', hash);
+      
+      if (pathname === '/reset-password') {
+        console.log('✅ Password reset page detected');
+        setIsPasswordResetPage(true);
+      } else {
+        console.log('❌ Not password reset page');
+        setIsPasswordResetPage(false);
+      }
+    };
+    
+    // Check on mount
+    checkPasswordResetPage();
+    
+    // Listen for URL changes (including hash changes)
+    const handlePopState = () => {
+      console.log('🔄 URL changed, rechecking password reset page');
+      checkPasswordResetPage();
+    };
+    
+    const handleHashChange = () => {
+      console.log('🔄 Hash changed, rechecking password reset page');
+      checkPasswordResetPage();
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handleHashChange);
+    };
   }, []);
 
   const handleSectionChange = (newSection, params = {}) => {
