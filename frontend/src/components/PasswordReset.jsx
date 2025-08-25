@@ -141,6 +141,22 @@ const PasswordReset = () => {
           {!token && (
             <div className="mb-4 p-3 bg-blue-900 border border-blue-700 text-blue-200 rounded">
               We couldn't find a reset token in your link. Please navigate from the latest password reset email.
+              
+              {/* Debug information to help identify the issue */}
+              <details className="mt-2">
+                <summary className="cursor-pointer text-sm">Debug Information</summary>
+                <div className="mt-2 text-xs text-blue-300 font-mono">
+                  <div>Current URL: {window.location.href}</div>
+                  <div>Hash: {window.location.hash || '(none)'}</div>
+                  <div>Search: {window.location.search || '(none)'}</div>
+                  {info.hashParams && Object.keys(info.hashParams).length > 0 && (
+                    <div>Hash Params: {JSON.stringify(info.hashParams, null, 2)}</div>
+                  )}
+                  {info.queryParams && Object.keys(info.queryParams).length > 0 && (
+                    <div>Query Params: {JSON.stringify(info.queryParams, null, 2)}</div>
+                  )}
+                </div>
+              </details>
             </div>
           )}
 
