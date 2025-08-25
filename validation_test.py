@@ -6,7 +6,7 @@ Quick validation test for empty strings
 import requests
 import json
 
-BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
 
 def test_validation():
     # Login first

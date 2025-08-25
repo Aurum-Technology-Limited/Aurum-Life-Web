@@ -1,5 +1,5 @@
 <analysis>
-The previous AI engineer successfully transformed a productivity MVP, focusing on core feature enhancements and a critical migration. Initially, the work involved implementing server-side filtering and pagination for tasks, and an insights module, resolving 500 errors and frontend rendering issues in . A major undertaking was the full migration from legacy authentication to Supabase, including migrating existing user data and then meticulously purging all legacy code and database tables. This was followed by establishing a resilient refresh token flow for improved session stability. The latest work has focused on integrating an onboarding wizard with template selection and then debugging persistent Invalid login credentials and Forgot password email delivery issues, which points to Supabase SMTP configuration problems, specifically concerning Microsoft 365 MFA and SMTP host settings. The engineer has provided detailed guidance on debugging these external configurations.
+The previous AI engineer successfully transformed a productivity MVP, implementing server-side filtering, pagination, an insights module, and a full migration to Supabase authentication, including data migration and legacy code removal. A resilient refresh token flow and an onboarding wizard were integrated. The recent focus has been on debugging persistent Invalid login credentials and Forgot password email delivery issues, primarily related to Supabase SMTP configuration with Microsoft 365, including MFA and SMTP host settings. The engineer implemented a dedicated password reset page and a UI fallback to display a  from Supabase Admin API. A recurring challenge was a misconfigured  causing CORS errors. The AI engineer ultimately implemented a runtime URL resolver () to dynamically determine the correct backend host, bypassing environment variable issues and resolving the network failures. A dev fallback for  was enabled to unblock testing.
 </analysis>
 
 <product_requirements>
@@ -20,38 +20,41 @@ The application is a productivity tool for managing hierarchical data: Pillars, 
 <code_architecture>
 
 
-- ****: Core FastAPI application, defines API routes, handles middleware.
-  - **Changes**: Added API endpoints for  (with filters and pagination), , , , , , and temporary admin endpoints ,  (later removed). Legacy MongoDB connection logic and hybrid auth for non-preserved accounts were removed, making auth Supabase-only.
-- ****: Contains core business logic.
-  - **Changes**:  implemented with server-side filters and pagination.  implemented. Timezone bug fixed in  filtering.  refactored for Supabase with soft-delete.
-- ****: Pydantic models for data structures.
-  - **Changes**: Added  and  to .  with server-side filters and pagination returns  and  (for pagination).
-- ****: Handles Supabase specific authentication endpoints.
-  - **Changes**: Hardened Supabase sign-in/registration, user hydration, and ensures  creation. Added , , , . Legacy user creation logic was removed, and legacy login fallback was restricted to a single test account, then fully removed.
-- ****: Supabase authentication module.
-  - **Changes**: Integrated  (for a short period). Removed all legacy JWT validation, making authentication purely Supabase-token based via .
-- ****: Manages authentication state.
-  - **Changes**: Implemented resilient refresh token flow (Axios interceptor for 401, proactive refresh, persistent storage of tokens). Integrated  method. Improved user hydration.
-- ****: Tasks UI.
-  - **Changes**: Fixed “Cannot access before initialization” bug by reordering  declarations for  and . Integrated  icon import. Updated to use server-side filters and pagination via .
-- ****: Insights UI.
-  - **Changes**: Renders Eisenhower Matrix and alignment/area sections.
-- ****: Onboarding UI.
-  - **Changes**: Implemented template selection and de-duplication logic (reusing existing items by name). Wires “Finish” action to call .
-- ****: Centralized API calls.
-  - **Changes**:  updated to accept server-side filter and pagination parameters. Added , , , . Axios interceptor added for automatic token refresh on 401.
-- ****: (Temporary file, now removed) Stored the .
-
+-   ****: Core FastAPI application, defines API routes, handles middleware.
+    -   **Changes**: Added API endpoints for  (with filters and pagination), , , , , . Legacy MongoDB connection logic and hybrid auth were removed.
+-   ****: Handles Supabase specific authentication endpoints.
+    -   **Changes**: Hardened Supabase sign-in/registration, user hydration, and ensures  creation. Added , , , . Most recently, a dev-only fallback was implemented to always include  in the  response for preview/local environments.
+-   ****: Main application component.
+    -   **Changes**: Modified to detect the  path and render the  component.
+-   ****: Manages authentication state.
+    -   **Changes**: Implemented resilient refresh token flow, integrated  method, and improved user hydration. Updated to use the new  for all fetch calls.
+-   ****: Login UI.
+    -   **Changes**: Fixed HTML entity rendering issues, added the Forgot password? link, incorporated the  fallback as Open reset link and Copy link buttons (temporary), and includes a collapsible Troubleshooting Microsoft 365 SMTP diagnostics section.
+-   ****: (NEWLY CREATED) Dedicated UI for password reset.
+    -   **Changes**: Parses tokens from URL, enforces password rules, submits to , and redirects to login on success. Updated to use  for API calls.
+-   ****: Component for displaying task Why statements.
+    -   **Changes**: Refactored to address an ESLint react-hooks/exhaustive-deps rule violation, which was causing a blocking overlay on the UI.
+-   ****: Centralized API calls.
+    -   **Changes**: Updated  for server-side filtering/pagination. Added , , , . Included Axios interceptor for 401 token refresh. Added temporary no-op stubs for , , , . Most recently, updated to use  for Axios .
+-   ****: (NEWLY CREATED) Provides a runtime-safe URL resolver for the backend API.
+    -   **Changes**: Contains  which intelligently returns  if valid and not a known problematic host (e.g., , ), otherwise it defaults to , ensuring API calls always target the correct backend.
 </code_architecture>
 
 <pending_tasks>
-- Debug the persistent issue of password reset emails not being received by the user, specifically related to Supabase SMTP configuration with Microsoft 365, likely due to MFA or incorrect host settings.
+-   Continue debugging the persistent issue of password reset emails not being received, specifically related to Supabase SMTP configuration with Microsoft 365 (MFA, host settings).
+-   Consider adding a feature flag to toggle the Open reset link / Copy link UI visibility.
+-   Consider adding a toggle flag to show/hide the M365 SMTP diagnostics block.
+-   Run automated backend tests for the password reset endpoints once SMTP is confirmed.
 </pending_tasks>
 
 <current_work>
-The immediate work is focused on resolving a critical authentication flow issue: the password reset feature. Although the backend endpoints (, ) have been implemented and the frontend (, ) is wired to use them, password reset emails are not being delivered. The AI engineer has identified that the issue is external to the application's code, stemming from the Supabase project's SMTP configuration, specifically when using Microsoft 365 (Outlook) as the email provider. Debugging steps provided point to potential misconfigurations in SMTP host ( vs ), MFA enforcement on the sending mailbox, and Authenticated SMTP settings in the Microsoft 365 Admin Center. The engineer has also implemented a fallback to generate a  via the Supabase Admin API, which is returned in the API response, but not yet surfaced in the UI. The user is currently trying to debug their SMTP setup based on the AI engineer's detailed instructions.
+The immediate work was focused on resolving critical Network error / CORS issues that prevented the frontend from communicating with the backend API for authentication (login, forgot password, reset password). This was consistently caused by an invalid  environment variable, which was pointing to incorrect hosts like  or .
+
+In response to user frustration, the AI engineer implemented a robust, runtime-safe URL resolver in  via the  function. This function now dynamically determines the correct backend URL by prioritizing  if it's valid, but falling back to  (the frontend's current domain) if the environment variable is misconfigured or points to known problematic hosts. This resolver has been integrated into , , and , effectively bypassing persistent CORS errors.
+
+Additionally, a dev-only fallback was enabled in  to ensure the  endpoint always returns a  for preview/local environments. This allows the user to utilize the Open reset link button (surfaced in ) to complete the password reset flow, even while the Microsoft 365 SMTP email delivery issues are still being diagnosed. An ESLint blocking overlay in  was also fixed to ensure correct UI rendering.
 </current_work>
 
 <optional_next_step>
-Surface the  as an Open reset link button in the Login UI.
+Reload the application to validate the login and password reset flow using the Open reset link fallback.
 </optional_next_step>

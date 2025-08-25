@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
 
 def test_username_change():
     # Login

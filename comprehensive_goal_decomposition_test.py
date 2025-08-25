@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
 
 class ComprehensiveGoalDecompositionTester:
     def __init__(self):

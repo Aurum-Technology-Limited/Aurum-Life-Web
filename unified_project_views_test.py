@@ -13,7 +13,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
 
 class UnifiedProjectViewsTester:
     def __init__(self):

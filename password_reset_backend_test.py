@@ -13,9 +13,9 @@ import time
 from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL
-BACKEND_URL = "https://auth-wizard-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
-ORIGIN_HEADER = "https://fb63d68c-b22b-4486-bde7-7218db932344.preview.emergentagent.com"
+ORIGIN_HEADER = "https://prodflow-auth.preview.emergentagent.com"
 
 class PasswordResetTest:
     def __init__(self):
