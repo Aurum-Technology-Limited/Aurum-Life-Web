@@ -145,13 +145,21 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
     """
     try:
         supabase = supabase_manager.get_client()
-        # Build redirect_to from request origin if present
+        # Build redirect_to from request origin if present, with fallback to preview domain
         origin = request.headers.get('origin')
         if not origin:
             scheme = request.url.scheme
             host = request.headers.get('host')
             if scheme and host:
                 origin = f"{scheme}://{host}"
+        
+        # Fix for localhost issue - ensure we use the correct preview domain for redirect
+        if origin and ("localhost" in origin or "127.0.0.1" in origin):
+            origin = "https://prodflow-auth.preview.emergentagent.com"
+        elif not origin:
+            # Default to preview domain if no origin detected
+            origin = "https://prodflow-auth.preview.emergentagent.com"
+            
         redirect_to = f"{origin}/reset-password" if origin else None
 
         # Determine if we should force include recovery_url for dev/preview domains
