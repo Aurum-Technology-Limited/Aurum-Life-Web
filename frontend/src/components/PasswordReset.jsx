@@ -34,8 +34,22 @@ const PasswordReset = () => {
     const hashParams = parseHashParams(window.location.hash || '');
     const queryParams = parseQueryParams(window.location.search || '');
 
-    const accessToken = hashParams.access_token || queryParams.access_token || queryParams.token || '';
+    // Supabase recovery URLs typically use these parameter patterns:
+    // ?token=...&type=recovery or #access_token=...&type=recovery
+    const accessToken = hashParams.access_token || queryParams.access_token || 
+                       hashParams.token || queryParams.token || 
+                       hashParams.recovery_token || queryParams.recovery_token || '';
     const type = hashParams.type || queryParams.type || '';
+    
+    // Debug logging to understand the URL structure
+    console.log('Password Reset URL Debug:', {
+      hash: window.location.hash,
+      search: window.location.search,
+      hashParams,
+      queryParams,
+      extractedToken: accessToken,
+      extractedType: type
+    });
 
     return { accessToken, type, hashParams, queryParams };
   }, []);
