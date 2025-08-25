@@ -200,6 +200,16 @@ async def forgot_password(payload: ForgotPasswordRequest, request: Request):
                 recovery_url = gen.action_link
             elif isinstance(gen, dict):
                 recovery_url = gen.get('action_link') or gen.get('data', {}).get('action_link')
+            # Fix for localhost redirect URL - replace localhost with correct preview domain
+            if recovery_url and redirect_to:
+                # Replace any localhost or 127.0.0.1 redirect_to parameters with the correct domain
+                recovery_url = re.sub(
+                    r'redirect_to=([^&]*(?:localhost|127\.0\.0\.1)[^&]*)',
+                    f'redirect_to={urllib.parse.quote(redirect_to, safe="")}',
+                    recovery_url
+                )
+                logger.info(f"Fixed recovery URL redirect_to parameter: {recovery_url}")
+            
             logger.info(f"Generated recovery link via admin API: {bool(recovery_url)}")
         except Exception as e:
             gen_error = str(e)
