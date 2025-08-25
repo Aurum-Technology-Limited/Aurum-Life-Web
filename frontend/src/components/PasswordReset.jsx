@@ -63,8 +63,19 @@ const PasswordReset = () => {
   }, []);
 
   useEffect(() => {
+    console.log('🔍 PasswordReset component mounted');
+    console.log('Current URL:', window.location.href);
+    console.log('Hash:', window.location.hash);
+    console.log('Search:', window.location.search);
+    console.log('Extracted info:', info);
+    
     if (info.accessToken) {
+      console.log('✅ Token found:', info.accessToken);
       setToken(info.accessToken);
+    } else if (info.error) {
+      console.log('❌ Error found:', info.error, info.errorCode, info.errorDescription);
+    } else {
+      console.log('❓ No token or error found');
     }
   }, [info]);
 
