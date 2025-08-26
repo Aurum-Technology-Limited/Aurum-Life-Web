@@ -464,6 +464,18 @@ class TasksAPIService extends BaseAPIService {
   async deleteTask(taskId) {
     return this.delete(`/${taskId}`);
   }
+  
+  // Additional methods for legacy compatibility
+  getTask: (taskId) => apiClient.get(`/tasks/${taskId}`),
+  searchTasks: (q, limit = 20, page = 1) => apiClient.get('/tasks/search', { params: { q, limit, page } }),
+  moveTaskColumn: (taskId, newColumn) => apiClient.post(`/tasks/${taskId}/move`, { column: newColumn }),
+  getSubtasks: (taskId) => apiClient.get(`/tasks/${taskId}/subtasks`),
+  createSubtask: (taskId, data) => apiClient.post(`/tasks/${taskId}/subtasks`, data),
+  getAvailableDependencyTasks: (projectId, excludeTaskId = null) =>
+    apiClient.get('/tasks/available-dependencies', { params: { project_id: projectId, exclude_task_id: excludeTaskId } }),
+  getTaskDependencies: (taskId) => apiClient.get(`/tasks/${taskId}/dependencies`),
+  updateTaskDependencies: (taskId, dependencyIds = []) => apiClient.post(`/tasks/${taskId}/dependencies`, { dependency_task_ids: dependencyIds }),
+  suggestFocus: () => apiClient.get('/ai/suggest-focus'),
 }
 
 // Create service instances
