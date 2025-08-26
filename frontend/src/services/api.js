@@ -465,17 +465,25 @@ class TasksAPIService extends BaseAPIService {
     return this.delete(`/${taskId}`);
   }
   
-  // Additional methods for legacy compatibility
-  getTask: (taskId) => apiClient.get(`/tasks/${taskId}`),
-  searchTasks: (q, limit = 20, page = 1) => apiClient.get('/tasks/search', { params: { q, limit, page } }),
-  moveTaskColumn: (taskId, newColumn) => apiClient.post(`/tasks/${taskId}/move`, { column: newColumn }),
-  getSubtasks: (taskId) => apiClient.get(`/tasks/${taskId}/subtasks`),
-  createSubtask: (taskId, data) => apiClient.post(`/tasks/${taskId}/subtasks`, data),
-  getAvailableDependencyTasks: (projectId, excludeTaskId = null) =>
-    apiClient.get('/tasks/available-dependencies', { params: { project_id: projectId, exclude_task_id: excludeTaskId } }),
-  getTaskDependencies: (taskId) => apiClient.get(`/tasks/${taskId}/dependencies`),
-  updateTaskDependencies: (taskId, dependencyIds = []) => apiClient.post(`/tasks/${taskId}/dependencies`, { dependency_task_ids: dependencyIds }),
-  suggestFocus: () => apiClient.get('/ai/suggest-focus'),
+  /**
+   * Gets a specific task
+   * @param {string} taskId - Task ID
+   * @returns {Promise} Task data
+   */
+  async getTask(taskId) {
+    return this.get(`/${taskId}`);
+  }
+  
+  /**
+   * Searches tasks
+   * @param {string} q - Search query
+   * @param {number} limit - Result limit
+   * @param {number} page - Page number
+   * @returns {Promise} Search results
+   */
+  async searchTasks(q, limit = 20, page = 1) {
+    return this.get('/search', { q, limit, page });
+  }
 }
 
 // Create service instances
