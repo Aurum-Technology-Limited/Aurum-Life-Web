@@ -398,26 +398,43 @@ class AuthEndpointTester:
     def test_performance_benchmarks(self):
         """Test performance benchmarks for authentication endpoints"""
         
-        # Performance test for login endpoint
-        login_data = {"email": TEST_EMAIL, "password": TEST_PASSWORD}
+        # Performance test for login endpoint - create a user first
+        import time
+        perf_user_data = {
+            "username": f"perftest_{int(time.time())}",
+            "email": f"perftest_{int(time.time())}@example.com",
+            "first_name": "Perf",
+            "last_name": "Test",
+            "password": "PerfTest123!"
+        }
         
-        response_times = []
-        for i in range(3):  # Test 3 times for average
-            status, data, response_time = self.make_request("POST", "/auth/login", login_data)
-            if status == 200:
-                response_times.append(response_time)
-                
-        if response_times:
-            avg_time = sum(response_times) / len(response_times)
-            success = avg_time < 5.0  # Should be under 5 seconds
-            details = f"Average login time: {avg_time*1000:.1f}ms over {len(response_times)} requests"
+        # Create user for performance testing
+        status, data, response_time = self.make_request("POST", "/auth/register", perf_user_data)
+        
+        if status == 200:
+            login_data = {"email": perf_user_data["email"], "password": perf_user_data["password"]}
             
-            self.performance_metrics["login_avg_ms"] = avg_time * 1000
+            response_times = []
+            for i in range(3):  # Test 3 times for average
+                status, data, response_time = self.make_request("POST", "/auth/login", login_data)
+                if status == 200:
+                    response_times.append(response_time)
+                    
+            if response_times:
+                avg_time = sum(response_times) / len(response_times)
+                success = avg_time < 5.0  # Should be under 5 seconds
+                details = f"Average login time: {avg_time*1000:.1f}ms over {len(response_times)} requests"
+                
+                self.performance_metrics["login_avg_ms"] = avg_time * 1000
+            else:
+                success = False
+                details = "No successful login requests for performance testing"
+                
+            self.log_result("Performance - Login Speed", success, details, avg_time if response_times else 0)
         else:
             success = False
-            details = "No successful login requests for performance testing"
-            
-        self.log_result("Performance - Login Speed", success, details, avg_time if response_times else 0)
+            details = "Failed to create user for performance testing"
+            self.log_result("Performance - Login Speed", success, details, 0)
         
         return success
 
