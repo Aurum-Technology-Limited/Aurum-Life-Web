@@ -707,7 +707,7 @@ async def complete_onboarding(current_user: User = Depends(get_current_active_us
             if current_level < 2:
                 await supabase_manager.update_document(
                     "user_profiles", 
-                    {"id": user_id}, 
+                    user_id, 
                     {"level": 2}
                 )
         
