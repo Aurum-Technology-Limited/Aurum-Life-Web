@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv('/app/backend/.env')
 
 # Configuration
-BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
 
 def main():
     """Main execution"""

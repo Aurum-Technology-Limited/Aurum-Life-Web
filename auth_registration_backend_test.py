@@ -13,7 +13,7 @@ import time
 from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL from frontend/.env
-BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
 
 # Test user data as specified in the review request
 TEST_USER_DATA = {

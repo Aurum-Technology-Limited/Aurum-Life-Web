@@ -9,7 +9,7 @@ import json
 import time
 from datetime import datetime
 
-BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
 
 def test_auth_diagnosis():
     print("🔍 AUTHENTICATION DIAGNOSIS TEST")

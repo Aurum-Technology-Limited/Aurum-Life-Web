@@ -26,7 +26,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
 
 class TasksDependenciesAPITester:
     def __init__(self):

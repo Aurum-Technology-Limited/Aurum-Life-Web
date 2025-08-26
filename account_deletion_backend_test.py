@@ -31,7 +31,7 @@ import time
 import os
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://prodflow-auth.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://auth-flow-master.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class AccountDeletionAPITester:

@@ -10,7 +10,7 @@ import base64
 import sys
 
 # Configuration
-BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
 
 def decode_jwt_payload(token):
     """Decode JWT payload without verification"""

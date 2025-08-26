@@ -261,7 +261,7 @@ Login → Token Storage → User Profile Fetch → App State Update → Route Pr
 
 #### **Frontend (.env):**
 ```bash
-REACT_APP_BACKEND_URL=https://prodflow-auth.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://auth-flow-master.preview.emergentagent.com
 REACT_APP_GOOGLE_CLIENT_ID=514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com
 REACT_APP_SUPABASE_URL=https://sftppbnqlsumjlrgyzgo.supabase.co
 REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...

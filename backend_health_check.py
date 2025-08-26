@@ -20,7 +20,7 @@ from typing import Dict, Any
 import uuid
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://prodflow-auth.preview.emergentagent.com/api"
+BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
 
 class BackendHealthChecker:
     def __init__(self):
