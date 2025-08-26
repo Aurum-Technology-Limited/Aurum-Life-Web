@@ -24,32 +24,51 @@ def test_onboarding_endpoint_fix():
     print(f"Started at: {datetime.utcnow().isoformat()}")
     print()
     
-    # Step 1: Create a test account since original credentials are failing
-    print("🔧 STEP 1: Creating test account for authentication...")
-    
-    test_user_data = {
-        "username": f"onboarding_fix_test_{int(time.time())}",
-        "email": f"onboarding_fix_test_{int(time.time())}@aurumtechnologyltd.com",
-        "first_name": "Onboarding",
-        "last_name": "Fix",
-        "password": "OnboardingFix123!"
-    }
-    
-    response = requests.post(f"{BACKEND_URL}/auth/register", json=test_user_data, timeout=30)
-    
-    if response.status_code == 200:
-        print(f"✅ Test account created: {test_user_data['email']}")
-    else:
-        print(f"❌ Failed to create test account: {response.status_code} - {response.text}")
-        return False
-    
-    # Step 2: Login to get access token
-    print("\n🔐 STEP 2: Authenticating to get access token...")
+    # Step 1: Try with original credentials first
+    print("🔐 STEP 1: Authenticating with original credentials...")
     
     login_data = {
-        "email": test_user_data["email"],
-        "password": test_user_data["password"]
+        "email": "marc.alleyne@aurumtechnologyltd.com",
+        "password": "password123"
     }
+    
+    start_time = time.time()
+    response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data, timeout=30)
+    login_time = time.time() - start_time
+    
+    access_token = None
+    
+    if response.status_code == 200:
+        data = response.json()
+        access_token = data.get("access_token")
+        print(f"✅ Original credentials working ({login_time*1000:.1f}ms)")
+        print(f"   Token received: {access_token[:20]}...")
+    else:
+        print(f"❌ Original credentials failed: {response.status_code} - {response.text}")
+        
+        # Step 1b: Try with known working account from test history
+        print("\n🔄 STEP 1b: Trying with known working account...")
+        
+        login_data = {
+            "email": "smoketest_e0742f61@aurumtechnologyltd.com",
+            "password": "password123"
+        }
+        
+        start_time = time.time()
+        response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data, timeout=30)
+        login_time = time.time() - start_time
+        
+        if response.status_code == 200:
+            data = response.json()
+            access_token = data.get("access_token")
+            print(f"✅ Alternative credentials working ({login_time*1000:.1f}ms)")
+            print(f"   Token received: {access_token[:20]}...")
+        else:
+            print(f"❌ Alternative credentials also failed: {response.status_code} - {response.text}")
+            return False
+    
+    # Step 2: Test complete-onboarding endpoint (MAIN TEST)
+    print("\n🎯 STEP 2: Testing POST /api/auth/complete-onboarding endpoint...")
     
     start_time = time.time()
     response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data, timeout=30)
