@@ -256,7 +256,8 @@ class AuthEndpointTester:
     def test_forgot_password(self):
         """Test forgot password functionality"""
         
-        forgot_password_data = {"email": TEST_EMAIL}
+        # Use a real email for testing (should still return success for security)
+        forgot_password_data = {"email": "test@example.com"}
         headers = {"Origin": "https://prodflow-auth.preview.emergentagent.com"}
         
         status, data, response_time = self.make_request("POST", "/auth/forgot-password", 
