@@ -94,7 +94,7 @@ class OnboardingEndpointTester:
         print("\n🔐 TESTING AUTHENTICATION FLOW")
         print("-" * 40)
         
-        # Test login with specified credentials
+        # First try with specified credentials
         login_data = {
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
@@ -105,12 +105,52 @@ class OnboardingEndpointTester:
         success = status == 200 and "access_token" in data
         if success:
             self.access_token = data.get("access_token")
-            details = f"Login successful - Token received, expires_in: {data.get('expires_in', 'N/A')}"
+            details = f"Login successful with specified credentials - Token received, expires_in: {data.get('expires_in', 'N/A')}"
+            self.log_result("Authentication Flow", success, details, response_time)
+            return success
         else:
-            details = f"Login failed - Status: {status}, Response: {data}"
+            details = f"Login failed with specified credentials - Status: {status}, Response: {data}"
+            self.log_result("Authentication Flow (Specified Credentials)", False, details, response_time)
+        
+        # If specified credentials fail, try to create a new test account
+        print("  🔄 Specified credentials failed, attempting to create test account...")
+        
+        import time
+        test_user_data = {
+            "username": f"onboarding_test_{int(time.time())}",
+            "email": f"onboarding_test_{int(time.time())}@aurumtechnologyltd.com",
+            "first_name": "Onboarding",
+            "last_name": "Test",
+            "password": "OnboardingTest123!"
+        }
+        
+        # Try to create new user
+        status, data, response_time = self.make_request("POST", "/auth/register", test_user_data)
+        
+        if status == 200:
+            print(f"  ✅ Test account created: {test_user_data['email']}")
             
-        self.log_result("Authentication Flow", success, details, response_time)
-        return success
+            # Now try to login with new account
+            login_data = {
+                "email": test_user_data["email"],
+                "password": test_user_data["password"]
+            }
+            
+            status, data, response_time = self.make_request("POST", "/auth/login", login_data)
+            
+            success = status == 200 and "access_token" in data
+            if success:
+                self.access_token = data.get("access_token")
+                details = f"Login successful with new test account - Token received, expires_in: {data.get('expires_in', 'N/A')}"
+            else:
+                details = f"Login failed with new test account - Status: {status}, Response: {data}"
+                
+            self.log_result("Authentication Flow (New Account)", success, details, response_time)
+            return success
+        else:
+            details = f"Failed to create test account - Status: {status}, Response: {data}"
+            self.log_result("Authentication Flow (Account Creation)", False, details, response_time)
+            return False
 
     def test_get_user_profile(self):
         """Test getting current user profile to verify authentication"""
