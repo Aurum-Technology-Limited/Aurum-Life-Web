@@ -165,26 +165,43 @@ class AuthEndpointTester:
     def test_user_login(self):
         """Test user login with test credentials"""
         
-        login_data = {
-            "email": TEST_EMAIL,
-            "password": TEST_PASSWORD
+        # First, create a test user for login testing
+        import time
+        test_user_data = {
+            "username": f"logintest_{int(time.time())}",
+            "email": f"logintest_{int(time.time())}@example.com",
+            "first_name": "Login",
+            "last_name": "Test",
+            "password": "LoginTest123!"
         }
         
-        status, data, response_time = self.make_request("POST", "/auth/login", login_data)
+        # Create the user first
+        status, data, response_time = self.make_request("POST", "/auth/register", test_user_data)
         
-        success = status == 200 and "access_token" in data
-        if success:
-            self.access_token = data.get("access_token")
-            self.refresh_token = data.get("refresh_token")
-            details = f"Login successful - Token received, expires_in: {data.get('expires_in', 'N/A')}"
-        else:
-            details = f"Login failed - Status: {status}, Response: {data}"
+        if status == 200:  # User created successfully
+            # Now try to login with the created user
+            login_data = {
+                "email": test_user_data["email"],
+                "password": test_user_data["password"]
+            }
             
-        self.log_result("User Login - Valid Credentials", success, details, response_time)
+            status, data, response_time = self.make_request("POST", "/auth/login", login_data)
+            
+            success = status == 200 and "access_token" in data
+            if success:
+                self.access_token = data.get("access_token")
+                self.refresh_token = data.get("refresh_token")
+                details = f"Login successful - Token received, expires_in: {data.get('expires_in', 'N/A')}"
+            else:
+                details = f"Login failed - Status: {status}, Response: {data}"
+                
+            self.log_result("User Login - Valid Credentials", success, details, response_time)
+        else:
+            self.log_result("User Login - Valid Credentials", False, f"Failed to create test user: {status}", response_time)
         
         # Test invalid credentials
         invalid_login_data = {
-            "email": TEST_EMAIL,
+            "email": "nonexistent@example.com",
             "password": "wrongpassword"
         }
         
