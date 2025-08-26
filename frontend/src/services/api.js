@@ -539,6 +539,54 @@ export const aiCoachAPI = {
   getQuota: () => apiClient.get('/ai/quota'),
 };
 
+// Additional APIs for Insights and other components
+export const insightsAPI = {
+  getInsights: (dateRange = 'all_time', areaId = null) =>
+    apiClient.get('/insights', { params: { date_range: dateRange, ...(areaId ? { area_id: areaId } : {}) } }),
+};
+
+export const insightsDrilldownAPI = {
+  // Placeholder for drilldown functionality - implement as needed
+  getDrilldownData: (params = {}) => apiClient.get('/insights/drilldown', { params }),
+};
+
+export const todayAPI = {
+  // Placeholder for Today functionality - implement as needed  
+  addTaskToToday: (taskId) => apiClient.post(`/today/tasks/${taskId}`),
+  removeTaskFromToday: (taskId) => apiClient.delete(`/today/tasks/${taskId}`),
+  getTodayTasks: () => apiClient.get('/today/tasks'),
+};
+
+export const dashboardAPI = {
+  getDashboard: () => apiClient.get('/dashboard'),
+};
+
+export const recurringTasksAPI = {
+  getRecurringTasks: () => apiClient.get('/tasks/recurring'),
+  createRecurringTask: (data) => apiClient.post('/tasks/recurring', data),
+  updateRecurringTask: (id, data) => apiClient.put(`/tasks/recurring/${id}`, data),
+  deleteRecurringTask: (id) => apiClient.delete(`/tasks/recurring/${id}`),
+  generateRecurringTaskInstances: () => apiClient.post('/tasks/recurring/generate'),
+};
+
+export const uploadsAPI = {
+  initiate: ({ filename, size, parentType = null, parentId = null }) =>
+    apiClient.post('/uploads/initiate', { filename, size, parent_type: parentType, parent_id: parentId }),
+  uploadChunk: ({ uploadId, index, total, blob }) => {
+    const form = new FormData();
+    form.append('upload_id', uploadId);
+    form.append('index', String(index));
+    form.append('total_chunks', String(total));
+    form.append('chunk', blob, `chunk_${index}`);
+    return apiClient.post('/uploads/chunk', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  complete: ({ uploadId }) => {
+    const form = new FormData();
+    form.append('upload_id', uploadId);
+    return apiClient.post('/uploads/complete', form);
+  },
+};
+
 // Utility exports
 export const handleApiError = APIErrorHandler.extractErrorMessage;
 export const api = apiClient;
