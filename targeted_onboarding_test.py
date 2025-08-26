@@ -121,7 +121,7 @@ def test_onboarding_endpoint_fix():
         endpoint_working = False
     
     # Step 3: Verify no database connection errors
-    print("\n🗄️ STEP 4: Checking for database connection errors...")
+    print("\n🗄️ STEP 3: Checking for database connection errors...")
     
     # Check if we can still make authenticated requests
     start_time = time.time()
@@ -136,6 +136,38 @@ def test_onboarding_endpoint_fix():
     else:
         print(f"❌ Backend health check failed: {health_response.status_code}")
         db_connection_ok = False
+    
+    # Step 4: Test if user profile level gets updated correctly
+    print("\n👤 STEP 4: Checking user profile level update...")
+    
+    headers = {"Authorization": f"Bearer {access_token}"}
+    start_time = time.time()
+    profile_response = requests.get(f"{BACKEND_URL}/auth/me", headers=headers, timeout=30)
+    profile_time = time.time() - start_time
+    
+    if profile_response.status_code == 200:
+        try:
+            profile_data = profile_response.json()
+            current_level = profile_data.get("level", "unknown")
+            onboarding_status = profile_data.get("has_completed_onboarding", "unknown")
+            print(f"✅ Profile retrieved ({profile_time*1000:.1f}ms)")
+            print(f"   Level: {current_level}")
+            print(f"   Onboarding Complete: {onboarding_status}")
+            
+            # Check if onboarding is marked as complete
+            if onboarding_status is True:
+                print("✅ User profile correctly shows onboarding as complete")
+                profile_updated = True
+            else:
+                print("⚠️ User profile may not reflect onboarding completion")
+                profile_updated = False
+        except:
+            print(f"⚠️ Could not parse profile response: {profile_response.text}")
+            profile_updated = False
+    else:
+        print(f"⚠️ Profile check failed: {profile_response.status_code} - {profile_response.text}")
+        print("   (This may be due to RLS policy issues, but doesn't affect onboarding endpoint)")
+        profile_updated = False
     
     # Final Assessment
     print("\n" + "=" * 60)
