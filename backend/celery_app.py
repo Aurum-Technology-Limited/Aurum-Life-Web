@@ -23,16 +23,26 @@ app.conf.update(
         'scoring_engine.recalculate_dependent_tasks': {'queue': 'scoring'},
         'scoring_engine.recalculate_area_tasks': {'queue': 'scoring'},
         'scoring_engine.recalculate_project_tasks': {'queue': 'scoring'},
+        # Multi-agent system queues
+        'agent_base.route_message': {'queue': 'agent_orchestrator'},
+        'agents.market_validation.*': {'queue': 'agent_market_validation'},
+        'agents.product_architect.*': {'queue': 'agent_product_architect'},
+        'agents.ai_engineering.*': {'queue': 'agent_ai_engineering'},
+        'agents.business_intelligence.*': {'queue': 'agent_business_intelligence'},
+        'agents.legal_protection.*': {'queue': 'agent_legal_protection'},
+        'agents.operations.*': {'queue': 'agent_operations'},
+        'agents.user_experience.*': {'queue': 'agent_user_experience'},
     },
     
-    # Performance optimizations
-    worker_prefetch_multiplier=1,  # Process scoring tasks one at a time for consistency
+    # Agent-specific queue configurations
+    task_queue_max_priority=10,  # Support priority messaging
+    worker_prefetch_multiplier=1,  # Process one message at a time for consistency
     task_acks_late=True,  # Acknowledge task only after completion
     worker_disable_rate_limits=False,
     
-    # Retry and timeout settings
-    task_default_retry_delay=60,  # 1 minute retry delay
-    task_max_retries=3,
+    # Retry and timeout settings for agents
+    task_default_retry_delay=30,  # 30 seconds retry delay for agents
+    task_max_retries=5,  # More retries for critical agent tasks
     task_soft_time_limit=300,  # 5 minutes soft limit
     task_time_limit=600,  # 10 minutes hard limit
     
@@ -42,6 +52,16 @@ app.conf.update(
     # Monitoring and debugging
     worker_send_task_events=True,
     task_send_sent_event=True,
+    
+    # Enable task tracking for agent workflows
+    task_track_started=True,
+    task_publish_retry=True,
+    task_publish_retry_policy={
+        'max_retries': 3,
+        'interval_start': 0,
+        'interval_step': 0.2,
+        'interval_max': 0.2,
+    }
 )
 
 # Import tasks to register them
