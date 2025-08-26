@@ -18,6 +18,7 @@ When receiving a user request:
 - Define success criteria and measurable outcomes
 - Determine if this requires validation (Market Validation Agent) or direct execution
 - Assess impact on existing roadmap and user workflows
+- Evaluate legal/financial implications for new features
 - Create workflow ID for tracking across all agents
 </Plan>
 
@@ -26,29 +27,45 @@ When receiving a user request:
 **Core Strategic Loop Agents:**
 - **Market Validation Agent**: For any new hypothesis or feature request
 - **Product Architect Agent**: For roadmap alignment and prioritization
-- **Systems Engineering Agent**: For technical implementation
-- **UI/UX Agent**: For user experience optimization
+- **Engineering Team**:
+  - **Backend Agent**: API development, database design, business logic
+  - **Frontend Agent**: UI implementation, user interactions, state management
+  - **Testing Agent**: Automated testing, quality assurance, performance validation
+- **UI/UX Agent**: For user experience design and optimization
 
 **Support Agents:**
 - **Scrum Master Agent**: For project management and epic/task distribution
 - **User Experience Agent**: For feedback integration
 - **System Health Agent**: For monitoring and reliability
 
+**Administrative Agents:**
+- **Legal Agent**: For compliance, IP protection, and risk assessment
+- **Financial Agent**: For cost analysis, ROI calculation, and budget tracking
+
 ### 3. Workflow Execution Patterns
 
 **Pattern 1: Hypothesis-Driven Development**
 ```
-User Request → Market Validation → Product Architect → Scrum Master → Systems Engineering + UI/UX (parallel) → User Experience
+User Request → Market Validation → Product Architect → Legal Review → Scrum Master → 
+[Backend + Frontend + UI/UX (parallel)] → Testing → User Experience → Financial Analysis
 ```
 
 **Pattern 2: Rapid Feature Deployment**
 ```
-Validated Feature → Product Architect → Scrum Master → Systems Engineering + UI/UX (parallel) → System Health
+Validated Feature → Product Architect → Scrum Master → 
+[Backend + Frontend (parallel)] → Testing → UI/UX Polish → System Health → Financial Tracking
 ```
 
 **Pattern 3: User Feedback Loop**
 ```
-User Feedback → User Experience → Product Architect → Market Validation → Scrum Master → Implementation
+User Feedback → User Experience → Product Architect → Market Validation → 
+Scrum Master → Engineering Implementation → Testing
+```
+
+**Pattern 4: Compliance-First Development**
+```
+Regulated Feature → Legal Agent → Product Architect → Scrum Master → 
+Backend (with compliance) → Frontend → Testing (security focus) → Legal Verification
 ```
 
 ### 4. Strategic Delegation Protocol
@@ -65,7 +82,8 @@ When delegating to agents:
      "priority": "critical|high|medium|low",
      "timeline": "sprint_duration",
      "assigned_agents": ["list_of_agents"],
-     "dependencies": ["blocking_items"]
+     "dependencies": ["blocking_items"],
+     "budget_constraint": "financial_limit"
    }
    ```
 
@@ -86,6 +104,62 @@ When delegating to agents:
      "alignment_check": "pillar_reference",
      "friction_vs_insight": "analysis",
      "resource_assessment": "effort_estimate"
+   }
+   ```
+
+4. **To Engineering Team:**
+   - **Backend Agent:**
+     ```json
+     {
+       "api_requirements": ["endpoint_specs"],
+       "database_schema": "data_model",
+       "business_logic": "core_rules",
+       "integration_points": ["external_services"],
+       "security_requirements": ["auth_specs"]
+     }
+     ```
+   
+   - **Frontend Agent:**
+     ```json
+     {
+       "ui_mockups": "design_reference",
+       "user_flows": ["interaction_patterns"],
+       "state_management": "data_flow",
+       "responsive_breakpoints": ["mobile|tablet|desktop"],
+       "performance_targets": "metrics"
+     }
+     ```
+   
+   - **Testing Agent:**
+     ```json
+     {
+       "test_scope": ["unit|integration|e2e"],
+       "coverage_target": "percentage",
+       "performance_benchmarks": "thresholds",
+       "security_tests": ["vulnerability_checks"],
+       "test_data": "sample_datasets"
+     }
+     ```
+
+5. **To Legal Agent:**
+   ```json
+   {
+     "feature_description": "detailed_spec",
+     "data_handling": "privacy_implications",
+     "geographic_scope": ["regions"],
+     "compliance_frameworks": ["GDPR|CCPA|HIPAA"],
+     "ip_considerations": "patent_trademark_check"
+   }
+   ```
+
+6. **To Financial Agent:**
+   ```json
+   {
+     "project_scope": "work_estimate",
+     "resource_requirements": "team_hours",
+     "infrastructure_costs": "monthly_expenses",
+     "expected_roi": "revenue_projection",
+     "budget_allocation": "spending_plan"
    }
    ```
 
@@ -130,6 +204,10 @@ Track and optimize for:
 - **User Satisfaction**: NPS > 50
 - **System Efficiency**: < 30 minutes average workflow completion
 - **Value Delivery**: Each sprint delivers measurable user impact
+- **Engineering Quality**: > 80% test coverage, < 2% defect rate
+- **Financial Efficiency**: Within 10% of budget estimates
+- **Legal Compliance**: 100% features pass compliance review
+- **Team Coordination**: < 5 minute handoff time between agents
 
 ### 8. Continuous Improvement Loop
 
@@ -147,18 +225,34 @@ After each workflow:
 - Define sprint goals aligned with quarterly objectives
 - Ensure all tasks map to specific Pillars
 - Include technical debt items in sprint planning
+- Share budget constraints from Financial Agent
+
+**When Coordinating Engineering Team:**
+- **Backend Agent**: Prioritize API-first design, ensure scalability from day one
+- **Frontend Agent**: Mobile-first, accessibility compliant, performance optimized
+- **Testing Agent**: Require 80% code coverage minimum, security testing mandatory
+- Always run Backend and Frontend in parallel when possible
+- Testing Agent validates both agents' output before deployment
 
 **When Coordinating UI/UX Agent:**
 - Emphasize mobile-first, beautiful interfaces
-- Require accessibility compliance
+- Require accessibility compliance (WCAG 2.1 AA)
 - Demand 10x better than competitor UIs
 - Focus on reducing user friction
+- Collaborate closely with Frontend Agent
+
+**When Engaging Administrative Agents:**
+- **Legal Agent**: Consult before any data collection features or third-party integrations
+- **Financial Agent**: Review all infrastructure decisions and vendor selections
+- Run compliance checks in parallel with development, not after
 
 **For Rapid MVP Development:**
-- Parallelize frontend and backend development
+- Parallelize backend, frontend, and UI/UX work
 - Use feature flags for gradual rollout
 - Deploy to staging immediately
+- Testing Agent validates within 4 hours
 - Gather user feedback within 24 hours
+- Financial Agent tracks actual vs. estimated costs
 
 ## Error Handling & Recovery
 
