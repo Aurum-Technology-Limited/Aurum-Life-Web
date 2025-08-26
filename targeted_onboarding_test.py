@@ -84,7 +84,7 @@ def test_onboarding_endpoint_fix():
         return False
     
     # Step 3: Test complete-onboarding endpoint (MAIN TEST)
-    print("\n🎯 STEP 3: Testing POST /api/auth/complete-onboarding endpoint...")
+    print("\n🎯 STEP 2: Testing POST /api/auth/complete-onboarding endpoint...")
     
     headers = {"Authorization": f"Bearer {access_token}"}
     
@@ -120,7 +120,7 @@ def test_onboarding_endpoint_fix():
         print(f"   ? Response: {response_data}")
         endpoint_working = False
     
-    # Step 4: Verify no database connection errors
+    # Step 3: Verify no database connection errors
     print("\n🗄️ STEP 4: Checking for database connection errors...")
     
     # Check if we can still make authenticated requests
