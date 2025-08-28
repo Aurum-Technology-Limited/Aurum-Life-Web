@@ -237,6 +237,60 @@ Read these documents in the following sequence to understand the full scope:
 5. Test each component as you build
 6. Commit frequently with descriptive messages
 
+## 🗄️ Supabase Database Tasks - IMPORTANT
+
+Since you cannot directly execute SQL queries on the Supabase instance, you must:
+
+1. **Generate SQL Queries**: For each database change, provide the complete SQL query that needs to be executed
+2. **Ask for Confirmation**: Before proceeding with dependent tasks, ask the user to confirm that they have executed the SQL queries
+3. **Provide Step-by-Step Instructions**: For each Supabase task, provide:
+   - The exact SQL query to execute
+   - Where to execute it (Supabase SQL Editor)
+   - What to verify after execution
+   - Any RLS policies or permissions that need to be set
+
+### Example Interaction Pattern:
+
+```
+Agent: "I need to create the insights table in Supabase. Please execute the following SQL query in your Supabase SQL Editor:
+
+[SQL QUERY HERE]
+
+After execution, please confirm:
+1. The table was created successfully
+2. Any errors encountered
+3. If you need me to generate the RLS policies for this table
+
+Once confirmed, I'll proceed with the next migration."
+```
+
+### Key Supabase Tasks Requiring User Execution:
+
+1. **Database Migrations**
+   - Creating new tables
+   - Adding columns to existing tables
+   - Creating indexes
+   - Setting up foreign key relationships
+
+2. **pgvector Setup**
+   - Enabling the pgvector extension
+   - Creating vector columns
+   - Setting up embedding tables
+
+3. **RLS (Row Level Security) Policies**
+   - Creating security policies for new tables
+   - Updating policies for modified tables
+
+4. **Database Functions & Triggers**
+   - Creating stored procedures
+   - Setting up triggers for automated tasks
+
+5. **Permissions & Roles**
+   - Granting permissions to service roles
+   - Setting up API access controls
+
+Always provide complete, tested SQL queries and wait for user confirmation before assuming the database changes are in place.
+
 Remember: The goal is to transform Aurum Life into an intelligent system that truly understands and reasons about users' life goals. Every implementation decision should support this vision.
 
 ---
