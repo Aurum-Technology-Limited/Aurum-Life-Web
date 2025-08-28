@@ -132,10 +132,10 @@ Transform Aurum Life from a task management system into an intelligent life oper
 
 ## 📞 Contact Points
 
-- **Technical Questions**: engineering@aurumlife.com
-- **Product Questions**: product@aurumlife.com
-- **Business Questions**: strategy@aurumlife.com
-- **Legal Questions**: legal@aurumlife.com
+- **Technical Questions**: support@aurumtechnologyltd.com
+- **Product Questions**: support@aurumtechnologyltd.com
+- **Business Questions**: support@aurumtechnologyltd.com
+- **Legal Questions**: support@aurumtechnologyltd.com
 
 ## 🤝 Contributing
 
