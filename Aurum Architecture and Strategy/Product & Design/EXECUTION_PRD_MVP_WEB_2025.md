@@ -224,7 +224,212 @@ WHERE EXISTS (SELECT 1 FROM public.ai_interactions LIMIT 1);
 ```
 
 ```sql
--- File: 007_seed_hrm_rules.sql
+-- File: 007_enable_pgvector.sql
+-- Reference: RAG_IMPLEMENTATION_GUIDE.md
+-- Enable pgvector extension for semantic search
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Add embedding columns to existing tables
+ALTER TABLE public.journal_entries 
+ADD COLUMN IF NOT EXISTS content_embedding vector(1536),
+ADD COLUMN IF NOT EXISTS title_embedding vector(1536),
+ADD COLUMN IF NOT EXISTS embedding_model TEXT DEFAULT 'text-embedding-3-small',
+ADD COLUMN IF NOT EXISTS embedding_updated_at TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE public.daily_reflections
+ADD COLUMN IF NOT EXISTS reflection_embedding vector(1536),
+ADD COLUMN IF NOT EXISTS accomplishment_embedding vector(1536),
+ADD COLUMN IF NOT EXISTS challenges_embedding vector(1536),
+ADD COLUMN IF NOT EXISTS embedding_model TEXT DEFAULT 'text-embedding-3-small',
+ADD COLUMN IF NOT EXISTS embedding_updated_at TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE public.tasks
+ADD COLUMN IF NOT EXISTS description_embedding vector(1536),
+ADD COLUMN IF NOT EXISTS name_embedding vector(1536),
+ADD COLUMN IF NOT EXISTS embedding_model TEXT DEFAULT 'text-embedding-3-small',
+ADD COLUMN IF NOT EXISTS embedding_updated_at TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE public.projects
+ADD COLUMN IF NOT EXISTS combined_embedding vector(1536),
+ADD COLUMN IF NOT EXISTS embedding_model TEXT DEFAULT 'text-embedding-3-small',
+ADD COLUMN IF NOT EXISTS embedding_updated_at TIMESTAMP WITH TIME ZONE;
+
+-- Create HNSW indexes for fast similarity search
+CREATE INDEX IF NOT EXISTS idx_journal_content_embedding 
+ON public.journal_entries 
+USING hnsw (content_embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+
+CREATE INDEX IF NOT EXISTS idx_reflection_embedding 
+ON public.daily_reflections 
+USING hnsw (reflection_embedding vector_cosine_ops);
+
+CREATE INDEX IF NOT EXISTS idx_task_description_embedding 
+ON public.tasks 
+USING hnsw (description_embedding vector_cosine_ops)
+WHERE description IS NOT NULL AND description != '';
+
+CREATE INDEX IF NOT EXISTS idx_project_embedding 
+ON public.projects 
+USING hnsw (combined_embedding vector_cosine_ops);
+```
+
+```sql
+-- File: 008_create_ai_conversation_memory.sql
+-- Reference: RAG_IMPLEMENTATION_GUIDE.md
+-- Store AI conversation history with embeddings
+CREATE TABLE IF NOT EXISTS public.ai_conversation_memory (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    conversation_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    message_role TEXT NOT NULL CHECK (message_role IN ('user', 'assistant', 'system')),
+    message_content TEXT NOT NULL,
+    message_embedding vector(1536),
+    context_window JSONB DEFAULT '{}',
+    tokens_used INTEGER DEFAULT 0,
+    model_used TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_conversation_embedding 
+ON ai_conversation_memory 
+USING hnsw (message_embedding vector_cosine_ops);
+
+CREATE INDEX idx_conversation_user_date 
+ON ai_conversation_memory (user_id, conversation_date DESC);
+
+-- Enable RLS
+ALTER TABLE ai_conversation_memory ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own AI conversations" 
+ON ai_conversation_memory FOR ALL USING (auth.uid() = user_id);
+```
+
+```sql
+-- File: 009_create_rag_functions.sql
+-- Reference: RAG_IMPLEMENTATION_GUIDE.md
+-- Create helper functions for semantic search
+
+-- Find similar journal entries
+CREATE OR REPLACE FUNCTION find_similar_journal_entries(
+    query_embedding vector(1536),
+    match_count INT DEFAULT 5,
+    user_id_filter UUID DEFAULT NULL
+)
+RETURNS TABLE(
+    id UUID,
+    title TEXT,
+    content TEXT,
+    similarity FLOAT,
+    created_at TIMESTAMP WITH TIME ZONE
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        je.id,
+        je.title,
+        je.content,
+        1 - (je.content_embedding <=> query_embedding) as similarity,
+        je.created_at
+    FROM journal_entries je
+    WHERE 
+        je.content_embedding IS NOT NULL
+        AND (user_id_filter IS NULL OR je.user_id = user_id_filter)
+    ORDER BY je.content_embedding <=> query_embedding
+    LIMIT match_count;
+END;
+$$;
+
+-- Multi-table semantic search for RAG
+CREATE OR REPLACE FUNCTION rag_search(
+    query_embedding vector(1536),
+    user_id_filter UUID,
+    match_count INT DEFAULT 10,
+    date_range_days INT DEFAULT NULL
+)
+RETURNS TABLE(
+    entity_type TEXT,
+    entity_id UUID,
+    title TEXT,
+    content TEXT,
+    similarity FLOAT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    metadata JSONB
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    WITH combined_results AS (
+        -- Journal entries
+        SELECT 
+            'journal_entry' as entity_type,
+            id as entity_id,
+            title,
+            content,
+            1 - (content_embedding <=> query_embedding) as similarity,
+            created_at,
+            jsonb_build_object('mood', mood, 'tags', tags) as metadata
+        FROM journal_entries
+        WHERE 
+            user_id = user_id_filter
+            AND content_embedding IS NOT NULL
+            AND (date_range_days IS NULL OR created_at >= NOW() - INTERVAL '1 day' * date_range_days)
+        
+        UNION ALL
+        
+        -- Daily reflections
+        SELECT 
+            'daily_reflection' as entity_type,
+            id as entity_id,
+            'Daily Reflection - ' || reflection_date::TEXT as title,
+            reflection_text as content,
+            1 - (reflection_embedding <=> query_embedding) as similarity,
+            created_at,
+            jsonb_build_object(
+                'completion_score', completion_score,
+                'mood', mood,
+                'date', reflection_date
+            ) as metadata
+        FROM daily_reflections
+        WHERE 
+            user_id = user_id_filter
+            AND reflection_embedding IS NOT NULL
+            AND (date_range_days IS NULL OR created_at >= NOW() - INTERVAL '1 day' * date_range_days)
+        
+        UNION ALL
+        
+        -- Tasks with descriptions
+        SELECT 
+            'task' as entity_type,
+            t.id as entity_id,
+            t.name as title,
+            t.description as content,
+            1 - (t.description_embedding <=> query_embedding) as similarity,
+            t.created_at,
+            jsonb_build_object(
+                'status', t.status,
+                'priority', t.priority,
+                'project_id', t.project_id,
+                'due_date', t.due_date
+            ) as metadata
+        FROM tasks t
+        WHERE 
+            t.user_id = user_id_filter
+            AND t.description_embedding IS NOT NULL
+            AND t.description != ''
+            AND (date_range_days IS NULL OR t.created_at >= NOW() - INTERVAL '1 day' * date_range_days)
+    )
+    SELECT * FROM combined_results
+    ORDER BY similarity DESC
+    LIMIT match_count;
+END;
+$$;
+```
+
+```sql
+-- File: 010_seed_hrm_rules.sql
 -- Reference: aurum_life_hrm_phase3_prd.md - Section 6.1
 INSERT INTO public.hrm_rules (rule_code, rule_name, description, hierarchy_level, applies_to_entity_types, rule_type, rule_config, base_weight, requires_llm) VALUES
 ('TEMPORAL_URGENCY_001', 'Task Deadline Urgency', 'Scores tasks based on deadline proximity', 'task', ARRAY['task'], 'temporal', 
@@ -364,6 +569,480 @@ async def analyze_entity(
     """Trigger HRM analysis for an entity"""
     # Implementation as specified in PRD
     pass
+```
+
+#### 2.5 RAG Implementation with pgvector
+
+**Reference:** `/workspace/Aurum Architecture and Strategy/Technical Documents/RAG_IMPLEMENTATION_GUIDE.md`
+
+##### 2.5.1 Embedding Service
+
+**File:** `/workspace/backend/ai/embedding_service.py`
+
+```python
+import openai
+from typing import List, Dict, Optional
+import asyncio
+from supabase import create_client
+import numpy as np
+
+class EmbeddingService:
+    """
+    Service for generating and managing vector embeddings for RAG
+    Enables semantic search across user content
+    """
+    
+    def __init__(self):
+        self.model = "text-embedding-3-small"  # 1536 dimensions, cost-effective
+        self.batch_size = 100
+        self.supabase = get_supabase_client()
+        
+    async def generate_embedding(self, text: str) -> List[float]:
+        """Generate embedding for a single text"""
+        response = await openai.Embedding.create(
+            model=self.model,
+            input=text
+        )
+        return response.data[0].embedding
+    
+    async def update_journal_embeddings(self, user_id: str):
+        """Update embeddings for user's journal entries"""
+        # Batch process journal entries without embeddings
+        entries = await self.supabase.from_('journal_entries')\
+            .select('id, title, content')\
+            .eq('user_id', user_id)\
+            .is_('content_embedding', None)\
+            .execute()
+        
+        if entries.data:
+            await self._batch_update_embeddings('journal_entries', entries.data)
+    
+    async def update_task_embeddings(self, user_id: str):
+        """Update embeddings for tasks with descriptions"""
+        tasks = await self.supabase.from_('tasks')\
+            .select('id, name, description')\
+            .eq('user_id', user_id)\
+            .neq('description', '')\
+            .is_('description_embedding', None)\
+            .execute()
+        
+        if tasks.data:
+            await self._batch_update_embeddings('tasks', tasks.data)
+```
+
+##### 2.5.2 RAG Service
+
+**File:** `/workspace/backend/ai/rag_service.py`
+
+```python
+from typing import Dict, List, Optional
+from embedding_service import EmbeddingService
+
+class RAGService:
+    """
+    Retrieval-Augmented Generation service
+    Provides contextual information from user's history for AI responses
+    """
+    
+    def __init__(self):
+        self.embedding_service = EmbeddingService()
+        self.context_window = 5  # Number of relevant documents
+        self.supabase = get_supabase_client()
+        
+    async def retrieve_context(self, query: str, user_id: str, 
+                             entity_filter: Optional[Dict] = None) -> Dict:
+        """
+        Retrieve relevant context for a query
+        Returns formatted context and source documents
+        """
+        # Generate query embedding
+        query_embedding = await self.embedding_service.generate_embedding(query)
+        
+        # Search across multiple tables using rag_search function
+        results = await self.supabase.rpc('rag_search', {
+            'query_embedding': query_embedding,
+            'user_id_filter': user_id,
+            'match_count': self.context_window,
+            'date_range_days': 90  # Focus on recent 3 months
+        }).execute()
+        
+        # Format context for LLM
+        context = self._format_context(results.data)
+        return {
+            'context': context,
+            'sources': results.data,
+            'embedding_used': query_embedding[:5]  # First 5 for debugging
+        }
+    
+    async def find_similar_tasks(self, task_description: str, user_id: str) -> List[Dict]:
+        """Find similar completed tasks to help with estimation and approach"""
+        embedding = await self.embedding_service.generate_embedding(task_description)
+        
+        results = await self.supabase.rpc('find_similar_tasks', {
+            'query_embedding': embedding,
+            'user_id_filter': user_id,
+            'match_count': 3,
+            'include_completed': True
+        }).execute()
+        
+        return results.data
+```
+
+##### 2.5.3 Enhanced HRM Service with RAG
+
+**File:** Update `/workspace/backend/hrm_service.py`
+
+```python
+# Add to existing HRM service
+from ai.rag_service import RAGService
+
+class HierarchicalReasoningModel:
+    def __init__(self, user_id: str):
+        self.user_id = user_id
+        self.supabase = get_supabase_client()
+        self.llm = self._initialize_llm()
+        self.rag_service = RAGService()  # NEW: Add RAG service
+        self._context_cache = {}
+        
+    async def analyze_entity(self, entity_type: str, entity_id: Optional[str] = None, 
+                           analysis_depth: str = "balanced", use_rag: bool = True) -> HRMInsight:
+        """
+        Enhanced entity analysis with RAG context
+        """
+        # Get entity details
+        entity = await self._get_entity(entity_type, entity_id)
+        
+        # NEW: Retrieve relevant historical context
+        rag_context = None
+        if use_rag:
+            query = self._build_rag_query(entity_type, entity)
+            rag_context = await self.rag_service.retrieve_context(
+                query=query,
+                user_id=self.user_id
+            )
+        
+        # Build enhanced prompt with RAG context
+        prompt = self._build_analysis_prompt(
+            entity_type, entity, analysis_depth, rag_context
+        )
+        
+        # Generate insight with LLM
+        insight = await self._generate_insight(prompt, entity_type, entity_id)
+        
+        # Store RAG sources in insight metadata
+        if rag_context:
+            insight.llm_context['rag_sources'] = rag_context['sources']
+        
+        return insight
+```
+
+#### 2.6 AI Model Router Implementation
+
+**Reference:** `/workspace/Aurum Architecture and Strategy/Technical Documents/SYSTEM_ARCHITECTURE.md` - AI Architecture section
+
+##### 2.6.1 AI Router Service
+
+**File:** `/workspace/backend/ai/router.py`
+
+```python
+from enum import Enum
+from typing import Dict, Any, Optional
+import openai
+import google.generativeai as genai
+
+class ModelType(Enum):
+    STRATEGIC = "strategic"  # GPT-4 Turbo for complex reasoning
+    EXECUTION = "execution"  # Gemini 1.5 Flash for CRUD operations
+
+class ComplexityAnalyzer:
+    """Analyzes request complexity to determine appropriate model"""
+    
+    STRATEGIC_KEYWORDS = {
+        'analyze', 'strategy', 'plan', 'align', 'optimize', 
+        'recommend', 'insight', 'pattern', 'trend'
+    }
+    
+    EXECUTION_KEYWORDS = {
+        'create', 'update', 'delete', 'list', 'fetch', 
+        'get', 'set', 'add', 'remove', 'modify'
+    }
+    
+    async def analyze(self, request: Dict[str, Any]) -> float:
+        """
+        Returns complexity score 0-10
+        0-3: Simple CRUD operations
+        4-7: Moderate complexity
+        8-10: Complex reasoning required
+        """
+        content = request.get('content', '').lower()
+        
+        # Check for strategic keywords
+        strategic_score = sum(
+            2 for keyword in self.STRATEGIC_KEYWORDS 
+            if keyword in content
+        )
+        
+        # Check for execution keywords
+        execution_score = sum(
+            1 for keyword in self.EXECUTION_KEYWORDS 
+            if keyword in content
+        )
+        
+        # Multi-entity operations add complexity
+        if request.get('cross_entity', False):
+            strategic_score += 3
+            
+        # Long-form analysis requests
+        if len(content) > 200:
+            strategic_score += 2
+            
+        complexity = min(10, strategic_score - (execution_score * 0.5))
+        return max(0, complexity)
+
+class AIRouter:
+    """
+    Routes AI requests to appropriate models based on complexity and type
+    Optimizes for cost and performance
+    """
+    
+    def __init__(self):
+        self.strategic_model = OpenAIClient(model="gpt-4-turbo")
+        self.execution_model = GeminiClient(model="gemini-1.5-flash")
+        self.complexity_analyzer = ComplexityAnalyzer()
+        self.usage_tracker = UsageTracker()
+        
+    async def route_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
+        """Route request to appropriate model"""
+        # Check user's tier and quotas
+        user_tier = request.get('user_tier', 'standard')
+        monthly_usage = await self.usage_tracker.get_monthly_usage(
+            request['user_id']
+        )
+        
+        # Analyze complexity
+        complexity_score = await self.complexity_analyzer.analyze(request)
+        
+        # Determine model based on complexity and quotas
+        if complexity_score > 7 or request.get('requires_reasoning', False):
+            # Check if user has quota for strategic model
+            if monthly_usage['strategic_tokens'] < STRATEGIC_QUOTA_LIMIT:
+                model_type = ModelType.STRATEGIC
+            else:
+                # Fallback to execution model with enhanced prompt
+                model_type = ModelType.EXECUTION
+                request['enhanced_prompt'] = True
+        else:
+            model_type = ModelType.EXECUTION
+        
+        # Process request with selected model
+        if model_type == ModelType.STRATEGIC:
+            response = await self.strategic_model.process(request)
+        else:
+            response = await self.execution_model.process(request)
+        
+        # Track usage
+        await self.usage_tracker.track_usage(
+            user_id=request['user_id'],
+            model_type=model_type,
+            tokens_used=response['usage']['total_tokens']
+        )
+        
+        response['model_used'] = model_type.value
+        response['complexity_score'] = complexity_score
+        
+        return response
+```
+
+#### 2.7 Speech API Implementation
+
+**Reference:** `/workspace/Aurum Architecture and Strategy/Technical Documents/SYSTEM_ARCHITECTURE.md` - Speech API Architecture section
+
+##### 2.7.1 Speech Service
+
+**File:** `/workspace/backend/ai/speech_service.py`
+
+```python
+import openai
+from typing import Optional, BinaryIO
+import asyncio
+import io
+
+class SpeechService:
+    """
+    Handles speech-to-text and text-to-speech conversions
+    Enables voice interactions with Aurum AI
+    """
+    
+    def __init__(self):
+        # Speech-to-Text
+        self.stt_model = "whisper-1"
+        
+        # Text-to-Speech
+        self.tts_model = "tts-1"
+        self.tts_voice_standard = "alloy"  # Natural, balanced voice
+        self.tts_voice_premium = None  # For future ElevenLabs integration
+        
+    async def transcribe_audio(self, audio_file: BinaryIO, 
+                             language: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Transcribe audio to text using Whisper
+        Supports 99+ languages with automatic detection
+        """
+        try:
+            # OpenAI Whisper API
+            response = await openai.Audio.atranscribe(
+                model=self.stt_model,
+                file=audio_file,
+                language=language,  # Optional language hint
+                response_format="verbose_json"  # Get timestamps
+            )
+            
+            return {
+                'text': response.text,
+                'language': response.language,
+                'duration': response.duration,
+                'segments': response.segments  # Word-level timestamps
+            }
+        except Exception as e:
+            raise Exception(f"Transcription failed: {str(e)}")
+    
+    async def synthesize_speech(self, text: str, user_tier: str = "standard",
+                              voice: Optional[str] = None) -> bytes:
+        """
+        Convert text to speech
+        Returns audio bytes in MP3 format
+        """
+        try:
+            # Select voice based on user tier
+            if user_tier == "premium" and self.tts_voice_premium:
+                # Future: Use ElevenLabs for premium users
+                return await self._synthesize_premium(text, voice)
+            else:
+                # Use OpenAI TTS for standard users
+                voice = voice or self.tts_voice_standard
+                
+                response = await openai.Audio.speech.create(
+                    model=self.tts_model,
+                    voice=voice,
+                    input=text,
+                    response_format="mp3",
+                    speed=1.0  # Normal speed
+                )
+                
+                return response.content
+                
+        except Exception as e:
+            raise Exception(f"Speech synthesis failed: {str(e)}")
+    
+    async def process_voice_conversation(self, audio_file: BinaryIO, 
+                                       user_id: str, user_tier: str = "standard") -> Dict[str, Any]:
+        """
+        Complete voice conversation pipeline
+        Audio → Text → AI Processing → Speech
+        """
+        # Step 1: Transcribe audio
+        transcription = await self.transcribe_audio(audio_file)
+        
+        # Step 2: Process with AI (using existing router)
+        from ai.router import AIRouter
+        ai_router = AIRouter()
+        
+        ai_response = await ai_router.route_request({
+            'content': transcription['text'],
+            'user_id': user_id,
+            'user_tier': user_tier,
+            'input_type': 'voice'
+        })
+        
+        # Step 3: Convert response to speech
+        audio_response = await self.synthesize_speech(
+            ai_response['content'],
+            user_tier
+        )
+        
+        return {
+            'transcription': transcription['text'],
+            'ai_response': ai_response['content'],
+            'audio_response': audio_response,
+            'language': transcription['language'],
+            'model_used': ai_response['model_used']
+        }
+```
+
+##### 2.7.2 Voice API Endpoints
+
+**File:** Add to `/workspace/backend/server.py`
+
+```python
+from ai.speech_service import SpeechService
+from fastapi import UploadFile, File
+
+speech_service = SpeechService()
+
+@api_router.post("/voice/transcribe")
+async def transcribe_audio(
+    audio: UploadFile = File(...),
+    language: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Transcribe audio to text"""
+    audio_bytes = await audio.read()
+    audio_file = io.BytesIO(audio_bytes)
+    
+    result = await speech_service.transcribe_audio(audio_file, language)
+    
+    # Store in conversation memory
+    await store_conversation_memory(
+        user_id=current_user.id,
+        role="user",
+        content=result['text'],
+        metadata={'audio_duration': result['duration']}
+    )
+    
+    return result
+
+@api_router.post("/voice/synthesize")
+async def synthesize_speech(
+    request: SynthesizeRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Convert text to speech"""
+    audio_bytes = await speech_service.synthesize_speech(
+        text=request.text,
+        user_tier=current_user.tier,
+        voice=request.voice
+    )
+    
+    return Response(
+        content=audio_bytes,
+        media_type="audio/mpeg",
+        headers={
+            "Content-Disposition": "attachment; filename=speech.mp3"
+        }
+    )
+
+@api_router.post("/voice/conversation")
+async def voice_conversation(
+    audio: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Complete voice conversation with AI"""
+    audio_bytes = await audio.read()
+    audio_file = io.BytesIO(audio_bytes)
+    
+    result = await speech_service.process_voice_conversation(
+        audio_file=audio_file,
+        user_id=current_user.id,
+        user_tier=current_user.tier
+    )
+    
+    # Return both text and audio responses
+    return {
+        'transcription': result['transcription'],
+        'ai_response': result['ai_response'],
+        'audio_url': f"/api/voice/audio/{store_temp_audio(result['audio_response'])}",
+        'model_used': result['model_used']
+    }
 ```
 
 ### 3. Frontend Implementation
@@ -680,19 +1359,54 @@ Add to `.env`:
 
 ```bash
 # Existing variables remain unchanged
-# Add HRM-specific configuration
+
+# AI API Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_here  # Optional for premium TTS
+
+# Model Selection
+AI_STRATEGIC_MODEL=gpt-4-turbo
+AI_EXECUTION_MODEL=gemini-1.5-flash
+AI_EMBEDDING_MODEL=text-embedding-3-small
+
+# AI Cost Control
+AI_MONTHLY_BUDGET_PER_USER=0.50  # USD
+AI_STRATEGIC_TOKEN_LIMIT=100000  # Monthly limit per user
+AI_EXECUTION_TOKEN_LIMIT=1000000  # Monthly limit per user
+
+# HRM-specific configuration
 HRM_ENABLED=true
 HRM_DEFAULT_ANALYSIS_DEPTH=balanced
 HRM_CACHE_TTL=21600
 HRM_MAX_INSIGHTS_PER_USER=1000
+HRM_USE_RAG=true  # Enable RAG for contextual responses
+
+# RAG Configuration
+RAG_CONTEXT_WINDOW=5
+RAG_DATE_RANGE_DAYS=90
+RAG_EMBEDDING_BATCH_SIZE=100
+
+# Speech API Configuration
+SPEECH_STT_MODEL=whisper-1
+SPEECH_TTS_MODEL=tts-1
+SPEECH_TTS_VOICE_STANDARD=alloy
+SPEECH_ENABLE_PREMIUM_TTS=false
 ```
 
 #### 8.2 Database Migrations
 
-1. Run all migration scripts in order (001-007)
-2. Verify data migration from ai_interactions table
-3. Create database backup before migrations
-4. Test rollback procedures
+1. Run all migration scripts in order (001-010):
+   - 001-006: Core HRM tables and modifications
+   - 007: Enable pgvector extension and add embeddings
+   - 008: Create AI conversation memory table
+   - 009: Create RAG search functions
+   - 010: Seed HRM rules
+2. Verify pgvector extension is enabled
+3. Verify data migration from ai_interactions table
+4. Create database backup before migrations
+5. Test rollback procedures
+6. Generate initial embeddings for existing content (background job)
 
 #### 8.3 Feature Flags
 
@@ -773,4 +1487,87 @@ else:
 3. **Security:** Follow existing authentication patterns and add rate limiting for AI endpoints
 4. **Monitoring:** Add logging for all HRM decisions for debugging and improvement
 
-This PRD provides a complete blueprint for implementing the enhanced AI architecture. Reference the linked documents for detailed specifications, wireframes, and user stories.
+### 11. AI Performance & Cost Monitoring
+
+#### 11.1 Cost Tracking Dashboard
+
+Implement real-time cost monitoring for AI usage:
+
+```python
+# backend/ai/usage_tracker.py
+class UsageTracker:
+    async def get_usage_summary(self, user_id: str, period: str = "month") -> Dict:
+        """Get AI usage and cost summary for user"""
+        return {
+            "period": period,
+            "strategic_model": {
+                "requests": 245,
+                "tokens": 98500,
+                "cost": 2.46  # USD
+            },
+            "execution_model": {
+                "requests": 1820,
+                "tokens": 485000,
+                "cost": 0.48  # USD
+            },
+            "embeddings": {
+                "requests": 150,
+                "vectors": 1500,
+                "cost": 0.02  # USD
+            },
+            "speech": {
+                "stt_minutes": 45,
+                "tts_characters": 125000,
+                "cost": 2.14  # USD
+            },
+            "total_cost": 5.10,  # USD
+            "budget_remaining": 4.90,  # USD (from $10 monthly)
+            "projected_monthly": 7.65  # USD
+        }
+```
+
+#### 11.2 Key Performance Metrics
+
+Monitor these AI-specific metrics:
+
+1. **Response Quality**
+   - User feedback rate on insights
+   - Insight application rate
+   - Task completion improvement
+
+2. **Cost Efficiency**
+   - Cost per active user
+   - Model routing accuracy
+   - Cache hit rate for embeddings
+
+3. **Performance Metrics**
+   - Average response time by model
+   - RAG retrieval relevance scores
+   - Speech recognition accuracy
+
+4. **Usage Patterns**
+   - Peak usage hours
+   - Most common query types
+   - Feature adoption rates
+
+#### 11.3 Cost Optimization Alerts
+
+Set up automated alerts for:
+- User approaching monthly budget (80%)
+- Unusual spike in strategic model usage
+- Low cache hit rates
+- High error rates in speech processing
+
+#### 11.4 Expected Cost Projections
+
+Based on the multi-model architecture:
+
+| Users | Monthly AI Cost | Revenue Needed* |
+|-------|----------------|-----------------|
+| 100   | $21            | $42             |
+| 1,000 | $210           | $420            |
+| 10,000| $1,900         | $3,800          |
+
+*Assuming 50% margin on AI costs
+
+This PRD provides a complete blueprint for implementing the enhanced AI architecture with cost-optimized multi-model routing, RAG capabilities, and voice interaction support. Reference the linked documents for detailed specifications, wireframes, and user stories.
