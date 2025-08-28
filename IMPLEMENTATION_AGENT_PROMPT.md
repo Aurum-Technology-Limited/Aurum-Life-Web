@@ -3,11 +3,35 @@
 ## 🎯 Mission
 You are tasked with implementing the comprehensive AI architecture enhancement for Aurum Life, transforming it from a rule-based task management system into an intelligent life operating system powered by an LLM-Augmented Hierarchical Reasoning Model (HRM).
 
+## 🏢 Business Context & Alignment
+Before any implementation, you MUST understand Aurum Life's business strategy and ensure all technical decisions align with business objectives:
+
+### Core Business Philosophy
+- **Mission**: "To empower individuals to build intentional lives through systems-based productivity"
+- **Vision**: "To become the global standard for personal life management"
+- **Value Proposition**: "Transform Potential into Gold" through vertical alignment of daily actions with life goals
+
+### Target Market & Revenue Model
+- **Primary Segment**: Intentional Professionals (25-45, $50K+ income, growth-minded)
+- **Freemium Model**: Free tier → Pro ($12/mo) → Premium ($29/mo) → Enterprise
+- **Key Metrics**: WAU, 10-15% conversion rate, $8-10 average revenue per user
+
+### Implementation Priorities
+1. Features that drive freemium conversion (AI insights, HRM value)
+2. Capabilities that reduce user overwhelm and increase alignment
+3. Functionality that creates "aha moments" demonstrating unique value
+4. All features must strengthen the Pillar → Area → Project → Task hierarchy
+
 ## 📚 Required Reading Order
 Read these documents in the following sequence to understand the full scope:
 
-### 1. Strategic Overview
-- `/workspace/Aurum Architecture and Strategy/README.md` - Start here for overall structure
+### 1. Business Documentation (READ FIRST)
+- `/workspace/Aurum Architecture and Strategy/Business Documents/AURUM_LIFE_BUSINESS_PLAN.md` - Complete business strategy
+- `/workspace/Aurum Architecture and Strategy/Business Documents/BUSINESS_MODEL_CANVAS.md` - Value propositions and revenue model
+- `/workspace/Aurum Architecture and Strategy/Business Documents/GO_TO_MARKET_STRATEGY.md` - Market positioning and growth
+
+### 2. Strategic Overview
+- `/workspace/Aurum Architecture and Strategy/README.md` - Overall documentation structure
 - `/workspace/Aurum Architecture and Strategy/Product & Design/EXECUTION_PRD_MVP_WEB_2025.md` - Main execution guide
 
 ### 2. Technical Architecture
@@ -140,6 +164,13 @@ Read these documents in the following sequence to understand the full scope:
 
 ## 📋 Implementation Checklist
 
+### Business Alignment Verification
+- [ ] Feature aligns with "Transform Potential into Gold" value proposition
+- [ ] Implementation supports target user segment (Intentional Professionals)
+- [ ] Clear path to improving key metrics (WAU, conversion, retention)
+- [ ] Pricing tier features correctly scoped (Free vs Pro vs Premium)
+- [ ] Creates "aha moment" that demonstrates unique value
+
 ### Database Layer
 - [ ] Create all migration files in `/workspace/backend/migrations/`
 - [ ] Test migrations on local Supabase instance
@@ -210,6 +241,13 @@ Read these documents in the following sequence to understand the full scope:
    - No regression in existing features
    - Responsive design works on all devices
    - Accessibility standards met
+
+4. **Business Alignment Requirements**
+   - Features demonstrably support "systems-based productivity" mission
+   - Implementation drives key business metrics (WAU, conversion, retention)
+   - UI/UX creates clear value proposition moments
+   - Pricing tier features correctly gated
+   - All work contributes to "Transform Potential into Gold" vision
 
 ## 🔄 Implementation Order
 
@@ -291,7 +329,18 @@ Once confirmed, I'll proceed with the next migration."
 
 Always provide complete, tested SQL queries and wait for user confirmation before assuming the database changes are in place.
 
-Remember: The goal is to transform Aurum Life into an intelligent system that truly understands and reasons about users' life goals. Every implementation decision should support this vision.
+Remember: The goal is to transform Aurum Life into an intelligent system that truly understands and reasons about users' life goals. Every implementation decision should support this vision while driving business objectives of user growth, freemium conversion, and market leadership in personal productivity.
+
+## 🎯 Business Value Validation
+
+For each feature or component you implement, ask yourself:
+1. **Does this reduce user overwhelm?** (Primary pain point)
+2. **Does this increase alignment between daily tasks and life goals?** (Core value prop)
+3. **Does this create an "aha moment" that drives conversion?** (Revenue goal)
+4. **Does this strengthen the hierarchical system philosophy?** (Differentiation)
+5. **Does this support our target user segment's needs?** (Market fit)
+
+If the answer to any of these is unclear, revisit the business documentation before proceeding.
 
 ---
 
