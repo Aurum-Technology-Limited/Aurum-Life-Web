@@ -2,67 +2,104 @@
 
 This folder contains all architectural, strategic, and business documentation for Aurum Life's enhanced AI-powered personal operating system.
 
-## 📁 Document Structure
+## 📁 Folder Structure
 
-### 🎯 Core Execution Documents
+### 📊 Business Documents
+Strategic business planning and go-to-market documentation:
 
-1. **[EXECUTION_PRD_MVP_WEB_2025.md](./EXECUTION_PRD_MVP_WEB_2025.md)**
-   - **Purpose**: Main execution document for development agents
-   - **Content**: Complete implementation requirements for MVP web app with enhanced AI architecture
-   - **Status**: Active - Use this for implementation
+- **[BUSINESS_MODEL_CANVAS.md](./Business%20Documents/BUSINESS_MODEL_CANVAS.md)**
+  - Complete business strategy and revenue model
+  - Customer segments, value propositions, and financial projections
+  
+- **[GO_TO_MARKET_STRATEGY.md](./Business%20Documents/GO_TO_MARKET_STRATEGY.md)**
+  - Launch strategy and marketing plans
+  - Target market analysis and growth tactics
 
-### 🏗️ Technical Architecture
+### 🔧 Technical Documents
+System architecture and engineering documentation:
 
-2. **[aurum_life_hrm_phase3_prd.md](./aurum_life_hrm_phase3_prd.md)**
-   - **Purpose**: Detailed technical specifications for Hierarchical Reasoning Model
-   - **Content**: Database schemas, backend services, API specifications
-   - **Key Sections**: HRM implementation, Blackboard architecture, Rules engine
+- **[SYSTEM_ARCHITECTURE.md](./Technical%20Documents/SYSTEM_ARCHITECTURE.md)**
+  - Complete system design and infrastructure
+  - Data flow, deployment architecture, and performance targets
+  
+- **[API_DOCUMENTATION_TEMPLATE.md](./Technical%20Documents/API_DOCUMENTATION_TEMPLATE.md)**
+  - API specifications and examples
+  - All endpoints with request/response formats
+  
+- **[ENGINEERING_HANDBOOK.md](./Technical%20Documents/ENGINEERING_HANDBOOK.md)**
+  - Development standards and processes
+  - Coding guidelines, testing practices, and deployment procedures
+  
+- **[aurum_life_hrm_phase3_prd.md](./Technical%20Documents/aurum_life_hrm_phase3_prd.md)**
+  - Detailed HRM Phase 3 technical specifications
+  - Database schemas, backend services, API specifications
 
-### 🎨 UI/UX Design Documents
+### ⚖️ Legal & Compliance
+Legal agreements and compliance documentation:
 
-3. **[aurum_life_hrm_ui_epics_user_stories.md](./aurum_life_hrm_ui_epics_user_stories.md)**
-   - **Purpose**: Complete UI/UX requirements as epics and user stories
-   - **Content**: 8 major epics with 40+ detailed user stories
-   - **Key Features**: AI Intelligence Dashboard, Contextual AI Analysis, Feedback Loop
+- **[TERMS_OF_SERVICE.md](./Legal%20&%20Compliance/TERMS_OF_SERVICE.md)**
+  - User agreement and service terms
+  - Acceptable use policy and liability limitations
+  
+- **[SECURITY_PRIVACY_POLICY.md](./Legal%20&%20Compliance/SECURITY_PRIVACY_POLICY.md)**
+  - Security measures and privacy policy
+  - GDPR/CCPA compliance and data handling
+  
+- **[AI_ETHICS_GUIDELINES.md](./Legal%20&%20Compliance/AI_ETHICS_GUIDELINES.md)**
+  - Ethical AI development framework
+  - Core principles and implementation guidelines
 
-4. **[aurum_life_new_screens_specification.md](./aurum_life_new_screens_specification.md)**
-   - **Purpose**: Specifications for all new screens in the enhanced architecture
-   - **Content**: Layout, features, and purpose for 10 new screens
-   - **Platforms**: Both web and mobile specifications
+### 🎨 Product & Design
+Product requirements and design documentation:
 
-5. **[aurum_life_wireframes_web.md](./aurum_life_wireframes_web.md)**
-   - **Purpose**: Detailed web wireframes with exact styling specifications
-   - **Content**: Pixel-perfect layouts with color codes, spacing, typography
-   - **Design System**: Maintains Aurum Life's dark theme with AI accent colors
+- **[EXECUTION_PRD_MVP_WEB_2025.md](./Product%20&%20Design/EXECUTION_PRD_MVP_WEB_2025.md)**
+  - **Main execution document for development agents**
+  - Complete implementation requirements for MVP web app
+  
+- **[aurum_life_hrm_ui_epics_user_stories.md](./Product%20&%20Design/aurum_life_hrm_ui_epics_user_stories.md)**
+  - UI/UX epics and user stories
+  - 8 major epics with 40+ detailed user stories
+  
+- **[aurum_life_new_screens_specification.md](./Product%20&%20Design/aurum_life_new_screens_specification.md)**
+  - New screen specifications
+  - Layout, features, and purpose for 10 new screens
+  
+- **[aurum_life_wireframes_web.md](./Product%20&%20Design/aurum_life_wireframes_web.md)**
+  - Web wireframes with styling specifications
+  - Pixel-perfect layouts with Aurum Life design system
+  
+- **[aurum_life_wireframes_mobile.md](./Product%20&%20Design/aurum_life_wireframes_mobile.md)**
+  - Mobile-specific wireframes
+  - Touch targets, gestures, and mobile patterns
 
-6. **[aurum_life_wireframes_mobile.md](./aurum_life_wireframes_mobile.md)**
-   - **Purpose**: Mobile-specific wireframes optimized for touch
-   - **Content**: Touch targets, gestures, bottom sheets, mobile patterns
-   - **Considerations**: Device safe areas, thumb reach, one-handed use
-
-### 📂 Archive Folder
-
-Contains previous versions of PRDs and documentation for historical reference:
-- PRD_AurumLife_v2.md
-- PRD_AurumLife_v3_CurrentState.md
-- AURUM_LIFE_PRD.md
-- COMPREHENSIVE_PRD_2025.md
+### 📂 Archive
+Previous versions and deprecated documents:
+- Historical PRD versions for reference
+- Superseded documentation
 
 ## 🚀 Implementation Guide
 
-### For Development Agents:
+### For Development Teams
+1. **Start with**: `Product & Design/EXECUTION_PRD_MVP_WEB_2025.md` - Main implementation guide
+2. **Reference architecture**: `Technical Documents/SYSTEM_ARCHITECTURE.md`
+3. **Follow standards**: `Technical Documents/ENGINEERING_HANDBOOK.md`
+4. **Build APIs from**: `Technical Documents/API_DOCUMENTATION_TEMPLATE.md`
+5. **Implement UI from**: Wireframes in Product & Design folder
 
-1. **Start with**: `EXECUTION_PRD_MVP_WEB_2025.md` - This is your main guide
-2. **Reference**: Technical details in `aurum_life_hrm_phase3_prd.md`
-3. **Build UI from**: Wireframes and specifications documents
-4. **Follow user stories in**: `aurum_life_hrm_ui_epics_user_stories.md`
+### For Product/Design Teams
+1. Review all documents in **Product & Design** folder
+2. Reference **Legal & Compliance/AI_ETHICS_GUIDELINES.md** for AI features
+3. Align with **Business Documents/BUSINESS_MODEL_CANVAS.md**
 
-### Key Implementation Order:
+### For Business/Marketing Teams
+1. Focus on **Business Documents** folder
+2. Execute **GO_TO_MARKET_STRATEGY.md**
+3. Understand product via **Product & Design/EXECUTION_PRD_MVP_WEB_2025.md**
 
-**Week 1**: Database setup and core HRM services
-**Week 2**: Essential UI components and API integration  
-**Week 3**: Advanced features and AI interactions
-**Week 4**: Testing, optimization, and polish
+### For Legal/Compliance Teams
+1. All documents in **Legal & Compliance** folder
+2. Ensure product alignment with policies
+3. Regular review of AI ethics implementation
 
 ## 🎯 Project Vision
 
@@ -86,13 +123,28 @@ Transform Aurum Life from a task management system into an intelligent life oper
 - Feedback submission rate: 40%
 - Response time for AI analysis: <3 seconds
 
+## 🔄 Document Maintenance
+
+- Documents are living and should be updated regularly
+- Major changes require team review
+- Version history tracked in git
+- Archive old versions to maintain history
+
+## 📞 Contact Points
+
+- **Technical Questions**: engineering@aurumlife.com
+- **Product Questions**: product@aurumlife.com
+- **Business Questions**: strategy@aurumlife.com
+- **Legal Questions**: legal@aurumlife.com
+
 ## 🤝 Contributing
 
-When adding new documentation to this folder:
-1. Use clear, descriptive filenames
-2. Include a header with purpose and last updated date
-3. Reference related documents where applicable
-4. Update this README with the new document
+When adding new documentation:
+1. Place in appropriate subfolder
+2. Use clear, descriptive filenames
+3. Include header with purpose and date
+4. Update this README
+5. Reference related documents
 
 ---
 
