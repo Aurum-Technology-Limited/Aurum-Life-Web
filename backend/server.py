@@ -203,3 +203,4 @@ async def get_journal(current_user: User = Depends(get_current_active_user)):
 
 app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
+app.include_router(hrm_router)
