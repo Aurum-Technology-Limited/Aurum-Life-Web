@@ -14,7 +14,7 @@ from enum import Enum
 
 from supabase_client import get_supabase_client
 from models import User
-from emergentintegrations.llm.chat import LlmChat, UserMessage, SystemMessage
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 logger = logging.getLogger(__name__)
 
