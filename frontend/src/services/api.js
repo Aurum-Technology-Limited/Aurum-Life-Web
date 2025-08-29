@@ -607,6 +607,12 @@ export const uploadsAPI = {
   },
 };
 
+// Import HRM API
+import { hrmAPI } from './hrmApi';
+
+// Re-export HRM API
+export { hrmAPI };
+
 // Utility exports
 export const handleApiError = APIErrorHandler.extractErrorMessage;
 export const api = apiClient;
