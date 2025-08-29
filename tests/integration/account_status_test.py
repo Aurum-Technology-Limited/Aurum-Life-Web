@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
 PROBLEM_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 WORKING_EMAIL = "authtest_ad92d043@aurumtechnologyltd.com"
 WORKING_PASSWORD = "TestPassword123!"
@@ -61,7 +61,7 @@ def test_password_reset_for_problem_account():
     
     headers = {
         "Content-Type": "application/json",
-        "Origin": "https://auth-flow-master.preview.emergentagent.com"
+        "Origin": "https://aurum-codebase.preview.emergentagent.com"
     }
     
     try:

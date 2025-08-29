@@ -9,7 +9,7 @@ import json
 import time
 
 # Configuration
-BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password123"
 

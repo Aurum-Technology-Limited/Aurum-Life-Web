@@ -19,7 +19,7 @@ import uuid
 import time
 
 # Configuration
-BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
 
 class PillarHierarchyTester:
     def __init__(self):

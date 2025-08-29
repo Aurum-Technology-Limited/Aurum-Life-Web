@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 
 # Configuration - Use external URL from frontend/.env
-BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com"
+BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class ProjectsCRUDTestSuite:

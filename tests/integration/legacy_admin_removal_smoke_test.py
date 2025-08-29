@@ -15,7 +15,7 @@ import io
 from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL from frontend/.env
-BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
 TEST_EMAIL = "smoketest_e0742f61@aurumtechnologyltd.com"
 TEST_PASSWORD = "password123"
 

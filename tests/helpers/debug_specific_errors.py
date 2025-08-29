@@ -5,7 +5,7 @@ import aiohttp
 import json
 
 # Configuration
-BACKEND_URL = "https://auth-flow-master.preview.emergentagent.com"
+BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 async def debug_specific_errors():

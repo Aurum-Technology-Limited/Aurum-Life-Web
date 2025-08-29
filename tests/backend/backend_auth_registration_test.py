@@ -12,7 +12,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://auth-flow-master.preview.emergentagent.com"
+BASE_URL = "https://aurum-codebase.preview.emergentagent.com"
 TIMEOUT = 30
 
 def log_test_step(step, message):
