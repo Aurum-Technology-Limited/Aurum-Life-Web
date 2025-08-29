@@ -70,6 +70,7 @@ Provide actionable insights that help users make better decisions.
         
         import os
         api_key = os.environ.get('GEMINI_API_KEY')
+        model = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash-lite')
         if not api_key:
             raise ValueError("GEMINI_API_KEY not found in environment")
             
@@ -77,7 +78,7 @@ Provide actionable insights that help users make better decisions.
             api_key=api_key,
             session_id=f"hrm-{self.user_id}",
             system_message=system_prompt
-        ).with_model("gemini", "gemini-2.0-flash")
+        ).with_model("gemini", model)
     
     async def analyze_entity(
         self, 
