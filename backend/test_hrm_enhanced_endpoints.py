@@ -119,10 +119,11 @@ async def test_hrm_enhanced_endpoints():
         hrm = HierarchicalReasoningModel(test_user_id)
         
         # Test global analysis
+        from hrm_service import AnalysisDepth
         global_insight = await hrm.analyze_entity(
             entity_type='global',
             entity_id=None,
-            analysis_depth=hrm.AnalysisDepth.MINIMAL
+            analysis_depth=AnalysisDepth.MINIMAL
         )
         
         print(f"✅ Global HRM analysis completed")
