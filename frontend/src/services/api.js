@@ -479,10 +479,21 @@ class TasksAPIService extends BaseAPIService {
    * @param {string} q - Search query
    * @param {number} limit - Result limit
    * @param {number} page - Page number
+   * @param {boolean} useHRM - Use HRM for enhanced results
    * @returns {Promise} Search results
    */
-  async searchTasks(q, limit = 20, page = 1) {
-    return this.get('/search', { q, limit, page });
+  async searchTasks(q, limit = 20, page = 1, useHRM = true) {
+    return this.get('/search', { q, limit, page, use_hrm: useHRM });
+  }
+
+  /**
+   * Get AI-enhanced task suggestions for focus
+   * @param {number} topN - Number of suggestions
+   * @param {boolean} useHRM - Use HRM for enhanced suggestions
+   * @returns {Promise} Task suggestions
+   */
+  async suggestFocus(topN = 3, useHRM = true) {
+    return this.get('/suggest-focus', { top_n: topN, use_hrm: useHRM });
   }
 }
 
