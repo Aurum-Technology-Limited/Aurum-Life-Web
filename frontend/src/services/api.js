@@ -615,6 +615,15 @@ export const uploadsAPI = {
   },
 };
 
+export const notificationsAPI = {
+  getNotifications: (params = {}) => apiClient.get('/notifications', { params }),
+  markAsRead: (notificationId) => apiClient.put(`/notifications/${notificationId}/read`),
+  markAllAsRead: () => apiClient.put('/notifications/mark-all-read'),
+  getSettings: () => apiClient.get('/notifications/settings'),
+  updateSettings: (settings) => apiClient.put('/notifications/settings', settings),
+  testNotification: (type) => apiClient.post('/notifications/test', { type }),
+};
+
 // Import HRM API
 import { hrmAPI } from './hrmApi';
 
