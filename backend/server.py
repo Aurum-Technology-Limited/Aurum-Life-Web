@@ -314,39 +314,12 @@ async def get_today_priorities_enhanced(
     - Coaching messages with AI insights
     """
     try:
-        # Get basic priorities
+        # Get basic priorities with HRM enhancement
         priorities = await ai_coach_service.get_today_priorities(
             user_id=str(current_user.id),
-            coaching_top_n=top_n
+            coaching_top_n=top_n,
+            use_hrm=include_hrm
         )
-        
-        if include_hrm and priorities.get('tasks'):
-            from hrm_service import HierarchicalReasoningModel, AnalysisDepth
-            hrm = HierarchicalReasoningModel(str(current_user.id))
-            
-            enhanced_tasks = []
-            for task in priorities['tasks']:
-                try:
-                    # Get HRM analysis for each task
-                    insight = await hrm.analyze_entity(
-                        entity_type='task',
-                        entity_id=task['id'],
-                        analysis_depth=AnalysisDepth.MINIMAL  # Use minimal for performance
-                    )
-                    
-                    task['hrm_enhancement'] = {
-                        'confidence_score': insight.confidence_score,
-                        'reasoning_summary': insight.summary,
-                        'recommendations': insight.recommendations[:2]
-                    }
-                    
-                except Exception as e:
-                    logger.warning(f"Failed to enhance task {task.get('id')} with HRM: {e}")
-                
-                enhanced_tasks.append(task)
-            
-            priorities['tasks'] = enhanced_tasks
-            priorities['hrm_enhanced'] = True
         
         return priorities
         
