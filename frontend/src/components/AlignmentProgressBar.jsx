@@ -18,18 +18,34 @@ const AlignmentProgressBar = () => {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const resp = await alignmentScoreAPI.getDashboardData();
+      const resp = await alignmentScoreAPI.getDashboardData(true); // Use HRM
       const d = resp?.data || {};
       setData({
         progress_percentage: typeof d.progress_percentage === 'number' ? d.progress_percentage : (typeof d.alignment_score === 'number' ? d.alignment_score : 0),
         monthly_score: typeof d.monthly_score === 'number' ? d.monthly_score : 0,
         monthly_goal: typeof d.monthly_goal === 'number' ? d.monthly_goal : (d.monthly_goal ? parseInt(d.monthly_goal) : null),
       });
+      
+      // Store HRM insights if available
+      if (d.hrm_insight) {
+        setAlignmentInsight(d.hrm_insight);
+      }
     } catch (e) {
       console.warn('Alignment score load failed', e);
       setData({ progress_percentage: 0, monthly_score: 0, monthly_goal: null });
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  // Get AI insights for alignment
+  const handleGetAIInsights = useCallback(async () => {
+    try {
+      const insight = await hrmAPI.analyzeLifeBalance();
+      setAlignmentInsight(insight);
+      setShowAIInsights(true);
+    } catch (error) {
+      console.error('Failed to get alignment insights:', error);
     }
   }, []);
 
