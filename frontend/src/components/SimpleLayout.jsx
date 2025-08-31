@@ -94,12 +94,21 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
               >
-                <item.icon
-                  className={`h-5 w-5 ${
-                    active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
-                  } mr-3 transition-colors`}
-                  aria-hidden="true"
-                />
+                {item.key === 'ai-intelligence' ? (
+                  <Brain
+                    className={`h-5 w-5 ${
+                      active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
+                    } mr-3 transition-colors`}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <item.icon
+                    className={`h-5 w-5 ${
+                      active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
+                    } mr-3 transition-colors`}
+                    aria-hidden="true"
+                  />
+                )}
                 {item.name}
               </button>
             );
