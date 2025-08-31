@@ -257,39 +257,9 @@ async def suggest_focus_tasks(
         # Get today's priorities with HRM enhancement
         priorities = await ai_coach_service.get_today_priorities(
             user_id=str(current_user.id),
-            coaching_top_n=top_n
+            coaching_top_n=top_n,
+            use_hrm=include_reasoning
         )
-        
-        if include_reasoning and priorities.get('tasks'):
-            from hrm_service import HierarchicalReasoningModel, AnalysisDepth
-            hrm = HierarchicalReasoningModel(str(current_user.id))
-            
-            enhanced_tasks = []
-            for task in priorities['tasks']:
-                try:
-                    # Get HRM analysis for high-priority tasks
-                    if task.get('score', 0) > 50:  # Only for high-scoring tasks to optimize performance
-                        insight = await hrm.analyze_entity(
-                            entity_type='task',
-                            entity_id=task['id'],
-                            analysis_depth=AnalysisDepth.BALANCED
-                        )
-                        
-                        task['hrm_enhancement'] = {
-                            'confidence_score': insight.confidence_score,
-                            'reasoning_summary': insight.summary,
-                            'hierarchy_reasoning': insight.reasoning_path[:3],
-                            'recommendations': insight.recommendations[:3]
-                        }
-                    
-                    enhanced_tasks.append(task)
-                    
-                except Exception as e:
-                    logger.warning(f"Failed to enhance task {task.get('id')} with HRM: {e}")
-                    enhanced_tasks.append(task)
-            
-            priorities['tasks'] = enhanced_tasks
-            priorities['hrm_enhanced'] = True
         
         return priorities
         
