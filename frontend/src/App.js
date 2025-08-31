@@ -37,6 +37,10 @@ const Insights = lazy(() => import('./components/Insights'));
 const Settings = lazy(() => import('./components/Settings'));
 const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
 const NotificationCenter = lazy(() => import('./components/NotificationCenter'));
+const AIIntelligenceCenter = lazy(() => import('./components/AIIntelligenceCenter'));
+
+// Import AI Command Center components (not lazy loaded since they need to be available globally)
+import AICommandCenter, { useAICommandCenter } from './components/AICommandCenter';
 
 // Loading component for suspense fallback
 const LoadingSpinner = () => (
