@@ -661,9 +661,9 @@ const Today = memo(() => {
                     className={`inline-flex items-center justify-center ${suggestLoading ? 'bg-yellow-700' : 'bg-yellow-600 hover:bg-yellow-700'} text-black font-semibold py-2 px-3 rounded-md text-sm disabled:opacity-60`}
                   >
                     {suggestLoading ? (
-                      <span className="inline-flex items-center"><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Suggesting...</span>
+                      <span className="inline-flex items-center"><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analyzing...</span>
                     ) : (
-                      '✨ Suggest My Focus'
+                      <span className="inline-flex items-center"><Sparkles className="h-4 w-4 mr-2" />AI Focus</span>
                     )}
                   </button>
                 </div>
