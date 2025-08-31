@@ -222,51 +222,14 @@ async def get_task_why_statements(
     - Personalized recommendations
     """
     try:
-        # Get basic why statements from AI Coach service
-        basic_response = await ai_coach_service.generate_task_why_statements(
+        # Get basic why statements from AI Coach service with HRM enhancement
+        enhanced_response = await ai_coach_service.generate_task_why_statements(
             user_id=str(current_user.id),
-            task_ids=task_ids
+            task_ids=task_ids,
+            use_hrm=True
         )
         
-        # Enhance with HRM insights
-        from hrm_service import HierarchicalReasoningModel
-        hrm = HierarchicalReasoningModel(str(current_user.id))
-        
-        enhanced_statements = []
-        for statement in basic_response.why_statements:
-            try:
-                # Get HRM analysis for this task
-                insight = await hrm.analyze_entity(
-                    entity_type='task',
-                    entity_id=statement.task_id,
-                    analysis_depth=hrm.AnalysisDepth.BALANCED
-                )
-                
-                # Create enhanced statement with HRM data
-                enhanced_statement = statement.dict()
-                enhanced_statement['hrm_enhancement'] = {
-                    'confidence_score': insight.confidence_score,
-                    'reasoning_summary': insight.summary,
-                    'hierarchy_reasoning': insight.reasoning_path[:2],  # Top 2 reasoning steps
-                    'recommendations': insight.recommendations[:2]  # Top 2 recommendations
-                }
-                enhanced_statements.append(enhanced_statement)
-                
-            except Exception as e:
-                logger.warning(f"Failed to enhance task {statement.task_id} with HRM: {e}")
-                # Fall back to basic statement
-                enhanced_statements.append(statement.dict())
-        
-        # Return enhanced response
-        return TaskWhyStatementResponse(
-            why_statements=[TaskWhyStatement(**stmt) if isinstance(stmt, dict) else stmt for stmt in enhanced_statements],
-            tasks_analyzed=basic_response.tasks_analyzed,
-            vertical_alignment={
-                **basic_response.vertical_alignment,
-                'hrm_enhanced': True,
-                'enhancement_success_rate': len([s for s in enhanced_statements if 'hrm_enhancement' in s]) / len(enhanced_statements) if enhanced_statements else 0
-            }
-        )
+        return enhanced_response
         
     except Exception as e:
         logger.error(f"Error generating task why statements: {e}")
