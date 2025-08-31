@@ -912,6 +912,7 @@ class TaskWhyStatement(BaseModel):
     pillar_connection: Optional[str] = None
     area_connection: Optional[str] = None
     project_connection: Optional[str] = None
+    hrm_enhancement: Optional[Dict[str, Any]] = None  # HRM insights
 
 class TaskWhyStatementResponse(BaseModel):
     """Response containing contextual why statements for tasks"""
