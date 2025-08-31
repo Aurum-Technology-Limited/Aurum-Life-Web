@@ -681,6 +681,7 @@ const Today = memo(() => {
                             context={context}
                             mode="suggestion"
                             showAIBadge={true}
+                            hrmInsight={s.hrm_insight || { confidence_score: s.confidence_score || 0.7, priority_score: s.priority_score }}
                             onAdd={async () => {
                             const removeFromSuggestions = () => setAiSuggestions(prev => {
                               const next = prev.filter(x => (x.taskId || x.id) !== (s.taskId || s.id));
