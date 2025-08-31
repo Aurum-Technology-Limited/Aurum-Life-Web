@@ -561,6 +561,24 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
           {/* Task Why Statements - Show insights for active tasks */}
           {filteredTasks.filter(task => !task.completed).length > 0 && (
             <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
+                  <Sparkles className="h-5 w-5 text-yellow-400" />
+                  <span>AI Task Insights</span>
+                </h3>
+                <button
+                  onClick={async () => {
+                    const activeTasks = filteredTasks.filter(task => !task.completed).slice(0, 5);
+                    for (const task of activeTasks) {
+                      await handleAnalyzeWithAI(task);
+                    }
+                  }}
+                  className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors flex items-center space-x-1"
+                >
+                  <Brain className="h-4 w-4" />
+                  <span>Analyze All</span>
+                </button>
+              </div>
               <TaskWhyStatements 
                 taskIds={filteredTasks.filter(task => !task.completed).slice(0, 5).map(task => task.id)}
                 showAll={false}
