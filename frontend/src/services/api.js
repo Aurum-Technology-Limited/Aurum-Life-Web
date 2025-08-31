@@ -538,15 +538,18 @@ export const projectTemplatesAPI = {
 };
 
 export const alignmentScoreAPI = {
-  getDashboardData: async () => {
+  getDashboardData: async (useHRM = true) => {
     try {
-      return await apiClient.get('/alignment/dashboard');
+      const params = useHRM ? { use_hrm: true } : {};
+      return await apiClient.get('/alignment/dashboard', { params });
     } catch (err) {
-      return apiClient.get('/alignment-score');
+      return apiClient.get('/alignment-score', { params: useHRM ? { use_hrm: true } : {} });
     }
   },
-  getWeeklyScore: () => apiClient.get('/alignment/weekly-score'),
-  getMonthlyScore: () => apiClient.get('/alignment/monthly-score'),
+  getWeeklyScore: (useHRM = true) => 
+    apiClient.get('/alignment/weekly-score', { params: useHRM ? { use_hrm: true } : {} }),
+  getMonthlyScore: (useHRM = true) => 
+    apiClient.get('/alignment/monthly-score', { params: useHRM ? { use_hrm: true } : {} }),
   setMonthlyGoal: (goal) => apiClient.post('/alignment/monthly-goal', { goal }),
 };
 
