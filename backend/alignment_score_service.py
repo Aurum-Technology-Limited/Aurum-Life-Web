@@ -217,9 +217,10 @@ class AlignmentScoreService:
             logger.error(f"Error setting monthly goal: {e}")
             return False
 
-    async def get_alignment_dashboard_data(self, user_id: str) -> Dict:
+    async def get_alignment_dashboard_data(self, user_id: str, use_hrm: bool = False) -> Dict:
         """
         Get comprehensive alignment data for dashboard widget
+        Enhanced with optional HRM insights for deeper analysis
         """
         try:
             rolling_weekly = await self.get_rolling_weekly_score(user_id)
@@ -230,13 +231,44 @@ class AlignmentScoreService:
             effective_goal = monthly_goal if monthly_goal else 1000
             progress_percentage = min((monthly_score / effective_goal) * 100, 100) if effective_goal > 0 else 0
             
-            return {
+            dashboard_data = {
                 'rolling_weekly_score': rolling_weekly,
                 'monthly_score': monthly_score,
                 'monthly_goal': monthly_goal,
                 'progress_percentage': round(progress_percentage, 1),
                 'has_goal_set': monthly_goal is not None
             }
+            
+            # Optional HRM enhancement
+            if use_hrm:
+                try:
+                    from hrm_service import HierarchicalReasoningModel, AnalysisDepth
+                    hrm = HierarchicalReasoningModel(user_id)
+                    
+                    # Get global alignment analysis
+                    insight = await hrm.analyze_entity(
+                        entity_type='global',
+                        entity_id=None,
+                        analysis_depth=AnalysisDepth.BALANCED
+                    )
+                    
+                    dashboard_data['hrm_enhancement'] = {
+                        'confidence_score': insight.confidence_score,
+                        'reasoning_summary': insight.summary,
+                        'hierarchy_reasoning': insight.reasoning_path[:3],
+                        'recommendations': insight.recommendations[:3]
+                    }
+                    
+                except Exception as e:
+                    logger.warning(f"Failed to enhance alignment dashboard with HRM: {e}")
+                    dashboard_data['hrm_enhancement'] = {
+                        'confidence_score': 0.5,
+                        'reasoning_summary': "HRM analysis temporarily unavailable",
+                        'hierarchy_reasoning': [],
+                        'recommendations': ["Continue working on your current projects"]
+                    }
+            
+            return dashboard_data
             
         except Exception as e:
             logger.error(f"Error fetching alignment dashboard data: {e}")
