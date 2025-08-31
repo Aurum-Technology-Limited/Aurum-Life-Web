@@ -77,6 +77,9 @@ function App() {
   const [sectionParams, setSectionParams] = useState({}); // Add state for section parameters
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
 
+  // Initialize AI Command Center
+  const { isOpen: isCommandCenterOpen, close: closeCommandCenter } = useAICommandCenter();
+
   // Debug effect to track activeSection changes
   useEffect(() => {
     console.log('🔄 Active section updated to:', activeSection, 'with params:', sectionParams);
