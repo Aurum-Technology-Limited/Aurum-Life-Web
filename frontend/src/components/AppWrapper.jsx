@@ -14,16 +14,27 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
     if (user && !loading) {
       setIsCheckingOnboarding(true);
       
+      console.log('🔍 User object for onboarding check:', user);
+      
       // Check if user has completed onboarding from backend data (defensive default false)
-      const hasCompletedOnboarding = !!user.has_completed_onboarding;
+      const hasCompletedOnboarding = user.has_completed_onboarding === true;
       
       // Also check localStorage for client-side completion flag
       const localCompletionFlag = localStorage.getItem(`onboarding_completed_${user.id}`);
       const isLocallyCompleted = localCompletionFlag === 'true';
       
-      // Show onboarding only if BOTH backend and local storage indicate not completed
-      // If has_completed_onboarding is undefined (race), treat as not completed
-      if ((!hasCompletedOnboarding) && !isLocallyCompleted) {
+      console.log('📊 Onboarding status:', {
+        hasCompletedOnboarding,
+        isLocallyCompleted,
+        userHasCompletedField: user.has_completed_onboarding,
+        userId: user.id
+      });
+      
+      // Show onboarding if NOT completed AND user has no data
+      // Force show onboarding for testing if level is 1
+      const shouldShowOnboarding = (!hasCompletedOnboarding && !isLocallyCompleted) || user.level === 1;
+      
+      if (shouldShowOnboarding) {
         console.log('🎯 New user detected - showing onboarding');
         setShowOnboarding(true);
       } else {
