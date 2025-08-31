@@ -394,6 +394,40 @@ class AiCoachMvpService:
                     logger.error(f"Error generating why statement for task {task['id']}: {e}")
                     continue
             
+            # Optional HRM enhancement for deeper insights
+            if use_hrm and tasks_with_why:
+                try:
+                    from hrm_service import HierarchicalReasoningModel, AnalysisDepth
+                    hrm = HierarchicalReasoningModel(user_id)
+                    
+                    enhanced_statements = []
+                    for statement in tasks_with_why:
+                        try:
+                            # Get HRM analysis for this task
+                            insight = await hrm.analyze_entity(
+                                entity_type='task',
+                                entity_id=statement.task_id,
+                                analysis_depth=AnalysisDepth.MINIMAL
+                            )
+                            
+                            # Create enhanced statement
+                            enhanced_statement = statement.dict()
+                            enhanced_statement['hrm_enhancement'] = {
+                                'confidence_score': insight.confidence_score,
+                                'reasoning_summary': insight.summary,
+                                'recommendations': insight.recommendations[:2]
+                            }
+                            enhanced_statements.append(TaskWhyStatement(**enhanced_statement))
+                            
+                        except Exception as e:
+                            logger.warning(f"Failed to enhance task {statement.task_id} with HRM: {e}")
+                            enhanced_statements.append(statement)
+                    
+                    tasks_with_why = enhanced_statements
+                    
+                except Exception as e:
+                    logger.warning(f"HRM enhancement failed for why statements: {e}")
+            
             logger.info(f"✅ Generated {len(tasks_with_why)} why statements for user: {user_id}")
             return TaskWhyStatementResponse(
                 why_statements=tasks_with_why,
@@ -401,7 +435,8 @@ class AiCoachMvpService:
                 vertical_alignment={
                     'total_tasks_analyzed': len(tasks),
                     'successful_statements': len(tasks_with_why),
-                    'hierarchy_depth': 'task -> project -> area -> pillar'
+                    'hierarchy_depth': 'task -> project -> area -> pillar',
+                    'hrm_enhanced': use_hrm
                 }
             )
             
