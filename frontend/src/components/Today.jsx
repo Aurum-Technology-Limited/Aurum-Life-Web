@@ -635,14 +635,24 @@ const Today = memo(() => {
                     onClick={async () => {
                       try {
                         setSuggestLoading(true);
-                        const res = await tasksAPI.suggestFocus();
-                        const suggestions = res.data || [];
+                        // Use HRM-enhanced suggestions
+                        const res = await hrmAPI.getTodayPriorities(5, true);
+                        const suggestions = res.priorities || res.data || [];
                         setAiSuggestions(suggestions);
                         try { localStorage.setItem(SUGGESTIONS_KEY, JSON.stringify(suggestions)); } catch {}
 
                       } catch (e) {
                         console.error('Suggest focus error:', e);
-                        setAiSuggestions([]);
+                        // Fallback to regular API
+                        try {
+                          const res = await tasksAPI.suggestFocus(5, true);
+                          const suggestions = res.data || [];
+                          setAiSuggestions(suggestions);
+                          try { localStorage.setItem(SUGGESTIONS_KEY, JSON.stringify(suggestions)); } catch {}
+                        } catch (fallbackError) {
+                          console.error('Fallback suggest focus error:', fallbackError);
+                          setAiSuggestions([]);
+                        }
                       } finally {
                         setSuggestLoading(false);
                       }
