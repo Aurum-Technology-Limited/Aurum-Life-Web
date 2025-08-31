@@ -529,6 +529,14 @@ export const projectsAPI = {
   deleteProject: (id) => apiClient.delete(`/projects/${id}`),
 };
 
+export const projectTemplatesAPI = {
+  getTemplates: () => apiClient.get('/project-templates'),
+  getTemplate: (id) => apiClient.get(`/project-templates/${id}`),
+  createTemplate: (data) => apiClient.post('/project-templates', data),
+  updateTemplate: (id, data) => apiClient.put(`/project-templates/${id}`, data),
+  deleteTemplate: (id) => apiClient.delete(`/project-templates/${id}`),
+};
+
 export const alignmentScoreAPI = {
   getDashboardData: async () => {
     try {
