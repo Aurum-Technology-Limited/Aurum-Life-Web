@@ -350,8 +350,11 @@ async def get_alignment_dashboard(
     - Trend analysis and predictions
     """
     try:
-        # Get basic alignment data
-        basic_data = await alignment_service.get_alignment_dashboard_data(str(current_user.id))
+        # Get basic alignment data with HRM enhancement
+        basic_data = await alignment_service.get_alignment_dashboard_data(
+            user_id=str(current_user.id),
+            use_hrm=True
+        )
         
         # Enhance with HRM insights
         from hrm_service import HierarchicalReasoningModel, AnalysisDepth
