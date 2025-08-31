@@ -101,8 +101,31 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0 w-2 h-2 mt-2 bg-yellow-400 rounded-full"></div>
               <div className="flex-1">
-                <h4 className="font-medium text-white mb-1">{statement.task_name}</h4>
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="font-medium text-white">{statement.task_name}</h4>
+                  <div className="flex items-center space-x-2">
+                    {statement.confidence_score && (
+                      <AIBadge 
+                        confidence={statement.confidence_score} 
+                        variant="confidence" 
+                        size="xs"
+                      />
+                    )}
+                    {statement.priority_score && (
+                      <span className="text-xs text-yellow-400">
+                        Priority: {statement.priority_score.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <p className="text-gray-300 text-sm leading-relaxed">{statement.why_statement}</p>
+                
+                {/* HRM Reasoning */}
+                {statement.hrm_reasoning && (
+                  <div className="mt-2 text-xs text-purple-300 bg-purple-900/20 rounded p-2">
+                    <strong>AI Reasoning:</strong> {statement.hrm_reasoning}
+                  </div>
+                )}
                 
                 {(statement.project_connection || statement.pillar_connection || statement.area_connection) && (
                   <div className="mt-3 flex flex-wrap gap-2">
