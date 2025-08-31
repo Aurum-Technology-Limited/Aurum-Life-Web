@@ -29,11 +29,13 @@ class AiCoachMvpService:
     # ================================
     # TODAY PRIORITIZATION (MVP)
     # ================================
-    async def get_today_priorities(self, user_id: str, coaching_top_n: int = 3) -> Dict[str, Any]:
+    async def get_today_priorities(self, user_id: str, coaching_top_n: int = 3, use_hrm: bool = False) -> Dict[str, Any]:
         """
         Compute rule-based priority scores for all active tasks and optionally add
         Gemini coaching for the top N (default 3). Returns list sorted by score desc
         with a transparent scoring breakdown per task.
+        
+        Enhanced with optional HRM integration for deeper insights.
         """
         from datetime import timezone
         from zoneinfo import ZoneInfo
