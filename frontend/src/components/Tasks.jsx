@@ -342,6 +342,19 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
     }
   };
 
+  // Analyze task with HRM
+  const handleAnalyzeWithAI = async (task) => {
+    try {
+      const insight = await hrmAPI.analyzeTaskWithContext(task.id);
+      setTaskInsights(prev => ({
+        ...prev,
+        [task.id]: insight
+      }));
+    } catch (error) {
+      console.error('Failed to analyze task with AI:', error);
+    }
+  };
+
   const filteredTasks = filteredTasksByProject
     .filter(task => {
       switch (filter) {
