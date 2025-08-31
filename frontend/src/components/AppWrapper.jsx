@@ -11,10 +11,14 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
 
   // Check onboarding status when user becomes available
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !loading && !isCheckingOnboarding) {
       setIsCheckingOnboarding(true);
       
-      console.log('🔍 User object for onboarding check:', user);
+      console.log('🔍 User object for onboarding check:', {
+        id: user.id,
+        has_completed_onboarding: user.has_completed_onboarding,
+        level: user.level
+      });
       
       // Check if user has completed onboarding from backend data (defensive default false)
       const hasCompletedOnboarding = user.has_completed_onboarding === true;
@@ -31,8 +35,7 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
       });
       
       // Show onboarding if NOT completed AND user has no data
-      // Force show onboarding for testing if level is 1
-      const shouldShowOnboarding = (!hasCompletedOnboarding && !isLocallyCompleted) || user.level === 1;
+      const shouldShowOnboarding = (!hasCompletedOnboarding && !isLocallyCompleted);
       
       if (shouldShowOnboarding) {
         console.log('🎯 New user detected - showing onboarding');
@@ -48,9 +51,10 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
         }
       }
       
-      setIsCheckingOnboarding(false);
+      // Always set checking to false after logic completes
+      setTimeout(() => setIsCheckingOnboarding(false), 100);
     }
-  }, [user, loading]);
+  }, [user?.id, user?.has_completed_onboarding, loading]); // Fixed dependency array
 
   const syncOnboardingCompletion = async () => {
     try {
