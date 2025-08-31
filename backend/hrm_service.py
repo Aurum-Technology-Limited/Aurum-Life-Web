@@ -498,6 +498,202 @@ Provide actionable insights that help users make better decisions.
             'overdue_rate': overdue / total
         }
     
+    async def _get_global_context(self) -> Dict[str, Any]:
+        """Get global context for user's entire system"""
+        try:
+            # Get high-level stats
+            pillars_resp = self.supabase.table('pillars').select('id, name, time_allocation_percentage').eq('user_id', self.user_id).execute()
+            areas_resp = self.supabase.table('areas').select('id, name, importance').eq('user_id', self.user_id).execute()
+            projects_resp = self.supabase.table('projects').select('id, name, status, importance').eq('user_id', self.user_id).execute()
+            tasks_resp = self.supabase.table('tasks').select('id, status, priority, completed, due_date').eq('user_id', self.user_id).execute()
+            
+            return {
+                'pillars': pillars_resp.data or [],
+                'areas': areas_resp.data or [],
+                'projects': projects_resp.data or [],
+                'tasks': tasks_resp.data or [],
+                'task_stats': self._calculate_task_stats(tasks_resp.data or [])
+            }
+        except Exception as e:
+            logger.error(f"Failed to get global context: {e}")
+            return {}
+    
+    async def _get_area_context(self, area_id: str) -> Dict[str, Any]:
+        """Get comprehensive context for an area"""
+        try:
+            area_resp = self.supabase.table('areas').select('*, pillars(*)').eq('id', area_id).eq('user_id', self.user_id).execute()
+            if not area_resp.data:
+                return {}
+            
+            area_data = area_resp.data[0]
+            
+            # Get projects in this area
+            projects_resp = self.supabase.table('projects').select('id, name, status, importance').eq('area_id', area_id).eq('user_id', self.user_id).execute()
+            projects = projects_resp.data or []
+            
+            return {
+                'area': area_data,
+                'projects': projects,
+                'hierarchy_depth': 2
+            }
+        except Exception as e:
+            logger.error(f"Failed to get area context: {e}")
+            return {}
+    
+    async def _get_pillar_context(self, pillar_id: str) -> Dict[str, Any]:
+        """Get comprehensive context for a pillar"""
+        try:
+            pillar_resp = self.supabase.table('pillars').select('*').eq('id', pillar_id).eq('user_id', self.user_id).execute()
+            if not pillar_resp.data:
+                return {}
+            
+            pillar_data = pillar_resp.data[0]
+            
+            # Get areas in this pillar
+            areas_resp = self.supabase.table('areas').select('id, name, importance').eq('pillar_id', pillar_id).eq('user_id', self.user_id).execute()
+            areas = areas_resp.data or []
+            
+            return {
+                'pillar': pillar_data,
+                'areas': areas,
+                'hierarchy_depth': 1
+            }
+        except Exception as e:
+            logger.error(f"Failed to get pillar context: {e}")
+            return {}
+    
+    async def _apply_single_rule(self, rule: Dict[str, Any], context: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Apply a single HRM rule to context"""
+        rule_code = rule.get('rule_code')
+        
+        try:
+            if rule_code == 'priority_by_due_date':
+                return await self._apply_due_date_rule(context)
+            elif rule_code == 'alignment_with_pillar':
+                return await self._apply_alignment_rule(context)
+            else:
+                logger.warning(f"Unknown rule code: {rule_code}")
+                return None
+        except Exception as e:
+            logger.error(f"Error applying rule {rule_code}: {e}")
+            return None
+    
+    async def _apply_due_date_rule(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Apply due date priority rule"""
+        entity_type = context.get('entity_type')
+        
+        if entity_type == 'task':
+            task = context.get('task', {})
+            due_date_str = task.get('due_date')
+            
+            if not due_date_str:
+                return {'score_impact': 0.0, 'reasoning': 'No due date set'}
+            
+            try:
+                due_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00'))
+                days_until_due = (due_date - datetime.utcnow()).days
+                
+                if days_until_due < 0:
+                    score_impact = 1.0  # Overdue - highest priority
+                    reasoning = f"Task is {abs(days_until_due)} days overdue"
+                elif days_until_due == 0:
+                    score_impact = 0.9  # Due today
+                    reasoning = "Task is due today"
+                elif days_until_due <= 3:
+                    score_impact = 0.7  # Due soon
+                    reasoning = f"Task is due in {days_until_due} days"
+                elif days_until_due <= 7:
+                    score_impact = 0.4  # Due this week
+                    reasoning = f"Task is due in {days_until_due} days"
+                else:
+                    score_impact = 0.1  # Due later
+                    reasoning = f"Task is due in {days_until_due} days"
+                
+                return {
+                    'score_impact': score_impact,
+                    'reasoning': reasoning,
+                    'rule_code': 'priority_by_due_date'
+                }
+            except Exception as e:
+                return {'score_impact': 0.0, 'reasoning': f'Invalid due date format: {e}'}
+        
+        return {'score_impact': 0.0, 'reasoning': 'Rule not applicable to this entity type'}
+    
+    async def _apply_alignment_rule(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Apply alignment with pillar rule"""
+        entity_type = context.get('entity_type')
+        
+        if entity_type in ['task', 'project', 'area']:
+            # Check if entity has clear pillar connection
+            pillar_name = None
+            pillar_time_allocation = 0
+            
+            if entity_type == 'task':
+                task = context.get('task', {})
+                pillar_name = task.get('pillar_name')
+                pillar_time_allocation = task.get('pillar_time_allocation', 0)
+            
+            if pillar_name and pillar_time_allocation:
+                # Higher time allocation = higher alignment score
+                score_impact = min(pillar_time_allocation / 100.0, 1.0)
+                reasoning = f"Aligned with {pillar_name} pillar ({pillar_time_allocation}% time allocation)"
+            else:
+                score_impact = -0.2  # Penalty for poor alignment
+                reasoning = "Poor alignment with pillar hierarchy"
+            
+            return {
+                'score_impact': score_impact,
+                'reasoning': reasoning,
+                'rule_code': 'alignment_with_pillar'
+            }
+        
+        return {'score_impact': 0.0, 'reasoning': 'Rule not applicable to this entity type'}
+    
+    async def _combine_rule_and_llm_insights(self, rule_results: Dict[str, Any], llm_insights: Dict[str, Any]) -> Dict[str, Any]:
+        """Combine rule-based and LLM insights"""
+        combined = rule_results.copy()
+        combined['llm_insights'] = llm_insights
+        
+        # Adjust confidence based on LLM availability
+        if llm_insights.get('llm_available', True):
+            combined['confidence_boost'] = 0.1
+        else:
+            combined['confidence_penalty'] = llm_insights.get('confidence_penalty', -0.1)
+        
+        return combined
+    
+    async def _parse_llm_response(self, response, context: Dict[str, Any], depth: AnalysisDepth) -> Dict[str, Any]:
+        """Parse LLM response into structured format"""
+        try:
+            response_text = response.text if hasattr(response, 'text') else str(response)
+            
+            # Simple parsing - in production this would be more sophisticated
+            insights = {
+                'llm_available': True,
+                'raw_response': response_text,
+                'recommendations': [],
+                'confidence_adjustment': 0.1
+            }
+            
+            # Extract recommendations (simple pattern matching)
+            lines = response_text.split('\n')
+            for line in lines:
+                if any(keyword in line.lower() for keyword in ['recommend', 'suggest', 'should', 'consider']):
+                    insights['recommendations'].append(line.strip())
+            
+            # Limit recommendations
+            insights['recommendations'] = insights['recommendations'][:3]
+            
+            return insights
+            
+        except Exception as e:
+            logger.error(f"Failed to parse LLM response: {e}")
+            return {
+                'llm_available': False,
+                'error': str(e),
+                'confidence_penalty': -0.2
+            }
+    
     def _determine_insight_type(self, results: Dict[str, Any]) -> str:
         """Determine the primary insight type from analysis results"""
         if 'llm_insights' in results and results['llm_insights'].get('obstacle_identified'):
