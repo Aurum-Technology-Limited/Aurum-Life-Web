@@ -309,6 +309,13 @@ function App() {
                     </SimpleLayout>
                   </AppWrapper>
                   <Toaster />
+                  
+                  {/* AI Command Center - Global */}
+                  <AICommandCenter 
+                    isOpen={isCommandCenterOpen} 
+                    onClose={closeCommandCenter} 
+                    onCommand={handleAICommand} 
+                  />
                   </div>
                 </DndProvider>
               </NotificationProvider>
