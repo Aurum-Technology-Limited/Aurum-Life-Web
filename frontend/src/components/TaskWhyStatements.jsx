@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { LightBulbIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
+import { aiCoachAPI } from '../services/api';
+import AIBadge from './ui/AIBadge';
+import ConfidenceIndicator from './ui/ConfidenceIndicator';
 
 const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
   const [whyStatements, setWhyStatements] = useState([]);
