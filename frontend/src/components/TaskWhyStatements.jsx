@@ -17,37 +17,13 @@ const TaskWhyStatements = ({ taskIds = null, showAll = false }) => {
         setLoading(true);
         setError(null);
 
-        const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
-        const token = localStorage.getItem('auth_token');
-
-        if (!token) {
-          setError('Authentication required');
-          return;
-        }
-
-        // Build URL with task IDs if provided
-        let url = `${BACKEND_URL}/api/ai/task-why-statements`;
-        if (taskIds && taskIds.length > 0) {
-          url += `?task_ids=${taskIds.join(',')}`;
-        }
-
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setWhyStatements(data.why_statements || []);
-        } else {
-          const errorData = await (async () => { try { return await response.json(); } catch { return {}; } })();
-          setError(errorData.detail || 'Failed to load task context');
-        }
+        // Use the enhanced API service with HRM
+        const response = await aiCoachAPI.getTaskWhyStatements(taskIds || [], true);
+        const data = response?.data || {};
+        setWhyStatements(data.why_statements || []);
       } catch (err) {
         console.error('Error fetching why statements:', err);
-        setError('Network error occurred');
+        setError('Failed to load task insights');
       } finally {
         setLoading(false);
       }
