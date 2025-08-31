@@ -11,12 +11,16 @@ import {
   ChevronUp,
   Repeat,
   X,
-  FolderOpen
+  FolderOpen,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 import { useDataContext } from '../contexts/DataContext';
-import { tasksAPI, handleApiError } from '../services/api';
+import { tasksAPI, handleApiError, hrmAPI } from '../services/api';
 import FileAttachment from './ui/FileAttachment';
 import TaskWhyStatements from './TaskWhyStatements';
+import AIBadge from './ui/AIBadge';
+import AIInsightPanel from './ui/AIInsightPanel';
 
 // ... rest of imports remain
 
