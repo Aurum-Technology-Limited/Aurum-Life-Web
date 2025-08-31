@@ -356,34 +356,6 @@ async def get_alignment_dashboard(
             use_hrm=True
         )
         
-        # Enhance with HRM insights
-        from hrm_service import HierarchicalReasoningModel, AnalysisDepth
-        hrm = HierarchicalReasoningModel(str(current_user.id))
-        
-        try:
-            # Get global alignment analysis
-            alignment_insight = await hrm.analyze_entity(
-                entity_type='global',
-                entity_id=None,
-                analysis_depth=AnalysisDepth.BALANCED
-            )
-            
-            basic_data['hrm_enhancement'] = {
-                'confidence_score': alignment_insight.confidence_score,
-                'reasoning_summary': alignment_insight.summary,
-                'hierarchy_reasoning': alignment_insight.reasoning_path[:3],
-                'recommendations': alignment_insight.recommendations[:5]
-            }
-            
-        except Exception as e:
-            logger.warning(f"Failed to enhance alignment dashboard with HRM: {e}")
-            basic_data['hrm_enhancement'] = {
-                'confidence_score': 0.5,
-                'reasoning_summary': "HRM analysis temporarily unavailable",
-                'hierarchy_reasoning': [],
-                'recommendations': ["Continue working on your current projects", "Review your goal alignment regularly"]
-            }
-        
         return basic_data
         
     except Exception as e:
