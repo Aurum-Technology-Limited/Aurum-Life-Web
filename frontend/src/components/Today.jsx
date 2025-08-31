@@ -738,9 +738,11 @@ const Today = memo(() => {
                             mode="focus"
                             showToggle={true}
                             completed={!!task.completed}
+                            hrmInsight={taskInsights[task.id]}
                             onToggleComplete={handleToggleTask}
                             onStartPomodoro={handleStartPomodoro}
                             onRemove={handleRemoveFromFocus}
+                            onAnalyzeWithAI={handleAnalyzeWithAI}
                           />
                         </div>
                       </div>
