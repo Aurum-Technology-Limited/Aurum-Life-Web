@@ -292,13 +292,14 @@ class AiCoachMvpService:
         return { 'date': datetime.now(user_tz).isoformat(), 'tasks': out }
     
     # Feature 1: Contextual "Why" Statements
-    async def generate_task_why_statements(self, user_id: str, task_ids: List[str] = None) -> TaskWhyStatementResponse:
+    async def generate_task_why_statements(self, user_id: str, task_ids: List[str] = None, use_hrm: bool = False) -> TaskWhyStatementResponse:
         """
         Generate contextual why statements for tasks explaining their vertical alignment
         
         Args:
             user_id: User identifier
             task_ids: Optional list of specific task IDs, if None gets today's tasks
+            use_hrm: Whether to enhance with HRM insights
         
         Returns:
             TaskWhyStatementResponse with why statements for each task
