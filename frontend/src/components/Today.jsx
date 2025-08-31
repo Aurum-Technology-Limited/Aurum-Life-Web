@@ -48,66 +48,106 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
 });
 
 // Unified task item used for both suggestions and focus list rows
-const UnifiedTaskItem = ({ task, context, mode = 'focus', onAdd, onToggleComplete, onStartPomodoro, onRemove, showToggle = false, completed = false, showAIBadge = false }) => {
+const UnifiedTaskItem = ({ task, context, mode = 'focus', onAdd, onToggleComplete, onStartPomodoro, onRemove, showToggle = false, completed = false, showAIBadge = false, hrmInsight = null, onAnalyzeWithAI = null }) => {
+  const [showInsightPanel, setShowInsightPanel] = useState(false);
   const priority = (task.priority || 'medium').toLowerCase();
   const priorityClass = priority === 'high' ? 'bg-red-500' : priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500';
+  
   return (
-    <div className="flex items-center justify-between bg-gray-900/50 border border-gray-800 rounded-md p-3">
-      <div className="flex items-start space-x-3">
-        {showToggle && (
-          <button
-            onClick={() => onToggleComplete && onToggleComplete(task.id, completed)}
-            className="mt-1 text-yellow-400 hover:text-yellow-300 transition-colors"
-            title={completed ? 'Mark as incomplete' : 'Mark as complete'}
-          >
-            {completed ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
-          </button>
-        )}
-        {/* Priority indicator */}
-        <div className={`w-2 h-2 rounded-full mt-2 ${priorityClass}`} aria-hidden="true" title={showAIBadge ? 'Suggested by AI' : undefined}></div>
-        <div>
-          <div className="flex items-center">
-            <div className={`text-sm font-medium ${completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.name || task.title}</div>
-            {showAIBadge && (
-              <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">AI</span>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between bg-gray-900/50 border border-gray-800 rounded-md p-3">
+        <div className="flex items-start space-x-3">
+          {showToggle && (
+            <button
+              onClick={() => onToggleComplete && onToggleComplete(task.id, completed)}
+              className="mt-1 text-yellow-400 hover:text-yellow-300 transition-colors"
+              title={completed ? 'Mark as incomplete' : 'Mark as complete'}
+            >
+              {completed ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
+            </button>
+          )}
+          {/* Priority indicator */}
+          <div className={`w-2 h-2 rounded-full mt-2 ${priorityClass}`} aria-hidden="true" title={showAIBadge ? 'Suggested by AI' : undefined}></div>
+          <div className="flex-1">
+            <div className="flex items-center space-x-2">
+              <div className={`text-sm font-medium ${completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.name || task.title}</div>
+              {showAIBadge && (
+                <AIBadge 
+                  confidence={hrmInsight?.confidence_score || 0.7} 
+                  variant="default" 
+                  size="xs"
+                  onClick={() => setShowInsightPanel(!showInsightPanel)}
+                />
+              )}
+              {hrmInsight && (
+                <ConfidenceIndicator 
+                  confidence={hrmInsight.confidence_score || 0} 
+                  size="sm" 
+                  showPercentage={false}
+                />
+              )}
+            </div>
+            <div className={`text-xs mt-0.5 ${completed ? 'text-gray-600' : 'text-gray-400'}`}>
+              {context}
+            </div>
+            {hrmInsight?.priority_score && (
+              <div className="text-xs text-yellow-400 mt-1">
+                Priority Score: {hrmInsight.priority_score.toFixed(1)}
+              </div>
             )}
-          </div>
-          <div className={`text-xs mt-0.5 ${completed ? 'text-gray-600' : 'text-gray-400'}`}>
-            {context}
           </div>
         </div>
-      </div>
-      <div className="flex items-center space-x-2">
-        {mode === 'suggestion' ? (
-          <button
-            type="button"
-            onClick={onAdd}
-            className="p-2 text-gray-300 hover:text-yellow-400 hover:bg-gray-800 rounded"
-            title="Add to Today's Focus"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        ) : (
-          <>
-            {!completed && (
-              <button
-                onClick={() => onStartPomodoro && onStartPomodoro(task)}
-                className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
-                title="Start Pomodoro"
-              >
-                <Timer className="h-4 w-4" />
-              </button>
-            )}
+        <div className="flex items-center space-x-2">
+          {mode === 'suggestion' ? (
             <button
-              onClick={() => onRemove && onRemove(task.id)}
-              className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
-              title="Remove from Today"
+              type="button"
+              onClick={onAdd}
+              className="p-2 text-gray-300 hover:text-yellow-400 hover:bg-gray-800 rounded"
+              title="Add to Today's Focus"
             >
-              <X className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
             </button>
-          </>
-        )}
+          ) : (
+            <>
+              {onAnalyzeWithAI && (
+                <button
+                  onClick={() => onAnalyzeWithAI(task)}
+                  className="p-2 text-gray-400 hover:text-purple-400 hover:bg-gray-800 rounded-lg transition-colors"
+                  title="Analyze with AI"
+                >
+                  <Brain className="h-4 w-4" />
+                </button>
+              )}
+              {!completed && (
+                <button
+                  onClick={() => onStartPomodoro && onStartPomodoro(task)}
+                  className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-gray-800 rounded-lg transition-colors"
+                  title="Start Pomodoro"
+                >
+                  <Timer className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                onClick={() => onRemove && onRemove(task.id)}
+                className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+                title="Remove from Today"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
+      
+      {/* AI Insight Panel */}
+      {showInsightPanel && hrmInsight && (
+        <AIInsightPanel 
+          insight={hrmInsight}
+          isExpanded={true}
+          onClose={() => setShowInsightPanel(false)}
+          showCloseButton={true}
+        />
+      )}
     </div>
   );
 };
