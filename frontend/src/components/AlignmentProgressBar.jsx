@@ -7,6 +7,8 @@ import AIInsightPanel from './ui/AIInsightPanel';
 const AlignmentProgressBar = () => {
   const [loading, setLoading] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showAIInsights, setShowAIInsights] = useState(false);
+  const [alignmentInsight, setAlignmentInsight] = useState(null);
   const [data, setData] = useState({
     progress_percentage: 0,
     monthly_score: 0,
