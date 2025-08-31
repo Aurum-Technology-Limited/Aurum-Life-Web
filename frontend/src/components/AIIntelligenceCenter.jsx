@@ -159,43 +159,6 @@ const AIIntelligenceCenter = () => {
     return groups;
   }, [filteredInsights]);
 
-  const getInsightPriority = (insight) => {
-    if (insight.confidence_score >= 0.9 && insight.impact_score >= 0.8) return 'critical';
-    if (insight.confidence_score >= 0.8 || insight.impact_score >= 0.7) return 'high';
-    if (insight.confidence_score >= 0.6 || insight.impact_score >= 0.5) return 'medium';
-    return 'low';
-  };
-
-  const getInsightTypeIcon = (type) => {
-    const icons = {
-      priority_reasoning: Target,
-      alignment_analysis: TrendingUp,
-      pattern_recognition: Brain,
-      recommendation: Lightbulb,
-      goal_coherence: CheckCircle,
-      obstacle_identification: AlertTriangle,
-      time_allocation: Clock,
-      progress_prediction: Zap
-    };
-    return icons[type] || MessageSquare;
-  };
-
-  const getConfidenceColor = (score) => {
-    if (score >= 0.8) return 'text-green-400';
-    if (score >= 0.6) return 'text-yellow-400';
-    return 'text-orange-400';
-  };
-
-  const getPriorityColor = (priority) => {
-    const colors = {
-      critical: 'border-red-500 bg-red-500/10',
-      high: 'border-orange-500 bg-orange-500/10',
-      medium: 'border-yellow-500 bg-yellow-500/10',
-      low: 'border-gray-500 bg-gray-500/10'
-    };
-    return colors[priority] || colors.low;
-  };
-
   const handleFeedback = (insightId, feedback) => {
     feedbackMutation.mutate({ insightId, feedback });
   };
