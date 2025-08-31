@@ -17,6 +17,7 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
     { name: 'Templates', key: 'project-templates', icon: DocumentTextIcon },
     { name: 'Journal', key: 'journal', icon: DocumentTextIcon },
     { name: 'Insights', key: 'insights', icon: ChartBarIcon },
+    { name: 'AI Intelligence', key: 'ai-intelligence', icon: Brain },
     { name: 'Feedback', key: 'feedback', icon: ChatIcon },
     { name: 'AI Coach', key: 'ai-coach', icon: BeakerIcon },
   ], []);
