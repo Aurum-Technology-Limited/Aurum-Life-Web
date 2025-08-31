@@ -170,6 +170,7 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(null);
   const [hasMore, setHasMore] = useState(false);
+  const [taskInsights, setTaskInsights] = useState({}); // Store HRM insights for tasks
 
   // URL query sync for search
   useEffect(() => {
