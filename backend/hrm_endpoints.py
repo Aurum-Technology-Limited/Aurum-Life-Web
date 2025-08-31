@@ -438,11 +438,11 @@ async def update_hrm_preferences(
         
         update_data['updated_at'] = datetime.utcnow().isoformat()
         
-        # Upsert preferences
+        # Upsert preferences with proper conflict resolution
         response = supabase.table('hrm_user_preferences').upsert({
             'user_id': str(current_user.id),
             **update_data
-        }).execute()
+        }, on_conflict='user_id').execute()
         
         if not response.data:
             raise HTTPException(status_code=500, detail="Failed to update preferences")
