@@ -458,8 +458,28 @@ Provide actionable insights that help users make better decisions.
     # Helper methods for rule processing, LLM parsing, scoring, etc.
     async def _load_hrm_rules(self):
         """Load HRM rules from database with caching"""
-        resp = self.supabase.table('hrm_rules').select('*').eq('is_active', True).execute()
-        self._rules_cache = resp.data or []
+        try:
+            resp = self.supabase.table('hrm_rules').select('*').eq('is_active', True).execute()
+            self._rules_cache = resp.data or []
+        except Exception as e:
+            logger.warning(f"Failed to load HRM rules: {e}")
+            # Use default rules if database is not available
+            self._rules_cache = [
+                {
+                    'rule_code': 'priority_by_due_date',
+                    'applies_to_entity_types': ['task'],
+                    'is_active': True,
+                    'base_weight': 0.7,
+                    'requires_llm': False
+                },
+                {
+                    'rule_code': 'alignment_with_pillar',
+                    'applies_to_entity_types': ['task', 'project', 'area'],
+                    'is_active': True,
+                    'base_weight': 0.8,
+                    'requires_llm': False
+                }
+            ]
     
     def _calculate_task_stats(self, tasks: List[Dict]) -> Dict[str, Any]:
         """Calculate task statistics for project context"""
