@@ -38,6 +38,7 @@ const Settings = lazy(() => import('./components/Settings'));
 const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
 const NotificationCenter = lazy(() => import('./components/NotificationCenter'));
 const AIIntelligenceCenter = lazy(() => import('./components/AIIntelligenceCenter'));
+const HRMDemo = lazy(() => import('./components/HRMDemo'));
 
 // Import AI Command Center components (not lazy loaded since they need to be available globally)
 import AICommandCenter, { useAICommandCenter } from './components/AICommandCenter';
