@@ -237,6 +237,9 @@ function App() {
             case 'ai-coach':
               console.log('🤖 Rendering AICoach component');
               return <AICoach {...props} />;
+            case 'ai-intelligence':
+              console.log('🧠 Rendering AIIntelligenceCenter component');
+              return <AIIntelligenceCenter {...props} />;
             case 'settings':
               console.log('⚙️ Rendering Settings component');
               return <Settings {...props} />;
