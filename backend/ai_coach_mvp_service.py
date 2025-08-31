@@ -262,6 +262,33 @@ class AiCoachMvpService:
         if limit_n > 0:
             out = out[:limit_n]
         
+        # Optional HRM enhancement for deeper insights
+        if use_hrm and out:
+            try:
+                from hrm_service import HierarchicalReasoningModel, AnalysisDepth
+                hrm = HierarchicalReasoningModel(user_id)
+                
+                # Enhance top tasks with HRM insights
+                for task in out[:min(3, len(out))]:  # Only enhance top 3 for performance
+                    try:
+                        insight = await hrm.analyze_entity(
+                            entity_type='task',
+                            entity_id=task['id'],
+                            analysis_depth=AnalysisDepth.MINIMAL
+                        )
+                        
+                        task['hrm_insight'] = {
+                            'confidence_score': insight.confidence_score,
+                            'reasoning_summary': insight.summary,
+                            'recommendations': insight.recommendations[:2]
+                        }
+                        
+                    except Exception as e:
+                        logger.warning(f"Failed to get HRM insight for task {task['id']}: {e}")
+                        
+            except Exception as e:
+                logger.warning(f"HRM enhancement failed: {e}")
+        
         return { 'date': datetime.now(user_tz).isoformat(), 'tasks': out }
     
     # Feature 1: Contextual "Why" Statements
