@@ -24,49 +24,85 @@ import AIInsightPanel from './ui/AIInsightPanel';
 
 // ... rest of imports remain
 
-const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading }) => {
+const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading, onAnalyzeWithAI, hrmInsight }) => {
+  const [showInsightPanel, setShowInsightPanel] = useState(false);
   const priorityColor =
     task.priority === 'high' ? 'text-red-400' :
     task.priority === 'medium' ? 'text-yellow-400' : 'text-green-400';
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={task.completed}
-              onChange={() => onToggle(task.id, !task.completed)}
-              className="rounded bg-gray-700 border-gray-600 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
-            />
-            <span className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.name}</span>
+    <div className="space-y-2">
+      <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={() => onToggle(task.id, !task.completed)}
+                className="rounded bg-gray-700 border-gray-600 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
+              />
+              <span className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.name}</span>
+              {hrmInsight && (
+                <AIBadge 
+                  confidence={hrmInsight.confidence_score || 0} 
+                  variant="confidence" 
+                  size="xs"
+                  onClick={() => setShowInsightPanel(!showInsightPanel)}
+                />
+              )}
+            </div>
+            {task.description && (
+              <p className="text-sm text-gray-400 mt-1">{task.description}</p>
+            )}
+            {hrmInsight?.priority_score && (
+              <div className="text-xs text-yellow-400 mt-1">
+                AI Priority Score: {hrmInsight.priority_score.toFixed(1)}
+              </div>
+            )}
           </div>
-          {task.description && (
-            <p className="text-sm text-gray-400 mt-1">{task.description}</p>
-          )}
+          <div className="text-right text-xs text-gray-500">
+            <div className={priorityColor}>{(task.priority || 'medium').toUpperCase()}</div>
+            {task.due_date && (
+              <div>{new Date(task.due_date).toLocaleDateString()}</div>
+            )}
+          </div>
         </div>
-        <div className="text-right text-xs text-gray-500">
-          <div className={priorityColor}>{(task.priority || 'medium').toUpperCase()}</div>
-          {task.due_date && (
-            <div>{new Date(task.due_date).toLocaleDateString()}</div>
+        <div className="flex items-center justify-end space-x-2 mt-3">
+          {onAnalyzeWithAI && (
+            <button
+              onClick={() => onAnalyzeWithAI(task)}
+              className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-purple-400 flex items-center space-x-1"
+              title="Analyze with AI"
+            >
+              <Brain className="h-3 w-3" />
+              <span>AI</span>
+            </button>
           )}
+          <button
+            onClick={() => onEdit(task)}
+            className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-gray-300"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => onDelete(task.id)}
+            className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-red-400"
+          >
+            Delete
+          </button>
         </div>
       </div>
-      <div className="flex items-center justify-end space-x-2 mt-3">
-        <button
-          onClick={() => onEdit(task)}
-          className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-gray-300"
-        >
-          Edit
-        </button>
-        <button
-          onClick={() => onDelete(task.id)}
-          className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-red-400"
-        >
-          Delete
-        </button>
-      </div>
+      
+      {/* AI Insight Panel */}
+      {showInsightPanel && hrmInsight && (
+        <AIInsightPanel 
+          insight={hrmInsight}
+          isExpanded={true}
+          onClose={() => setShowInsightPanel(false)}
+          showCloseButton={true}
+        />
+      )}
     </div>
   );
 });
