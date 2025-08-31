@@ -166,6 +166,7 @@ const Today = memo(() => {
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const SUGGESTIONS_KEY = 'aurum_ai_suggestions';
   const [suggestLoading, setSuggestLoading] = useState(false);
+  const [taskInsights, setTaskInsights] = useState({}); // Store HRM insights for tasks
 
   const fetchWhyStatements = useCallback(async () => {
     try {
