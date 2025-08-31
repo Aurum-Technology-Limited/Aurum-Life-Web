@@ -97,6 +97,7 @@ function App() {
       'journal': 'Journal',
       'feedback': 'Feedback & Support',
       'ai-coach': 'AI Coach',
+      'ai-intelligence': 'AI Intelligence',
       'profile': 'Profile',
       'insights': 'Insights',
       'settings': 'Settings',
