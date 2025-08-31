@@ -170,7 +170,7 @@ const Today = memo(() => {
 
   const fetchWhyStatements = useCallback(async () => {
     try {
-      const resp = await aiCoachAPI.getTaskWhyStatements();
+      const resp = await aiCoachAPI.getTaskWhyStatements([], true); // Use HRM
       const data = resp?.data || {};
       const why = data.why_statements || [];
       setAiSuggestions(why);
@@ -178,6 +178,19 @@ const Today = memo(() => {
     } catch (e) {
       console.warn('AI why statements load failed, using empty state');
       setAiSuggestions([]);
+    }
+  }, []);
+
+  // Analyze task with HRM
+  const handleAnalyzeWithAI = useCallback(async (task) => {
+    try {
+      const insight = await hrmAPI.analyzeTaskWithContext(task.id);
+      setTaskInsights(prev => ({
+        ...prev,
+        [task.id]: insight
+      }));
+    } catch (error) {
+      console.error('Failed to analyze task with AI:', error);
     }
   }, []);
 
