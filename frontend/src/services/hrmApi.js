@@ -3,7 +3,7 @@
  * Handles all API calls for AI insights and HRM functionality
  */
 
-import { apiClient } from './api';
+import { api as apiClient } from './api';
 
 export const hrmAPI = {
   // Core HRM Analysis
