@@ -1,8 +1,8 @@
 import React, { useState, useEffect, memo, useCallback } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVertical, X, Sun, Moon, Loader2} from 'lucide-react';
-import { aiCoachAPI, tasksAPI } from '../services/api';
+import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVertical, X, Sun, Moon, Loader2, Brain, Sparkles} from 'lucide-react';
+import { aiCoachAPI, tasksAPI, hrmAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import { useAuth } from '../contexts/BackendAuthContext';
 import PomodoroTimer from './PomodoroTimer';
@@ -10,6 +10,9 @@ import TaskWhyStatements from './TaskWhyStatements';
 import TaskSearchBar from './TaskSearchBar';
 import MorningReflection from './MorningReflection';
 import EveningReflectionPrompt from './EveningReflectionPrompt';
+import AIBadge from './ui/AIBadge';
+import AIInsightPanel from './ui/AIInsightPanel';
+import ConfidenceIndicator from './ui/ConfidenceIndicator';
 
 const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPomodoro, onRemove }) => {
   const [{ isDragging }, drag] = useDrag({
