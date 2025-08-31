@@ -595,6 +595,8 @@ const Tasks = memo(({ onSectionChange, sectionParams }) => {
                 onToggle={handleToggleTask}
                 onEdit={handleEditTask}
                 onDelete={handleDeleteTask}
+                onAnalyzeWithAI={handleAnalyzeWithAI}
+                hrmInsight={taskInsights[task.id]}
                 loading={actionLoading === task.id}
               />
             ))}
