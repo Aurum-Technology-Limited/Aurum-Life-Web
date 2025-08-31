@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Brain, Info } from 'lucide-react';
-import { alignmentScoreAPI } from '../services/api';
+import { Brain, Info, Sparkles } from 'lucide-react';
+import { alignmentScoreAPI, hrmAPI } from '../services/api';
+import AIBadge from './ui/AIBadge';
+import AIInsightPanel from './ui/AIInsightPanel';
 
 const AlignmentProgressBar = () => {
   const [loading, setLoading] = useState(true);
