@@ -551,11 +551,17 @@ export const alignmentScoreAPI = {
 };
 
 export const aiCoachAPI = {
-  getTaskWhyStatements: (taskIds = []) => {
-    const params = taskIds && taskIds.length > 0 ? { task_ids: taskIds.join(',') } : {};
+  getTaskWhyStatements: (taskIds = [], useHRM = true) => {
+    const params = { use_hrm: useHRM };
+    if (taskIds && taskIds.length > 0) {
+      params.task_ids = taskIds.join(',');
+    }
     return apiClient.get('/ai/task-why-statements', { params });
   },
-  suggestFocus: (topN = 3) => apiClient.get('/ai/suggest-focus', { params: { top_n: topN } }),
+  suggestFocus: (topN = 3, useHRM = true) => 
+    apiClient.get('/ai/suggest-focus', { params: { top_n: topN, use_hrm: useHRM } }),
+  getTodayPriorities: (useHRM = true, topN = 5) => 
+    apiClient.get('/ai/today-priorities', { params: { use_hrm: useHRM, top_n: topN } }),
   decomposeProject: (projectName, projectDescription = '', templateType = 'general') =>
     apiClient.post('/ai/decompose-project', {
       project_name: projectName,
