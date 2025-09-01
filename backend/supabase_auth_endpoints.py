@@ -368,6 +368,7 @@ async def register_user(user_data: UserCreate):
             email=user_data.email,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
+            birth_date=user_data.birth_date,
             is_active=True,
             has_completed_onboarding=False,
             created_at=created_at or "2025-01-01T00:00:00"
