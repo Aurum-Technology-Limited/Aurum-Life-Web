@@ -112,23 +112,23 @@ const DatePicker = ({
           onKeyDown={handleInputKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 pr-20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 pr-24 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
+        
+        {/* Format helper */}
+        <div className="absolute right-10 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+          📅
+        </div>
         
         {/* Calendar Icon */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           disabled={disabled}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded border border-gray-600"
         >
-          <Calendar className="h-5 w-5" />
+          <Calendar className="h-4 w-4" />
         </button>
-        
-        {/* Format helper */}
-        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-          DD/MM/YYYY
-        </div>
       </div>
 
       {/* Calendar Dropdown */}
