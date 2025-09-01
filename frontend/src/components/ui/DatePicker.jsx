@@ -134,20 +134,254 @@ const DatePicker = ({
       {/* Calendar Dropdown */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 bg-gray-900 border border-gray-600 rounded-lg shadow-xl z-50 p-4">
+import React, { useState, useRef, useEffect } from 'react';
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
+
+const DatePicker = ({ 
+  value, 
+  onChange, 
+  placeholder = "Select date", 
+  className = "",
+  disabled = false,
+  minDate = null,
+  maxDate = null 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [calendarMonth, setCalendarMonth] = useState(value || new Date());
+  const [showYearSelector, setShowYearSelector] = useState(false);
+  const dropdownRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Generate year options (1900 to current year)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from(
+    { length: currentYear - 1900 + 1 }, 
+    (_, i) => currentYear - i
+  );
+
+  // Format date for display (DD/MM/YYYY)
+  const formatDate = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  // Parse input value (DD/MM/YYYY)
+  const parseDate = (dateString) => {
+    const parts = dateString.split('/');
+    if (parts.length !== 3) return null;
+    
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > 2100) return null;
+    
+    return new Date(year, month - 1, day);
+  };
+
+  // Update input value when value prop changes
+  useEffect(() => {
+    setInputValue(formatDate(value));
+    if (value) {
+      setCalendarMonth(value);
+    }
+  }, [value]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setShowYearSelector(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    
+    // Try to parse the date as user types
+    const parsedDate = parseDate(newValue);
+    if (parsedDate && !isNaN(parsedDate.getTime())) {
+      onChange(parsedDate);
+      setCalendarMonth(parsedDate);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Format the input value on blur
+    const parsedDate = parseDate(inputValue);
+    if (parsedDate && !isNaN(parsedDate.getTime())) {
+      setInputValue(formatDate(parsedDate));
+      onChange(parsedDate);
+      setCalendarMonth(parsedDate);
+    } else if (inputValue && !parsedDate) {
+      // Invalid format, clear the input
+      setInputValue('');
+      onChange(null);
+    }
+  };
+
+  const handleCalendarSelect = (selectedDate) => {
+    if (selectedDate) {
+      onChange(selectedDate);
+      setInputValue(formatDate(selectedDate));
+      setIsOpen(false);
+      setShowYearSelector(false);
+    }
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleInputBlur();
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+      setShowYearSelector(false);
+      inputRef.current?.blur();
+    }
+  };
+
+  const handleYearSelect = (year) => {
+    const newDate = new Date(calendarMonth);
+    newDate.setFullYear(year);
+    setCalendarMonth(newDate);
+    setShowYearSelector(false);
+  };
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  return (
+    <div className={`relative ${className}`} ref={dropdownRef}>
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          onKeyDown={handleInputKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 pr-24 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        />
+        
+        {/* Format helper */}
+        <div className="absolute right-10 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+          📅
+        </div>
+        
+        {/* Calendar Icon */}
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          disabled={disabled}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 rounded border border-gray-600"
+        >
+          <Calendar className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Calendar Dropdown */}
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-2 bg-gray-900 border border-gray-600 rounded-lg shadow-xl z-50 p-4 min-w-[320px]">
+          {/* Custom Header with Year Selection */}
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-700">
+            <button
+              type="button"
+              onClick={() => {
+                const newDate = new Date(calendarMonth);
+                newDate.setMonth(newDate.getMonth() - 1);
+                setCalendarMonth(newDate);
+              }}
+              className="p-1 hover:bg-gray-700 rounded text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            
+            <div className="flex items-center gap-2">
+              {/* Month Display */}
+              <span className="text-white font-medium">
+                {monthNames[calendarMonth.getMonth()]}
+              </span>
+              
+              {/* Year Selector */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowYearSelector(!showYearSelector)}
+                  className="flex items-center gap-1 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-white transition-colors"
+                >
+                  <span>{calendarMonth.getFullYear()}</span>
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                
+                {/* Year Dropdown */}
+                {showYearSelector && (
+                  <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                    {yearOptions.map((year) => (
+                      <button
+                        key={year}
+                        type="button"
+                        onClick={() => handleYearSelect(year)}
+                        className={`w-full px-3 py-2 text-left hover:bg-gray-700 text-white transition-colors ${
+                          year === calendarMonth.getFullYear() ? 'bg-purple-600' : ''
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <button
+              type="button"
+              onClick={() => {
+                const newDate = new Date(calendarMonth);
+                newDate.setMonth(newDate.getMonth() + 1);
+                setCalendarMonth(newDate);
+              }}
+              className="p-1 hover:bg-gray-700 rounded text-white"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Calendar Grid */}
           <DayPicker
             mode="single"
             selected={value}
             onSelect={handleCalendarSelect}
+            month={calendarMonth}
+            onMonthChange={setCalendarMonth}
             disabled={[
               ...(minDate ? [{ before: minDate }] : []),
               ...(maxDate ? [{ after: maxDate }] : [])
             ]}
+            hideHead={false}
+            showOutsideDays={false}
             classNames={{
               months: "text-white",
               month: "text-white", 
-              caption: "text-white font-semibold mb-2",
-              head_row: "border-b border-gray-700",
-              head_cell: "text-gray-300 font-medium p-2 text-center",
+              caption: "hidden", // Hide default caption since we have custom header
+              head_row: "border-b border-gray-700 mb-2",
+              head_cell: "text-gray-300 font-medium p-2 text-center text-xs",
               row: "border-0",
               cell: "text-center p-1",
               button: "w-8 h-8 rounded text-sm hover:bg-purple-600 focus:bg-purple-600 text-white transition-colors",
@@ -156,25 +390,28 @@ const DatePicker = ({
               day_today: "bg-purple-600 text-white rounded font-semibold",
               day_selected: "bg-purple-700 text-white rounded font-semibold",
               day_disabled: "text-gray-600 cursor-not-allowed",
-              day_outside: "text-gray-600",
-              day_range_middle: "bg-purple-500/30",
-              nav: "flex items-center justify-between mb-2",
-              nav_button: "w-8 h-8 rounded hover:bg-gray-700 flex items-center justify-center text-white",
-              nav_button_previous: "order-1",
-              nav_button_next: "order-3",
-              caption_label: "order-2 flex-1 text-center"
+              day_outside: "text-gray-600 opacity-50",
+              nav: "hidden" // Hide default navigation since we have custom
             }}
           />
           
-          <div className="mt-2 pt-2 border-t border-gray-700 text-center">
+          <div className="mt-3 pt-3 border-t border-gray-700 text-center">
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                setShowYearSelector(false);
+              }}
               className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded transition-colors text-white"
             >
               Close
             </button>
           </div>
+        </div>
+      )}
+    </div>
+  );
+};
         </div>
       )}
     </div>
