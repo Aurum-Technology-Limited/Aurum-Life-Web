@@ -51,6 +51,7 @@ class UserResponse(BaseModel):
     email: str
     first_name: str
     last_name: str
+    birth_date: Optional[date] = None
     is_active: bool
     has_completed_onboarding: bool = False  # Default to False if not present
     created_at: datetime
