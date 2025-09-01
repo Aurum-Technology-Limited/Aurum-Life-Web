@@ -32,6 +32,7 @@ class UserCreate(BaseModel):
     first_name: str = ""
     last_name: str = ""
     password: str
+    birth_date: Optional[date] = None
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
