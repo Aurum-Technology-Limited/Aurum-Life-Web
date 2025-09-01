@@ -154,7 +154,8 @@ const Login = () => {
             confirmPassword: '',
             firstName: '',
             lastName: '',
-            username: ''
+            username: '',
+            birthDate: null
           });
           
           // Set success message + popup
