@@ -134,6 +134,7 @@ class UserManager:
             "username": user_data.username or user_data.email.split('@')[0],
             "first_name": user_data.first_name,
             "last_name": user_data.last_name,
+            "birth_date": user_data.birth_date.isoformat() if user_data.birth_date else None,
             "is_active": True,
             "level": 1,
             "total_points": 0,
