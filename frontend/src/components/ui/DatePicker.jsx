@@ -1,21 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { DayPicker } from 'react-day-picker';
-import 'react-day-picker/dist/style.css';
+import { Calendar, ChevronDown } from 'lucide-react';
 
 const DatePicker = ({ 
   value, 
   onChange, 
   placeholder = "Select date", 
   className = "",
-  disabled = false,
-  minDate = null,
-  maxDate = null 
+  disabled = false 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [calendarMonth, setCalendarMonth] = useState(value || new Date());
-  const [showYearSelector, setShowYearSelector] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [showYearDropdown, setShowYearDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -23,8 +20,13 @@ const DatePicker = ({
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from(
     { length: currentYear - 1900 + 1 }, 
-    (_, i) => currentYear - i
-  );
+    (_, i) => 1900 + i
+  ).reverse();
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   // Format date for display (DD/MM/YYYY)
   const formatDate = (date) => {
@@ -46,7 +48,7 @@ const DatePicker = ({
     const year = parseInt(parts[2], 10);
     
     if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > 2100) return null;
+    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > currentYear) return null;
     
     return new Date(year, month - 1, day);
   };
@@ -55,7 +57,8 @@ const DatePicker = ({
   useEffect(() => {
     setInputValue(formatDate(value));
     if (value) {
-      setCalendarMonth(value);
+      setSelectedYear(value.getFullYear());
+      setSelectedMonth(value.getMonth());
     }
   }, [value]);
 
@@ -64,7 +67,7 @@ const DatePicker = ({
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
-        setShowYearSelector(false);
+        setShowYearDropdown(false);
       }
     };
 
@@ -80,7 +83,8 @@ const DatePicker = ({
     const parsedDate = parseDate(newValue);
     if (parsedDate && !isNaN(parsedDate.getTime())) {
       onChange(parsedDate);
-      setCalendarMonth(parsedDate);
+      setSelectedYear(parsedDate.getFullYear());
+      setSelectedMonth(parsedDate.getMonth());
     }
   };
 
@@ -90,7 +94,6 @@ const DatePicker = ({
     if (parsedDate && !isNaN(parsedDate.getTime())) {
       setInputValue(formatDate(parsedDate));
       onChange(parsedDate);
-      setCalendarMonth(parsedDate);
     } else if (inputValue && !parsedDate) {
       // Invalid format, clear the input
       setInputValue('');
@@ -98,36 +101,45 @@ const DatePicker = ({
     }
   };
 
-  const handleCalendarSelect = (selectedDate) => {
-    if (selectedDate) {
-      onChange(selectedDate);
-      setInputValue(formatDate(selectedDate));
-      setIsOpen(false);
-      setShowYearSelector(false);
-    }
-  };
-
-  const handleInputKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleInputBlur();
-    } else if (e.key === 'Escape') {
-      setIsOpen(false);
-      setShowYearSelector(false);
-      inputRef.current?.blur();
-    }
+  const handleDayClick = (day) => {
+    const selectedDate = new Date(selectedYear, selectedMonth, day);
+    onChange(selectedDate);
+    setInputValue(formatDate(selectedDate));
+    setIsOpen(false);
   };
 
   const handleYearSelect = (year) => {
-    const newDate = new Date(calendarMonth);
-    newDate.setFullYear(year);
-    setCalendarMonth(newDate);
-    setShowYearSelector(false);
+    setSelectedYear(year);
+    setShowYearDropdown(false);
   };
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+  };
+
+  // Generate calendar days
+  const generateCalendarDays = () => {
+    const firstDay = new Date(selectedYear, selectedMonth, 1);
+    const lastDay = new Date(selectedYear, selectedMonth + 1, 0);
+    const firstDayOfWeek = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    
+    const days = [];
+    
+    // Add empty cells for days before month starts
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(day);
+    }
+    
+    return days;
+  };
+
+  const calendarDays = generateCalendarDays();
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -138,7 +150,6 @@ const DatePicker = ({
           value={inputValue}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
-          onKeyDown={handleInputKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 pr-24 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -163,47 +174,51 @@ const DatePicker = ({
       {/* Calendar Dropdown */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 bg-gray-900 border border-gray-600 rounded-lg shadow-xl z-50 p-4 min-w-[320px]">
-          {/* Custom Header with Year Selection */}
+          {/* Calendar Header with Year/Month Selection */}
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-700">
             <button
               type="button"
-              onClick={() => {
-                const newDate = new Date(calendarMonth);
-                newDate.setMonth(newDate.getMonth() - 1);
-                setCalendarMonth(newDate);
-              }}
+              onClick={() => setSelectedMonth(selectedMonth === 0 ? 11 : selectedMonth - 1)}
               className="p-1 hover:bg-gray-700 rounded text-white"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronDown className="h-4 w-4 rotate-90" />
             </button>
             
             <div className="flex items-center gap-2">
-              {/* Month Display */}
-              <span className="text-white font-medium">
-                {monthNames[calendarMonth.getMonth()]}
-              </span>
+              {/* Month Selector */}
+              <select
+                value={selectedMonth}
+                onChange={(e) => handleMonthSelect(parseInt(e.target.value))}
+                className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {monthNames.map((month, index) => (
+                  <option key={month} value={index}>
+                    {month}
+                  </option>
+                ))}
+              </select>
               
               {/* Year Selector */}
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => setShowYearSelector(!showYearSelector)}
-                  className="flex items-center gap-1 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-white transition-colors"
+                  onClick={() => setShowYearDropdown(!showYearDropdown)}
+                  className="flex items-center gap-1 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-white transition-colors text-sm"
                 >
-                  <span>{calendarMonth.getFullYear()}</span>
+                  <span>{selectedYear}</span>
                   <ChevronDown className="h-3 w-3" />
                 </button>
                 
                 {/* Year Dropdown */}
-                {showYearSelector && (
-                  <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                {showYearDropdown && (
+                  <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto w-20">
                     {yearOptions.map((year) => (
                       <button
                         key={year}
                         type="button"
                         onClick={() => handleYearSelect(year)}
-                        className={`w-full px-3 py-2 text-left hover:bg-gray-700 text-white transition-colors ${
-                          year === calendarMonth.getFullYear() ? 'bg-purple-600' : ''
+                        className={`w-full px-3 py-2 text-left hover:bg-gray-700 text-white transition-colors text-sm ${
+                          year === selectedYear ? 'bg-purple-600' : ''
                         }`}
                       >
                         {year}
@@ -216,55 +231,53 @@ const DatePicker = ({
             
             <button
               type="button"
-              onClick={() => {
-                const newDate = new Date(calendarMonth);
-                newDate.setMonth(newDate.getMonth() + 1);
-                setCalendarMonth(newDate);
-              }}
+              onClick={() => setSelectedMonth(selectedMonth === 11 ? 0 : selectedMonth + 1)}
               className="p-1 hover:bg-gray-700 rounded text-white"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronDown className="h-4 w-4 -rotate-90" />
             </button>
           </div>
 
           {/* Calendar Grid */}
-          <DayPicker
-            mode="single"
-            selected={value}
-            onSelect={handleCalendarSelect}
-            month={calendarMonth}
-            onMonthChange={setCalendarMonth}
-            disabled={[
-              ...(minDate ? [{ before: minDate }] : []),
-              ...(maxDate ? [{ after: maxDate }] : [])
-            ]}
-            hideHead={false}
-            showOutsideDays={false}
-            classNames={{
-              months: "text-white",
-              month: "text-white", 
-              caption: "hidden", // Hide default caption since we have custom header
-              head_row: "border-b border-gray-700 mb-2",
-              head_cell: "text-gray-300 font-medium p-2 text-center text-xs",
-              row: "border-0",
-              cell: "text-center p-1",
-              button: "w-8 h-8 rounded text-sm hover:bg-purple-600 focus:bg-purple-600 text-white transition-colors",
-              button_reset: "p-0 m-0 border-0 bg-transparent",
-              day: "w-8 h-8 flex items-center justify-center",
-              day_today: "bg-purple-600 text-white rounded font-semibold",
-              day_selected: "bg-purple-700 text-white rounded font-semibold",
-              day_disabled: "text-gray-600 cursor-not-allowed",
-              day_outside: "text-gray-600 opacity-50",
-              nav: "hidden" // Hide default navigation since we have custom
-            }}
-          />
+          <div className="grid grid-cols-7 gap-1 mb-4">
+            {/* Day headers */}
+            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
+              <div key={day} className="text-center text-gray-300 font-medium p-2 text-xs">
+                {day}
+              </div>
+            ))}
+            
+            {/* Calendar days */}
+            {calendarDays.map((day, index) => (
+              <div key={index} className="text-center p-1">
+                {day ? (
+                  <button
+                    type="button"
+                    onClick={() => handleDayClick(day)}
+                    className={`w-8 h-8 rounded text-sm transition-colors ${
+                      value && 
+                      value.getDate() === day && 
+                      value.getMonth() === selectedMonth && 
+                      value.getFullYear() === selectedYear
+                        ? 'bg-purple-700 text-white font-semibold'
+                        : 'text-white hover:bg-purple-600'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ) : (
+                  <div className="w-8 h-8"></div>
+                )}
+              </div>
+            ))}
+          </div>
           
-          <div className="mt-3 pt-3 border-t border-gray-700 text-center">
+          <div className="text-center">
             <button
               type="button"
               onClick={() => {
                 setIsOpen(false);
-                setShowYearSelector(false);
+                setShowYearDropdown(false);
               }}
               className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded transition-colors text-white"
             >
