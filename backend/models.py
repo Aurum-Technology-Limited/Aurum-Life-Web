@@ -67,6 +67,7 @@ class UserProfileUpdate(BaseModel):
     first_name: str  # Mandatory field
     last_name: str  # Mandatory field
     username: str  # Mandatory field
+    birth_date: Optional[date] = None
     
     @validator('first_name', 'last_name', 'username')
     def validate_non_empty_strings(cls, v):
