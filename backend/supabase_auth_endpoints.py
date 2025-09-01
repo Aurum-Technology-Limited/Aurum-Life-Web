@@ -658,6 +658,7 @@ async def get_current_user_profile(request: Request):
             ),
             first_name=profile.get('first_name', ''),
             last_name=profile.get('last_name', ''),
+            birth_date=profile.get('birth_date'),
             is_active=profile.get('is_active', True),
             has_completed_onboarding=has_completed_onboarding,
             created_at=profile.get('created_at', '2025-01-01T00:00:00')
