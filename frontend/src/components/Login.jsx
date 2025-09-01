@@ -140,7 +140,8 @@ const Login = () => {
           password: formData.password,
           first_name: formData.firstName,
           last_name: formData.lastName,
-          username: formData.username || formData.email.split('@')[0]
+          username: formData.username || formData.email.split('@')[0],
+          birth_date: formData.birthDate ? formData.birthDate.toISOString().split('T')[0] : null
         };
 
         const result = await register(userData);
