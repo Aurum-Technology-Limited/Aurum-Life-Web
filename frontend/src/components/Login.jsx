@@ -34,7 +34,8 @@ const Login = () => {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    username: ''
+    username: '',
+    birthDate: null
   });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
