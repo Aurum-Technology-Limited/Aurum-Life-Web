@@ -439,6 +439,20 @@ const Login = () => {
                     placeholder="johndoe (optional)"
                   />
                 </div>
+
+                <div>
+                  <label htmlFor="birthDate" className="block text-sm font-medium text-gray-300">
+                    Date of Birth
+                  </label>
+                  <DatePicker
+                    value={formData.birthDate}
+                    onChange={(date) => setFormData(prev => ({ ...prev, birthDate: date }))}
+                    placeholder="DD/MM/YYYY"
+                    className="mt-1"
+                    maxDate={new Date()} // Can't select future dates
+                    minDate={new Date(1900, 0, 1)} // Reasonable minimum date
+                  />
+                </div>
               </>
             )}
 
