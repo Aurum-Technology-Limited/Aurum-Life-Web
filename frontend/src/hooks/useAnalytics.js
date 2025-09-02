@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
  * Provides privacy-compliant tracking with user consent management
  */
 export const useAnalytics = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const sessionIdRef = useRef(null);
   const pageStartTimeRef = useRef(null);
   const lastEventTimeRef = useRef(null);
