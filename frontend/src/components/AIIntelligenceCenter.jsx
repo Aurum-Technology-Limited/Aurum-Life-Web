@@ -439,112 +439,18 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
                   </h2>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {priorityInsights.map((insight) => {
-                      const IconComponent = getInsightTypeIcon(insight.insight_type);
-                      
-                      return (
-                        <div
-                          key={insight.id}
-                          className={`border rounded-lg p-6 transition-all hover:shadow-lg cursor-pointer ${getPriorityColor(priority)}`}
-                          onClick={() => setSelectedInsight(insight)}
-                        >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-purple-600 rounded-lg">
-                                <IconComponent className="h-5 w-5 text-white" />
-                              </div>
-                              <div>
-                                <h3 className="font-semibold text-white">{insight.title}</h3>
-                                <p className="text-sm text-gray-400 capitalize">
-                                  {insight.entity_type} • {insight.insight_type.replace('_', ' ')}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {insight.is_pinned && (
-                                <Pin className="h-4 w-4 text-yellow-400" />
-                              )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handlePin(insight.id, !insight.is_pinned);
-                                }}
-                                className="p-1 hover:bg-gray-700 rounded transition-colors"
-                              >
-                                {insight.is_pinned ? (
-                                  <PinOff className="h-4 w-4 text-gray-400" />
-                                ) : (
-                                  <Pin className="h-4 w-4 text-gray-400" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-
-                          <p className="text-gray-300 mb-4">{insight.summary}</p>
-
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="text-sm">
-                                <span className="text-gray-400">Confidence: </span>
-                                <span className={getConfidenceColor(insight.confidence_score)}>
-                                  {(insight.confidence_score * 100).toFixed(0)}%
-                                </span>
-                              </div>
-                              {insight.impact_score && (
-                                <div className="text-sm">
-                                  <span className="text-gray-400">Impact: </span>
-                                  <span className="text-blue-400">
-                                    {(insight.impact_score * 100).toFixed(0)}%
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleFeedback(insight.id, 'accepted');
-                                }}
-                                className="p-1 hover:bg-green-600/20 rounded transition-colors"
-                                title="Helpful"
-                              >
-                                <ThumbsUp className="h-4 w-4 text-green-400" />
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleFeedback(insight.id, 'rejected');
-                                }}
-                                className="p-1 hover:bg-red-600/20 rounded transition-colors"
-                                title="Not helpful"
-                              >
-                                <ThumbsDown className="h-4 w-4 text-red-400" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {insight.tags && insight.tags.length > 0 && (
-                            <div className="mt-4 flex flex-wrap gap-2">
-                              {insight.tags.slice(0, 3).map((tag, index) => (
-                                <span
-                                  key={index}
-                                  className="px-2 py-1 bg-gray-700 text-xs text-gray-300 rounded"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                              {insight.tags.length > 3 && (
-                                <span className="px-2 py-1 bg-gray-700 text-xs text-gray-400 rounded">
-                                  +{insight.tags.length - 3} more
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                    {priorityInsights.map((insight) => (
+                      <AIInsightCard
+                        key={insight.id}
+                        insight={insight}
+                        onClick={setSelectedInsight}
+                        onPin={handlePin}
+                        onFeedback={handleFeedback}
+                        showActions={true}
+                        showMetrics={true}
+                        compact={false}
+                      />
+                    ))}
                   </div>
                 </div>
               );
