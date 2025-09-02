@@ -81,9 +81,6 @@ function App() {
   const [sectionParams, setSectionParams] = useState({}); // Add state for section parameters
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
 
-  // Initialize AI Command Center
-  const { isOpen: isCommandCenterOpen, close: closeCommandCenter } = useAICommandCenter();
-  
   // Initialize Semantic Search
   const { isOpen: isSemanticSearchOpen, close: closeSemanticSearch } = useSemanticSearch();
 
