@@ -25,7 +25,7 @@ import CrossNavigationWidget from './ui/CrossNavigationWidget';
 import AIQuotaWidget from './ui/AIQuotaWidget';
 import AIInsightCard from './ui/AIInsightCard';
 
-const AIIntelligenceCenter = () => {
+const AIIntelligenceCenter = ({ onSectionChange }) => {
   // State management
   const [filters, setFilters] = useState({
     entity_type: '',
@@ -39,6 +39,21 @@ const AIIntelligenceCenter = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const queryClient = useQueryClient();
+
+  // Fetch AI quota for cross-navigation
+  const { data: quota } = useQuery({
+    queryKey: ['ai-quota'],
+    queryFn: async () => {
+      try {
+        const response = await aiCoachAPI.getQuota();
+        return response.data;
+      } catch (error) {
+        console.error('Error loading quota:', error);
+        return { remaining: 10, total: 10 };
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 
   // Fetch insights with filters
   const { data: insightsData, isLoading, error } = useQuery({
