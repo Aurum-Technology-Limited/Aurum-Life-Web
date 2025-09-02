@@ -201,6 +201,13 @@ const Journal = ({ onSectionChange, sectionParams }) => {
     fetchTemplatesWithFallback();
   }, [selectedMoodFilter, selectedTagFilter]);
 
+  // Load insights data when switching to insights tab
+  useEffect(() => {
+    if (currentView === 'insights') {
+      fetchSentimentInsights();
+    }
+  }, [currentView, insightsTimeRange]);
+
   const handleDeleteEntry = async (entryId) => {
     if (!window.confirm('Are you sure you want to delete this journal entry?')) return;
     
