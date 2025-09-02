@@ -25,7 +25,7 @@ from typing import Dict, Any
 import uuid
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
 
 class UserMenuBackendTester:
     def __init__(self):

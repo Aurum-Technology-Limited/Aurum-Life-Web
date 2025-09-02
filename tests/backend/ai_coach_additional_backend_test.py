@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
 
 # Test credentials
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"

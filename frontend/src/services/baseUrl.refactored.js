@@ -14,7 +14,7 @@ const CONFIG = {
   INVALID_HOSTS: /^(none|home|www)\.preview\.emergentagent\.com$/i,
   
   // Production fallback URL
-  FALLBACK_URL: 'https://aurum-life-os.preview.emergentagent.com',
+  FALLBACK_URL: 'https://emotional-os-1.preview.emergentagent.com',
   
   // Debug mode flag
   DEBUG_MODE: process.env.NODE_ENV === 'development'

@@ -12,7 +12,7 @@ import uuid
 import time
 
 class AnalyticsBackendTester:
-    def __init__(self, base_url="https://aurum-life-os.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://emotional-os-1.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.session_id = None

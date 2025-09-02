@@ -30,7 +30,7 @@ from typing import Dict, List, Any
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
 
 class FeedbackSystemTester:
     def __init__(self):

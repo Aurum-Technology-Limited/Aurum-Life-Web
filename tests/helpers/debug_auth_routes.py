@@ -6,7 +6,7 @@ Debug the authentication routing issue
 import requests
 
 # Test different auth endpoints
-BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com"
+BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com"
 
 endpoints_to_test = [
     "/api/auth/register",

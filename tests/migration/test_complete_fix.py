@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://aurum-life-os.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://emotional-os-1.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def test_complete_fix():

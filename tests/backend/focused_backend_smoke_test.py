@@ -22,7 +22,7 @@ def get_base_url():
         print(f"Error reading frontend/.env: {e}")
     
     # Fallback
-    return "https://aurum-life-os.preview.emergentagent.com"
+    return "https://emotional-os-1.preview.emergentagent.com"
 
 BASE_URL = get_base_url()
 print(f"🌐 Using base URL: {BASE_URL}")

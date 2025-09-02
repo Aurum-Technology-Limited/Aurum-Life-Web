@@ -15,7 +15,7 @@ import time
 from typing import Dict, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
 ADMIN_TOKEN = "e8wXf6Ymo_mq__rPet2oc8nzE_V6eVZTY8qV8l7vcBwX6PI9fN_xsFN38s2eVkSJ"
 LEGACY_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 

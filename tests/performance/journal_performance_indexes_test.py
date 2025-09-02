@@ -32,7 +32,7 @@ from dotenv import load_dotenv
 load_dotenv('/app/backend/.env')
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
 
 class JournalPerformanceIndexesTester:
     def __init__(self):

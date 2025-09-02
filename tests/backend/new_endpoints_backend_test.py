@@ -25,7 +25,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
 
 class NewEndpointsAPITester:
     def __init__(self):

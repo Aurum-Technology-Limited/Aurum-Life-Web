@@ -16,7 +16,7 @@ import os
 import sys
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://aurum-life-os.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://emotional-os-1.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_streak_endpoints():

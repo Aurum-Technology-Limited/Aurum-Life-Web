@@ -31,7 +31,7 @@ AUTH_CONFIG = {
     'PASSWORD_RESET_TIMEOUT': 3600,  # 1 hour
     'REQUEST_TIMEOUT': 30,  # seconds
     'MAX_RETRY_ATTEMPTS': 3,
-    'PREVIEW_DOMAIN': 'https://aurum-life-os.preview.emergentagent.com'
+    'PREVIEW_DOMAIN': 'https://emotional-os-1.preview.emergentagent.com'
 }
 
 # Create router

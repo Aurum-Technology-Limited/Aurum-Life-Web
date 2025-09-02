@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
 
 def log_test(message):
     """Log test messages with timestamp"""
