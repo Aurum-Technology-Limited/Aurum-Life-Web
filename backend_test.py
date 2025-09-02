@@ -177,28 +177,40 @@ class AnalyticsBackendTester:
         """Test tracking various behavior events"""
         print("\n📈 Testing Event Tracking...")
         
-        # Test different types of events
+        if not self.session_id:
+            self.log_test("Event Tracking Prerequisites", False, "No session ID available")
+            return False
+        
+        # Test different types of events with correct structure
         events_to_test = [
             {
-                "event_type": "page_view",
-                "page": "/dashboard",
-                "metadata": {"section": "overview"}
+                "session_id": self.session_id,
+                "action_type": "page_view",
+                "feature_name": "dashboard",
+                "page_url": "/dashboard",
+                "event_data": {"section": "overview"}
             },
             {
-                "event_type": "ai_interaction",
-                "feature": "goal_planner",
-                "metadata": {"action": "generate_plan", "success": True}
+                "session_id": self.session_id,
+                "action_type": "ai_interaction",
+                "feature_name": "goal_planner",
+                "ai_feature_type": "goal_planner",
+                "event_data": {"action": "generate_plan", "success": True},
+                "success": True
             },
             {
-                "event_type": "feature_usage",
-                "feature": "my_ai_insights",
-                "metadata": {"duration_seconds": 45}
+                "session_id": self.session_id,
+                "action_type": "feature_usage",
+                "feature_name": "my_ai_insights",
+                "ai_feature_type": "my_ai_insights",
+                "duration_ms": 45000,
+                "event_data": {"duration_seconds": 45}
             },
             {
-                "event_type": "navigation",
-                "from_page": "/dashboard",
-                "to_page": "/ai-insights",
-                "metadata": {"method": "sidebar_click"}
+                "session_id": self.session_id,
+                "action_type": "navigation",
+                "feature_name": "sidebar_navigation",
+                "event_data": {"from_page": "/dashboard", "to_page": "/ai-insights", "method": "sidebar_click"}
             }
         ]
         
@@ -212,7 +224,7 @@ class AnalyticsBackendTester:
                 201  # Expecting 201 for creation
             )
             
-            event_name = f"Track Event {i+1} ({event_data['event_type']})"
+            event_name = f"Track Event {i+1} ({event_data['action_type']})"
             
             if success:
                 self.log_test(event_name, True, f"Event tracked successfully", response_data)
