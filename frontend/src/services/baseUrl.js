@@ -13,8 +13,8 @@ const CONFIG = {
   // Known problematic hosts that should be avoided
   INVALID_HOSTS: /^(none|home|www)\.preview\.emergentagent\.com$/i,
   
-  // Production fallback URL
-  FALLBACK_URL: 'https://aurum-life-os.preview.emergentagent.com',
+  // Production fallback URL - Use current domain instead of hardcoded preview
+  FALLBACK_URL: '',  // Will be set dynamically to current domain
   
   // Debug mode flag
   DEBUG_MODE: process.env.NODE_ENV === 'development'
