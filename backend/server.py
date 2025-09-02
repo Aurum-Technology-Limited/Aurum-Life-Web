@@ -81,6 +81,7 @@ async def test_fast_endpoint():
 alignment_service = AlignmentScoreService()
 ai_coach_service = AiCoachMvpService()
 user_behavior_analytics_service = UserBehaviorAnalyticsService()
+sentiment_analysis_service = SentimentAnalysisService()
 
 # Upload endpoints omitted for brevity (unchanged)
 
