@@ -256,13 +256,13 @@ export const useAnalytics = () => {
 
   // End session when user leaves or component unmounts
   const endSession = useCallback(async (exitPage = null) => {
-    if (!user || !sessionIdRef.current) return;
+    if (!user || !token || !sessionIdRef.current) return;
 
     try {
       await fetch(`${backendUrl}/api/analytics/end-session/${sessionIdRef.current}?exit_page=${encodeURIComponent(exitPage || window.location.pathname)}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${user.access_token}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -271,7 +271,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to end analytics session:', error);
     }
-  }, [user, backendUrl]);
+  }, [user, token, backendUrl]);
 
   // Utility function to detect device type
   const getDeviceType = () => {
