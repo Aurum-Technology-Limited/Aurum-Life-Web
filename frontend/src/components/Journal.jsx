@@ -330,18 +330,342 @@ const Journal = ({ onSectionChange, sectionParams }) => {
     </div>
   );
 
-  const renderInsightsView = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Journal Insights</h2>
-      <div className="text-center py-12">
-        <div className="w-16 h-16 rounded-lg bg-blue-400/20 flex items-center justify-center mx-auto mb-4">
-          <TrendingUp size={32} className="text-blue-400" />
+  const renderInsightsView = () => {
+    // Load insights data when switching to insights tab
+    useEffect(() => {
+      if (currentView === 'insights') {
+        fetchSentimentInsights();
+      }
+    }, [currentView, insightsTimeRange]);
+
+    // Prepare chart data for sentiment trends
+    const chartData = {
+      labels: sentimentTrends.map(trend => new Date(trend.date).toLocaleDateString()),
+      datasets: [
+        {
+          label: 'Daily Sentiment',
+          data: sentimentTrends.map(trend => trend.average_sentiment),
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: sentimentTrends.map(trend => {
+            if (trend.average_sentiment > 0.2) return '#10B981';
+            if (trend.average_sentiment < -0.2) return '#EF4444';
+            return '#6B7280';
+          }),
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+        }
+      ]
+    };
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(17, 24, 39, 0.9)',
+          titleColor: '#ffffff',
+          bodyColor: '#ffffff',
+          borderColor: '#374151',
+          borderWidth: 1,
+          callbacks: {
+            label: function(context) {
+              const value = context.parsed.y;
+              const category = value > 0.6 ? 'Very Positive' :
+                             value > 0.2 ? 'Positive' :
+                             value > -0.2 ? 'Neutral' :
+                             value > -0.6 ? 'Negative' : 'Very Negative';
+              return `${category}: ${value.toFixed(2)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            color: 'rgba(75, 85, 99, 0.3)'
+          },
+          ticks: {
+            color: '#9CA3AF'
+          }
+        },
+        y: {
+          min: -1,
+          max: 1,
+          grid: {
+            color: 'rgba(75, 85, 99, 0.3)'
+          },
+          ticks: {
+            color: '#9CA3AF',
+            callback: function(value) {
+              if (value === 1) return 'Very Positive';
+              if (value === 0.5) return 'Positive';
+              if (value === 0) return 'Neutral';
+              if (value === -0.5) return 'Negative';
+              if (value === -1) return 'Very Negative';
+              return '';
+            }
+          }
+        }
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Header with Time Range Selector */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-white">Emotional Insights</h2>
+          <div className="flex items-center gap-3">
+            <select
+              value={insightsTimeRange}
+              onChange={(e) => setInsightsTimeRange(Number(e.target.value))}
+              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-400"
+            >
+              <option value={7}>Last 7 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
+            <button
+              onClick={handleBulkAnalyze}
+              disabled={bulkAnalyzing}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-500 transition-colors flex items-center space-x-2 disabled:opacity-50"
+            >
+              {bulkAnalyzing ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Brain size={16} />
+                  <span>Analyze Past Entries</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
-        <h3 className="text-xl font-semibold text-white mb-2">Insights Coming Soon</h3>
-        <p className="text-gray-400">We're working on providing meaningful insights from your journal entries.</p>
+
+        {insightsLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading emotional insights...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Emotional Wellness Score */}
+            {wellnessScore && (
+              <div className="lg:col-span-2 p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-lg bg-green-400/20 flex items-center justify-center">
+                    <Heart size={24} className="text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white">Emotional Wellness Score</h3>
+                    <p className="text-gray-400 text-sm">Your overall emotional health indicator</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-white mb-2">
+                      {wellnessScore.wellness_score?.toFixed(1) || '0.0'}
+                      <span className="text-2xl text-gray-400">/100</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{wellnessScore.wellness_emoji}</span>
+                      <span className="text-sm text-gray-300 capitalize">
+                        {wellnessScore.wellness_category?.replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-gray-700 rounded-full h-3 mb-2">
+                      <div 
+                        className="h-3 rounded-full bg-gradient-to-r from-green-400 to-green-500"
+                        style={{ width: `${Math.min(wellnessScore.wellness_score || 0, 100)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400">{wellnessScore.interpretation}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sentiment Trends Chart */}
+            {sentimentTrends.length > 0 && (
+              <div className="lg:col-span-2 p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-blue-400/20 flex items-center justify-center">
+                    <TrendingUp size={20} className="text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Emotional Trends</h3>
+                    <p className="text-gray-400 text-sm">Your sentiment patterns over time</p>
+                  </div>
+                </div>
+                <div className="h-64">
+                  <Line data={chartData} options={chartOptions} />
+                </div>
+              </div>
+            )}
+
+            {/* Emotional Keywords Cloud */}
+            {sentimentTrends.length > 0 && (
+              <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-purple-400/20 flex items-center justify-center">
+                    <Sparkles size={20} className="text-purple-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Emotional Keywords</h3>
+                    <p className="text-gray-400 text-sm">Most frequent emotional expressions</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {sentimentTrends
+                    .flatMap(trend => trend.emotional_keywords || [])
+                    .reduce((acc, keyword) => {
+                      acc[keyword] = (acc[keyword] || 0) + 1;
+                      return acc;
+                    }, {})
+                    && Object.entries(
+                      sentimentTrends
+                        .flatMap(trend => trend.emotional_keywords || [])
+                        .reduce((acc, keyword) => {
+                          acc[keyword] = (acc[keyword] || 0) + 1;
+                          return acc;
+                        }, {})
+                    )
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 12)
+                    .map(([keyword, count]) => (
+                      <span 
+                        key={keyword}
+                        className="px-3 py-1 text-sm rounded-full bg-purple-600/20 text-purple-400 border border-purple-600/30"
+                        title={`Appeared ${count} times`}
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Activity Correlations */}
+            {activityCorrelations.length > 0 && (
+              <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-orange-400/20 flex items-center justify-center">
+                    <Activity size={20} className="text-orange-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Activity Impact</h3>
+                    <p className="text-gray-400 text-sm">How activities affect your emotions</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {activityCorrelations.slice(0, 5).map((correlation, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50">
+                      <div>
+                        <p className="text-white font-medium">{correlation.activity_name}</p>
+                        <p className="text-xs text-gray-400 capitalize">{correlation.activity_type}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p className="text-sm font-medium" style={{ 
+                            color: correlation.average_sentiment > 0 ? '#10B981' : 
+                                   correlation.average_sentiment < 0 ? '#EF4444' : '#6B7280' 
+                          }}>
+                            {correlation.average_sentiment > 0 ? '+' : ''}{correlation.average_sentiment.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-400">{correlation.entry_count} entries</p>
+                        </div>
+                        <span className="text-lg">
+                          {correlation.average_sentiment > 0.2 ? '😊' : 
+                           correlation.average_sentiment < -0.2 ? '😞' : '😐'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions Panel */}
+            <div className="lg:col-span-2 p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-yellow-400/20 flex items-center justify-center">
+                  <Target size={20} className="text-yellow-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Emotional Intelligence Actions</h3>
+                  <p className="text-gray-400 text-sm">Tools to enhance your emotional awareness</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  onClick={handleBulkAnalyze}
+                  disabled={bulkAnalyzing}
+                  className="p-4 rounded-lg border border-gray-700 hover:border-purple-500 transition-colors text-left disabled:opacity-50"
+                >
+                  <Brain className="text-purple-400 mb-2" size={20} />
+                  <h4 className="text-white font-medium mb-1">Analyze Past Entries</h4>
+                  <p className="text-gray-400 text-sm">Get emotional insights from your existing journal entries</p>
+                </button>
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors text-left"
+                >
+                  <Heart className="text-green-400 mb-2" size={20} />
+                  <h4 className="text-white font-medium mb-1">Emotional Check-in</h4>
+                  <p className="text-gray-400 text-sm">Write about your current emotional state</p>
+                </button>
+                <button
+                  onClick={() => setInsightsTimeRange(7)}
+                  className="p-4 rounded-lg border border-gray-700 hover:border-blue-500 transition-colors text-left"
+                >
+                  <BarChart3 className="text-blue-400 mb-2" size={20} />
+                  <h4 className="text-white font-medium mb-1">Weekly Patterns</h4>
+                  <p className="text-gray-400 text-sm">Explore your emotional patterns this week</p>
+                </button>
+              </div>
+            </div>
+
+            {/* No Data State */}
+            {sentimentTrends.length === 0 && !insightsLoading && (
+              <div className="lg:col-span-2 text-center py-12">
+                <div className="w-16 h-16 rounded-lg bg-blue-400/20 flex items-center justify-center mx-auto mb-4">
+                  <Brain size={32} className="text-blue-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No Emotional Data Yet</h3>
+                <p className="text-gray-400 mb-6">Start journaling or analyze your existing entries to see emotional insights.</p>
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-yellow-400 text-gray-900 px-6 py-3 rounded-lg hover:bg-yellow-300 transition-colors"
+                  >
+                    Write First Entry
+                  </button>
+                  <button
+                    onClick={handleBulkAnalyze}
+                    disabled={bulkAnalyzing}
+                    className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-500 transition-colors disabled:opacity-50"
+                  >
+                    {bulkAnalyzing ? 'Analyzing...' : 'Analyze Existing Entries'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderTemplatesView = () => (
     <div className="space-y-6">
