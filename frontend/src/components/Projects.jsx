@@ -238,6 +238,38 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
     }
   };
 
+  const handleUseTemplate = async (template) => {
+    try {
+      // Use template to create a new project with predefined tasks
+      const projectData = {
+        name: template.name,
+        description: template.description,
+        area_id: activeAreaId || '', // Use current area if available
+        priority: 'medium',
+        status: 'Not Started'
+      };
+      
+      const response = await projectTemplatesAPI.useTemplate(template.id, projectData);
+      
+      // Add to local state
+      const newProject = response.data;
+      
+      // Invalidate queries to refresh data
+      invalidateProjects();
+      
+      // Close modal and show success
+      setShowTemplateModal(false);
+      setSelectedTemplate(null);
+      
+      // Navigate to the new project's tasks
+      onSectionChange('tasks', { projectId: newProject.id, projectName: newProject.name });
+      
+    } catch (err) {
+      console.error('Failed to use template:', err);
+      setError('Failed to create project from template');
+    }
+  };
+
   // Memoize filtered projects to prevent recalculation on every render
   const filteredProjects = useMemo(() => {
     return activeAreaId 
