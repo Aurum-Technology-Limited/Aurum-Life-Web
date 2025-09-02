@@ -395,7 +395,7 @@ Focus on finding meaningful correlations that can guide the user toward emotiona
                     {"role": "user", "content": insights_prompt}
                 ],
                 temperature=0.2,
-                max_tokens=500,
+                max_completion_tokens=500,  # GPT-5 nano uses max_completion_tokens
                 response_format={"type": "json_object"}
             )
             
