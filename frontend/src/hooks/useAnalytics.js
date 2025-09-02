@@ -36,14 +36,7 @@ export const useAnalytics = () => {
         device_type: getDeviceType()
       };
 
-      await fetch(`${backendUrl}/api/analytics/start-session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(sessionData)
-      });
+      await analyticsAPI.startSession(sessionData);
 
       // Track initial page view
       trackPageView(window.location.pathname);
@@ -51,7 +44,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to initialize analytics session:', error);
     }
-  }, [user, token, backendUrl]);
+  }, [user, token]);
 
   // Track page views
   const trackPageView = useCallback(async (page, referrer = null) => {
