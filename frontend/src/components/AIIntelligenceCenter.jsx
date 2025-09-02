@@ -211,7 +211,7 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
         
         {/* Cross-Navigation Widget */}
         <CrossNavigationWidget 
-          currentScreen="ai-intelligence"
+          currentScreen="ai-insights"
           onNavigate={(screen) => onSectionChange && onSectionChange(screen)}
           recentCoachActions={quota ? quota.total - quota.remaining : 0}
         />
@@ -224,8 +224,8 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
                 <Brain className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">AI Intelligence Center</h1>
-                <p className="text-gray-400">Insights and reasoning from your personal AI assistant</p>
+                <h1 className="text-3xl font-bold text-white">My AI Insights</h1>
+                <p className="text-gray-400">Review what AI has learned about your productivity patterns</p>
               </div>
             </div>
             
