@@ -77,7 +77,7 @@ const AnalyticsDashboard = () => {
       return response.json();
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: !!user
+    enabled: !!user && !!token
   });
 
   // Fetch user preferences
@@ -96,7 +96,7 @@ const AnalyticsDashboard = () => {
 
       return response.json();
     },
-    enabled: !!user
+    enabled: !!user && !!token
   });
 
   // Colors for charts
