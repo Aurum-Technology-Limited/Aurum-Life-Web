@@ -27,8 +27,8 @@ const AlignmentProgressBar = () => {
       });
       
       // Store HRM insights if available
-      if (d.hrm_insight) {
-        setAlignmentInsight(d.hrm_insight);
+      if (d.hrm_enhancement) {
+        setAlignmentInsight(d.hrm_enhancement);
       }
     } catch (e) {
       console.warn('Alignment score load failed', e);
