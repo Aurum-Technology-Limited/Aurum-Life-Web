@@ -338,13 +338,6 @@ const Journal = ({ onSectionChange, sectionParams }) => {
   );
 
   const renderInsightsView = () => {
-    // Load insights data when switching to insights tab
-    useEffect(() => {
-      if (currentView === 'insights') {
-        fetchSentimentInsights();
-      }
-    }, [currentView, insightsTimeRange]);
-
     // Prepare chart data for sentiment trends
     const chartData = {
       labels: sentimentTrends.map(trend => new Date(trend.date).toLocaleDateString()),
