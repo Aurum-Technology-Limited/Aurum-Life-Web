@@ -60,11 +60,11 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
       purpose: 'self_reflection'
     },
     { 
-      name: 'Insights', 
+      name: 'Intelligence Hub', 
       key: 'insights', 
       icon: ChartBarIcon, 
-      description: 'Analytics & alignment tracking',
-      purpose: 'performance_analysis'
+      description: 'Analytics & AI insights dashboard',
+      purpose: 'intelligence_analysis'
     },
     { 
       name: 'My AI Insights', 
