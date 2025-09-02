@@ -496,8 +496,8 @@ async def semantic_search(
 
 @api_router.get("/semantic/similar/{entity_type}/{entity_id}", tags=["Semantic Search"])
 async def find_similar_content(
-    entity_type: str = Path(..., description="Type of entity: task, project, journal_entry"),
-    entity_id: str = Path(..., description="ID of the entity to find similar content for"),
+    entity_type: str,
+    entity_id: str,
     limit: int = Query(default=5, ge=1, le=20, description="Maximum number of similar items"),
     min_similarity: float = Query(default=0.4, ge=0.0, le=1.0, description="Minimum similarity threshold"),
     current_user: User = Depends(get_current_active_user)
