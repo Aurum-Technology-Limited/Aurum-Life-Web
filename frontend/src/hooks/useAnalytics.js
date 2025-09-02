@@ -287,6 +287,7 @@ export const useAnalytics = () => {
     const handleUnload = () => {
       if (sessionIdRef.current) {
         // Use sendBeacon for reliability during page unload
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
         const data = JSON.stringify({
           session_id: sessionIdRef.current,
           exit_page: window.location.pathname
@@ -321,7 +322,7 @@ export const useAnalytics = () => {
     return () => {
       window.removeEventListener('beforeunload', handleUnload);
     };
-  }, [user, token, backendUrl]);
+  }, [user, token]);
 
   return {
     // Session management
