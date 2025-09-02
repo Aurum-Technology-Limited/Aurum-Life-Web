@@ -774,6 +774,99 @@ export const analyticsAPI = {
   }
 };
 
+// Sentiment Analysis API
+export const sentimentAPI = {
+  /**
+   * Analyze sentiment for arbitrary text (real-time analysis)
+   * @param {string} text - Text to analyze
+   * @returns {Promise} Sentiment analysis result
+   */
+  analyzeText: async (text) => {
+    try {
+      const response = await apiClient.post('/sentiment/analyze-text', { text });
+      return response.data;
+    } catch (error) {
+      console.error('Text sentiment analysis failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get sentiment trends over time
+   * @param {number} days - Number of days to analyze (default: 30)
+   * @returns {Promise} Sentiment trends data
+   */
+  getTrends: async (days = 30) => {
+    try {
+      const response = await apiClient.get(`/sentiment/trends?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Sentiment trends fetch failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get emotional wellness score
+   * @param {number} days - Number of days for calculation (default: 30)
+   * @returns {Promise} Wellness score data
+   */
+  getWellnessScore: async (days = 30) => {
+    try {
+      const response = await apiClient.get(`/sentiment/wellness-score?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Wellness score fetch failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get activity-sentiment correlations
+   * @param {number} days - Number of days to analyze (default: 30)
+   * @returns {Promise} Correlation data
+   */
+  getCorrelations: async (days = 30) => {
+    try {
+      const response = await apiClient.get(`/sentiment/correlations?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Activity correlations fetch failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Bulk analyze existing journal entries
+   * @param {number} limit - Maximum entries to analyze (default: 50)
+   * @returns {Promise} Bulk analysis result
+   */
+  bulkAnalyze: async (limit = 50) => {
+    try {
+      const response = await apiClient.post(`/sentiment/bulk-analyze?limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      console.error('Bulk sentiment analysis failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get emotional insights
+   * @param {number} days - Number of days for insights (default: 30)
+   * @returns {Promise} Emotional insights data
+   */
+  getInsights: async (days = 30) => {
+    try {
+      const response = await apiClient.get(`/sentiment/insights?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Emotional insights fetch failed:', error);
+      throw error;
+    }
+  }
+};
+
 // Semantic Search API
 export const semanticSearchAPI = {
   /**
