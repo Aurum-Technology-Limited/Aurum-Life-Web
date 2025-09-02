@@ -912,6 +912,277 @@ async def delete_analytics_data(
         logger.error(f"Error deleting analytics data: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete analytics data")
 
+# ================================
+# SENTIMENT ANALYSIS ENDPOINTS (EMOTIONAL OS)
+# ================================
+
+@api_router.post("/sentiment/analyze-entry/{entry_id}", tags=["Sentiment Analysis", "Emotional OS"])
+async def analyze_entry_sentiment(
+    entry_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Analyze sentiment for a specific journal entry using GPT-5 nano
+    
+    This endpoint:
+    1. Retrieves the journal entry content
+    2. Uses GPT-5 nano to perform sophisticated emotional analysis
+    3. Updates the entry with sentiment data
+    4. Returns comprehensive emotional insights
+    """
+    try:
+        # Get the journal entry
+        entry = await find_document("journal_entries", {"id": entry_id, "user_id": str(current_user.id)})
+        if not entry:
+            raise HTTPException(status_code=404, detail="Journal entry not found")
+        
+        # Perform sentiment analysis
+        sentiment_result = await sentiment_analysis_service.analyze_journal_entry(
+            str(current_user.id),
+            entry_id,
+            entry.get('content', ''),
+            entry.get('title', '')
+        )
+        
+        return {
+            "success": True,
+            "entry_id": entry_id,
+            "sentiment_analysis": sentiment_result.dict(),
+            "sentiment_emoji": sentiment_analysis_service.get_sentiment_emoji(sentiment_result.sentiment_category),
+            "sentiment_color": sentiment_analysis_service.get_sentiment_color(sentiment_result.sentiment_category)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error analyzing entry sentiment: {e}")
+        raise HTTPException(status_code=500, detail="Failed to analyze entry sentiment")
+
+@api_router.post("/sentiment/bulk-analyze", tags=["Sentiment Analysis", "Emotional OS"])
+async def bulk_analyze_sentiment(
+    limit: int = Query(50, ge=1, le=100, description="Maximum number of entries to analyze"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Bulk analyze sentiment for existing journal entries that don't have sentiment scores
+    
+    This endpoint:
+    1. Finds unanalyzed journal entries for the user
+    2. Performs sentiment analysis on each entry using GPT-5 nano
+    3. Updates entries with emotional intelligence data
+    4. Returns analysis summary
+    """
+    try:
+        result = await sentiment_analysis_service.bulk_analyze_existing_entries(
+            str(current_user.id),
+            limit
+        )
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in bulk sentiment analysis: {e}")
+        raise HTTPException(status_code=500, detail="Failed to perform bulk sentiment analysis")
+
+@api_router.get("/sentiment/trends", tags=["Sentiment Analysis", "Emotional OS"])
+async def get_sentiment_trends(
+    days: int = Query(30, ge=1, le=365, description="Number of days to analyze"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get emotional sentiment trends over time for insights dashboard
+    
+    This endpoint provides:
+    1. Daily sentiment averages and patterns
+    2. Emotional keyword trends
+    3. Sentiment category distribution
+    4. Emotional wellness indicators
+    """
+    try:
+        trends = await sentiment_analysis_service.get_sentiment_trends(str(current_user.id), days)
+        
+        # Calculate summary statistics
+        if trends:
+            sentiment_scores = [t.average_sentiment for t in trends]
+            avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
+            sentiment_trend_direction = "stable"
+            
+            if len(sentiment_scores) > 1:
+                recent_avg = sum(sentiment_scores[-7:]) / min(7, len(sentiment_scores))  # Last week
+                older_avg = sum(sentiment_scores[:-7]) / max(1, len(sentiment_scores) - 7)  # Before last week
+                
+                if recent_avg > older_avg + 0.1:
+                    sentiment_trend_direction = "improving"
+                elif recent_avg < older_avg - 0.1:
+                    sentiment_trend_direction = "declining"
+        else:
+            avg_sentiment = 0.0
+            sentiment_trend_direction = "no_data"
+        
+        return {
+            "trends": [t.dict() for t in trends],
+            "summary": {
+                "period_days": days,
+                "total_entries_analyzed": len(trends),
+                "average_sentiment": avg_sentiment,
+                "trend_direction": sentiment_trend_direction,
+                "emoji_representation": sentiment_analysis_service.get_sentiment_emoji(
+                    sentiment_analysis_service._score_to_category(avg_sentiment)
+                )
+            },
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting sentiment trends: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get sentiment trends")
+
+@api_router.get("/sentiment/correlations", tags=["Sentiment Analysis", "Emotional OS"])
+async def get_activity_sentiment_correlations(
+    days: int = Query(30, ge=1, le=365, description="Number of days to analyze"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get correlations between activities and emotional outcomes
+    
+    This endpoint analyzes:
+    1. Which projects/tasks correlate with positive emotions
+    2. Which activities may be emotionally draining
+    3. Emotional impact patterns across different life areas
+    4. Actionable insights for better emotional outcomes
+    """
+    try:
+        correlations = await sentiment_analysis_service.analyze_activity_sentiment_correlation(
+            str(current_user.id), 
+            days
+        )
+        
+        return {
+            "correlations": [c.dict() for c in correlations],
+            "analysis_period_days": days,
+            "total_correlations": len(correlations),
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting activity sentiment correlations: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get activity sentiment correlations")
+
+@api_router.get("/sentiment/insights", tags=["Sentiment Analysis", "Emotional OS"])
+async def get_emotional_insights(
+    days: int = Query(30, ge=1, le=365, description="Number of days for insight generation"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get AI-generated emotional insights based on sentiment patterns
+    
+    This endpoint provides:
+    1. Trend analysis of emotional patterns
+    2. Wellness alerts and recommendations
+    3. Emotional growth indicators
+    4. Personalized emotional intelligence insights
+    """
+    try:
+        insights = await sentiment_analysis_service.generate_emotional_insights(
+            str(current_user.id),
+            days
+        )
+        
+        return {
+            "insights": [i.dict() for i in insights],
+            "insight_count": len(insights),
+            "analysis_period_days": days,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting emotional insights: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get emotional insights")
+
+@api_router.get("/sentiment/wellness-score", tags=["Sentiment Analysis", "Emotional OS"])
+async def get_emotional_wellness_score(
+    days: int = Query(30, ge=1, le=365, description="Number of days for wellness calculation"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get overall emotional wellness score (0-100)
+    
+    This endpoint calculates:
+    1. Average sentiment over time period
+    2. Emotional stability/consistency
+    3. Journaling engagement level
+    4. Overall emotional wellness indicator
+    """
+    try:
+        wellness_score = await sentiment_analysis_service.get_emotional_wellness_score(
+            str(current_user.id),
+            days
+        )
+        
+        # Determine wellness category
+        if wellness_score >= 80:
+            wellness_category = "excellent"
+            wellness_emoji = "🌟"
+        elif wellness_score >= 65:
+            wellness_category = "good"
+            wellness_emoji = "😊"
+        elif wellness_score >= 50:
+            wellness_category = "moderate"
+            wellness_emoji = "😐"
+        elif wellness_score >= 35:
+            wellness_category = "concerning"
+            wellness_emoji = "😟"
+        else:
+            wellness_category = "needs_attention"
+            wellness_emoji = "😰"
+        
+        return {
+            "wellness_score": wellness_score,
+            "wellness_category": wellness_category,
+            "wellness_emoji": wellness_emoji,
+            "analysis_period_days": days,
+            "generated_at": datetime.utcnow().isoformat(),
+            "interpretation": f"Your emotional wellness score is {wellness_score:.1f}/100, indicating {wellness_category} emotional health."
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting emotional wellness score: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get emotional wellness score")
+
+@api_router.post("/sentiment/analyze-text", tags=["Sentiment Analysis", "Emotional OS"])
+async def analyze_text_sentiment(
+    request: SentimentAnalysisRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Analyze sentiment for arbitrary text (for real-time analysis during writing)
+    
+    This endpoint:
+    1. Performs real-time sentiment analysis on provided text
+    2. Returns emotional insights without storing data
+    3. Useful for live feedback during journal writing
+    4. Provides immediate emotional awareness
+    """
+    try:
+        # Create a temporary sentiment analysis (without storing)
+        sentiment_result = await sentiment_analysis_service.analyze_journal_entry(
+            str(current_user.id),
+            "temp_analysis",  # Temporary ID
+            request.text,
+            ""  # No title
+        )
+        
+        return {
+            "sentiment_analysis": sentiment_result.dict(),
+            "sentiment_emoji": sentiment_analysis_service.get_sentiment_emoji(sentiment_result.sentiment_category),
+            "sentiment_color": sentiment_analysis_service.get_sentiment_color(sentiment_result.sentiment_category),
+            "human_readable": f"{sentiment_result.sentiment_category.value.replace('_', ' ').title()}",
+            "analyzed_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error analyzing text sentiment: {e}")
+        raise HTTPException(status_code=500, detail="Failed to analyze text sentiment")
+
 # Include all routers after endpoints are defined
 app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
