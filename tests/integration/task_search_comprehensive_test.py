@@ -22,7 +22,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Configuration
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
 
 class ComprehensiveTaskSearchTester:
     def __init__(self):

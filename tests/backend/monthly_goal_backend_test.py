@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
 
 class MonthlyGoalCRUDTester:
     def __init__(self):

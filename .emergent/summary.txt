@@ -1,79 +1,69 @@
 <analysis>
-The previous AI engineer successfully stabilized the application's core authentication and API communication after resolving critical Invalid login credentials, Forgot password email delivery, and CORS issues. Key fixes included: rectifying Supabase SMTP configuration (Microsoft 365 host  and app passwords), establishing correct Supabase URL redirection for password resets, and robustly handling token expiration and UI routing. A crucial architectural decision was the dynamic  to mitigate environment variable issues. Post-fix, a comprehensive refactoring of authentication-related frontend and backend components improved readability, modularity, and error handling. The work concluded with thorough QA testing of the refactored codebase, fixing a minor integration bug for the Insights screen, and generating comprehensive PRD, technical documentation, and changelog files, preparing the application for a GitHub push.
+The trajectory outlines the evolution of Aurum Life, transforming it from an MVP to an AI-enhanced personal operating system. Initially, the AI summarized the existing React/FastAPI application. The core task involved implementing an LLM-Augmented Hierarchical Reasoning Model (HRM), a Blackboard System for insights, and pgvector-based RAG. This required extensive database schema changes, new backend services, and frontend components (AI Intelligence Center, AI Command Center). The process was iterative, involving numerous bug fixes, particularly around authentication with Supabase, JavaScript hoisting errors in the UI, and an infinite loop in the onboarding flow. A significant pivot occurred in AI model selection, moving from Gemini to a hybrid OpenAI strategy (GPT-5 nano for reasoning, text-embedding-3-small for embeddings) to leverage cost-efficiency and agentic capabilities during development. The final state shows most core features are working, with specific, critical fixes identified for semantic search, onboarding, and dashboard integration.
 </analysis>
 
 <product_requirements>
-The application, named Aurum Life, is a productivity tool designed to manage hierarchical data (Pillars, Areas, Projects, Tasks) with the goal of enhancing user productivity through organized planning and AI assistance. Core features include robust CRUD operations for all entities, a consistent UI, and a stable Supabase-only authentication flow that handles duplicate emails and includes a functional password reset mechanism. It integrates an AI service for task prioritization (Suggest My Focus) and manages goals to calculate an accurate Alignment Score. The Insights screen provides an Eisenhower Matrix and Vertical Alignment with drill-down capabilities. The Dashboard features a calendar-first view with scheduling and task filtering. A journaling system supports full CRUD, search, and soft-delete via Supabase. Recent enhancements include debounced search with URL synchronization, quick filter chips, and chunked file uploads. The immediate focus during the trajectory was to ensure a seamless Supabase-only authentication with a working password reset and a functional onboarding process without data duplication.
+The user's primary goal is to transform Aurum Life into an intelligent life operating system using an AI-enhanced architecture. This includes implementing a Hierarchical Reasoning Model (HRM) with LLM-augmented AI for analyzing tasks, projects, areas, and pillars, providing context-aware insights, and pattern recognition. Key features requested were an AI Intelligence Dashboard, a Universal AI Command Center (Cmd+K) with natural language processing, and enhanced task management integrated with AI reasoning. Semantic search (RAG) capabilities were also crucial for personalized insights. Additionally, a smart onboarding system was required for new users, and a birth date field needed to be added to the registration process. The AI model was initially Gemini, but shifted to a more cost-effective and capable OpenAI stack (GPT-5 nano for reasoning, text-embedding-3-small for embeddings) for development, with future agentic capabilities in mind.
 </product_requirements>
 
 <key_technical_concepts>
-- **Full-stack**: React (frontend), FastAPI (backend).
-- **Database**: Supabase (PostgreSQL).
-- **Authentication**: Supabase Auth, JWT (legacy removed), Google OAuth.
-- **AI**: Gemini 2.0-flash via emergentintegrations.
-- **Frontend State**: React Query, localStorage.
-- **UI/UX**: React DnD, debounced search, URL query params.
-- **DevOps**: Kubernetes, Supervisor.
+- **Hierarchical Reasoning Model (HRM)**: AI for goal alignment.
+- **Blackboard Pattern**: Centralized AI insight repository.
+- **pgvector**: PostgreSQL extension for vector embeddings and semantic search.
+- **RAG (Retrieval-Augmented Generation)**: AI referencing user data for context.
+- **OpenAI GPT-5 nano**: Primary LLM for reasoning (cost-efficient, agentic).
+- **OpenAI text-embedding-3-small**: For semantic search embeddings.
+- **FastAPI**: Backend framework.
+- **React**: Frontend framework.
+- **Supabase**: Backend-as-a-Service (PostgreSQL, Auth).
+- **emergentintegrations**: Custom Python library for LLM and payment integrations.
 </key_technical_concepts>
 
 <code_architecture>
+The application is structured into  (React) and  (FastAPI) directories, with documentation under .
 
 
--   ****: Core FastAPI application.
-    -   **Importance**: Defines API routes, handles middleware, and orchestrates backend services.
-    -   **Changes**:  inclusion was verified.  was modified to work with recovery tokens instead of requiring a logged-in user session.
--   ****: Handles Supabase-specific authentication endpoints.
-    -   **Importance**: Centralizes logic for user sign-in, registration, password reset, and onboarding.
-    -   **Changes**: Initial fix for  redirect URL by hardcoding the preview domain. Dev-only fallback for  was removed. The  endpoint was adjusted to remove  dependency for recovery flows. This file was also comprehensively refactored into  for improved readability, modularity, and error handling, then the original was replaced with the refactored version.
--   ****: Main application component.
-    -   **Importance**: Handles main routing and initial application setup.
-    -   **Changes**: Added a URL change listener and logic to detect and handle password reset paths () even if Supabase incorrectly redirects to the root () with an error hash.
--   ****: Manages authentication state.
-    -   **Importance**: Provides global authentication context to the frontend.
-    -   **Changes**: Refactored into  to optimize state management with retry mechanisms, then the original was replaced with the refactored version.
--   ****: Login UI component.
-    -   **Importance**: Provides the user interface for login, registration, and forgot password initiation.
-    -   **Changes**: Removed the temporary Open reset link button, Copy link functionality, and the collapsible Troubleshooting Microsoft 365 SMTP diagnostics section as requested by the user. Refactored into  for improved readability and modularity, then the original was replaced.
--   ****: Dedicated UI for password reset.
-    -   **Importance**: Parses tokens from URL, allows new password input, and submits to the backend.
-    -   **Changes**: Corrected token parsing logic to look for . Added debug logging for URL parameters. Implemented graceful error handling for  errors, disabling the form and showing user-friendly messages. Refactored into  for improved code quality, then the original was replaced.
--   ****: Component for displaying task Why statements.
-    -   **Importance**: UI component.
-    -   **Changes**: Refactored to address an ESLint react-hooks/exhaustive-deps rule violation, which was causing a blocking overlay on the UI.
--   ****: Component for displaying analytics.
-    -   **Importance**: Displays the Eisenhower Matrix and Vertical Alignment.
-    -   **Changes**: Fixed to correctly integrate with the  after refactoring, addressing an Unable to Load Insights error due to missing API endpoints in .
--   ****: Centralized API calls.
-    -   **Importance**: Manages all frontend-to-backend API communication, including Axios setup and interceptors.
-    -   **Changes**: Updated Axios  to use . Missing API endpoints for Insights were added. This file was also comprehensively refactored into  for improved API layer architecture, then the original was replaced.
--   ****: (NEWLY CREATED) Provides a runtime-safe URL resolver for the backend API.
-    -   **Importance**: Dynamically determines the correct backend URL, ensuring resilience against misconfigured environment variables and preventing CORS issues.
-    -   **Changes**: Enhanced  to be more robust, prioritizing  but falling back to  if it's invalid or points to problematic hosts. Refactored into , then the original was replaced.
--   ****: (NEWLY CREATED) Product Requirements Document.
-    -   **Importance**: Comprehensive documentation of product features, workflows, architecture, and APIs.
--   ****: (NEWLY CREATED) Developer Technical Guide.
-    -   **Importance**: Detailed technical documentation for developers, covering architecture, project structure, API reference, and deployment.
--   ****: (NEWLY CREATED) Version History & Improvements.
-    -   **Importance**: Tracks all recent improvements, refactoring summaries, performance metrics, and bug fixes.
+
+-   ****: These 9+ SQL files define the database schema for the HRM system. They create new tables (, , , , , ) and add columns (e.g., , , ) to existing tables (, , , , ).  enables the  extension.
+-   ****: Stores environment variables like , , and Supabase credentials. Was created and updated multiple times to ensure correct API keys and Supabase credentials.
+-   ****: The main FastAPI application entry point. It registers various API routers, including  and . It was modified to correctly include the  with its  prefix and later to include semantic search endpoints.
+-   ****: Implements the core Hierarchical Reasoning Model logic. It uses the  library to interact with LLMs (initially Gemini, then updated to OpenAI GPT-5 nano). It gathers hierarchical context, applies rules, and augments with LLM insights.
+-   ****: Manages the Blackboard system, a centralized repository for AI insights, storing and retrieving them from the  table.
+-   ****: Defines the FastAPI endpoints for all HRM functionality (e.g., , , ). Was modified to correctly handle authentication and include new routes for semantic search.
+-   ****: Handles user authentication (registration, login, profile management). It was modified to include  in user profile creation and retrieval, and also to correctly set .
+-   ****: The previous AI Coach service, now updated to use OpenAI GPT-5 nano.
+-   ****: The main React application component. It manages routing, global state, and integrates various components like , , and . It was updated to correctly import and render these components and handle AI commands.
+-   ****: The user login/registration form. Modified to include the  component for birth date input.
+-   ****: The dashboard for viewing AI-generated insights. Had a JavaScript hoisting error that was fixed.
+-   ****: The universal Cmd+K interface for natural language AI interaction. Successfully integrated and working.
+-   ****: Handles global application logic, including onboarding detection. Was fixed for an infinite loop issue.
+-   ****: A newly created reusable React component for date input, offering both manual DD/MM/YYYY typing and a calendar popup with year selection.
+-   ****: Newly created component for the frontend semantic search interface.
+-   ****: Frontend API service layer for interacting with HRM backend endpoints.
+
 </code_architecture>
 
 <pending_tasks>
-All explicit user requests and pending debugging tasks identified in the initial prompt or during the trajectory have been addressed and confirmed as completed by the user. The AI engineer explicitly asked if there's anything else needed, implying no further tasks are pending.
+- **Semantic Search SQL Fix**: Resolve column reference title is ambiguous error in  function.
+- **Alignment Dashboard Integration**: Update legacy alignment service and  to use new HRM insights.
+- **API Authentication Consistency**: Fix intermittent 403 Not authenticated errors for some API calls.
+- **Onboarding Template Data Creation**: Verify that new users successfully get a complete hierarchy (Pillars, Areas, Projects, Tasks) from templates.
+- **Enhanced Today View Integration**: Display HRM priority scores and AI reasoning on task cards, and connect Analyze with AI buttons to GPT-5 nano.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer completed a comprehensive refactoring and quality assurance (QA) cycle. This involved:
-1.  **Refactoring Key Components**: Creating  versions of , , , , , and  to improve readability, modularity, performance, error handling, and documentation.
-2.  **Integrating Refactored Code**: Replacing the original files with their  counterparts across both frontend and backend.
-3.  **Comprehensive QA Testing**: Executing rigorous backend and frontend tests to ensure 100% functional equivalence and architectural improvements. The backend testing confirmed architectural soundness, while frontend testing showed excellent performance.
-4.  **Insights Screen Fix**: Addressed an Unable to Load Insights error by ensuring all necessary API endpoints for the Insights component were correctly included in the refactored . This fix was confirmed by the user.
-5.  **Documentation Generation**: Created three comprehensive documentation files:
-    *   : A detailed Product Requirements Document.
-    *   : A Developer Technical Guide.
-    *   : A Version History and Improvements log.
-This work was explicitly requested by the user to easily track current features for a GitHub push.
+Immediately before this summary request, the previous AI engineer had just completed the integration of OpenAI GPT-5 nano for HRM reasoning and  for semantic search, replacing the previous Gemini integration. The birth date field was also successfully added to the user registration flow, complete with a functional date picker and year selection. The backend services (, ) were updated to use GPT-5 nano, and the corresponding API key was configured. The frontend components (, ) were confirmed to be loading and working.
+
+However, during final verification, several minor issues were identified:
+1.  **Semantic Search is broken**: The  SQL function has an ambiguous column reference, causing 500 errors.
+2.  **Authentication inconsistency**: Some API calls are intermittently returning 403 Forbidden errors, despite successful user login.
+3.  **Alignment Dashboard not fully integrated**: The dashboard is stuck on Calculating... due to an outdated legacy endpoint.
+4.  **Onboarding template creation needs verification**: Although the onboarding flow itself is fixed, it needs to be confirmed that the templates (Pillars, Areas, Projects, Tasks) are actually created for new users.
+5.  **Today View AI integration is partial**: HRM priority scores and AI reasoning are not yet fully displayed on task cards in the Today view.
+
+The system is in a state where the core AI engine is upgraded and mostly functional, and user data collection is enhanced, but a few critical integrations and bug fixes are pending.
 </current_work>
 
 <optional_next_step>
-The last explicit user request (documentation) has been fulfilled. The next step is to await further instructions from the user.
+The next step is to fix the Onboarding Template Creation issue.
 </optional_next_step>

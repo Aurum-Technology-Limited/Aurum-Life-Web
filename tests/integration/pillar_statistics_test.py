@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration - Use external URL from frontend/.env
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class PillarStatisticsTestSuite:

@@ -27,7 +27,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 # Configuration
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password123"  # Using known working password from test_result.md
 
@@ -258,7 +258,7 @@ class AuthEndpointTester:
         
         # Use a real email for testing (should still return success for security)
         forgot_password_data = {"email": "test@example.com"}
-        headers = {"Origin": "https://aurum-codebase.preview.emergentagent.com"}
+        headers = {"Origin": "https://smart-life-os.preview.emergentagent.com"}
         
         status, data, response_time = self.make_request("POST", "/auth/forgot-password", 
                                                        forgot_password_data, headers=headers)

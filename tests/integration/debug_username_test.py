@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
 
 def test_username_change():
     # Login

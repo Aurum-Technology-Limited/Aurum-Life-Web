@@ -36,7 +36,7 @@ from dotenv import load_dotenv
 load_dotenv('/app/backend/.env')
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
 
 class JournalSupabaseIndexesTester:
     def __init__(self):

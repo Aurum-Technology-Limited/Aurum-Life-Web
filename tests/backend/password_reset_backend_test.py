@@ -13,9 +13,9 @@ import time
 from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
-ORIGIN_HEADER = "https://aurum-codebase.preview.emergentagent.com"
+ORIGIN_HEADER = "https://smart-life-os.preview.emergentagent.com"
 
 class PasswordResetTest:
     def __init__(self):

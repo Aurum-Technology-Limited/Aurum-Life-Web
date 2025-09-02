@@ -6,7 +6,7 @@ Test successful profile update with valid data
 import requests
 import json
 
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
 
 def test_success():
     # Login first

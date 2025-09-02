@@ -19,7 +19,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://aurum-codebase.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://smart-life-os.preview.emergentagent.com')
 BASE_URL = f"{BACKEND_URL}/api"
 
 # Test credentials

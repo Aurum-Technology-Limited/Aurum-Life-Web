@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://aurum-codebase.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://smart-life-os.preview.emergentagent.com')
 API_BASE_URL = f"{BACKEND_URL}/api"
 
 class RecurringTaskBackendTester:

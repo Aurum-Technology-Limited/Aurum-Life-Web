@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Any
 class BackendSmokeTest:
     def __init__(self):
         # Use the working backend URL from existing tests
-        self.base_url = "https://aurum-codebase.preview.emergentagent.com/api"
+        self.base_url = "https://smart-life-os.preview.emergentagent.com/api"
         self.session = requests.Session()
         self.auth_token = None
         self.csrf_token = None

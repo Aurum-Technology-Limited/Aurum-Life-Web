@@ -14,7 +14,7 @@ import time
 from typing import Dict, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com/api"
+BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 TEST_PASSWORD = "password123"
 ADMIN_TOKEN = "e8wXf6Ymo_mq__rPet2oc8nzE_V6eVZTY8qV8l7vcBwX6PI9fN_xsFN38s2eVkSJ"

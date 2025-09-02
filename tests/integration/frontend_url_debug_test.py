@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration - Use frontend's configured URL
-FRONTEND_BACKEND_URL = "https://aurum-codebase.preview.emergentagent.com"
+FRONTEND_BACKEND_URL = "https://smart-life-os.preview.emergentagent.com"
 API_BASE = f"{FRONTEND_BACKEND_URL}/api"
 
 class FrontendUrlDebugSuite:
