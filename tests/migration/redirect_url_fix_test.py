@@ -12,9 +12,9 @@ import re
 from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL
-BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
-ORIGIN_HEADER = "https://smart-life-os.preview.emergentagent.com"
+ORIGIN_HEADER = "https://aurum-life-os.preview.emergentagent.com"
 
 class RedirectUrlFixTest:
     def __init__(self):

@@ -26,7 +26,7 @@ from typing import Dict, List, Any, Optional
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
 
 class JournalTrashFlowTester:
     def __init__(self):

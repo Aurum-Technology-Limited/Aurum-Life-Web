@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration
-BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
 
 class ProfileMappingReviewTester:
     def __init__(self):

@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
 
 class HierarchySmokeTest:
     def __init__(self):

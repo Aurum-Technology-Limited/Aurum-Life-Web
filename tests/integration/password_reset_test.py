@@ -12,7 +12,7 @@ import time
 from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL from frontend/.env
-BACKEND_URL = "https://smart-life-os.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurum-life-os.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 
 class PasswordResetTest:
@@ -90,7 +90,7 @@ class PasswordResetTest:
         }
         
         headers = {
-            "Origin": "https://smart-life-os.preview.emergentagent.com",
+            "Origin": "https://aurum-life-os.preview.emergentagent.com",
             "Content-Type": "application/json"
         }
         
@@ -141,7 +141,7 @@ class PasswordResetTest:
         print("=" * 70)
         print(f"Backend URL: {BACKEND_URL}")
         print(f"Test Email: {TEST_EMAIL}")
-        print(f"Origin Header: https://smart-life-os.preview.emergentagent.com")
+        print(f"Origin Header: https://aurum-life-os.preview.emergentagent.com")
         print("=" * 70)
         print()
         
