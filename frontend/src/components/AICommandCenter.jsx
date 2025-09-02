@@ -1,359 +1,381 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { 
-  Search, 
-  Mic, 
   Brain, 
+  Target, 
+  TrendingUp, 
+  AlertTriangle, 
   Zap, 
-  Calendar, 
-  Plus, 
-  Target,
-  Clock,
-  Command,
-  ArrowRight,
-  Loader2,
+  BarChart3, 
   Lightbulb,
-  Sparkles
+  ArrowRight,
+  Plus
 } from 'lucide-react';
-import { hrmAPI } from '../services/api';
-import { useSemanticSearch } from './SemanticSearch';
+import { hrmAPI, aiCoachAPI } from '../services/api';
+import { useToast } from '../hooks/use-toast';
+import AIQuotaWidget from './ui/AIQuotaWidget';
+import AIInsightCard from './ui/AIInsightCard';
+import AIActionButton from './ui/AIActionButton';
 
-const AICommandCenter = ({ isOpen, onClose, onCommand }) => {
-  const [input, setInput] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
-  const [recentCommands, setRecentCommands] = useState([]);
-  const [isListening, setIsListening] = useState(false);
-  const inputRef = useRef(null);
-  const { open: openSemanticSearch } = useSemanticSearch();
+const AICommandCenter = ({ onSectionChange }) => {
+  const { toast } = useToast();
+  
+  // State for quick actions
+  const [goalText, setGoalText] = useState('');
+  const [isCreatingGoal, setIsCreatingGoal] = useState(false);
+  const [showGoalInput, setShowGoalInput] = useState(false);
 
-  // Context-aware suggestions based on current state
-  const contextSuggestions = [
-    { 
-      text: "Show me my highest priority tasks", 
-      icon: Target,
-      action: async () => {
-        setIsProcessing(true);
-        try {
-          const priorities = await hrmAPI.getTodayPriorities(5, true);
-          onCommand({ type: 'show_priorities', data: priorities });
-        } catch (error) {
-          console.error('Failed to get priorities:', error);
-        } finally {
-          setIsProcessing(false);
-        }
+  // Fetch AI quota
+  const { data: quota, isLoading: quotaLoading } = useQuery({
+    queryKey: ['ai-quota'],
+    queryFn: async () => {
+      try {
+        const response = await aiCoachAPI.getQuota();
+        return response.data;
+      } catch (error) {
+        console.error('Error loading quota:', error);
+        return { remaining: 10, total: 10 }; // Fallback
       }
     },
-    { 
-      text: "Analyze my work-life balance", 
-      icon: Brain,
-      action: async () => {
-        setIsProcessing(true);
-        try {
-          const analysis = await hrmAPI.analyzeLifeBalance();
-          onCommand({ type: 'show_analysis', data: analysis });
-        } catch (error) {
-          console.error('Failed to analyze balance:', error);
-        } finally {
-          setIsProcessing(false);
-        }
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+
+  // Fetch recent insights
+  const { data: recentInsights, isLoading: insightsLoading } = useQuery({
+    queryKey: ['recent-insights'],
+    queryFn: async () => {
+      try {
+        const response = await hrmAPI.getInsights(new URLSearchParams({
+          limit: '5',
+          is_active: 'true'
+        }));
+        return response.insights || [];
+      } catch (error) {
+        console.error('Error loading insights:', error);
+        return [];
       }
     },
-    { 
-      text: "What should I work on next?", 
-      icon: Lightbulb,
-      action: async () => {
-        setIsProcessing(true);
-        try {
-          const insights = await hrmAPI.getHighConfidenceInsights(0.7);
-          onCommand({ type: 'show_recommendations', data: insights });
-        } catch (error) {
-          console.error('Failed to get recommendations:', error);
-        } finally {
-          setIsProcessing(false);
-        }
-      }
-    },
-    { 
-      text: "Plan my day", 
-      icon: Calendar,
-      action: () => onCommand({ type: 'plan_day' })
-    },
-    { 
-      text: "Create a new task", 
-      icon: Plus,
-      action: () => onCommand({ type: 'create_task' })
-    },
-    { 
-      text: "Review my recent patterns", 
-      icon: Zap,
-      action: async () => {
-        setIsProcessing(true);
-        try {
-          const insights = await hrmAPI.getInsights({ 
-            insight_type: 'pattern_recognition',
-            is_active: true,
-            limit: 10 
-          });
-          onCommand({ type: 'show_patterns', data: insights });
-        } catch (error) {
-          console.error('Failed to get patterns:', error);
-        } finally {
-          setIsProcessing(false);
-        }
-      }
-    },
-    { 
-      text: "Search content by meaning", 
-      icon: Sparkles,
-      action: () => {
-        onClose();
-        openSemanticSearch();
-      }
-    }
-  ];
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  useEffect(() => {
-    if (isOpen) {
-      // Focus input when opened
-      setTimeout(() => inputRef.current?.focus(), 100);
-      
-      // Load recent commands from localStorage
-      const recent = JSON.parse(localStorage.getItem('ai_recent_commands') || '[]');
-      setRecentCommands(recent.slice(0, 5));
-    }
-  }, [isOpen]);
+  // Fetch AI statistics
+  const { data: statistics } = useQuery({
+    queryKey: ['ai-statistics'],
+    queryFn: () => hrmAPI.getStatistics(),
+    staleTime: 10 * 60 * 1000 // 10 minutes
+  });
 
-  useEffect(() => {
-    // Filter suggestions based on input
-    if (input.length > 0) {
-      const filtered = contextSuggestions.filter(suggestion =>
-        suggestion.text.toLowerCase().includes(input.toLowerCase())
-      );
-      setSuggestions(filtered);
-    } else {
-      setSuggestions(contextSuggestions.slice(0, 4)); // Show top 4 by default
-    }
-  }, [input]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || isProcessing) return;
-
-    setIsProcessing(true);
-    
-    try {
-      // Save to recent commands
-      const newCommand = { text: input, timestamp: Date.now() };
-      const updatedRecent = [newCommand, ...recentCommands.filter(c => c.text !== input)].slice(0, 5);
-      setRecentCommands(updatedRecent);
-      localStorage.setItem('ai_recent_commands', JSON.stringify(updatedRecent));
-
-      // Process natural language command
-      await processNaturalLanguageCommand(input);
-      
-      // Clear input and close
-      setInput('');
-      onClose();
-    } catch (error) {
-      console.error('Command processing failed:', error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const processNaturalLanguageCommand = async (command) => {
-    const cmd = command.toLowerCase();
-    
-    // Simple pattern matching for MVP
-    if (cmd.includes('priority') || cmd.includes('important')) {
-      const priorities = await hrmAPI.getTodayPriorities(5, true);
-      onCommand({ type: 'show_priorities', data: priorities });
-    } else if (cmd.includes('balance') || cmd.includes('life')) {
-      const analysis = await hrmAPI.analyzeLifeBalance();
-      onCommand({ type: 'show_analysis', data: analysis });
-    } else if (cmd.includes('next') || cmd.includes('should i')) {
-      const insights = await hrmAPI.getHighConfidenceInsights(0.7);
-      onCommand({ type: 'show_recommendations', data: insights });
-    } else if (cmd.includes('plan') || cmd.includes('schedule')) {
-      onCommand({ type: 'plan_day' });
-    } else if (cmd.includes('create') || cmd.includes('add') || cmd.includes('new task')) {
-      onCommand({ type: 'create_task' });
-    } else if (cmd.includes('pattern') || cmd.includes('trend')) {
-      const insights = await hrmAPI.getInsights({ 
-        insight_type: 'pattern_recognition',
-        is_active: true,
-        limit: 10 
+  const handleQuickGoal = async () => {
+    if (!goalText.trim()) {
+      toast({
+        title: "Please enter a goal",
+        description: "Describe what you'd like to achieve",
+        variant: "destructive"
       });
-      onCommand({ type: 'show_patterns', data: insights });
-    } else {
-      // Fallback to general analysis
-      const analysis = await hrmAPI.triggerGlobalAnalysis('balanced');
-      onCommand({ type: 'show_analysis', data: analysis });
+      return;
     }
-  };
 
-  const executeSuggestion = async (suggestion) => {
-    setInput('');
+    if (!quota || quota.remaining <= 0) {
+      toast({
+        title: "AI quota exhausted",
+        description: "You've reached your monthly limit",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsCreatingGoal(true);
     try {
-      await suggestion.action();
+      // This would typically call the AI Coach API
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+      
+      toast({
+        title: "Goal analysis started!",
+        description: "Opening AI Coach with your goal...",
+        variant: "default"
+      });
+      
+      // Navigate to AI Coach with the goal pre-filled
+      onSectionChange('ai-coach', { prefillGoal: goalText });
+      
     } catch (error) {
-      console.error('Suggestion execution failed:', error);
+      console.error('Error creating goal:', error);
+      toast({
+        title: "Failed to analyze goal",
+        description: "Please try again or use the full AI Coach",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreatingGoal(false);
+      setGoalText('');
+      setShowGoalInput(false);
     }
-    onClose();
   };
 
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Escape') {
-      onClose();
-    } else if (e.key === 'Enter' && e.metaKey) {
-      handleSubmit(e);
-    }
-  }, [onClose]);
+  const handleInsightClick = (insight) => {
+    // Navigate to Intelligence Center with the insight pre-selected
+    onSectionChange('ai-intelligence', { selectedInsight: insight.id });
+  };
 
-  useEffect(() => {
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isOpen, handleKeyDown]);
-
-  if (!isOpen) return null;
+  const currentQuota = quota || { remaining: 0, total: 10 };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 pt-24">
-      <div className="bg-gray-900/95 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl mx-4">
+    <div className="min-h-screen bg-[#0B0D14] text-white p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+        
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-gray-700">
-          <div className="p-2 bg-purple-600 rounded-lg">
-            <Brain className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h2 className="font-semibold text-white">AI Command Center</h2>
-            <p className="text-sm text-gray-400">Ask AI anything or type a command</p>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <kbd className="px-2 py-1 bg-gray-700 text-xs text-gray-300 rounded">⌘K</kbd>
+        <div className="text-center">
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-yellow-400 flex items-center justify-center">
+              <Brain size={32} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white">AI Command Center</h1>
+              <p className="text-gray-400">Your intelligent productivity companion</p>
+            </div>
           </div>
         </div>
 
-        {/* Input */}
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask AI anything or type a command..."
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg pl-12 pr-12 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-              disabled={isProcessing}
-            />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-              {isProcessing ? (
-                <Loader2 className="h-5 w-5 text-purple-400 animate-spin" />
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setIsListening(!isListening)}
-                    className={`p-1 rounded transition-colors ${
-                      isListening ? 'text-red-400' : 'text-gray-400 hover:text-white'
-                    }`}
-                    title="Voice input"
-                  >
-                    <Mic className="h-5 w-5" />
-                  </button>
-                  <ArrowRight className="h-5 w-5 text-gray-400" />
-                </>
-              )}
-            </div>
-          </div>
-        </form>
+        {/* AI Quota Status */}
+        <AIQuotaWidget 
+          remaining={currentQuota.remaining} 
+          total={currentQuota.total}
+          showDetails={true}
+        />
 
-        {/* Suggestions */}
-        {suggestions.length > 0 && (
-          <div className="px-4 pb-4">
-            <p className="text-sm text-gray-400 mb-3">
-              {input ? 'Matching suggestions:' : 'Quick actions:'}
-            </p>
-            <div className="space-y-2">
-              {suggestions.map((suggestion, index) => {
-                const IconComponent = suggestion.icon;
-                return (
-                  <button
-                    key={index}
-                    onClick={() => executeSuggestion(suggestion)}
-                    className="w-full flex items-center gap-3 p-3 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg transition-colors text-left"
-                    disabled={isProcessing}
-                  >
-                    <div className="p-2 bg-purple-600/20 rounded-lg">
-                      <IconComponent className="h-4 w-4 text-purple-400" />
-                    </div>
-                    <span className="text-gray-300">{suggestion.text}</span>
-                    <ArrowRight className="h-4 w-4 text-gray-500 ml-auto" />
-                  </button>
-                );
-              })}
-            </div>
+        {/* Quick Actions Section */}
+        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+              <Zap className="h-5 w-5 text-yellow-400" />
+              Quick Actions
+            </h2>
           </div>
-        )}
 
-        {/* Recent Commands */}
-        {recentCommands.length > 0 && !input && (
-          <div className="px-4 pb-4 border-t border-gray-700/50">
-            <p className="text-sm text-gray-400 mb-3 mt-4">Recent commands:</p>
-            <div className="space-y-1">
-              {recentCommands.map((command, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* Quick Goal Decomposition */}
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <Target className="h-5 w-5 text-yellow-400" />
+                <h3 className="text-lg font-semibold text-white">Quick Goal Setup</h3>
+              </div>
+              
+              {!showGoalInput ? (
                 <button
-                  key={index}
-                  onClick={() => {
-                    setInput(command.text);
-                    inputRef.current?.focus();
-                  }}
-                  className="w-full text-left text-sm text-gray-400 hover:text-gray-300 py-1 px-2 hover:bg-gray-800/30 rounded transition-colors"
+                  onClick={() => setShowGoalInput(true)}
+                  className="w-full py-3 px-4 bg-yellow-400 text-black rounded-lg font-medium hover:bg-yellow-500 transition-colors flex items-center justify-center gap-2"
+                  disabled={currentQuota.remaining === 0}
                 >
-                  <Clock className="h-3 w-3 inline mr-2" />
-                  {command.text}
+                  <Plus className="h-4 w-4" />
+                  Start New Goal
                 </button>
-              ))}
+              ) : (
+                <div className="space-y-3">
+                  <textarea
+                    value={goalText}
+                    onChange={(e) => setGoalText(e.target.value)}
+                    placeholder="e.g., Learn Spanish, Launch my business, Get fit..."
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 transition-colors resize-none"
+                    rows="2"
+                    disabled={isCreatingGoal}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleQuickGoal}
+                      disabled={!goalText.trim() || isCreatingGoal}
+                      className="flex-1 py-2 px-3 bg-yellow-400 text-black rounded-lg font-medium hover:bg-yellow-500 transition-colors disabled:opacity-50 text-sm"
+                    >
+                      {isCreatingGoal ? 'Analyzing...' : 'Analyze Goal'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowGoalInput(false);
+                        setGoalText('');
+                      }}
+                      className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              <p className="text-xs text-gray-400">
+                Get AI-powered breakdown of your goal into actionable steps
+              </p>
+            </div>
+
+            {/* Weekly Review */}
+            <AIActionButton
+              icon={TrendingUp}
+              title="Weekly Review"
+              description="Quick strategic analysis of your progress"
+              buttonText="Generate Review"
+              onClick={() => onSectionChange('ai-coach')}
+              disabled={currentQuota.remaining === 0}
+              size="small"
+              quotaRequired={true}
+            />
+
+            {/* Obstacle Help */}
+            <AIActionButton
+              icon={AlertTriangle}
+              title="Get Unstuck"
+              description="AI help when you're blocked on projects"
+              buttonText="Analyze Obstacles"
+              onClick={() => onSectionChange('ai-coach')}
+              disabled={currentQuota.remaining === 0}
+              size="small"
+              quotaRequired={true}
+            />
+          </div>
+        </div>
+
+        {/* AI Insights Overview */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Recent Insights */}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <Lightbulb className="h-5 w-5 text-purple-400" />
+                Recent AI Insights
+              </h2>
+              <button
+                onClick={() => onSectionChange('ai-intelligence')}
+                className="flex items-center gap-1 text-purple-400 hover:text-purple-300 text-sm transition-colors"
+              >
+                View All
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            {insightsLoading ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-gray-800/50 rounded-lg p-4 animate-pulse">
+                    <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : recentInsights && recentInsights.length > 0 ? (
+              <div className="space-y-4">
+                {recentInsights.slice(0, 3).map((insight) => (
+                  <AIInsightCard
+                    key={insight.id}
+                    insight={insight}
+                    onClick={handleInsightClick}
+                    compact={true}
+                    showActions={false}
+                    showMetrics={true}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <Brain className="h-12 w-12 mx-auto mb-3 text-gray-600" />
+                <p className="text-sm">No insights yet</p>
+                <p className="text-xs">Use AI Coach to generate your first insights</p>
+              </div>
+            )}
+          </div>
+
+          {/* AI Statistics */}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-blue-400" />
+                AI Performance
+              </h2>
+            </div>
+
+            {statistics ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-400 mb-1">
+                    {statistics.total_insights || 0}
+                  </div>
+                  <div className="text-xs text-gray-400">Total Insights</div>
+                </div>
+                
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-green-400 mb-1">
+                    {statistics.avg_confidence ? (statistics.avg_confidence * 100).toFixed(0) : 0}%
+                  </div>
+                  <div className="text-xs text-gray-400">Avg Confidence</div>
+                </div>
+                
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-400 mb-1">
+                    {statistics.feedback_rate ? (statistics.feedback_rate * 100).toFixed(0) : 0}%
+                  </div>
+                  <div className="text-xs text-gray-400">Feedback Rate</div>
+                </div>
+                
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-yellow-400 mb-1">
+                    {statistics.acceptance_rate ? (statistics.acceptance_rate * 100).toFixed(0) : 0}%
+                  </div>
+                  <div className="text-xs text-gray-400">Acceptance Rate</div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <BarChart3 className="h-12 w-12 mx-auto mb-3 text-gray-600" />
+                <p className="text-sm">No statistics available</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div 
+            className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border border-purple-500/30 rounded-xl p-6 cursor-pointer hover:border-purple-400/50 transition-colors"
+            onClick={() => onSectionChange('ai-intelligence')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-purple-600 flex items-center justify-center">
+                  <Brain className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Intelligence Center</h3>
+                  <p className="text-purple-300 text-sm">
+                    Browse & manage your AI insights
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-purple-400" />
             </div>
           </div>
-        )}
 
-        {/* Footer */}
-        <div className="px-4 py-3 border-t border-gray-700/50 text-center">
-          <p className="text-xs text-gray-500">
-            Press <kbd className="px-1 bg-gray-700 rounded text-gray-300">⌘⏎</kbd> to execute or{' '}
-            <kbd className="px-1 bg-gray-700 rounded text-gray-300">Esc</kbd> to close
-          </p>
+          <div 
+            className="bg-gradient-to-br from-yellow-900/50 to-yellow-800/30 border border-yellow-500/30 rounded-xl p-6 cursor-pointer hover:border-yellow-400/50 transition-colors"
+            onClick={() => onSectionChange('ai-coach')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-yellow-600 flex items-center justify-center">
+                  <Target className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">AI Coach</h3>
+                  <p className="text-yellow-300 text-sm">
+                    Strategic guidance & goal planning
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-yellow-400" />
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
   );
-};
-
-// Hook for global command center access
-export const useAICommandCenter = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  return {
-    isOpen,
-    open: () => setIsOpen(true),
-    close: () => setIsOpen(false)
-  };
 };
 
 export default AICommandCenter;
