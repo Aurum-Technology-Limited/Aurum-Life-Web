@@ -142,7 +142,7 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
   return (
     <div className="flex h-screen bg-[#0B0D14]">
       {/* Sidebar */}
-      <div className="w-64 bg-gray-900 flex flex-col border-r border-gray-700">
+      <div className="w-64 bg-gray-900 flex flex-col border-r border-gray-700 fixed left-0 top-0 h-full z-10">
         {/* Logo */}
         <div className="flex items-center space-x-2 p-4">
           <div className="w-8 h-8 flex items-center justify-center">
