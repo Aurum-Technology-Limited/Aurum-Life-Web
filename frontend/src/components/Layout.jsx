@@ -57,13 +57,6 @@ const Layout = ({ children }) => {
       purpose: 'tactical_execution'
     },
     { 
-      name: 'Templates', 
-      href: '/templates', 
-      icon: DocumentTextIcon, 
-      description: 'Pre-built project blueprints',
-      purpose: 'productivity_tools'
-    },
-    { 
       name: 'Journal', 
       href: '/journal', 
       icon: DocumentTextIcon, 
