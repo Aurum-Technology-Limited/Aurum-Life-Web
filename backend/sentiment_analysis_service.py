@@ -71,16 +71,48 @@ class SentimentAnalysisService:
             except json.JSONDecodeError as e:
                 logger.error(f"❌ JSON parsing failed: {e}")
                 logger.error(f"Raw content: {raw_content}")
-                # Fallback to neutral sentiment
-                analysis_data = {
-                    'sentiment_score': 0.0,
-                    'confidence_score': 0.5,
-                    'emotional_keywords': [],
-                    'emotional_themes': [],
-                    'dominant_emotions': [],
-                    'emotional_intensity': 0.5,
-                    'reasoning': f'JSON parsing failed: {str(e)}'
-                }
+                
+                # Try to extract sentiment from text response
+                try:
+                    # Look for patterns in the text response
+                    sentiment_score = 0.0
+                    confidence_score = 0.8
+                    
+                    # Simple keyword-based fallback
+                    positive_words = ['amazing', 'wonderful', 'happy', 'accomplished', 'joy', 'grateful', 'excited', 'proud', 'love', 'great']
+                    negative_words = ['terrible', 'awful', 'sad', 'frustrated', 'angry', 'worried', 'anxious', 'stressed', 'disappointed']
+                    
+                    text_lower = raw_content.lower()
+                    positive_count = sum(1 for word in positive_words if word in text_lower)
+                    negative_count = sum(1 for word in negative_words if word in text_lower)
+                    
+                    if positive_count > negative_count:
+                        sentiment_score = min(0.8, 0.3 + (positive_count * 0.1))
+                    elif negative_count > positive_count:
+                        sentiment_score = max(-0.8, -0.3 - (negative_count * 0.1))
+                    
+                    analysis_data = {
+                        'sentiment_score': sentiment_score,
+                        'confidence_score': confidence_score,
+                        'emotional_keywords': [],
+                        'emotional_themes': [],
+                        'dominant_emotions': [],
+                        'emotional_intensity': 0.5,
+                        'reasoning': f'Fallback analysis applied due to JSON parsing issue. Raw response: {raw_content[:100]}...'
+                    }
+                    
+                except Exception as fallback_error:
+                    logger.error(f"Fallback analysis also failed: {fallback_error}")
+                    # Final fallback to neutral
+                    analysis_data = {
+                        'sentiment_score': 0.0,
+                        'confidence_score': 0.0,
+                        'emotional_keywords': [],
+                        'emotional_themes': [],
+                        'dominant_emotions': [],
+                        'emotional_intensity': 0.5,
+                        'reasoning': f'Analysis failed completely. JSON error: {str(e)}'
+                    }
             
             # Create sentiment result
             sentiment_result = SentimentAnalysisResult(
