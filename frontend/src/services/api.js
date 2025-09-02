@@ -391,6 +391,42 @@ class JournalAPIService extends BaseAPIService {
   async purgeEntry(entryId) {
     return this.delete(`/${entryId}/purge`);
   }
+
+  /**
+   * Retrieves journal templates
+   * @returns {Promise} Journal templates
+   */
+  async getTemplates() {
+    return this.get('/templates');
+  }
+
+  /**
+   * Creates a new journal template
+   * @param {Object} templateData - Template data
+   * @returns {Promise} Created template
+   */
+  async createTemplate(templateData) {
+    return this.post('/templates', templateData);
+  }
+
+  /**
+   * Updates a journal template
+   * @param {string} templateId - Template ID
+   * @param {Object} templateData - Updated template data
+   * @returns {Promise} Updated template
+   */
+  async updateTemplate(templateId, templateData) {
+    return this.put(`/templates/${templateId}`, templateData);
+  }
+
+  /**
+   * Deletes a journal template
+   * @param {string} templateId - Template ID
+   * @returns {Promise} Delete confirmation
+   */
+  async deleteTemplate(templateId) {
+    return this.delete(`/templates/${templateId}`);
+  }
 }
 
 /**
