@@ -139,6 +139,13 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
 
   // Not authenticated - show login
   if (!user) {
+    console.log('🔐 Showing login - no user object');
+    return <Login />;
+  }
+
+  // Additional validation - ensure user has required fields
+  if (!user.id || !user.email) {
+    console.log('⚠️ User object incomplete, showing login');
     return <Login />;
   }
 
