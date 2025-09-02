@@ -238,19 +238,16 @@ export const useAnalytics = () => {
     if (!user || !token || !sessionIdRef.current) return;
 
     try {
-      await fetch(`${backendUrl}/api/analytics/end-session/${sessionIdRef.current}?exit_page=${encodeURIComponent(exitPage || window.location.pathname)}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
+      await analyticsAPI.endSession(
+        sessionIdRef.current, 
+        exitPage || window.location.pathname
+      );
       sessionIdRef.current = null;
       
     } catch (error) {
       console.warn('Failed to end analytics session:', error);
     }
-  }, [user, token, backendUrl]);
+  }, [user, token]);
 
   // Utility function to detect device type
   const getDeviceType = () => {
