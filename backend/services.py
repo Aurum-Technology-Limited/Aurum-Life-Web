@@ -34,6 +34,24 @@ class JournalService:
         entry_id = await create_document("journal_entries", entry_dict)
         if entry_id:
             entry_dict["id"] = entry_id
+            
+            # Trigger sentiment analysis asynchronously (non-blocking)
+            try:
+                sentiment_service = SentimentAnalysisService()
+                # Run sentiment analysis in background (for now, synchronous - can be made async later)
+                asyncio.create_task(
+                    sentiment_service.analyze_journal_entry(
+                        user_id, 
+                        entry_id, 
+                        entry_data.content, 
+                        entry_data.title
+                    )
+                )
+                logger.info(f"🧠 Sentiment analysis triggered for entry {entry_id[:8]}")
+            except Exception as e:
+                logger.warning(f"Sentiment analysis failed to trigger: {e}")
+                # Don't fail entry creation if sentiment analysis fails
+            
             return JournalEntry(**entry_dict)
         else:
             raise Exception("Failed to create journal entry - no ID returned")
