@@ -111,6 +111,13 @@ const Layout = ({ children }) => {
             </h1>
             {user && (
               <div className="flex items-center space-x-4">
+                <button
+                  onClick={openSemanticSearch}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                  title="Semantic Search (Ctrl+Shift+F)"
+                >
+                  <SearchIcon className="h-5 w-5" />
+                </button>
                 <UserMenu />
               </div>
             )}
