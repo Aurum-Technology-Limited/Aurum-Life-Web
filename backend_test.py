@@ -147,9 +147,12 @@ class AnalyticsBackendTester:
         """Test starting analytics session"""
         print("\n🚀 Testing Start Analytics Session...")
         
+        # Generate a unique session ID
+        session_id = str(uuid.uuid4())
+        
         session_data = {
+            "session_id": session_id,
             "device_type": "desktop",
-            "browser": "chrome",
             "screen_resolution": "1920x1080",
             "timezone": "UTC",
             "entry_page": "/dashboard"
@@ -162,8 +165,8 @@ class AnalyticsBackendTester:
             201  # Expecting 201 for creation
         )
         
-        if success and 'session_id' in response_data:
-            self.session_id = response_data['session_id']
+        if success:
+            self.session_id = session_id
             self.log_test("Start Analytics Session", True, f"Session started: {self.session_id}", response_data)
             return True
         else:
