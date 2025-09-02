@@ -281,7 +281,7 @@ Remember: This is personal reflective writing, so look for subtle emotional cues
                     {"role": "user", "content": correlation_prompt}
                 ],
                 temperature=0.1,
-                max_tokens=600,
+                max_completion_tokens=600,  # GPT-5 nano uses max_completion_tokens
                 response_format={"type": "json_object"}
             )
             
