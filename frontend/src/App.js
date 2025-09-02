@@ -219,7 +219,7 @@ function App() {
         handleSectionChange('today', { selectedReflection: result.id });
         break;
       case 'ai_insight':
-        handleSectionChange('ai-intelligence', { selectedInsight: result.id });
+        handleSectionChange('ai-insights', { selectedInsight: result.id });
         break;
       default:
         console.log('Unknown entity type for navigation:', result.entity_type);
