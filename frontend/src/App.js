@@ -122,13 +122,6 @@ function App() {
       
       console.log('🔍 Checking password reset page. Pathname:', pathname, 'Hash:', hash);
       
-      // Check if we're on the test page
-      if (pathname === '/test-search' || hash === '#test-search') {
-        console.log('✅ Search test page detected');
-        setIsSearchTestPage(true);
-        return;
-      }
-      
       // Check if we're on the reset page OR if we have reset-related hash params
       const isResetPage = pathname === '/reset-password';
       const hasResetError = hash.includes('error=access_denied') || hash.includes('otp_expired') || hash.includes('type=recovery');
@@ -141,8 +134,6 @@ function App() {
         console.log('❌ Not password reset page');
         setIsPasswordResetPage(false);
       }
-      
-      setIsSearchTestPage(false);
     };
     
     // Check on mount
