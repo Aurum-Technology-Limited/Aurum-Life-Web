@@ -163,40 +163,6 @@ function App() {
     setSectionParams(params);
   };
 
-  // Handle AI Command Center commands
-  const handleAICommand = (command) => {
-    console.log('🤖 AI Command received:', command);
-    
-    switch (command.type) {
-      case 'show_priorities':
-        // Navigate to Today section and show priorities
-        handleSectionChange('today', { showPriorities: true, data: command.data });
-        break;
-      case 'show_analysis':
-        // Navigate to AI Intelligence Center
-        handleSectionChange('ai-insights', { showAnalysis: true, data: command.data });
-        break;
-      case 'show_recommendations':
-        // Navigate to AI Intelligence Center with recommendations
-        handleSectionChange('ai-insights', { showRecommendations: true, data: command.data });
-        break;
-      case 'show_patterns':
-        // Navigate to AI Intelligence Center with patterns
-        handleSectionChange('ai-insights', { showPatterns: true, data: command.data });
-        break;
-      case 'plan_day':
-        // Navigate to Today section for day planning
-        handleSectionChange('today', { planDay: true });
-        break;
-      case 'create_task':
-        // Navigate to Tasks section for task creation
-        handleSectionChange('tasks', { createTask: true });
-        break;
-      default:
-        console.log('Unknown AI command type:', command.type);
-    }
-  };
-
   // Handle semantic search result selection
   const handleSemanticSearchResult = (result) => {
     console.log('🔍 Semantic search result selected:', result);
