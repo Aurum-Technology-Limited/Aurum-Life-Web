@@ -177,15 +177,15 @@ function App() {
         break;
       case 'show_analysis':
         // Navigate to AI Intelligence Center
-        handleSectionChange('ai-intelligence', { showAnalysis: true, data: command.data });
+        handleSectionChange('ai-insights', { showAnalysis: true, data: command.data });
         break;
       case 'show_recommendations':
         // Navigate to AI Intelligence Center with recommendations
-        handleSectionChange('ai-intelligence', { showRecommendations: true, data: command.data });
+        handleSectionChange('ai-insights', { showRecommendations: true, data: command.data });
         break;
       case 'show_patterns':
         // Navigate to AI Intelligence Center with patterns
-        handleSectionChange('ai-intelligence', { showPatterns: true, data: command.data });
+        handleSectionChange('ai-insights', { showPatterns: true, data: command.data });
         break;
       case 'plan_day':
         // Navigate to Today section for day planning
