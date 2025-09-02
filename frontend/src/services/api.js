@@ -554,7 +554,7 @@ export const alignmentScoreAPI = {
     try {
       const params = useHRM ? { use_hrm: true } : {};
       return await apiClient.get('/alignment/dashboard', { params });
-    } catch (err) {
+    } catch (error) {
       return apiClient.get('/alignment-score', { params: useHRM ? { use_hrm: true } : {} });
     }
   },
