@@ -346,13 +346,6 @@ function App() {
                   </AppWrapper>
                   <Toaster />
                   
-                  {/* AI Command Center - Global */}
-                  <AICommandCenter 
-                    isOpen={isCommandCenterOpen} 
-                    onClose={closeCommandCenter} 
-                    onCommand={handleAICommand} 
-                  />
-                  
                   {/* Semantic Search - Global */}
                   <SemanticSearch 
                     isOpen={isSemanticSearchOpen} 
