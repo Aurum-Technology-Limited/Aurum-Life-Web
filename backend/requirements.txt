@@ -50,4 +50,4 @@ gotrue>=2.4.4
 
 # Security dependencies
 bleach>=6.2.0
-pip-audit>=2.6.0
+pip-audit>=2.6.0openai
