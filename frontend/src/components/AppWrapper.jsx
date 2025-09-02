@@ -110,6 +110,19 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
     }
   };
 
+  // Debug authentication state
+  useEffect(() => {
+    console.log('🔍 AppWrapper Debug - Auth State:', {
+      user: !!user,
+      userId: user?.id,
+      loading,
+      isCheckingOnboarding,
+      showOnboarding,
+      userEmail: user?.email,
+      hasCompletedOnboarding: user?.has_completed_onboarding
+    });
+  }, [user, loading, isCheckingOnboarding, showOnboarding]);
+
   // Loading state
   if (loading || isCheckingOnboarding) {
     return (
