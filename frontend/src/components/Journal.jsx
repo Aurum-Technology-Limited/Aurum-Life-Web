@@ -159,7 +159,12 @@ const Journal = ({ onSectionChange, sectionParams }) => {
   const fetchEntriesWithFallback = async () => {
     try {
       setLoading(true);
-      const response = await journalAPI.getEntries(0, 20, selectedMoodFilter, selectedTagFilter);
+      const response = await journalAPI.getEntries({
+        skip: 0,
+        limit: 20,
+        moodFilter: selectedMoodFilter || null,
+        tagFilter: selectedTagFilter || null
+      });
       const data = response.data || [];
       setEntries(Array.isArray(data) ? data : []);
       setError(null);
