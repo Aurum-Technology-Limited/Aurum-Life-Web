@@ -53,7 +53,7 @@ class HierarchicalReasoningModel:
         self._rules_cache = None
         
     def _initialize_llm(self) -> LlmChat:
-        """Initialize LLM with HRM-specific system prompt"""
+        """Initialize OpenAI GPT-5 nano with HRM-specific system prompt"""
         system_prompt = """You are the Aurum Life HRM (Hierarchical Reasoning Model), an advanced AI system that understands the relationships between life goals at every level.
 
 Your role is to analyze the user's PAPT hierarchy (Pillars → Areas → Projects → Tasks) and provide intelligent insights about:
@@ -69,16 +69,16 @@ Provide actionable insights that help users make better decisions.
 """
         
         import os
-        api_key = os.environ.get('GEMINI_API_KEY')
-        model = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash-lite')
+        api_key = os.environ.get('OPENAI_API_KEY')
+        model = os.environ.get('OPENAI_MODEL', 'gpt-5-nano')
         if not api_key:
-            raise ValueError("GEMINI_API_KEY not found in environment")
+            raise ValueError("OPENAI_API_KEY not found in environment")
             
         return LlmChat(
             api_key=api_key,
             session_id=f"hrm-{self.user_id}",
             system_message=system_prompt
-        ).with_model("gemini", model)
+        ).with_model("openai", model)
     
     async def analyze_entity(
         self, 
