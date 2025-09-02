@@ -150,13 +150,13 @@ export function getBackendBaseUrl() {
       }
     }
     
-    // Step 2: Fallback to window.location.origin
+    // Step 2: Fallback to window.location.origin (primary strategy)
     if (typeof window !== 'undefined' && window.location?.origin) {
       const windowOrigin = window.location.origin.replace(/\/$/, '');
       const validation = URLValidator.validateURL(windowOrigin);
       
       if (validation.isValid) {
-        URLLogger.log('warn', 'Using window.origin fallback:', validation.url);
+        URLLogger.log('success', 'Using current domain:', validation.url);
         return validation.url;
       } else {
         URLLogger.log('error', 'Window origin invalid:', validation.reason);
@@ -167,9 +167,13 @@ export function getBackendBaseUrl() {
     URLLogger.log('error', 'URL resolution failed:', error.message);
   }
   
-  // Step 3: Last resort fallback
-  URLLogger.log('fallback', 'Using hardcoded fallback:', CONFIG.FALLBACK_URL);
-  return CONFIG.FALLBACK_URL;
+  // Step 3: Last resort - use localhost for development
+  const devFallback = typeof window !== 'undefined' && window.location?.hostname === 'localhost' 
+    ? 'http://localhost:8001' 
+    : window?.location?.origin || 'https://aurum-life-os.preview.emergentagent.com';
+  
+  URLLogger.log('fallback', 'Using computed fallback:', devFallback);
+  return devFallback;
 }
 
 /**
