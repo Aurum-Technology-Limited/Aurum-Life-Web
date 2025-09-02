@@ -77,7 +77,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to track page view:', error);
     }
-  }, [user]);
+  }, [user, token]);
 
   // Track AI feature interactions
   const trackAIInteraction = useCallback(async (featureType, featureName, eventData = {}, success = true, error = null) => {
