@@ -42,6 +42,7 @@ const HRMDemo = lazy(() => import('./components/HRMDemo'));
 
 // Import AI Command Center components (not lazy loaded since they need to be available globally)
 import AICommandCenter, { useAICommandCenter } from './components/AICommandCenter';
+import SemanticSearch from './components/SemanticSearch';
 import SemanticSearch, { useSemanticSearch } from './components/SemanticSearch';
 
 // Loading component for suspense fallback
