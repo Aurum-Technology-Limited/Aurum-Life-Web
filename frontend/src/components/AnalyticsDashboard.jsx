@@ -482,30 +482,18 @@ const MetricCard = ({ title, value, icon: Icon, color, bgColor }) => (
 
 // Privacy Settings Modal
 const PrivacySettingsModal = ({ preferences, onClose, onUpdate }) => {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [settings, setSettings] = useState(preferences || {});
   const [isUpdating, setIsUpdating] = useState(false);
-  
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
   const handleUpdateSettings = async () => {
     if (!user) return;
 
     setIsUpdating(true);
     try {
-      const response = await fetch(`${backendUrl}/api/analytics/preferences`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(settings)
-      });
-
-      if (response.ok) {
-        onUpdate();
-        onClose();
-      }
+      await analyticsAPI.updatePreferences(settings);
+      onUpdate();
+      onClose();
     } catch (error) {
       console.error('Failed to update privacy settings:', error);
     } finally {
