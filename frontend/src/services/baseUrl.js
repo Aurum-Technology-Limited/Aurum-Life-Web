@@ -167,10 +167,9 @@ export function getBackendBaseUrl() {
     URLLogger.log('error', 'URL resolution failed:', error.message);
   }
   
-  // Step 3: Last resort - use localhost for development
-  const devFallback = typeof window !== 'undefined' && window.location?.hostname === 'localhost' 
-    ? 'http://localhost:8001' 
-    : window?.location?.origin || 'https://aurum-life-os.preview.emergentagent.com';
+  // Step 3: Last resort - use sensible fallback based on environment
+  const currentDomain = typeof window !== 'undefined' ? window.location?.origin : null;
+  const devFallback = currentDomain || 'https://aurum-life-os.preview.emergentagent.com';
   
   URLLogger.log('fallback', 'Using computed fallback:', devFallback);
   return devFallback;
