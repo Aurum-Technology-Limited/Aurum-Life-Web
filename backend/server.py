@@ -675,3 +675,241 @@ def _get_entity_display_name(entity_type: str) -> str:
 app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
 app.include_router(hrm_router)
+
+# ================================
+# USER BEHAVIOR ANALYTICS ENDPOINTS
+# ================================
+
+@api_router.post("/analytics/track-event", tags=["Analytics"])
+async def track_user_behavior_event(
+    event: UserBehaviorEventCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Track a user behavior event for analytics
+    
+    This endpoint:
+    1. Validates user consent for the event type
+    2. Records the behavior event with privacy compliance
+    3. Updates session counters if applicable
+    4. Returns tracking confirmation
+    """
+    try:
+        result = await user_behavior_analytics_service.track_event(str(current_user.id), event)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error tracking behavior event: {e}")
+        raise HTTPException(status_code=500, detail="Failed to track behavior event")
+
+@api_router.post("/analytics/start-session", tags=["Analytics"])
+async def start_user_session(
+    session: UserSessionCreate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Start a new user session for analytics tracking
+    
+    This endpoint:
+    1. Creates a new user session record
+    2. Initializes session counters
+    3. Records device and browser information
+    4. Returns session confirmation
+    """
+    try:
+        result = await user_behavior_analytics_service.start_session(str(current_user.id), session)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error starting user session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to start user session")
+
+@api_router.post("/analytics/end-session/{session_id}", tags=["Analytics"])
+async def end_user_session(
+    session_id: str,
+    exit_page: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    End a user session and calculate final metrics
+    
+    This endpoint:
+    1. Calculates session duration
+    2. Records exit page if provided
+    3. Marks session as inactive
+    4. Returns session summary
+    """
+    try:
+        result = await user_behavior_analytics_service.end_session(
+            str(current_user.id), 
+            session_id, 
+            exit_page
+        )
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error ending user session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to end user session")
+
+@api_router.get("/analytics/preferences", tags=["Analytics"])
+async def get_analytics_preferences(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get user's analytics preferences and consent settings
+    
+    Returns:
+        User's current analytics preferences including consent settings,
+        data retention preferences, and feature-specific tracking options
+    """
+    try:
+        preferences = await user_behavior_analytics_service.get_user_analytics_preferences(
+            str(current_user.id)
+        )
+        return preferences
+        
+    except Exception as e:
+        logger.error(f"Error getting analytics preferences: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics preferences")
+
+@api_router.put("/analytics/preferences", tags=["Analytics"])
+async def update_analytics_preferences(
+    preferences: UserAnalyticsPreferencesUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Update user's analytics preferences and consent settings
+    
+    This endpoint allows users to:
+    1. Grant or revoke consent for different types of tracking
+    2. Adjust data retention periods
+    3. Enable/disable specific feature tracking
+    4. Control anonymous data sharing
+    """
+    try:
+        result = await user_behavior_analytics_service.update_user_analytics_preferences(
+            str(current_user.id), 
+            preferences
+        )
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error updating analytics preferences: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update analytics preferences")
+
+@api_router.get("/analytics/dashboard", tags=["Analytics"])
+async def get_analytics_dashboard(
+    days: int = Query(default=30, ge=1, le=365, description="Number of days to include in analytics"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get comprehensive analytics dashboard data
+    
+    This endpoint provides:
+    1. User engagement metrics (sessions, time spent, interactions)
+    2. AI feature usage statistics with success rates
+    3. Daily usage trends and patterns
+    4. Top used features and navigation patterns
+    5. Privacy-compliant data aggregation
+    """
+    try:
+        dashboard_data = await user_behavior_analytics_service.get_analytics_dashboard(
+            str(current_user.id), 
+            days
+        )
+        return dashboard_data
+        
+    except Exception as e:
+        logger.error(f"Error getting analytics dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics dashboard")
+
+@api_router.get("/analytics/ai-features", tags=["Analytics"])
+async def get_ai_feature_usage(
+    days: int = Query(default=30, ge=1, le=365, description="Number of days to analyze"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get detailed AI feature usage analytics
+    
+    Returns:
+        Detailed statistics for each AI feature including:
+        - Total sessions and interactions
+        - Time spent per feature
+        - Success rates and error patterns
+        - Usage trends over time
+    """
+    try:
+        stats = await user_behavior_analytics_service.get_ai_feature_usage_stats(
+            str(current_user.id), 
+            days
+        )
+        return {"ai_features": stats, "period_days": days}
+        
+    except Exception as e:
+        logger.error(f"Error getting AI feature usage: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get AI feature usage")
+
+@api_router.get("/analytics/engagement", tags=["Analytics"])
+async def get_user_engagement_metrics(
+    days: int = Query(default=30, ge=1, le=365, description="Number of days to analyze"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get user engagement metrics
+    
+    Returns:
+        Engagement metrics including session counts, duration,
+        page views, bounce rate, and return user patterns
+    """
+    try:
+        metrics = await user_behavior_analytics_service.get_user_engagement_metrics(
+            str(current_user.id), 
+            days
+        )
+        return metrics
+        
+    except Exception as e:
+        logger.error(f"Error getting engagement metrics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get engagement metrics")
+
+@api_router.post("/analytics/anonymize", tags=["Analytics", "Privacy"])
+async def anonymize_analytics_data(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Anonymize user's analytics data
+    
+    This endpoint:
+    1. Removes personally identifiable information from analytics records
+    2. Preserves aggregate statistics for product improvement
+    3. Complies with privacy regulations (GDPR, CCPA)
+    4. Cannot be reversed once executed
+    """
+    try:
+        result = await user_behavior_analytics_service.anonymize_user_data(str(current_user.id))
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error anonymizing analytics data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to anonymize analytics data")
+
+@api_router.delete("/analytics/data", tags=["Analytics", "Privacy"])
+async def delete_analytics_data(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Delete all analytics data for the user
+    
+    This endpoint:
+    1. Permanently deletes all user analytics data
+    2. Removes behavior events, sessions, and preferences
+    3. Cannot be reversed once executed
+    4. Complies with "right to be forgotten" regulations
+    """
+    try:
+        result = await user_behavior_analytics_service.delete_user_analytics_data(str(current_user.id))
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error deleting analytics data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete analytics data")
