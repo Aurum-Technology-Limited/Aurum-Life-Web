@@ -199,6 +199,32 @@ function App() {
     }
   };
 
+  // Handle semantic search result selection
+  const handleSemanticSearchResult = (result) => {
+    console.log('🔍 Semantic search result selected:', result);
+    
+    // Navigate to the appropriate section based on entity type
+    switch (result.entity_type) {
+      case 'journal_entry':
+        handleSectionChange('journal', { selectedEntry: result.id });
+        break;
+      case 'task':
+        handleSectionChange('tasks', { selectedTask: result.id });
+        break;
+      case 'project':
+        handleSectionChange('projects', { selectedProject: result.id });
+        break;
+      case 'daily_reflection':
+        handleSectionChange('today', { selectedReflection: result.id });
+        break;
+      case 'ai_insight':
+        handleSectionChange('ai-intelligence', { selectedInsight: result.id });
+        break;
+      default:
+        console.log('Unknown entity type for navigation:', result.entity_type);
+    }
+  };
+
   const renderActiveSection = () => {
     const props = { onSectionChange: handleSectionChange, sectionParams };
     
