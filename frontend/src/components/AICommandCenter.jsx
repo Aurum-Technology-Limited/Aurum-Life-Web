@@ -126,12 +126,12 @@ const AICommandCenter = ({ onSectionChange }) => {
         {/* Header */}
         <div className="text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-yellow-400 flex items-center justify-center">
-              <Brain size={32} className="text-white" />
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+              <Zap size={32} className="text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">AI Command Center</h1>
-              <p className="text-gray-400">Your intelligent productivity companion</p>
+              <h1 className="text-4xl font-bold text-white">AI Quick Actions</h1>
+              <p className="text-gray-400">Fast AI assistance and productivity overview</p>
             </div>
           </div>
         </div>
