@@ -208,6 +208,14 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
   return (
     <div className="min-h-screen bg-[#0B0D14] text-white p-6">
       <div className="max-w-7xl mx-auto">
+        
+        {/* Cross-Navigation Widget */}
+        <CrossNavigationWidget 
+          currentScreen="ai-intelligence"
+          onNavigate={(screen) => onSectionChange && onSectionChange(screen)}
+          recentCoachActions={quota ? quota.total - quota.remaining : 0}
+        />
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -222,6 +230,16 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
             </div>
             
             <div className="flex items-center gap-4">
+              {/* AI Quota Display */}
+              {quota && (
+                <AIQuotaWidget 
+                  remaining={quota.remaining} 
+                  total={quota.total}
+                  showDetails={false}
+                  size="small"
+                />
+              )}
+              
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
