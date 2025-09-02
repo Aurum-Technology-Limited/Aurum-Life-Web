@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Brain, TrendingUp, Target, ArrowRight, Tabs, TabList, Tab, TabPanels, TabPanel } from 'lucide-react';
+import { 
+  BarChart3, 
+  Brain, 
+  TrendingUp, 
+  Target, 
+  ArrowRight, 
+  FolderOpen, 
+  MessageSquare, 
+  CheckCircle,
+  Zap
+} from 'lucide-react';
 import { insightsAPI, hrmAPI, aiCoachAPI } from '../services/api';
 import { useQuery } from '@tanstack/react-query';
 import AIInsightCard from './ui/AIInsightCard';
