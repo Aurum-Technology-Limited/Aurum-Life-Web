@@ -233,14 +233,14 @@ export const useAnalytics = () => {
 
   // Send event to backend
   const sendEvent = useCallback(async (eventData) => {
-    if (!user) return;
+    if (!user || !token) return;
 
     try {
       const response = await fetch(`${backendUrl}/api/analytics/track-event`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.access_token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(eventData)
       });
@@ -252,7 +252,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to send analytics event:', error);
     }
-  }, [user, backendUrl]);
+  }, [user, token, backendUrl]);
 
   // End session when user leaves or component unmounts
   const endSession = useCallback(async (exitPage = null) => {
