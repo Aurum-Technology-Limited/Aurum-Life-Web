@@ -88,18 +88,24 @@ class AIIntegrationTester:
         # Test registration first
         test_email = f"test_ai_integration_{int(time.time())}@example.com"
         test_password = "TestPass123!"
+        test_username = f"testuser_{int(time.time())}"
         
-        # Register user
+        # Register user with correct format
         register_data = {
+            "username": test_username,
             "email": test_email,
             "password": test_password,
-            "full_name": "AI Integration Test User"
+            "first_name": "AI Integration",
+            "last_name": "Test User"
         }
         
         success, response = self.make_request('POST', 'auth/register', register_data)
         if success and 'access_token' in response:
             self.token = response['access_token']
-            self.user_id = response.get('user', {}).get('id')
+            # Get user info from /me endpoint since registration doesn't return user object
+            me_success, me_response = self.make_request('GET', 'auth/me')
+            if me_success:
+                self.user_id = me_response.get('id')
             self.log_test("User Registration", True, f"User ID: {self.user_id}")
             return True
         else:
@@ -109,7 +115,10 @@ class AIIntegrationTester:
             
             if success and 'access_token' in response:
                 self.token = response['access_token']
-                self.user_id = response.get('user', {}).get('id')
+                # Get user info from /me endpoint
+                me_success, me_response = self.make_request('GET', 'auth/me')
+                if me_success:
+                    self.user_id = me_response.get('id')
                 self.log_test("User Login (Fallback)", True, f"User ID: {self.user_id}")
                 return True
             else:
