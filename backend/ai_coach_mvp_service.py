@@ -193,10 +193,10 @@ class AiCoachMvpService:
         
         # 7) Optional: Gemini 2.0-flash coaching for top N
         def init_llm():
-            api_key = os.environ.get('GEMINI_API_KEY')
+            api_key = os.environ.get('OPENAI_API_KEY')
             if not api_key:
                 return None
-            return LlmChat(api_key=api_key, session_id=f"coach-{user_id}", system_message="You are the Aurum Life AI Coach. Be concise (1-2 sentences), motivational, and explicitly connect the task to its Project/Area/Pillar when available.").with_model("gemini", "gemini-2.0-flash")
+            return LlmChat(api_key=api_key, session_id=f"coach-{user_id}", system_message="You are the Aurum Life AI Coach. Be concise (1-2 sentences), motivational, and explicitly connect the task to its Project/Area/Pillar when available.").with_model("openai", "gpt-5-nano")
         
         llm = init_llm()
         top = scored[:max(0, int(coaching_top_n))]
