@@ -31,6 +31,7 @@ const Journal = lazy(() => import('./components/Journal'));
 const Tasks = lazy(() => import('./components/Tasks'));
 const Feedback = lazy(() => import('./components/Feedback'));
 const AICoach = lazy(() => import('./components/AICoach'));
+const AICommandCenter = lazy(() => import('./components/AICommandCenter'));
 const Profile = lazy(() => import('./components/Profile'));
 const ProfilePage = lazy(() => import('./components/ProfilePage'));
 const Insights = lazy(() => import('./components/Insights'));
