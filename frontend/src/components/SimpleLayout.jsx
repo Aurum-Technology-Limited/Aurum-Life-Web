@@ -20,6 +20,7 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
     { name: 'AI Intelligence', key: 'ai-intelligence', icon: Brain },
     { name: 'Feedback', key: 'feedback', icon: ChatIcon },
     { name: 'AI Command', key: 'ai-command', icon: BeakerIcon },
+    { name: 'AI Coach', key: 'ai-coach', icon: BeakerIcon },
   ], []);
 
   const currentPageName = useMemo(() => {
