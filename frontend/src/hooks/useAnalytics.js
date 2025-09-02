@@ -227,23 +227,11 @@ export const useAnalytics = () => {
     if (!user || !token) return;
 
     try {
-      const response = await fetch(`${backendUrl}/api/analytics/track-event`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(eventData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Analytics API error: ${response.status}`);
-      }
-
+      await analyticsAPI.trackEvent(eventData);
     } catch (error) {
       console.warn('Failed to send analytics event:', error);
     }
-  }, [user, token, backendUrl]);
+  }, [user, token]);
 
   // End session when user leaves or component unmounts
   const endSession = useCallback(async (exitPage = null) => {
