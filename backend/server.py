@@ -34,7 +34,7 @@ from alignment_score_service import AlignmentScoreService
 from ai_coach_mvp_service import AiCoachMvpService
 from hrm_endpoints import hrm_router
 
-ROOT_DIR = Path(__file__).parent
+ROOT_DIR = PathlibPath(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 app = FastAPI(title="Aurum Life API", version="1.0.0")
