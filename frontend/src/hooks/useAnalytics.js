@@ -345,7 +345,7 @@ export const useAnalytics = () => {
     return () => {
       window.removeEventListener('beforeunload', handleUnload);
     };
-  }, [user, backendUrl]);
+  }, [user, token, backendUrl]);
 
   return {
     // Session management
