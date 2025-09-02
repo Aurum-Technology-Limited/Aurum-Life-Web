@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, AlertCircle, BookOpen, TrendingUp, FileText, RotateCcw, Search, Filter, Calendar, Tag, Smile, Meh, Frown, X } from 'lucide-react';
-import { journalAPI, handleApiError } from '../services/api';
+import { Plus, Edit2, Trash2, AlertCircle, BookOpen, TrendingUp, FileText, RotateCcw, Search, Filter, Calendar, Tag, Smile, Meh, Frown, X, Brain, Heart, Zap, Target, BarChart3, Activity, Sparkles } from 'lucide-react';
+import { journalAPI, sentimentAPI, handleApiError } from '../services/api';
+import { SentimentIndicator, SentimentBadge } from './ui/SentimentIndicator';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
 
 const Journal = ({ onSectionChange, sectionParams }) => {
   const [currentView, setCurrentView] = useState('entries'); // 'entries', 'insights', 'templates', 'trash'
