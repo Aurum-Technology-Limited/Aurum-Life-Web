@@ -651,6 +651,129 @@ import { hrmAPI } from './hrmApi';
 // Re-export HRM API
 export { hrmAPI };
 
+// Analytics API Service
+export const analyticsAPI = {
+  /**
+   * Get analytics dashboard data
+   * @param {number} days - Number of days to fetch data for (default: 30)
+   * @returns {Promise} Dashboard data
+   */
+  getDashboard: async (days = 30) => {
+    try {
+      const response = await apiClient.get(`/analytics/dashboard?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics dashboard fetch failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get user analytics preferences
+   * @returns {Promise} User preferences
+   */
+  getPreferences: async () => {
+    try {
+      const response = await apiClient.get('/analytics/preferences');
+      return response.data;
+    } catch (error) {
+      console.error('Analytics preferences fetch failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update user analytics preferences
+   * @param {Object} data - Preferences data
+   * @returns {Promise} Updated preferences
+   */
+  updatePreferences: async (data) => {
+    try {
+      const response = await apiClient.put('/analytics/preferences', data);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics preferences update failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Track an analytics event
+   * @param {Object} event - Event data
+   * @returns {Promise} Tracking result
+   */
+  trackEvent: async (event) => {
+    try {
+      const response = await apiClient.post('/analytics/track-event', event);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics event tracking failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Start an analytics session
+   * @param {Object} session - Session data
+   * @returns {Promise} Session result
+   */
+  startSession: async (session) => {
+    try {
+      const response = await apiClient.post('/analytics/start-session', session);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics session start failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * End an analytics session
+   * @param {string} sessionId - Session ID
+   * @param {string} exitPage - Exit page URL
+   * @returns {Promise} Session end result
+   */
+  endSession: async (sessionId, exitPage) => {
+    try {
+      const response = await apiClient.post(`/analytics/end-session/${sessionId}?exit_page=${encodeURIComponent(exitPage)}`);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics session end failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get AI features usage data
+   * @param {number} days - Number of days to fetch data for (default: 30)
+   * @returns {Promise} AI features data
+   */
+  getAIFeatures: async (days = 30) => {
+    try {
+      const response = await apiClient.get(`/analytics/ai-features?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics AI features fetch failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get engagement metrics
+   * @param {number} days - Number of days to fetch data for (default: 30)
+   * @returns {Promise} Engagement data
+   */
+  getEngagement: async (days = 30) => {
+    try {
+      const response = await apiClient.get(`/analytics/engagement?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics engagement fetch failed:', error);
+      throw error;
+    }
+  }
+};
+
 // Semantic Search API
 export const semanticSearchAPI = {
   /**
