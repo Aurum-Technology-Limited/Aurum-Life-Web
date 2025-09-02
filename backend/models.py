@@ -283,6 +283,17 @@ class JournalEntryResponse(BaseModel):
     reading_time_minutes: int
     created_at: datetime
     updated_at: datetime
+    
+    # Sentiment Analysis Fields (New)
+    sentiment_score: Optional[float] = None
+    sentiment_category: Optional[SentimentCategoryEnum] = None
+    sentiment_confidence: Optional[float] = None
+    emotional_keywords: List[str] = []
+    emotional_themes: List[str] = []
+    dominant_emotions: List[str] = []
+    emotional_intensity: Optional[float] = None
+    sentiment_analysis_date: Optional[datetime] = None
+    sentiment_emoji: Optional[str] = None  # Computed emoji representation
 
 class JournalInsights(BaseModel):
     total_entries: int
