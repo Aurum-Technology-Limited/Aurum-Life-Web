@@ -9,7 +9,7 @@ import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  FileText
+  DocumentTextIcon
 } from '@heroicons/react/outline';
 import { 
   FolderOpenIcon,
