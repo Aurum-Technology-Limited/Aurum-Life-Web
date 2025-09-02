@@ -12,9 +12,6 @@ export const useAnalytics = () => {
   const sessionIdRef = useRef(null);
   const pageStartTimeRef = useRef(null);
   const lastEventTimeRef = useRef(null);
-  
-  // Backend URL from environment
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
   // Initialize session on hook mount
   useEffect(() => {
