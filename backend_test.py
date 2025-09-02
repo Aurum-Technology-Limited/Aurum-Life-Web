@@ -125,407 +125,552 @@ class OnboardingTemplateTester:
             self.log_test("Authentication", False, response, response_time)
             return False
 
-    def test_hrm_global_analysis(self) -> bool:
-        """Test HRM global analysis with different depths"""
-        print("\n🧠 Testing HRM Global Analysis...")
+    def test_create_pillar(self) -> bool:
+        """Test creating a pillar via POST /api/pillars"""
+        print("\n🏛️ Testing Pillar Creation...")
         
-        analysis_depths = ['minimal', 'balanced', 'detailed']
-        all_passed = True
+        pillar_data = {
+            "name": "Test Pillar",
+            "description": "A test pillar for onboarding template testing",
+            "icon": "🎯",
+            "color": "#3B82F6"
+        }
         
-        for depth in analysis_depths:
+        success, response, response_time = self.make_request(
+            'POST',
+            'pillars',
+            data=pillar_data
+        )
+        
+        if success and 'id' in response:
+            self.created_pillar_id = response['id']
+            
+            details = {
+                'pillar_id': self.created_pillar_id,
+                'pillar_name': response.get('name'),
+                'user_id_match': response.get('user_id') == self.user_id
+            }
+            
+            self.log_test("Create Pillar", True, details, response_time)
+            return True
+        else:
+            self.log_test("Create Pillar", False, response, response_time)
+            return False
+
+    def test_create_area(self) -> bool:
+        """Test creating an area via POST /api/areas"""
+        print("\n🎯 Testing Area Creation...")
+        
+        if not self.created_pillar_id:
+            self.log_test("Create Area", False, {'error': 'No pillar_id available'})
+            return False
+        
+        area_data = {
+            "pillar_id": self.created_pillar_id,
+            "name": "Test Area",
+            "description": "A test area for onboarding template testing",
+            "icon": "📊",
+            "color": "#10B981"
+        }
+        
+        success, response, response_time = self.make_request(
+            'POST',
+            'areas',
+            data=area_data
+        )
+        
+        if success and 'id' in response:
+            self.created_area_id = response['id']
+            
+            details = {
+                'area_id': self.created_area_id,
+                'area_name': response.get('name'),
+                'pillar_id_match': response.get('pillar_id') == self.created_pillar_id,
+                'user_id_match': response.get('user_id') == self.user_id
+            }
+            
+            self.log_test("Create Area", True, details, response_time)
+            return True
+        else:
+            self.log_test("Create Area", False, response, response_time)
+            return False
+
+    def test_create_project(self) -> bool:
+        """Test creating a project via POST /api/projects"""
+        print("\n🚀 Testing Project Creation...")
+        
+        if not self.created_area_id:
+            self.log_test("Create Project", False, {'error': 'No area_id available'})
+            return False
+        
+        project_data = {
+            "area_id": self.created_area_id,
+            "name": "Test Project",
+            "description": "A test project for onboarding template testing",
+            "icon": "💼",
+            "priority": "medium",
+            "status": "not_started"
+        }
+        
+        success, response, response_time = self.make_request(
+            'POST',
+            'projects',
+            data=project_data
+        )
+        
+        if success and 'id' in response:
+            self.created_project_id = response['id']
+            
+            details = {
+                'project_id': self.created_project_id,
+                'project_name': response.get('name'),
+                'area_id_match': response.get('area_id') == self.created_area_id,
+                'user_id_match': response.get('user_id') == self.user_id
+            }
+            
+            self.log_test("Create Project", True, details, response_time)
+            return True
+        else:
+            self.log_test("Create Project", False, response, response_time)
+            return False
+
+    def test_create_tasks(self) -> bool:
+        """Test creating tasks via POST /api/tasks"""
+        print("\n✅ Testing Task Creation...")
+        
+        if not self.created_project_id:
+            self.log_test("Create Tasks", False, {'error': 'No project_id available'})
+            return False
+        
+        # Create multiple tasks to test the hierarchy
+        tasks_data = [
+            {
+                "project_id": self.created_project_id,
+                "name": "Test Task 1",
+                "description": "First test task for onboarding template",
+                "priority": "high",
+                "status": "todo"
+            },
+            {
+                "project_id": self.created_project_id,
+                "name": "Test Task 2", 
+                "description": "Second test task for onboarding template",
+                "priority": "medium",
+                "status": "todo"
+            },
+            {
+                "project_id": self.created_project_id,
+                "name": "Test Task 3",
+                "description": "Third test task for onboarding template",
+                "priority": "low",
+                "status": "todo"
+            }
+        ]
+        
+        created_tasks = []
+        all_success = True
+        total_time = 0
+        
+        for i, task_data in enumerate(tasks_data):
             success, response, response_time = self.make_request(
                 'POST',
-                'hrm/analyze',
-                data={
-                    'entity_type': 'global',
-                    'entity_id': None,
-                    'analysis_depth': depth,
-                    'force_llm': True  # Force GPT-5 nano usage
-                }
+                'tasks',
+                data=task_data
             )
             
-            if success:
-                # Verify response structure and quality
-                required_fields = ['insight_id', 'confidence_score', 'reasoning_path', 'recommendations']
-                has_all_fields = all(field in response for field in required_fields)
-                
-                # Check confidence score is reasonable (0-100)
-                confidence_valid = 0 <= response.get('confidence_score', -1) <= 100
-                
-                # Check if GPT-5 nano was used
-                used_llm = response.get('used_llm', False)
-                
-                test_passed = has_all_fields and confidence_valid and used_llm
-                
-                details = {
-                    'depth': depth,
-                    'confidence_score': response.get('confidence_score'),
-                    'used_llm': used_llm,
-                    'has_reasoning': bool(response.get('reasoning_path')),
-                    'recommendations_count': len(response.get('recommendations', []))
-                }
-                
-                self.log_test(f"HRM Global Analysis ({depth})", test_passed, details, response_time)
-                
-                if not test_passed:
-                    all_passed = False
+            total_time += response_time
+            
+            if success and 'id' in response:
+                task_id = response['id']
+                self.created_task_ids.append(task_id)
+                created_tasks.append({
+                    'task_id': task_id,
+                    'task_name': response.get('name'),
+                    'project_id_match': response.get('project_id') == self.created_project_id,
+                    'user_id_match': response.get('user_id') == self.user_id
+                })
             else:
-                self.log_test(f"HRM Global Analysis ({depth})", False, response, response_time)
-                all_passed = False
-                
-        return all_passed
-
-    def test_task_level_analysis(self) -> bool:
-        """Test task-level HRM analysis for reasoning quality"""
-        print("\n📋 Testing Task-Level Analysis...")
-        
-        # First, get user's tasks
-        success, tasks_response, _ = self.make_request('GET', 'tasks', params={'limit': 5})
-        
-        if not success or not tasks_response:
-            self.log_test("Get Tasks for Analysis", False, {'error': 'No tasks available'})
-            return False
-            
-        tasks = tasks_response if isinstance(tasks_response, list) else tasks_response.get('tasks', [])
-        
-        if not tasks:
-            self.log_test("Task-Level Analysis", False, {'error': 'No tasks found'})
-            return False
-            
-        # Test analysis on first task
-        task = tasks[0]
-        task_id = task.get('id')
-        
-        success, response, response_time = self.make_request(
-            'POST',
-            'hrm/analyze',
-            data={
-                'entity_type': 'task',
-                'entity_id': task_id,
-                'analysis_depth': 'balanced',
-                'force_llm': True
-            }
-        )
-        
-        if success:
-            # Verify enhanced reasoning quality
-            reasoning_quality = self._assess_reasoning_quality(response)
-            
-            details = {
-                'task_id': task_id,
-                'task_name': task.get('name', 'Unknown'),
-                'confidence_score': response.get('confidence_score'),
-                'reasoning_quality': reasoning_quality,
-                'recommendations_count': len(response.get('recommendations', [])),
-                'used_llm': response.get('used_llm', False)
-            }
-            
-            test_passed = reasoning_quality['score'] >= 70  # Expect high quality with GPT-5 nano
-            self.log_test("Task-Level Analysis", test_passed, details, response_time)
-            return test_passed
-        else:
-            self.log_test("Task-Level Analysis", False, response, response_time)
-            return False
-
-    def test_ai_coach_enhancement(self) -> bool:
-        """Test AI Coach with enhanced GPT-5 nano reasoning"""
-        print("\n🤖 Testing AI Coach Enhancement...")
-        
-        # Test today priorities with enhanced coaching
-        success, response, response_time = self.make_request(
-            'GET',
-            'ai/today-priorities',
-            params={
-                'top_n': 5,
-                'include_hrm': True
-            }
-        )
-        
-        if success:
-            # Verify enhanced coaching quality
-            coaching_quality = self._assess_coaching_quality(response)
-            
-            details = {
-                'tasks_count': len(response.get('tasks', [])),
-                'has_coaching_messages': bool(response.get('coaching_message')),
-                'coaching_quality': coaching_quality,
-                'response_structure': list(response.keys())
-            }
-            
-            test_passed = coaching_quality['score'] >= 70
-            self.log_test("AI Coach Enhancement", test_passed, details, response_time)
-            return test_passed
-        else:
-            self.log_test("AI Coach Enhancement", False, response, response_time)
-            return False
-
-    def test_why_statements_generation(self) -> bool:
-        """Test enhanced why-statements with GPT-5 nano"""
-        print("\n❓ Testing Why-Statements Generation...")
-        
-        # Get tasks first
-        success, tasks_response, _ = self.make_request('GET', 'tasks', params={'limit': 3})
-        
-        if not success:
-            self.log_test("Why-Statements Generation", False, {'error': 'Could not get tasks'})
-            return False
-            
-        tasks = tasks_response if isinstance(tasks_response, list) else tasks_response.get('tasks', [])
-        
-        if not tasks:
-            self.log_test("Why-Statements Generation", False, {'error': 'No tasks found'})
-            return False
-            
-        task_ids = [task.get('id') for task in tasks[:3] if task.get('id')]
-        
-        success, response, response_time = self.make_request(
-            'GET',
-            'ai/task-why-statements',
-            params={'task_ids': task_ids}
-        )
-        
-        if success:
-            # Verify why-statements quality
-            why_quality = self._assess_why_statements_quality(response)
-            
-            details = {
-                'task_ids_requested': len(task_ids),
-                'why_statements_received': len(response.get('why_statements', [])),
-                'quality_score': why_quality['score'],
-                'has_confidence_scores': why_quality['has_confidence'],
-                'has_reasoning_paths': why_quality['has_reasoning']
-            }
-            
-            test_passed = why_quality['score'] >= 70
-            self.log_test("Why-Statements Generation", test_passed, details, response_time)
-            return test_passed
-        else:
-            self.log_test("Why-Statements Generation", False, response, response_time)
-            return False
-
-    def test_ai_intelligence_center(self) -> bool:
-        """Test AI Intelligence Center integration"""
-        print("\n🧠 Testing AI Intelligence Center...")
-        
-        # Test insights retrieval
-        success, response, response_time = self.make_request(
-            'GET',
-            'hrm/insights',
-            params={
-                'limit': 10,
-                'is_active': True
-            }
-        )
-        
-        if success:
-            insights = response.get('insights', [])
-            
-            details = {
-                'insights_count': len(insights),
-                'has_confidence_scores': any('confidence_score' in insight for insight in insights),
-                'has_reasoning_paths': any('reasoning_path' in insight for insight in insights),
-                'insight_types': list(set(insight.get('insight_type') for insight in insights))
-            }
-            
-            test_passed = len(insights) >= 0  # Should work even with no insights
-            self.log_test("AI Intelligence Center", test_passed, details, response_time)
-            return test_passed
-        else:
-            self.log_test("AI Intelligence Center", False, response, response_time)
-            return False
-
-    def test_performance_comparison(self) -> bool:
-        """Test performance with GPT-5 nano"""
-        print("\n⚡ Testing Performance...")
-        
-        # Test multiple concurrent AI operations
-        start_time = time.time()
-        
-        # Run 3 concurrent-like operations
-        operations = []
-        
-        # Operation 1: HRM Analysis
-        success1, response1, time1 = self.make_request(
-            'POST',
-            'hrm/analyze',
-            data={
-                'entity_type': 'global',
-                'analysis_depth': 'minimal',
-                'force_llm': True
-            }
-        )
-        operations.append(('HRM Analysis', success1, time1))
-        
-        # Operation 2: Today Priorities
-        success2, response2, time2 = self.make_request(
-            'GET',
-            'ai/today-priorities',
-            params={'top_n': 3, 'include_hrm': True}
-        )
-        operations.append(('Today Priorities', success2, time2))
-        
-        # Operation 3: Insights
-        success3, response3, time3 = self.make_request(
-            'GET',
-            'hrm/insights',
-            params={'limit': 5}
-        )
-        operations.append(('Insights', success3, time3))
-        
-        total_time = time.time() - start_time
-        
-        # Assess performance
-        successful_ops = sum(1 for _, success, _ in operations if success)
-        avg_response_time = sum(t for _, _, t in operations) / len(operations)
+                all_success = False
+                print(f"   Failed to create task {i+1}: {response}")
         
         details = {
-            'total_operations': len(operations),
-            'successful_operations': successful_ops,
-            'total_time': total_time,
-            'average_response_time': avg_response_time,
-            'operations': [{'name': name, 'success': success, 'time': t} for name, success, t in operations]
+            'tasks_created': len(created_tasks),
+            'tasks_requested': len(tasks_data),
+            'created_tasks': created_tasks
         }
         
-        # Performance criteria: All operations should succeed and average response time < 10s
-        test_passed = successful_ops == len(operations) and avg_response_time < 10.0
-        
-        self.log_test("Performance Test", test_passed, details, total_time)
-        return test_passed
+        self.log_test("Create Tasks", all_success, details, total_time)
+        return all_success
 
-    def _assess_reasoning_quality(self, response: Dict) -> Dict:
-        """Assess the quality of reasoning in HRM response"""
-        score = 0
+    def test_complete_onboarding(self) -> bool:
+        """Test the complete-onboarding endpoint"""
+        print("\n🎉 Testing Complete Onboarding...")
         
-        # Check confidence score
-        confidence = response.get('confidence_score', 0)
-        if confidence > 70:
-            score += 30
-        elif confidence > 50:
-            score += 20
-        elif confidence > 30:
-            score += 10
+        success, response, response_time = self.make_request(
+            'POST',
+            'auth/complete-onboarding'
+        )
+        
+        if success:
+            details = {
+                'message': response.get('message'),
+                'has_completed_onboarding': response.get('has_completed_onboarding'),
+                'success': response.get('success')
+            }
             
-        # Check reasoning path
-        reasoning_path = response.get('reasoning_path', [])
-        if len(reasoning_path) >= 3:
-            score += 25
-        elif len(reasoning_path) >= 2:
-            score += 15
-        elif len(reasoning_path) >= 1:
-            score += 10
-            
-        # Check recommendations
-        recommendations = response.get('recommendations', [])
-        if len(recommendations) >= 3:
-            score += 25
-        elif len(recommendations) >= 2:
-            score += 15
-        elif len(recommendations) >= 1:
-            score += 10
-            
-        # Check summary quality (basic length check)
-        summary = response.get('summary', '')
-        if len(summary) > 100:
-            score += 20
-        elif len(summary) > 50:
-            score += 10
-            
-        return {
-            'score': score,
-            'confidence': confidence,
-            'reasoning_steps': len(reasoning_path),
-            'recommendations_count': len(recommendations),
-            'summary_length': len(summary)
-        }
+            self.log_test("Complete Onboarding", True, details, response_time)
+            return True
+        else:
+            self.log_test("Complete Onboarding", False, response, response_time)
+            return False
 
-    def _assess_coaching_quality(self, response: Dict) -> Dict:
-        """Assess the quality of AI coaching messages"""
-        score = 0
+    def test_user_onboarding_status(self) -> bool:
+        """Test that user profile shows correct onboarding status"""
+        print("\n👤 Testing User Onboarding Status...")
         
-        # Check if coaching message exists
-        coaching_message = response.get('coaching_message', '')
-        if coaching_message:
-            score += 30
+        success, response, response_time = self.make_request(
+            'GET',
+            'auth/me'
+        )
+        
+        if success:
+            user_data = response
+            has_completed_onboarding = user_data.get('has_completed_onboarding', False)
+            user_level = user_data.get('level', 1)
             
-            # Check message quality (length and content)
-            if len(coaching_message) > 100:
-                score += 20
-            elif len(coaching_message) > 50:
-                score += 10
-                
-        # Check task prioritization quality
-        tasks = response.get('tasks', [])
-        if tasks:
-            # Check if tasks have scores
-            scored_tasks = [t for t in tasks if 'score' in t]
-            if len(scored_tasks) == len(tasks):
-                score += 25
-                
-            # Check if tasks have HRM insights
-            hrm_tasks = [t for t in tasks if 'hrm_insight' in t]
-            if hrm_tasks:
-                score += 25
-                
-        return {
-            'score': score,
-            'has_coaching_message': bool(coaching_message),
-            'coaching_message_length': len(coaching_message),
-            'tasks_with_scores': len([t for t in tasks if 'score' in t]),
-            'tasks_with_hrm': len([t for t in tasks if 'hrm_insight' in t])
-        }
+            details = {
+                'user_id': user_data.get('id'),
+                'has_completed_onboarding': has_completed_onboarding,
+                'user_level': user_level,
+                'expected_onboarding_complete': True,
+                'status_correct': has_completed_onboarding == True
+            }
+            
+            # Test passes if onboarding status is correctly updated
+            test_passed = has_completed_onboarding == True
+            
+            self.log_test("User Onboarding Status", test_passed, details, response_time)
+            return test_passed
+        else:
+            self.log_test("User Onboarding Status", False, response, response_time)
+            return False
 
-    def _assess_why_statements_quality(self, response: Dict) -> Dict:
-        """Assess the quality of why-statements"""
-        score = 0
+    def test_hierarchy_relationships(self) -> bool:
+        """Test that created hierarchy has proper foreign key relationships"""
+        print("\n🔗 Testing Hierarchy Relationships...")
         
-        why_statements = response.get('why_statements', [])
+        all_tests_passed = True
+        total_time = 0
         
-        if why_statements:
-            score += 30
-            
-            # Check if statements have confidence scores
-            with_confidence = [w for w in why_statements if 'confidence_score' in w]
-            if len(with_confidence) == len(why_statements):
-                score += 25
-                
-            # Check if statements have reasoning
-            with_reasoning = [w for w in why_statements if 'reasoning_path' in w]
-            if with_reasoning:
-                score += 25
-                
-            # Check statement quality (length)
-            avg_length = sum(len(w.get('why_statement', '')) for w in why_statements) / len(why_statements)
-            if avg_length > 100:
-                score += 20
-            elif avg_length > 50:
-                score += 10
-                
-        return {
-            'score': score,
-            'statements_count': len(why_statements),
-            'has_confidence': len([w for w in why_statements if 'confidence_score' in w]),
-            'has_reasoning': len([w for w in why_statements if 'reasoning_path' in w]),
-            'avg_statement_length': sum(len(w.get('why_statement', '')) for w in why_statements) / len(why_statements) if why_statements else 0
+        # Test 1: Verify pillar exists and has areas
+        success, pillars_response, response_time = self.make_request(
+            'GET',
+            'pillars'
+        )
+        total_time += response_time
+        
+        pillar_found = False
+        if success and isinstance(pillars_response, list):
+            for pillar in pillars_response:
+                if pillar.get('id') == self.created_pillar_id:
+                    pillar_found = True
+                    break
+        
+        if not pillar_found:
+            all_tests_passed = False
+            print(f"   ❌ Created pillar {self.created_pillar_id} not found in pillars list")
+        
+        # Test 2: Verify area exists and links to pillar
+        success, areas_response, response_time = self.make_request(
+            'GET',
+            'areas'
+        )
+        total_time += response_time
+        
+        area_found = False
+        area_pillar_link_correct = False
+        if success and isinstance(areas_response, list):
+            for area in areas_response:
+                if area.get('id') == self.created_area_id:
+                    area_found = True
+                    area_pillar_link_correct = area.get('pillar_id') == self.created_pillar_id
+                    break
+        
+        if not area_found:
+            all_tests_passed = False
+            print(f"   ❌ Created area {self.created_area_id} not found in areas list")
+        elif not area_pillar_link_correct:
+            all_tests_passed = False
+            print(f"   ❌ Area pillar_id does not match created pillar")
+        
+        # Test 3: Verify project exists and links to area
+        success, projects_response, response_time = self.make_request(
+            'GET',
+            'projects'
+        )
+        total_time += response_time
+        
+        project_found = False
+        project_area_link_correct = False
+        if success and isinstance(projects_response, list):
+            for project in projects_response:
+                if project.get('id') == self.created_project_id:
+                    project_found = True
+                    project_area_link_correct = project.get('area_id') == self.created_area_id
+                    break
+        
+        if not project_found:
+            all_tests_passed = False
+            print(f"   ❌ Created project {self.created_project_id} not found in projects list")
+        elif not project_area_link_correct:
+            all_tests_passed = False
+            print(f"   ❌ Project area_id does not match created area")
+        
+        # Test 4: Verify tasks exist and link to project
+        success, tasks_response, response_time = self.make_request(
+            'GET',
+            'tasks'
+        )
+        total_time += response_time
+        
+        tasks_found = 0
+        tasks_project_links_correct = 0
+        if success and isinstance(tasks_response, list):
+            for task in tasks_response:
+                if task.get('id') in self.created_task_ids:
+                    tasks_found += 1
+                    if task.get('project_id') == self.created_project_id:
+                        tasks_project_links_correct += 1
+        
+        if tasks_found != len(self.created_task_ids):
+            all_tests_passed = False
+            print(f"   ❌ Only {tasks_found}/{len(self.created_task_ids)} created tasks found")
+        elif tasks_project_links_correct != len(self.created_task_ids):
+            all_tests_passed = False
+            print(f"   ❌ Only {tasks_project_links_correct}/{len(self.created_task_ids)} tasks have correct project_id")
+        
+        details = {
+            'pillar_found': pillar_found,
+            'area_found': area_found,
+            'area_pillar_link_correct': area_pillar_link_correct,
+            'project_found': project_found,
+            'project_area_link_correct': project_area_link_correct,
+            'tasks_found': tasks_found,
+            'tasks_expected': len(self.created_task_ids),
+            'tasks_project_links_correct': tasks_project_links_correct
         }
+        
+        self.log_test("Hierarchy Relationships", all_tests_passed, details, total_time)
+        return all_tests_passed
+
+    def test_data_isolation(self) -> bool:
+        """Test that created data is properly isolated to the authenticated user"""
+        print("\n🔒 Testing Data Isolation...")
+        
+        all_tests_passed = True
+        total_time = 0
+        
+        # Get all user's data and verify it belongs to the correct user
+        endpoints_to_test = [
+            ('pillars', self.created_pillar_id),
+            ('areas', self.created_area_id),
+            ('projects', self.created_project_id),
+            ('tasks', self.created_task_ids[0] if self.created_task_ids else None)
+        ]
+        
+        isolation_results = {}
+        
+        for endpoint, entity_id in endpoints_to_test:
+            if not entity_id:
+                continue
+                
+            success, response, response_time = self.make_request('GET', endpoint)
+            total_time += response_time
+            
+            if success and isinstance(response, list):
+                user_data_correct = True
+                entity_found = False
+                
+                for item in response:
+                    if item.get('id') == entity_id:
+                        entity_found = True
+                        if item.get('user_id') != self.user_id:
+                            user_data_correct = False
+                            all_tests_passed = False
+                            print(f"   ❌ {endpoint} entity {entity_id} has wrong user_id: {item.get('user_id')} != {self.user_id}")
+                        break
+                
+                if not entity_found:
+                    all_tests_passed = False
+                    print(f"   ❌ {endpoint} entity {entity_id} not found in user's data")
+                
+                isolation_results[endpoint] = {
+                    'entity_found': entity_found,
+                    'user_id_correct': user_data_correct
+                }
+        
+        details = {
+            'user_id': self.user_id,
+            'isolation_results': isolation_results
+        }
+        
+        self.log_test("Data Isolation", all_tests_passed, details, total_time)
+        return all_tests_passed
+
+    def test_constraint_violations(self) -> bool:
+        """Test for common constraint violations and error handling"""
+        print("\n⚠️ Testing Constraint Violations...")
+        
+        constraint_tests = []
+        total_time = 0
+        
+        # Test 1: Try to create area with invalid pillar_id
+        success, response, response_time = self.make_request(
+            'POST',
+            'areas',
+            data={
+                "pillar_id": "invalid-pillar-id",
+                "name": "Invalid Area",
+                "description": "Should fail due to invalid pillar_id"
+            }
+        )
+        total_time += response_time
+        
+        constraint_tests.append({
+            'test': 'Invalid pillar_id for area',
+            'should_fail': True,
+            'actually_failed': not success,
+            'response': response
+        })
+        
+        # Test 2: Try to create project with invalid area_id
+        success, response, response_time = self.make_request(
+            'POST',
+            'projects',
+            data={
+                "area_id": "invalid-area-id",
+                "name": "Invalid Project",
+                "description": "Should fail due to invalid area_id"
+            }
+        )
+        total_time += response_time
+        
+        constraint_tests.append({
+            'test': 'Invalid area_id for project',
+            'should_fail': True,
+            'actually_failed': not success,
+            'response': response
+        })
+        
+        # Test 3: Try to create task with invalid project_id
+        success, response, response_time = self.make_request(
+            'POST',
+            'tasks',
+            data={
+                "project_id": "invalid-project-id",
+                "name": "Invalid Task",
+                "description": "Should fail due to invalid project_id"
+            }
+        )
+        total_time += response_time
+        
+        constraint_tests.append({
+            'test': 'Invalid project_id for task',
+            'should_fail': True,
+            'actually_failed': not success,
+            'response': response
+        })
+        
+        # Evaluate results
+        all_constraints_working = True
+        for test in constraint_tests:
+            if test['should_fail'] and not test['actually_failed']:
+                all_constraints_working = False
+                print(f"   ❌ {test['test']} should have failed but succeeded")
+        
+        details = {
+            'constraint_tests': constraint_tests,
+            'all_constraints_working': all_constraints_working
+        }
+        
+        self.log_test("Constraint Violations", all_constraints_working, details, total_time)
+        return all_constraints_working
+
+    def cleanup_test_data(self) -> bool:
+        """Clean up created test data"""
+        print("\n🧹 Cleaning Up Test Data...")
+        
+        cleanup_success = True
+        total_time = 0
+        
+        # Note: In a real application, we might want to delete in reverse order
+        # due to foreign key constraints, but for this test we'll just attempt cleanup
+        
+        # Clean up tasks
+        for task_id in self.created_task_ids:
+            success, response, response_time = self.make_request('DELETE', f'tasks/{task_id}')
+            total_time += response_time
+            if not success:
+                cleanup_success = False
+                print(f"   ⚠️ Failed to delete task {task_id}")
+        
+        # Clean up project
+        if self.created_project_id:
+            success, response, response_time = self.make_request('DELETE', f'projects/{self.created_project_id}')
+            total_time += response_time
+            if not success:
+                cleanup_success = False
+                print(f"   ⚠️ Failed to delete project {self.created_project_id}")
+        
+        # Clean up area
+        if self.created_area_id:
+            success, response, response_time = self.make_request('DELETE', f'areas/{self.created_area_id}')
+            total_time += response_time
+            if not success:
+                cleanup_success = False
+                print(f"   ⚠️ Failed to delete area {self.created_area_id}")
+        
+        # Clean up pillar
+        if self.created_pillar_id:
+            success, response, response_time = self.make_request('DELETE', f'pillars/{self.created_pillar_id}')
+            total_time += response_time
+            if not success:
+                cleanup_success = False
+                print(f"   ⚠️ Failed to delete pillar {self.created_pillar_id}")
+        
+        details = {
+            'tasks_cleaned': len(self.created_task_ids),
+            'project_cleaned': bool(self.created_project_id),
+            'area_cleaned': bool(self.created_area_id),
+            'pillar_cleaned': bool(self.created_pillar_id),
+            'cleanup_success': cleanup_success
+        }
+        
+        self.log_test("Cleanup Test Data", cleanup_success, details, total_time)
+        return cleanup_success
 
     def run_comprehensive_test(self):
-        """Run all tests"""
-        print("🚀 Starting Enhanced AI System Testing with GPT-5 nano")
+        """Run all onboarding template creation tests"""
+        print("🚀 Starting Onboarding Template Creation Backend Test")
         print("=" * 60)
         
         # Authentication is required for all other tests
         if not self.test_authentication():
             print("\n❌ Authentication failed. Cannot proceed with other tests.")
             return False
-            
-        # Run all AI enhancement tests
+        
+        # Run all tests in sequence (order matters for hierarchy creation)
         test_methods = [
-            self.test_hrm_global_analysis,
-            self.test_task_level_analysis,
-            self.test_ai_coach_enhancement,
-            self.test_why_statements_generation,
-            self.test_ai_intelligence_center,
-            self.test_performance_comparison
+            self.test_create_pillar,
+            self.test_create_area,
+            self.test_create_project,
+            self.test_create_tasks,
+            self.test_complete_onboarding,
+            self.test_user_onboarding_status,
+            self.test_hierarchy_relationships,
+            self.test_data_isolation,
+            self.test_constraint_violations,
+            self.cleanup_test_data
         ]
         
         for test_method in test_methods:
@@ -543,7 +688,7 @@ class OnboardingTemplateTester:
     def print_summary(self):
         """Print test summary"""
         print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY")
+        print("📊 ONBOARDING TEMPLATE CREATION TEST SUMMARY")
         print("=" * 60)
         
         print(f"Total Tests: {self.tests_run}")
@@ -560,17 +705,37 @@ class OnboardingTemplateTester:
                 if test['details']:
                     print(f"    {test['details']}")
         
-        # Print performance insights
-        ai_tests = [r for r in self.test_results if 'HRM' in r['test_name'] or 'AI' in r['test_name']]
-        if ai_tests:
-            avg_ai_time = sum(r['response_time'] for r in ai_tests if r['response_time']) / len(ai_tests)
-            print(f"\n⚡ AI PERFORMANCE:")
-            print(f"  Average AI Response Time: {avg_ai_time:.2f}s")
-            print(f"  AI Tests Passed: {len([t for t in ai_tests if t['success']])}/{len(ai_tests)}")
+        # Print key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        
+        # Check if hierarchy creation worked
+        hierarchy_tests = [r for r in self.test_results if r['test_name'] in ['Create Pillar', 'Create Area', 'Create Project', 'Create Tasks']]
+        hierarchy_success = all(t['success'] for t in hierarchy_tests)
+        print(f"  • Hierarchy Creation: {'✅ Working' if hierarchy_success else '❌ Issues Found'}")
+        
+        # Check if onboarding completion worked
+        onboarding_tests = [r for r in self.test_results if r['test_name'] in ['Complete Onboarding', 'User Onboarding Status']]
+        onboarding_success = all(t['success'] for t in onboarding_tests)
+        print(f"  • Onboarding Completion: {'✅ Working' if onboarding_success else '❌ Issues Found'}")
+        
+        # Check if relationships are working
+        relationship_test = next((r for r in self.test_results if r['test_name'] == 'Hierarchy Relationships'), None)
+        relationships_working = relationship_test and relationship_test['success']
+        print(f"  • Foreign Key Relationships: {'✅ Working' if relationships_working else '❌ Issues Found'}")
+        
+        # Check if data isolation is working
+        isolation_test = next((r for r in self.test_results if r['test_name'] == 'Data Isolation'), None)
+        isolation_working = isolation_test and isolation_test['success']
+        print(f"  • Data Isolation: {'✅ Working' if isolation_working else '❌ Issues Found'}")
+        
+        # Check if constraints are working
+        constraint_test = next((r for r in self.test_results if r['test_name'] == 'Constraint Violations'), None)
+        constraints_working = constraint_test and constraint_test['success']
+        print(f"  • Database Constraints: {'✅ Working' if constraints_working else '❌ Issues Found'}")
 
 def main():
     """Main test execution"""
-    tester = EnhancedAITester()
+    tester = OnboardingTemplateTester()
     
     try:
         success = tester.run_comprehensive_test()
