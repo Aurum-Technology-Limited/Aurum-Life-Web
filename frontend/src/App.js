@@ -42,6 +42,7 @@ const NotificationSettings = lazy(() => import('./components/NotificationSetting
 const NotificationCenter = lazy(() => import('./components/NotificationCenter'));
 const AIIntelligenceCenter = lazy(() => import('./components/AIIntelligenceCenter'));
 const HRMDemo = lazy(() => import('./components/HRMDemo'));
+const SemanticSearchTest = lazy(() => import('./components/SemanticSearchTest'));
 
 // Import AI Command Center hook
 import SemanticSearch, { useSemanticSearch } from './components/SemanticSearch';
