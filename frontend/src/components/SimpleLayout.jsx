@@ -216,12 +216,15 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
         {/* Screen Grouping Guide */}
         <div className="px-4 py-3 border-t border-gray-700">
           <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-lg p-3 text-xs">
-            <div className="font-medium text-blue-300 mb-2">📱 Quick Guide:</div>
+            <div className="font-medium text-blue-300 mb-2">📱 Optimized Navigation:</div>
             <div className="space-y-1 text-gray-400">
               <div><span className="text-blue-300">📊 Structure:</span> Pillars → Areas → Projects → Tasks</div>
-              <div><span className="text-green-300">🎯 Daily:</span> Today, Journal for daily work</div>
+              <div><span className="text-green-300">🎯 Daily:</span> Today, Journal for daily workflow</div>
               <div><span className="text-purple-300">🤖 AI:</span> Quick Actions, Insights, Goal Planner</div>
-              <div><span className="text-yellow-300">📈 Analysis:</span> Insights for performance tracking</div>
+              <div><span className="text-yellow-300">📈 Analytics:</span> Intelligence Hub for all insights</div>
+            </div>
+            <div className="mt-2 pt-2 border-t border-gray-700/50">
+              <div className="text-green-300 text-xs">✨ Templates now in Projects • 12 optimized screens</div>
             </div>
           </div>
         </div>
