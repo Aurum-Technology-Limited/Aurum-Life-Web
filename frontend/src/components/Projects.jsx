@@ -169,6 +169,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [showDecompositionHelper, setShowDecompositionHelper] = useState(false);
   const [newProjectForDecomposition, setNewProjectForDecomposition] = useState(null);
