@@ -131,7 +131,7 @@ export const useAnalytics = () => {
 
   // Track navigation events
   const trackNavigation = useCallback(async (fromPage, toPage, navigationMethod = 'click') => {
-    if (!user || !sessionIdRef.current) return;
+    if (!user || !token || !sessionIdRef.current) return;
 
     try {
       const trackingData = {
