@@ -347,6 +347,13 @@ function App() {
                     onClose={closeCommandCenter} 
                     onCommand={handleAICommand} 
                   />
+                  
+                  {/* Semantic Search - Global */}
+                  <SemanticSearch 
+                    isOpen={isSemanticSearchOpen} 
+                    onClose={closeSemanticSearch} 
+                    onResultSelect={handleSemanticSearchResult} 
+                  />
                   </div>
                 </DndProvider>
               </NotificationProvider>
