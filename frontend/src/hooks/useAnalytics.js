@@ -57,7 +57,7 @@ export const useAnalytics = () => {
 
   // Track page views
   const trackPageView = useCallback(async (page, referrer = null) => {
-    if (!user || !sessionIdRef.current) return;
+    if (!user || !token || !sessionIdRef.current) return;
 
     try {
       const eventData = {
