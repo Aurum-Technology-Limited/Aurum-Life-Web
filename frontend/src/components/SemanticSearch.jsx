@@ -385,6 +385,7 @@ export const useSemanticSearch = () => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'f') {
         e.preventDefault();
+        console.log('🔍 Semantic search opened via keyboard shortcut');
         setIsOpen(true);
       }
     };
@@ -393,10 +394,20 @@ export const useSemanticSearch = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const openSearch = () => {
+    console.log('🔍 Semantic search opened via button click');
+    setIsOpen(true);
+  };
+
+  const closeSearch = () => {
+    console.log('🔍 Semantic search closed');
+    setIsOpen(false);
+  };
+
   return {
     isOpen,
-    open: () => setIsOpen(true),
-    close: () => setIsOpen(false)
+    open: openSearch,
+    close: closeSearch
   };
 };
 
