@@ -20,7 +20,10 @@ import {
   Eye,
   MessageSquare
 } from 'lucide-react';
-import { hrmAPI } from '../services/api';
+import { hrmAPI, aiCoachAPI } from '../services/api';
+import CrossNavigationWidget from './ui/CrossNavigationWidget';
+import AIQuotaWidget from './ui/AIQuotaWidget';
+import AIInsightCard from './ui/AIInsightCard';
 
 const AIIntelligenceCenter = () => {
   // State management
