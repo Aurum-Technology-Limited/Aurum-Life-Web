@@ -24,7 +24,7 @@ export const useAnalytics = () => {
 
   // Initialize analytics session
   const initializeSession = useCallback(async () => {
-    if (!user) return;
+    if (!user || !token) return;
 
     try {
       sessionIdRef.current = uuidv4();
