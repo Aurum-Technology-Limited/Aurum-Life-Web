@@ -101,6 +101,14 @@ const AICommandCenter = ({ isOpen, onClose, onCommand }) => {
           setIsProcessing(false);
         }
       }
+    },
+    { 
+      text: "Search content by meaning", 
+      icon: Sparkles,
+      action: () => {
+        onClose();
+        openSemanticSearch();
+      }
     }
   ];
 
