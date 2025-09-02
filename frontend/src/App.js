@@ -238,8 +238,8 @@ function App() {
               console.log('📅 Rendering Today component');
               return <Today {...props} />;
             case 'insights':
-              console.log('📊 Rendering Insights component');
-              return <Insights {...props} />;
+              console.log('📊 Rendering Enhanced Insights component');
+              return <EnhancedInsights {...props} onSectionChange={setActiveSection} />;
             case 'pillars':
               console.log('⛰️ Rendering Pillars component');
               return <Pillars {...props} />;
