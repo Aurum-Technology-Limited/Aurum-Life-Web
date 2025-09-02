@@ -11,6 +11,9 @@ from supabase_services import SupabaseTaskService, SupabaseProjectService, Supab
 logger = logging.getLogger(__name__)
 
 class JournalService:
+    def __init__(self):
+        self.sentiment_service = SentimentAnalysisService()
+    
     @staticmethod
     async def create_entry(user_id: str, entry_data: JournalEntryCreate) -> JournalEntry:
         """Create a new journal entry"""
