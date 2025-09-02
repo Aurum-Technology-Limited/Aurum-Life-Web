@@ -11,9 +11,11 @@ import {
   Command,
   ArrowRight,
   Loader2,
-  Lightbulb
+  Lightbulb,
+  Sparkles
 } from 'lucide-react';
 import { hrmAPI } from '../services/api';
+import { useSemanticSearch } from './SemanticSearch';
 
 const AICommandCenter = ({ isOpen, onClose, onCommand }) => {
   const [input, setInput] = useState('');
