@@ -191,18 +191,56 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
   }, [filteredInsights]);
 
   const handleFeedback = (insightId, feedback) => {
+    // Track feedback event
+    analytics.trackInsightFeedback(insightId, feedback, selectedInsight?.insight_type);
     feedbackMutation.mutate({ insightId, feedback });
   };
 
   const handlePin = (insightId, pinned) => {
+    // Track pin/unpin action
+    analytics.trackAIInteraction('my_ai_insights', pinned ? 'pin_insight' : 'unpin_insight', {
+      insight_id: insightId
+    });
     pinMutation.mutate({ insightId, pinned });
   };
 
   const handleDeactivate = (insightId) => {
     if (window.confirm('Are you sure you want to deactivate this insight?')) {
+      // Track deactivation
+      analytics.trackAIInteraction('my_ai_insights', 'deactivate_insight', {
+        insight_id: insightId
+      });
       deactivateMutation.mutate(insightId);
     }
   };
+
+  // Track filter changes
+  const handleFiltersChange = useCallback((newFilters) => {
+    analytics.trackAIInteraction('my_ai_insights', 'apply_filters', {
+      filters_applied: Object.keys(newFilters).filter(key => newFilters[key] !== '' && newFilters[key] !== null),
+      filter_count: Object.values(newFilters).filter(val => val !== '' && val !== null).length
+    });
+    setFilters(newFilters);
+  }, [analytics]);
+
+  // Track search
+  const handleSearchChange = useCallback((term) => {
+    if (term.length >= 3) {
+      analytics.trackSearch(term, 'ai_insights', filteredInsights.length);
+    }
+    setSearchTerm(term);
+  }, [analytics, filteredInsights.length]);
+
+  // Track insight selection
+  const handleInsightSelection = useCallback((insight) => {
+    analytics.trackAIInteraction('my_ai_insights', 'view_insight_details', {
+      insight_id: insight.id,
+      insight_type: insight.insight_type,
+      confidence_score: insight.confidence_score,
+      is_pinned: insight.is_pinned
+    });
+    setSelectedInsight(insight);
+  }, [analytics]);
 
   if (error) {
     return (
