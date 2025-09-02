@@ -512,7 +512,7 @@ const MetricCard = ({ title, value, icon: Icon, color, bgColor }) => (
 
 // Privacy Settings Modal
 const PrivacySettingsModal = ({ preferences, onClose, onUpdate }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [settings, setSettings] = useState(preferences || {});
   const [isUpdating, setIsUpdating] = useState(false);
   
