@@ -393,7 +393,10 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
                 </label>
                 <select
                   value={filters.insight_type}
-                  onChange={(e) => setFilters(prev => ({ ...prev, insight_type: e.target.value }))}
+                  onChange={(e) => {
+                    const newFilters = { ...filters, insight_type: e.target.value };
+                    handleFiltersChange(newFilters);
+                  }}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
                 >
                   <option value="">All Insights</option>
