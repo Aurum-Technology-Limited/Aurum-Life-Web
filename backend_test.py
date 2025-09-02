@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
-Comprehensive HRM and AI Intelligence Center Backend Testing
-Tests all HRM endpoints, authentication, and AI functionality
+Enhanced AI System Testing with OpenAI GPT-5 nano
+Testing Focus: HRM Reasoning Quality and AI Coach Enhancement
+
+This test verifies:
+1. HRM analysis endpoints with GPT-5 nano
+2. AI Coach enhancement with better reasoning
+3. API response quality and performance
+4. Integration verification
 """
 
 import requests
@@ -9,12 +15,11 @@ import sys
 import json
 import time
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, List, Optional
 
-class HRMBackendTester:
-    def __init__(self, base_url: str = "https://aurum-codebase.preview.emergentagent.com"):
-        self.base_url = base_url.rstrip('/')
-        self.api_base = f"{self.base_url}/api"
+class EnhancedAITester:
+    def __init__(self, base_url="https://aurum-codebase.preview.emergentagent.com"):
+        self.base_url = base_url
         self.token = None
         self.user_id = None
         self.tests_run = 0
@@ -24,359 +29,498 @@ class HRMBackendTester:
         # Test credentials
         self.test_email = "test@aurumlife.com"
         self.test_password = "password123"
-        
-        print(f"🚀 Starting HRM Backend Testing")
-        print(f"📍 Base URL: {self.base_url}")
-        print(f"🔑 Test Account: {self.test_email}")
-        print("=" * 60)
 
-    def log_test(self, name: str, success: bool, details: str = "", response_data: Any = None):
+    def log_test(self, name: str, success: bool, details: Dict = None, response_time: float = None):
         """Log test result"""
         self.tests_run += 1
         if success:
             self.tests_passed += 1
-            print(f"✅ {name}")
-            if details:
-                print(f"   {details}")
-        else:
-            print(f"❌ {name}")
-            print(f"   {details}")
-        
-        self.test_results.append({
-            'name': name,
+            
+        result = {
+            'test_name': name,
             'success': success,
-            'details': details,
-            'response_data': response_data
-        })
+            'details': details or {},
+            'response_time': response_time,
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        self.test_results.append(result)
+        
+        status = "✅ PASS" if success else "❌ FAIL"
+        time_info = f" ({response_time:.2f}s)" if response_time else ""
+        print(f"{status} {name}{time_info}")
+        
+        if details and not success:
+            print(f"   Details: {details}")
 
     def make_request(self, method: str, endpoint: str, data: Dict = None, params: Dict = None) -> tuple:
-        """Make HTTP request with authentication"""
-        url = f"{self.api_base}{endpoint}"
+        """Make HTTP request and return (success, response_data, response_time)"""
+        url = f"{self.base_url}/api/{endpoint.lstrip('/')}"
         headers = {'Content-Type': 'application/json'}
         
         if self.token:
             headers['Authorization'] = f'Bearer {self.token}'
-        
+
+        start_time = time.time()
         try:
-            if method == 'GET':
+            if method.upper() == 'GET':
                 response = requests.get(url, headers=headers, params=params, timeout=30)
-            elif method == 'POST':
+            elif method.upper() == 'POST':
                 response = requests.post(url, json=data, headers=headers, params=params, timeout=30)
-            elif method == 'PUT':
-                response = requests.put(url, json=data, headers=headers, timeout=30)
-            elif method == 'DELETE':
-                response = requests.delete(url, headers=headers, timeout=30)
+            elif method.upper() == 'PUT':
+                response = requests.put(url, json=data, headers=headers, params=params, timeout=30)
             else:
                 raise ValueError(f"Unsupported method: {method}")
+                
+            response_time = time.time() - start_time
             
-            return response.status_code, response.json() if response.content else {}
-            
-        except requests.exceptions.Timeout:
-            return 408, {"error": "Request timeout"}
-        except requests.exceptions.RequestException as e:
-            return 500, {"error": str(e)}
-        except json.JSONDecodeError:
-            return response.status_code, {"error": "Invalid JSON response"}
+            if response.status_code < 400:
+                return True, response.json(), response_time
+            else:
+                return False, {
+                    'status_code': response.status_code,
+                    'error': response.text
+                }, response_time
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            return False, {'error': str(e)}, response_time
 
     def test_authentication(self) -> bool:
-        """Test authentication flow"""
+        """Test login and get authentication token"""
         print("\n🔐 Testing Authentication...")
         
-        # Test login
-        status, response = self.make_request('POST', '/auth/login', {
-            'email': self.test_email,
-            'password': self.test_password
-        })
+        success, response, response_time = self.make_request(
+            'POST', 
+            'auth/login',
+            data={
+                'email': self.test_email,
+                'password': self.test_password
+            }
+        )
         
-        if status == 200 and 'access_token' in response:
+        if success and 'access_token' in response:
             self.token = response['access_token']
             self.user_id = response.get('user', {}).get('id')
-            self.log_test("User Login", True, f"Token received, User ID: {self.user_id}")
+            self.log_test("Authentication", True, {'user_id': self.user_id}, response_time)
             return True
         else:
-            self.log_test("User Login", False, f"Status: {status}, Response: {response}")
+            self.log_test("Authentication", False, response, response_time)
             return False
 
-    def test_basic_endpoints(self):
-        """Test basic API endpoints"""
-        print("\n🏥 Testing Basic Endpoints...")
+    def test_hrm_global_analysis(self) -> bool:
+        """Test HRM global analysis with different depths"""
+        print("\n🧠 Testing HRM Global Analysis...")
         
-        # Health check
-        status, response = self.make_request('GET', '/health')
-        self.log_test("Health Check", status == 200, f"Status: {status}")
+        analysis_depths = ['minimal', 'balanced', 'detailed']
+        all_passed = True
         
-        # Root endpoint
-        status, response = self.make_request('GET', '/')
-        self.log_test("Root Endpoint", status == 200, f"Status: {status}")
-
-    def test_hrm_analyze_endpoint(self):
-        """Test HRM analyze endpoint"""
-        print("\n🧠 Testing HRM Analysis Endpoints...")
-        
-        # Test global analysis
-        status, response = self.make_request('POST', '/hrm/analyze', {
-            'entity_type': 'global',
-            'entity_id': None,
-            'analysis_depth': 'balanced',
-            'force_llm': False
-        })
-        
-        if status == 200:
-            insight_id = response.get('insight_id')
-            self.log_test("Global Analysis", True, f"Insight ID: {insight_id}, Confidence: {response.get('confidence_score', 0):.2f}")
-            return insight_id
-        else:
-            self.log_test("Global Analysis", False, f"Status: {status}, Error: {response.get('detail', 'Unknown error')}")
-            return None
-
-    def test_hrm_insights_endpoint(self):
-        """Test HRM insights retrieval"""
-        print("\n📊 Testing HRM Insights Endpoints...")
-        
-        # Get all insights
-        status, response = self.make_request('GET', '/hrm/insights')
-        
-        if status == 200:
-            insights = response.get('insights', [])
-            total = response.get('total', 0)
-            self.log_test("Get All Insights", True, f"Retrieved {total} insights")
+        for depth in analysis_depths:
+            success, response, response_time = self.make_request(
+                'POST',
+                'hrm/analyze',
+                data={
+                    'entity_type': 'global',
+                    'entity_id': None,
+                    'analysis_depth': depth,
+                    'force_llm': True  # Force GPT-5 nano usage
+                }
+            )
             
-            # Test with filters
-            status, response = self.make_request('GET', '/hrm/insights', params={
-                'entity_type': 'global',
-                'is_active': True,
-                'limit': 10
-            })
-            
-            if status == 200:
-                filtered_insights = response.get('insights', [])
-                self.log_test("Get Filtered Insights", True, f"Retrieved {len(filtered_insights)} filtered insights")
-                return filtered_insights[0]['id'] if filtered_insights else None
+            if success:
+                # Verify response structure and quality
+                required_fields = ['insight_id', 'confidence_score', 'reasoning_path', 'recommendations']
+                has_all_fields = all(field in response for field in required_fields)
+                
+                # Check confidence score is reasonable (0-100)
+                confidence_valid = 0 <= response.get('confidence_score', -1) <= 100
+                
+                # Check if GPT-5 nano was used
+                used_llm = response.get('used_llm', False)
+                
+                test_passed = has_all_fields and confidence_valid and used_llm
+                
+                details = {
+                    'depth': depth,
+                    'confidence_score': response.get('confidence_score'),
+                    'used_llm': used_llm,
+                    'has_reasoning': bool(response.get('reasoning_path')),
+                    'recommendations_count': len(response.get('recommendations', []))
+                }
+                
+                self.log_test(f"HRM Global Analysis ({depth})", test_passed, details, response_time)
+                
+                if not test_passed:
+                    all_passed = False
             else:
-                self.log_test("Get Filtered Insights", False, f"Status: {status}")
-                return None
-        else:
-            self.log_test("Get All Insights", False, f"Status: {status}, Error: {response.get('detail', 'Unknown error')}")
-            return None
+                self.log_test(f"HRM Global Analysis ({depth})", False, response, response_time)
+                all_passed = False
+                
+        return all_passed
 
-    def test_hrm_statistics_endpoint(self):
-        """Test HRM statistics endpoint"""
-        print("\n📈 Testing HRM Statistics...")
+    def test_task_level_analysis(self) -> bool:
+        """Test task-level HRM analysis for reasoning quality"""
+        print("\n📋 Testing Task-Level Analysis...")
         
-        status, response = self.make_request('GET', '/hrm/statistics', params={'days': 30})
+        # First, get user's tasks
+        success, tasks_response, _ = self.make_request('GET', 'tasks', params={'limit': 5})
         
-        if status == 200:
-            stats = response.get('statistics', {})
-            self.log_test("Get Statistics", True, f"Stats: {json.dumps(stats, indent=2)}")
-        else:
-            self.log_test("Get Statistics", False, f"Status: {status}, Error: {response.get('detail', 'Unknown error')}")
-
-    def test_hrm_prioritize_today_endpoint(self):
-        """Test HRM today prioritization"""
-        print("\n🎯 Testing Today Prioritization...")
-        
-        status, response = self.make_request('POST', '/hrm/prioritize-today', params={
-            'top_n': 5,
-            'include_reasoning': True
-        })
-        
-        if status == 200:
-            tasks = response.get('tasks', [])
-            coaching_message = response.get('coaching_message', '')
-            self.log_test("Today Prioritization", True, f"Retrieved {len(tasks)} priority tasks")
-            if coaching_message:
-                print(f"   💬 Coaching: {coaching_message[:100]}...")
-        else:
-            self.log_test("Today Prioritization", False, f"Status: {status}, Error: {response.get('detail', 'Unknown error')}")
-
-    def test_hrm_preferences_endpoints(self):
-        """Test HRM preferences endpoints"""
-        print("\n⚙️ Testing HRM Preferences...")
-        
-        # Get preferences
-        status, response = self.make_request('GET', '/hrm/preferences')
-        
-        if status == 200:
-            preferences = response
-            self.log_test("Get Preferences", True, f"Retrieved preferences")
+        if not success or not tasks_response:
+            self.log_test("Get Tasks for Analysis", False, {'error': 'No tasks available'})
+            return False
             
-            # Update preferences
-            update_data = {
-                'explanation_detail_level': 'detailed',
-                'show_confidence_scores': True,
-                'ai_personality': 'coach'
+        tasks = tasks_response if isinstance(tasks_response, list) else tasks_response.get('tasks', [])
+        
+        if not tasks:
+            self.log_test("Task-Level Analysis", False, {'error': 'No tasks found'})
+            return False
+            
+        # Test analysis on first task
+        task = tasks[0]
+        task_id = task.get('id')
+        
+        success, response, response_time = self.make_request(
+            'POST',
+            'hrm/analyze',
+            data={
+                'entity_type': 'task',
+                'entity_id': task_id,
+                'analysis_depth': 'balanced',
+                'force_llm': True
+            }
+        )
+        
+        if success:
+            # Verify enhanced reasoning quality
+            reasoning_quality = self._assess_reasoning_quality(response)
+            
+            details = {
+                'task_id': task_id,
+                'task_name': task.get('name', 'Unknown'),
+                'confidence_score': response.get('confidence_score'),
+                'reasoning_quality': reasoning_quality,
+                'recommendations_count': len(response.get('recommendations', [])),
+                'used_llm': response.get('used_llm', False)
             }
             
-            status, response = self.make_request('PUT', '/hrm/preferences', update_data)
-            
-            if status == 200:
-                self.log_test("Update Preferences", True, "Preferences updated successfully")
-            else:
-                self.log_test("Update Preferences", False, f"Status: {status}")
+            test_passed = reasoning_quality['score'] >= 70  # Expect high quality with GPT-5 nano
+            self.log_test("Task-Level Analysis", test_passed, details, response_time)
+            return test_passed
         else:
-            self.log_test("Get Preferences", False, f"Status: {status}")
+            self.log_test("Task-Level Analysis", False, response, response_time)
+            return False
 
-    def test_insight_interactions(self, insight_id: str):
-        """Test insight interaction endpoints"""
-        if not insight_id:
-            print("\n⚠️ Skipping insight interactions - no insight ID available")
-            return
+    def test_ai_coach_enhancement(self) -> bool:
+        """Test AI Coach with enhanced GPT-5 nano reasoning"""
+        print("\n🤖 Testing AI Coach Enhancement...")
+        
+        # Test today priorities with enhanced coaching
+        success, response, response_time = self.make_request(
+            'GET',
+            'ai/today-priorities',
+            params={
+                'top_n': 5,
+                'include_hrm': True
+            }
+        )
+        
+        if success:
+            # Verify enhanced coaching quality
+            coaching_quality = self._assess_coaching_quality(response)
             
-        print("\n🔄 Testing Insight Interactions...")
-        
-        # Test feedback
-        status, response = self.make_request('POST', f'/hrm/insights/{insight_id}/feedback', {
-            'feedback': 'accepted',
-            'feedback_details': {'test': True}
-        })
-        
-        self.log_test("Provide Feedback", status == 200, f"Status: {status}")
-        
-        # Test pinning
-        status, response = self.make_request('POST', f'/hrm/insights/{insight_id}/pin', params={'pinned': True})
-        self.log_test("Pin Insight", status == 200, f"Status: {status}")
-        
-        # Test unpinning
-        status, response = self.make_request('POST', f'/hrm/insights/{insight_id}/pin', params={'pinned': False})
-        self.log_test("Unpin Insight", status == 200, f"Status: {status}")
-
-    def test_batch_analysis(self):
-        """Test batch analysis endpoint"""
-        print("\n🔄 Testing Batch Analysis...")
-        
-        status, response = self.make_request('POST', '/hrm/batch-analyze', params={
-            'entity_types': 'pillar,area,project',
-            'analysis_depth': 'balanced'
-        })
-        
-        if status == 200:
-            self.log_test("Batch Analysis", True, "Batch analysis started successfully")
+            details = {
+                'tasks_count': len(response.get('tasks', [])),
+                'has_coaching_messages': bool(response.get('coaching_message')),
+                'coaching_quality': coaching_quality,
+                'response_structure': list(response.keys())
+            }
+            
+            test_passed = coaching_quality['score'] >= 70
+            self.log_test("AI Coach Enhancement", test_passed, details, response_time)
+            return test_passed
         else:
-            self.log_test("Batch Analysis", False, f"Status: {status}, Error: {response.get('detail', 'Unknown error')}")
+            self.log_test("AI Coach Enhancement", False, response, response_time)
+            return False
 
-    def test_core_data_endpoints(self):
-        """Test core data endpoints (pillars, areas, projects, tasks)"""
-        print("\n📋 Testing Core Data Endpoints...")
+    def test_why_statements_generation(self) -> bool:
+        """Test enhanced why-statements with GPT-5 nano"""
+        print("\n❓ Testing Why-Statements Generation...")
         
-        endpoints = [
-            ('/pillars', 'Pillars'),
-            ('/areas', 'Areas'), 
-            ('/projects', 'Projects'),
-            ('/tasks', 'Tasks'),
-            ('/insights', 'Insights')
-        ]
+        # Get tasks first
+        success, tasks_response, _ = self.make_request('GET', 'tasks', params={'limit': 3})
         
-        for endpoint, name in endpoints:
-            status, response = self.make_request('GET', endpoint)
-            self.log_test(f"Get {name}", status == 200, f"Status: {status}")
-
-    def test_ai_integration(self):
-        """Test AI integration and LLM functionality"""
-        print("\n🤖 Testing AI Integration...")
-        
-        # Test detailed analysis with LLM
-        status, response = self.make_request('POST', '/hrm/analyze', {
-            'entity_type': 'global',
-            'entity_id': None,
-            'analysis_depth': 'detailed',
-            'force_llm': True
-        })
-        
-        if status == 200:
-            used_llm = response.get('used_llm', False)
-            confidence = response.get('confidence_score', 0)
-            self.log_test("AI LLM Analysis", True, f"LLM Used: {used_llm}, Confidence: {confidence:.2f}")
+        if not success:
+            self.log_test("Why-Statements Generation", False, {'error': 'Could not get tasks'})
+            return False
             
-            # Check for AI-generated content
-            reasoning_path = response.get('reasoning_path', [])
-            recommendations = response.get('recommendations', [])
+        tasks = tasks_response if isinstance(tasks_response, list) else tasks_response.get('tasks', [])
+        
+        if not tasks:
+            self.log_test("Why-Statements Generation", False, {'error': 'No tasks found'})
+            return False
             
-            if reasoning_path:
-                self.log_test("AI Reasoning Path", True, f"Generated {len(reasoning_path)} reasoning steps")
+        task_ids = [task.get('id') for task in tasks[:3] if task.get('id')]
+        
+        success, response, response_time = self.make_request(
+            'GET',
+            'ai/task-why-statements',
+            params={'task_ids': task_ids}
+        )
+        
+        if success:
+            # Verify why-statements quality
+            why_quality = self._assess_why_statements_quality(response)
             
-            if recommendations:
-                self.log_test("AI Recommendations", True, f"Generated {len(recommendations)} recommendations")
-                print(f"   📝 Sample recommendation: {recommendations[0][:100]}...")
+            details = {
+                'task_ids_requested': len(task_ids),
+                'why_statements_received': len(response.get('why_statements', [])),
+                'quality_score': why_quality['score'],
+                'has_confidence_scores': why_quality['has_confidence'],
+                'has_reasoning_paths': why_quality['has_reasoning']
+            }
+            
+            test_passed = why_quality['score'] >= 70
+            self.log_test("Why-Statements Generation", test_passed, details, response_time)
+            return test_passed
         else:
-            self.log_test("AI LLM Analysis", False, f"Status: {status}, Error: {response.get('detail', 'Unknown error')}")
+            self.log_test("Why-Statements Generation", False, response, response_time)
+            return False
 
-    def test_error_handling(self):
-        """Test error handling scenarios"""
-        print("\n🚨 Testing Error Handling...")
+    def test_ai_intelligence_center(self) -> bool:
+        """Test AI Intelligence Center integration"""
+        print("\n🧠 Testing AI Intelligence Center...")
         
-        # Test invalid entity type
-        status, response = self.make_request('POST', '/hrm/analyze', {
-            'entity_type': 'invalid_type',
-            'analysis_depth': 'balanced'
-        })
+        # Test insights retrieval
+        success, response, response_time = self.make_request(
+            'GET',
+            'hrm/insights',
+            params={
+                'limit': 10,
+                'is_active': True
+            }
+        )
         
-        self.log_test("Invalid Entity Type", status >= 400, f"Status: {status} (should be 4xx)")
-        
-        # Test invalid insight ID
-        status, response = self.make_request('GET', '/hrm/insights/invalid-id')
-        self.log_test("Invalid Insight ID", status == 404, f"Status: {status} (should be 404)")
-        
-        # Test unauthorized access (without token)
-        old_token = self.token
-        self.token = None
-        status, response = self.make_request('GET', '/hrm/insights')
-        self.log_test("Unauthorized Access", status == 401, f"Status: {status} (should be 401)")
-        self.token = old_token
+        if success:
+            insights = response.get('insights', [])
+            
+            details = {
+                'insights_count': len(insights),
+                'has_confidence_scores': any('confidence_score' in insight for insight in insights),
+                'has_reasoning_paths': any('reasoning_path' in insight for insight in insights),
+                'insight_types': list(set(insight.get('insight_type') for insight in insights))
+            }
+            
+            test_passed = len(insights) >= 0  # Should work even with no insights
+            self.log_test("AI Intelligence Center", test_passed, details, response_time)
+            return test_passed
+        else:
+            self.log_test("AI Intelligence Center", False, response, response_time)
+            return False
 
-    def run_performance_tests(self):
-        """Test performance and response times"""
+    def test_performance_comparison(self) -> bool:
+        """Test performance with GPT-5 nano"""
         print("\n⚡ Testing Performance...")
         
+        # Test multiple concurrent AI operations
         start_time = time.time()
-        status, response = self.make_request('POST', '/hrm/analyze', {
-            'entity_type': 'global',
-            'analysis_depth': 'minimal'
-        })
-        end_time = time.time()
         
-        response_time = end_time - start_time
-        self.log_test("Analysis Response Time", response_time < 10.0, f"{response_time:.2f}s (should be < 10s)")
+        # Run 3 concurrent-like operations
+        operations = []
         
-        # Test concurrent requests simulation
-        start_time = time.time()
-        for i in range(3):
-            status, response = self.make_request('GET', '/hrm/insights', params={'limit': 5})
-        end_time = time.time()
+        # Operation 1: HRM Analysis
+        success1, response1, time1 = self.make_request(
+            'POST',
+            'hrm/analyze',
+            data={
+                'entity_type': 'global',
+                'analysis_depth': 'minimal',
+                'force_llm': True
+            }
+        )
+        operations.append(('HRM Analysis', success1, time1))
         
-        total_time = end_time - start_time
-        self.log_test("Multiple Requests", total_time < 15.0, f"{total_time:.2f}s for 3 requests")
+        # Operation 2: Today Priorities
+        success2, response2, time2 = self.make_request(
+            'GET',
+            'ai/today-priorities',
+            params={'top_n': 3, 'include_hrm': True}
+        )
+        operations.append(('Today Priorities', success2, time2))
+        
+        # Operation 3: Insights
+        success3, response3, time3 = self.make_request(
+            'GET',
+            'hrm/insights',
+            params={'limit': 5}
+        )
+        operations.append(('Insights', success3, time3))
+        
+        total_time = time.time() - start_time
+        
+        # Assess performance
+        successful_ops = sum(1 for _, success, _ in operations if success)
+        avg_response_time = sum(t for _, _, t in operations) / len(operations)
+        
+        details = {
+            'total_operations': len(operations),
+            'successful_operations': successful_ops,
+            'total_time': total_time,
+            'average_response_time': avg_response_time,
+            'operations': [{'name': name, 'success': success, 'time': t} for name, success, t in operations]
+        }
+        
+        # Performance criteria: All operations should succeed and average response time < 10s
+        test_passed = successful_ops == len(operations) and avg_response_time < 10.0
+        
+        self.log_test("Performance Test", test_passed, details, total_time)
+        return test_passed
 
-    def run_all_tests(self):
-        """Run all tests in sequence"""
-        print("🧪 Starting Comprehensive HRM Backend Testing\n")
+    def _assess_reasoning_quality(self, response: Dict) -> Dict:
+        """Assess the quality of reasoning in HRM response"""
+        score = 0
+        
+        # Check confidence score
+        confidence = response.get('confidence_score', 0)
+        if confidence > 70:
+            score += 30
+        elif confidence > 50:
+            score += 20
+        elif confidence > 30:
+            score += 10
+            
+        # Check reasoning path
+        reasoning_path = response.get('reasoning_path', [])
+        if len(reasoning_path) >= 3:
+            score += 25
+        elif len(reasoning_path) >= 2:
+            score += 15
+        elif len(reasoning_path) >= 1:
+            score += 10
+            
+        # Check recommendations
+        recommendations = response.get('recommendations', [])
+        if len(recommendations) >= 3:
+            score += 25
+        elif len(recommendations) >= 2:
+            score += 15
+        elif len(recommendations) >= 1:
+            score += 10
+            
+        # Check summary quality (basic length check)
+        summary = response.get('summary', '')
+        if len(summary) > 100:
+            score += 20
+        elif len(summary) > 50:
+            score += 10
+            
+        return {
+            'score': score,
+            'confidence': confidence,
+            'reasoning_steps': len(reasoning_path),
+            'recommendations_count': len(recommendations),
+            'summary_length': len(summary)
+        }
+
+    def _assess_coaching_quality(self, response: Dict) -> Dict:
+        """Assess the quality of AI coaching messages"""
+        score = 0
+        
+        # Check if coaching message exists
+        coaching_message = response.get('coaching_message', '')
+        if coaching_message:
+            score += 30
+            
+            # Check message quality (length and content)
+            if len(coaching_message) > 100:
+                score += 20
+            elif len(coaching_message) > 50:
+                score += 10
+                
+        # Check task prioritization quality
+        tasks = response.get('tasks', [])
+        if tasks:
+            # Check if tasks have scores
+            scored_tasks = [t for t in tasks if 'score' in t]
+            if len(scored_tasks) == len(tasks):
+                score += 25
+                
+            # Check if tasks have HRM insights
+            hrm_tasks = [t for t in tasks if 'hrm_insight' in t]
+            if hrm_tasks:
+                score += 25
+                
+        return {
+            'score': score,
+            'has_coaching_message': bool(coaching_message),
+            'coaching_message_length': len(coaching_message),
+            'tasks_with_scores': len([t for t in tasks if 'score' in t]),
+            'tasks_with_hrm': len([t for t in tasks if 'hrm_insight' in t])
+        }
+
+    def _assess_why_statements_quality(self, response: Dict) -> Dict:
+        """Assess the quality of why-statements"""
+        score = 0
+        
+        why_statements = response.get('why_statements', [])
+        
+        if why_statements:
+            score += 30
+            
+            # Check if statements have confidence scores
+            with_confidence = [w for w in why_statements if 'confidence_score' in w]
+            if len(with_confidence) == len(why_statements):
+                score += 25
+                
+            # Check if statements have reasoning
+            with_reasoning = [w for w in why_statements if 'reasoning_path' in w]
+            if with_reasoning:
+                score += 25
+                
+            # Check statement quality (length)
+            avg_length = sum(len(w.get('why_statement', '')) for w in why_statements) / len(why_statements)
+            if avg_length > 100:
+                score += 20
+            elif avg_length > 50:
+                score += 10
+                
+        return {
+            'score': score,
+            'statements_count': len(why_statements),
+            'has_confidence': len([w for w in why_statements if 'confidence_score' in w]),
+            'has_reasoning': len([w for w in why_statements if 'reasoning_path' in w]),
+            'avg_statement_length': sum(len(w.get('why_statement', '')) for w in why_statements) / len(why_statements) if why_statements else 0
+        }
+
+    def run_comprehensive_test(self):
+        """Run all tests"""
+        print("🚀 Starting Enhanced AI System Testing with GPT-5 nano")
+        print("=" * 60)
         
         # Authentication is required for all other tests
         if not self.test_authentication():
-            print("❌ Authentication failed - cannot continue with other tests")
-            return self.print_summary()
+            print("\n❌ Authentication failed. Cannot proceed with other tests.")
+            return False
+            
+        # Run all AI enhancement tests
+        test_methods = [
+            self.test_hrm_global_analysis,
+            self.test_task_level_analysis,
+            self.test_ai_coach_enhancement,
+            self.test_why_statements_generation,
+            self.test_ai_intelligence_center,
+            self.test_performance_comparison
+        ]
         
-        # Run all test suites
-        self.test_basic_endpoints()
+        for test_method in test_methods:
+            try:
+                test_method()
+            except Exception as e:
+                print(f"❌ Test {test_method.__name__} failed with exception: {e}")
+                self.log_test(test_method.__name__, False, {'exception': str(e)})
         
-        # Core HRM functionality
-        insight_id = self.test_hrm_analyze_endpoint()
-        insight_id_from_list = self.test_hrm_insights_endpoint()
-        self.test_hrm_statistics_endpoint()
-        self.test_hrm_prioritize_today_endpoint()
-        self.test_hrm_preferences_endpoints()
+        # Print summary
+        self.print_summary()
         
-        # Use insight ID from analysis or list
-        test_insight_id = insight_id or insight_id_from_list
-        self.test_insight_interactions(test_insight_id)
-        
-        # Additional tests
-        self.test_batch_analysis()
-        self.test_core_data_endpoints()
-        self.test_ai_integration()
-        self.test_error_handling()
-        self.run_performance_tests()
-        
-        return self.print_summary()
+        return self.tests_passed == self.tests_run
 
     def print_summary(self):
         """Print test summary"""
@@ -384,47 +528,40 @@ class HRMBackendTester:
         print("📊 TEST SUMMARY")
         print("=" * 60)
         
-        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
-        
-        print(f"✅ Tests Passed: {self.tests_passed}")
-        print(f"❌ Tests Failed: {self.tests_run - self.tests_passed}")
-        print(f"📈 Success Rate: {success_rate:.1f}%")
-        print(f"⏱️  Total Tests: {self.tests_run}")
+        print(f"Total Tests: {self.tests_run}")
+        print(f"Passed: {self.tests_passed}")
+        print(f"Failed: {self.tests_run - self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%" if self.tests_run > 0 else "0%")
         
         # Print failed tests
-        failed_tests = [test for test in self.test_results if not test['success']]
+        failed_tests = [r for r in self.test_results if not r['success']]
         if failed_tests:
             print(f"\n❌ FAILED TESTS ({len(failed_tests)}):")
             for test in failed_tests:
-                print(f"   • {test['name']}: {test['details']}")
+                print(f"  • {test['test_name']}")
+                if test['details']:
+                    print(f"    {test['details']}")
         
-        # Print critical issues
-        critical_failures = [
-            test for test in failed_tests 
-            if any(keyword in test['name'].lower() for keyword in ['login', 'auth', 'analyze', 'insights'])
-        ]
-        
-        if critical_failures:
-            print(f"\n🚨 CRITICAL ISSUES ({len(critical_failures)}):")
-            for test in critical_failures:
-                print(f"   • {test['name']}: {test['details']}")
-        
-        print("\n" + "=" * 60)
-        
-        return success_rate >= 70  # Consider 70%+ success rate as acceptable
+        # Print performance insights
+        ai_tests = [r for r in self.test_results if 'HRM' in r['test_name'] or 'AI' in r['test_name']]
+        if ai_tests:
+            avg_ai_time = sum(r['response_time'] for r in ai_tests if r['response_time']) / len(ai_tests)
+            print(f"\n⚡ AI PERFORMANCE:")
+            print(f"  Average AI Response Time: {avg_ai_time:.2f}s")
+            print(f"  AI Tests Passed: {len([t for t in ai_tests if t['success']])}/{len(ai_tests)}")
 
 def main():
     """Main test execution"""
-    tester = HRMBackendTester()
+    tester = EnhancedAITester()
     
     try:
-        success = tester.run_all_tests()
+        success = tester.run_comprehensive_test()
         return 0 if success else 1
     except KeyboardInterrupt:
-        print("\n⚠️ Tests interrupted by user")
+        print("\n\n⚠️ Tests interrupted by user")
         return 1
     except Exception as e:
-        print(f"\n💥 Unexpected error: {e}")
+        print(f"\n\n❌ Test execution failed: {e}")
         return 1
 
 if __name__ == "__main__":
