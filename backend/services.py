@@ -342,6 +342,7 @@ class JournalService:
         return streak
     
     @staticmethod
+    @staticmethod
     async def initialize_default_templates():
         """Initialize default journal templates - placeholder implementation"""
         # This is a placeholder to prevent startup errors
@@ -350,9 +351,65 @@ class JournalService:
     
     @staticmethod
     async def get_user_templates(user_id: str):
-        """Get journal templates for user - placeholder implementation"""
-        # Return empty array to prevent 500 errors during testing
-        return []
+        """Get journal templates for user"""
+        try:
+            docs = await find_documents("journal_templates", {"user_id": user_id, "deleted": False})
+            return [JournalTemplate(**doc) for doc in docs]
+        except Exception as e:
+            logger.error(f"Error getting user templates: {e}")
+            return []
+
+    @staticmethod
+    async def create_template(user_id: str, template_data: JournalTemplateCreate) -> JournalTemplate:
+        """Create a new journal template"""
+        try:
+            template_dict = template_data.dict()
+            template_dict.update({
+                "id": str(uuid.uuid4()),
+                "user_id": user_id,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "deleted": False
+            })
+            
+            template_id = await create_document("journal_templates", template_dict)
+            
+            if template_id:
+                template_dict["id"] = template_id
+                return JournalTemplate(**template_dict)
+            else:
+                raise Exception("Failed to create journal template - no ID returned")
+                
+        except Exception as e:
+            logger.error(f"Error creating template: {e}")
+            raise e
+
+    @staticmethod
+    async def update_template(user_id: str, template_id: str, template_data: JournalTemplateUpdate) -> bool:
+        """Update a journal template"""
+        try:
+            update_dict = template_data.dict(exclude_unset=True)
+            update_dict["updated_at"] = datetime.utcnow()
+            
+            result = await update_document("journal_templates", {"id": template_id, "user_id": user_id}, update_dict)
+            return result is not None
+        except Exception as e:
+            logger.error(f"Error updating template: {e}")
+            return False
+
+    @staticmethod
+    async def delete_template(user_id: str, template_id: str) -> bool:
+        """Soft delete a journal template"""
+        try:
+            result = await update_document(
+                "journal_templates", 
+                {"id": template_id, "user_id": user_id}, 
+                {"deleted": True, "updated_at": datetime.utcnow()}
+            )
+            return result is not None
+        except Exception as e:
+            logger.error(f"Error deleting template: {e}")
+            return False
 
 
 # Implemented TaskService to delegate to Supabase and apply server-side filters
