@@ -42,7 +42,7 @@ export const useAnalytics = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.access_token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(sessionData)
       });
