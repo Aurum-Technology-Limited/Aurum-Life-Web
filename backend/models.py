@@ -305,6 +305,46 @@ class JournalInsights(BaseModel):
     energy_trend: List[Dict[str, Any]]  # Last 30 days
     writing_stats: Dict[str, Any]
     
+    # Enhanced Sentiment Insights (New)
+    sentiment_insights: Optional[Dict[str, Any]] = None  # Comprehensive sentiment analysis
+    emotional_trends: List[SentimentTrendData] = []  # Daily sentiment trends
+    activity_sentiment_correlation: List[Dict[str, Any]] = []  # Correlation with tasks/projects
+    emotional_wellness_score: Optional[float] = None  # Overall emotional wellness (0-100)
+    sentiment_summary: Optional[str] = None  # AI-generated summary of emotional patterns
+
+# Sentiment Analysis Integration Models
+class SentimentAnalysisRequest(BaseModel):
+    """Request model for sentiment analysis"""
+    text: str = Field(..., min_length=10, description="Text to analyze for sentiment")
+    content_type: str = Field(default="journal_entry", description="Type of content being analyzed")
+    include_detailed_analysis: bool = Field(default=True, description="Include detailed emotional analysis")
+
+class EmotionalInsight(BaseDocument):
+    """AI-generated emotional insights based on sentiment patterns"""
+    user_id: str
+    insight_type: EmotionalInsightTypeEnum
+    title: str
+    description: str
+    insight_data: Dict[str, Any] = {}  # Flexible data for different insight types
+    confidence_score: float = Field(..., ge=0.0, le=1.0)
+    date_range_start: datetime
+    date_range_end: datetime
+    related_entries: List[str] = []  # Journal entry IDs that contributed to this insight
+    actionable_suggestions: List[str] = []  # AI-suggested actions based on emotional patterns
+    is_active: bool = True
+    created_by_system: bool = True
+
+class ActivitySentimentCorrelation(BaseModel):
+    """Correlation between activities and emotional outcomes"""
+    activity_type: str  # "pillar", "area", "project", "task"
+    activity_id: str
+    activity_name: str
+    average_sentiment: float
+    entry_count: int
+    sentiment_trend: List[float] = []  # Recent sentiment scores
+    emotional_impact_score: float = Field(..., ge=0.0, le=1.0, description="How much this activity affects emotions")
+    insights: List[str] = []  # AI-generated insights about this correlation
+    
 class OnThisDayEntry(BaseModel):
     entry: JournalEntryResponse
     years_ago: int
