@@ -99,7 +99,6 @@ function App() {
       'pillars': 'Pillars', 
       'areas': 'Areas', 
       'projects': 'Projects',
-      'project-templates': 'Project Templates',
       'tasks': 'Tasks',
       'journal': 'Journal',
       'feedback': 'Feedback & Support',
