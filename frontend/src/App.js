@@ -17,6 +17,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LazyComponentErrorBoundary from './components/LazyComponentErrorBoundary';
 import PasswordReset from './components/PasswordReset';
 import AIDecisionHelper from './components/ui/AIDecisionHelper';
+import AuthDebugPanel from './components/AuthDebugPanel';
 
 // Import performance test for debugging
 import './services/performanceTest';
