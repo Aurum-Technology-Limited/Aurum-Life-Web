@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Comprehensive E2E Backend Testing for AI Integration System
-Tests HRM APIs, AI Coach APIs, Semantic Search, and Authentication
+Comprehensive Analytics System Backend Testing
+Tests all analytics endpoints with authentication and data flow validation
 """
 
 import requests
 import sys
 import json
+from datetime import datetime, timedelta
+import uuid
 import time
-from datetime import datetime
-from typing import Dict, Any, Optional
 
-class AIIntegrationTester:
+class AnalyticsBackendTester:
     def __init__(self, base_url="https://aurum-life-os.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
