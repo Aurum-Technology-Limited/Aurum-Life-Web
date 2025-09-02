@@ -160,6 +160,7 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
   }
 
   // Authenticated and onboarding completed - show main app
+  console.log('✅ Showing main app - user authenticated and onboarding complete');
   return children;
 };
 
