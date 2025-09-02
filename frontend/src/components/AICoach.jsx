@@ -601,7 +601,7 @@ const ResponseModal = ({ isOpen, onClose, response, title }) => {
   );
 };
 
-const AICoach = () => {
+const AICoach = ({ onSectionChange, prefillGoal = null }) => {
   // Enhanced defensive check for proper API dependency injection
   React.useEffect(() => {
     console.log('🔍 Runtime API dependency verification:', {
