@@ -327,12 +327,6 @@ async def get_today_priorities_enhanced(
         logger.error(f"Error getting today's priorities: {e}")
         raise HTTPException(status_code=500, detail="Failed to get today's priorities")
 
-# Removed duplicate semantic search endpoint - using the more comprehensive one below
-
-app.include_router(api_router)
-app.include_router(auth_router, prefix="/api")
-app.include_router(hrm_router)
-
 # ================================
 # SEMANTIC SEARCH ENDPOINTS
 # ================================
