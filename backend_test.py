@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-Enhanced AI System Testing with OpenAI GPT-5 nano
-Testing Focus: HRM Reasoning Quality and AI Coach Enhancement
+Onboarding Template Creation Backend Test
+Testing Focus: Complete onboarding flow with template data creation
 
 This test verifies:
-1. HRM analysis endpoints with GPT-5 nano
-2. AI Coach enhancement with better reasoning
-3. API response quality and performance
-4. Integration verification
+1. API endpoints for creating hierarchy data (pillars, areas, projects, tasks)
+2. Testing with sample onboarding template data
+3. Complete-onboarding endpoint functionality
+4. User profile onboarding status tracking
+5. Foreign key relationships and database constraints
+6. Authentication and data isolation
 """
 
 import requests
@@ -17,7 +19,7 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
-class EnhancedAITester:
+class OnboardingTemplateTester:
     def __init__(self, base_url="https://smart-life-os.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
