@@ -166,7 +166,11 @@ class AnalyticsBackendTester:
         )
         
         if success:
-            self.session_id = session_id
+            # Extract session_id from response
+            if 'session_id' in response_data:
+                self.session_id = response_data['session_id']
+            else:
+                self.session_id = session_id  # Use the one we sent
             self.log_test("Start Analytics Session", True, f"Session started: {self.session_id}", response_data)
             return True
         else:
