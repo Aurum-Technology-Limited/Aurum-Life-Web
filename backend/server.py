@@ -614,3 +614,8 @@ def _get_entity_display_name(entity_type: str) -> str:
         'ai_insight': 'AI Insight'
     }
     return names.get(entity_type, entity_type.replace('_', ' ').title())
+
+# Include all routers after endpoints are defined
+app.include_router(api_router)
+app.include_router(auth_router, prefix="/api")
+app.include_router(hrm_router)
