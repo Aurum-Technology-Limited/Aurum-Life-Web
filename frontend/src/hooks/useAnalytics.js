@@ -229,7 +229,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to track insight feedback:', error);
     }
-  }, [user]);
+  }, [user, token]);
 
   // Send event to backend
   const sendEvent = useCallback(async (eventData) => {
