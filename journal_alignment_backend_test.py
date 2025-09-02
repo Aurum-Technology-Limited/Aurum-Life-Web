@@ -173,14 +173,16 @@ class JournalAlignmentBackendTester:
         template_data = {
             "name": "Daily Reflection Template - API Test",
             "description": "A template for daily reflection and goal tracking",
+            "template_type": "daily_reflection",
             "prompts": [
                 "What went well today?",
                 "What could I improve tomorrow?",
                 "What am I grateful for?",
                 "How did I progress toward my goals?"
             ],
-            "category": "daily_reflection",
-            "is_public": False
+            "default_tags": ["reflection", "goals"],
+            "icon": "📝",
+            "color": "#F4B400"
         }
         
         success, message, response_data = self.make_request(
