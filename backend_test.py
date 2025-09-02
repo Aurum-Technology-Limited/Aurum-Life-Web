@@ -169,14 +169,15 @@ class AIIntegrationTester:
             "name": "AI Test Project",
             "description": "Test project for AI integration testing",
             "area_id": self.test_area_id,
-            "status": "active"
+            "status": "active",
+            "priority": "medium"
         }
         success, response = self.make_request('POST', 'projects', project_data)
         if success and 'id' in response:
             self.test_project_id = response['id']
             self.log_test("Create Test Project", True, f"Project ID: {self.test_project_id}")
         else:
-            self.log_test("Create Test Project", False, response.get('error', 'Unknown error'))
+            self.log_test("Create Test Project", False, f"Error: {response}")
             return False
 
         # Create test task
