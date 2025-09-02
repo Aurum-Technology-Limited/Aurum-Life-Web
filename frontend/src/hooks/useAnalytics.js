@@ -179,7 +179,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to track search:', error);
     }
-  }, [user]);
+  }, [user, token]);
 
   // Track task/project actions
   const trackTaskAction = useCallback(async (action, taskId = null, projectId = null, eventData = {}) => {
