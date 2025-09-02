@@ -327,71 +327,7 @@ async def get_today_priorities_enhanced(
         logger.error(f"Error getting today's priorities: {e}")
         raise HTTPException(status_code=500, detail="Failed to get today's priorities")
 
-@api_router.get("/semantic/search", tags=["Semantic Search"])
-async def semantic_search(
-    query: str = Query(..., description="Search query text"),
-    content_types: Optional[List[str]] = Query(default=["all"], description="Content types to search"),
-    limit: int = Query(default=10, ge=1, le=50, description="Maximum number of results"),
-    min_similarity: float = Query(default=0.3, ge=0.0, le=1.0, description="Minimum similarity threshold"),
-    current_user: User = Depends(get_current_active_user)
-):
-    """Semantic search across user content using OpenAI embeddings + pgvector"""
-    try:
-        import openai
-        
-        # Initialize OpenAI
-        openai.api_key = os.getenv('OPENAI_API_KEY')
-        if not openai.api_key:
-            raise HTTPException(status_code=500, detail="OpenAI API key not configured")
-        
-        # Generate embedding for search query
-        embedding_response = openai.embeddings.create(
-            model="text-embedding-3-small",
-            input=query
-        )
-        query_embedding = embedding_response.data[0].embedding
-        
-        # Use existing RAG search function
-        from supabase_client import get_supabase_client
-        supabase = get_supabase_client()
-        
-        result = supabase.rpc('rag_search', {
-            'query_embedding': query_embedding,
-            'user_id_filter': str(current_user.id),
-            'match_count': limit,
-            'date_range_days': 90  # Last 3 months
-        }).execute()
-        
-        search_results = result.data or []
-        
-        # Format results
-        formatted_results = []
-        for item in search_results:
-            if item.get('similarity', 0) >= min_similarity:
-                formatted_results.append({
-                    'id': item['entity_id'],
-                    'entity_type': item['entity_type'],
-                    'title': item['title'],
-                    'content_preview': item['content'][:200] + '...' if len(item['content']) > 200 else item['content'],
-                    'similarity_score': round(item['similarity'] * 100, 1),
-                    'confidence_level': 'high' if item['similarity'] > 0.8 else 'medium' if item['similarity'] > 0.6 else 'low',
-                    'created_at': item['created_at'],
-                    'metadata': item.get('metadata', {})
-                })
-        
-        return {
-            'query': query,
-            'results': formatted_results,
-            'total_results': len(formatted_results),
-            'search_metadata': {
-                'embedding_model': 'text-embedding-3-small',
-                'min_similarity_threshold': min_similarity
-            }
-        }
-        
-    except Exception as e:
-        logger.error(f"Semantic search failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Semantic search failed: {str(e)}")
+# Removed duplicate semantic search endpoint - using the more comprehensive one below
 
 app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
