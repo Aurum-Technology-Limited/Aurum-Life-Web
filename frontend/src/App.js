@@ -242,6 +242,9 @@ function App() {
             case 'insights':
               console.log('📊 Rendering Enhanced Insights component');
               return <EnhancedInsights {...props} onSectionChange={setActiveSection} />;
+            case 'analytics':
+              console.log('📈 Rendering Analytics Dashboard component');
+              return <AnalyticsDashboard {...props} onSectionChange={setActiveSection} />;
             case 'pillars':
               console.log('⛰️ Rendering Pillars component');
               return <Pillars {...props} />;
