@@ -222,6 +222,21 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
+  // Load templates on component mount
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const loadTemplates = async () => {
+    try {
+      const response = await projectTemplatesAPI.getTemplates();
+      setTemplates(response.data || []);
+    } catch (err) {
+      console.error('Failed to load templates:', err);
+      setTemplates([]); // Fallback to empty array
+    }
+  };
+
   // Memoize filtered projects to prevent recalculation on every render
   const filteredProjects = useMemo(() => {
     return activeAreaId 
