@@ -55,7 +55,68 @@ const Journal = ({ onSectionChange, sectionParams }) => {
   const [realTimeSentiment, setRealTimeSentiment] = useState(null);
   const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
 
-  // Handle create entry
+  // Real-time sentiment analysis while typing
+  const analyzeSentimentRealTime = async (text) => {
+    if (!text || text.length < 10) {
+      setRealTimeSentiment(null);
+      return;
+    }
+
+    try {
+      const result = await sentimentAPI.analyzeText(text);
+      setRealTimeSentiment(result);
+    } catch (error) {
+      console.warn('Real-time sentiment analysis failed:', error);
+      setRealTimeSentiment(null);
+    }
+  };
+
+  // Fetch sentiment insights data
+  const fetchSentimentInsights = async () => {
+    try {
+      setInsightsLoading(true);
+      
+      // Fetch all sentiment data in parallel
+      const [trendsData, wellnessData, insightsData, correlationsData] = await Promise.all([
+        sentimentAPI.getTrends(insightsTimeRange),
+        sentimentAPI.getWellnessScore(insightsTimeRange),
+        sentimentAPI.getInsights(insightsTimeRange),
+        sentimentAPI.getCorrelations(insightsTimeRange)
+      ]);
+
+      setSentimentTrends(trendsData.trends || []);
+      setWellnessScore(wellnessData);
+      setEmotionalInsights(insightsData.insights || []);
+      setActivityCorrelations(correlationsData.correlations || []);
+    } catch (error) {
+      console.error('Failed to fetch sentiment insights:', error);
+      setError('Failed to load emotional insights');
+    } finally {
+      setInsightsLoading(false);
+    }
+  };
+
+  // Bulk analyze existing entries
+  const handleBulkAnalyze = async () => {
+    try {
+      setBulkAnalyzing(true);
+      const result = await sentimentAPI.bulkAnalyze(50);
+      
+      // Refresh entries to show updated sentiment data
+      await fetchEntriesWithFallback();
+      
+      // Refresh insights
+      await fetchSentimentInsights();
+      
+      setError(null);
+    } catch (error) {
+      setError('Failed to analyze entries. Please try again.');
+    } finally {
+      setBulkAnalyzing(false);
+    }
+  };
+
+  // Handle create entry with sentiment analysis
   const handleCreateEntry = async () => {
     if (!newEntryTitle.trim() || !newEntryContent.trim()) {
       setError('Please fill in both title and content');
@@ -79,8 +140,14 @@ const Journal = ({ onSectionChange, sectionParams }) => {
       // Reset form and close modal
       setNewEntryTitle('');
       setNewEntryContent('');
+      setRealTimeSentiment(null);
       setShowCreateModal(false);
       setError(null);
+
+      // Refresh insights if we're on the insights tab
+      if (currentView === 'insights') {
+        fetchSentimentInsights();
+      }
     } catch (err) {
       setError(handleApiError(err, 'Failed to create entry'));
     } finally {
