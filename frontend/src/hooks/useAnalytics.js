@@ -81,7 +81,7 @@ export const useAnalytics = () => {
 
   // Track AI feature interactions
   const trackAIInteraction = useCallback(async (featureType, featureName, eventData = {}, success = true, error = null) => {
-    if (!user || !sessionIdRef.current) return;
+    if (!user || !token || !sessionIdRef.current) return;
 
     try {
       const duration = lastEventTimeRef.current ? Date.now() - lastEventTimeRef.current : null;
