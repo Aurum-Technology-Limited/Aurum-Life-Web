@@ -45,6 +45,16 @@ const Journal = ({ onSectionChange, sectionParams }) => {
   const [newEntryTitle, setNewEntryTitle] = useState('');
   const [newEntryContent, setNewEntryContent] = useState('');
 
+  // Sentiment analysis states
+  const [sentimentTrends, setSentimentTrends] = useState([]);
+  const [wellnessScore, setWellnessScore] = useState(null);
+  const [emotionalInsights, setEmotionalInsights] = useState([]);
+  const [activityCorrelations, setActivityCorrelations] = useState([]);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsTimeRange, setInsightsTimeRange] = useState(30);
+  const [realTimeSentiment, setRealTimeSentiment] = useState(null);
+  const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
+
   // Handle create entry
   const handleCreateEntry = async () => {
     if (!newEntryTitle.trim() || !newEntryContent.trim()) {
