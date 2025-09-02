@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {HomeIcon, CalendarIcon, LightningBoltIcon, ViewGridIcon, FolderIcon, DocumentTextIcon, ClipboardListIcon, ChatIcon, ChartBarIcon, BeakerIcon, AdjustmentsIcon, BellIcon} from '@heroicons/react/outline';
+import {HomeIcon, CalendarIcon, LightningBoltIcon, ViewGridIcon, FolderIcon, DocumentTextIcon, ClipboardListIcon, ChatIcon, ChartBarIcon, BeakerIcon, AdjustmentsIcon, BellIcon, SearchIcon} from '@heroicons/react/outline';
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
+import { useSemanticSearch } from './SemanticSearch';
 
 const Layout = ({ children }) => {
   const location = useLocation();
