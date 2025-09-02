@@ -243,6 +243,57 @@ async def delete_journal_entry(entry_id: str, current_user: User = Depends(get_c
         logger.error(f"Error deleting journal entry: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Journal Templates endpoints
+@api_router.get("/journal/templates", response_model=List[JournalTemplate])
+async def get_journal_templates(current_user: User = Depends(get_current_active_user)):
+    """Get journal templates for user"""
+    try:
+        journal_service = JournalService()
+        return await journal_service.get_user_templates(str(current_user.id))
+    except Exception as e:
+        logger.error(f"Error getting journal templates: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get journal templates")
+
+@api_router.post("/journal/templates", response_model=JournalTemplate)
+async def create_journal_template(template_data: JournalTemplateCreate, current_user: User = Depends(get_current_active_user)):
+    """Create a new journal template"""
+    try:
+        journal_service = JournalService()
+        return await journal_service.create_template(str(current_user.id), template_data)
+    except Exception as e:
+        logger.error(f"Error creating journal template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/journal/templates/{template_id}", response_model=dict)
+async def update_journal_template(template_id: str, template_data: JournalTemplateUpdate, current_user: User = Depends(get_current_active_user)):
+    """Update a journal template"""
+    try:
+        journal_service = JournalService()
+        success = await journal_service.update_template(str(current_user.id), template_id, template_data)
+        if not success:
+            raise HTTPException(status_code=404, detail="Journal template not found")
+        return {"success": True, "message": "Journal template updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating journal template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/journal/templates/{template_id}", response_model=dict)
+async def delete_journal_template(template_id: str, current_user: User = Depends(get_current_active_user)):
+    """Delete a journal template"""
+    try:
+        journal_service = JournalService()
+        success = await journal_service.delete_template(str(current_user.id), template_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Journal template not found")
+        return {"success": True, "message": "Journal template deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting journal template: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ================================
 # AI COACH ENDPOINTS (HRM-Enhanced)
 # ================================
