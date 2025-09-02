@@ -35,12 +35,9 @@ const SemanticSearch = ({ isOpen, onClose, onResultSelect, placeholder = "Find c
   // Load recent searches on mount
   useEffect(() => {
     if (isOpen) {
-      console.log('🔍 Semantic search modal opened, loading recent searches...');
       const recent = JSON.parse(localStorage.getItem('semantic_recent_searches') || '[]');
       setRecentSearches(recent.slice(0, 5));
       setTimeout(() => inputRef.current?.focus(), 100);
-    } else {
-      console.log('🔍 Semantic search modal closed');
     }
   }, [isOpen]);
 
