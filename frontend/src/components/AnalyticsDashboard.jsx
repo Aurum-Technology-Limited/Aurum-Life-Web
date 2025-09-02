@@ -46,7 +46,7 @@ ChartJS.register(
 );
 
 const AnalyticsDashboard = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const analytics = useAnalytics();
   const [timeRange, setTimeRange] = useState(30);
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
