@@ -85,45 +85,49 @@ class AIIntegrationTester:
 
     def test_authentication(self):
         """Test authentication system"""
-        # Test registration first
-        test_email = f"test_ai_integration_{int(time.time())}@example.com"
-        test_password = "TestPass123!"
-        test_username = f"testuser_{int(time.time())}"
+        # Try with a simple test user first
+        test_email = "test@aurumlife.com"
+        test_password = "password123"
         
-        # Register user with correct format
-        register_data = {
-            "username": test_username,
-            "email": test_email,
-            "password": test_password,
-            "first_name": "AI Integration",
-            "last_name": "Test User"
-        }
+        # Try login first
+        login_data = {"email": test_email, "password": test_password}
+        success, response = self.make_request('POST', 'auth/login', login_data)
         
-        success, response = self.make_request('POST', 'auth/register', register_data)
         if success and 'access_token' in response:
             self.token = response['access_token']
-            # Get user info from /me endpoint since registration doesn't return user object
+            # Get user info from /me endpoint
             me_success, me_response = self.make_request('GET', 'auth/me')
             if me_success:
                 self.user_id = me_response.get('id')
-            self.log_test("User Registration", True, f"User ID: {self.user_id}")
+            self.log_test("User Login", True, f"User ID: {self.user_id}")
             return True
         else:
-            # Try login if registration failed (user might exist)
-            login_data = {"email": test_email, "password": test_password}
-            success, response = self.make_request('POST', 'auth/login', login_data)
+            # If login failed, try registration
+            test_email = f"test_ai_integration_{int(time.time())}@example.com"
+            test_password = "TestPass123!"
+            test_username = f"testuser_{int(time.time())}"
             
+            # Register user with correct format
+            register_data = {
+                "username": test_username,
+                "email": test_email,
+                "password": test_password,
+                "first_name": "AI Integration",
+                "last_name": "Test User"
+            }
+            
+            success, response = self.make_request('POST', 'auth/register', register_data)
             if success and 'access_token' in response:
                 self.token = response['access_token']
-                # Get user info from /me endpoint
+                # Get user info from /me endpoint since registration doesn't return user object
                 me_success, me_response = self.make_request('GET', 'auth/me')
                 if me_success:
                     self.user_id = me_response.get('id')
-                self.log_test("User Login (Fallback)", True, f"User ID: {self.user_id}")
+                self.log_test("User Registration", True, f"User ID: {self.user_id}")
                 return True
             else:
                 self.log_test("Authentication", False, 
-                             response.get('error', 'Failed to authenticate'))
+                             f"Login failed: {login_data}, Registration failed: {response.get('error', 'Unknown error')}")
                 return False
 
     def test_basic_data_setup(self):
