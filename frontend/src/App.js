@@ -16,6 +16,7 @@ import globalErrorHandler from './utils/globalErrorHandler'; // Import global er
 import ErrorBoundary from './components/ErrorBoundary';
 import LazyComponentErrorBoundary from './components/LazyComponentErrorBoundary';
 import PasswordReset from './components/PasswordReset';
+import AIDecisionHelper from './components/ui/AIDecisionHelper';
 
 // Import performance test for debugging
 import './services/performanceTest';
