@@ -183,7 +183,7 @@ export const useAnalytics = () => {
 
   // Track task/project actions
   const trackTaskAction = useCallback(async (action, taskId = null, projectId = null, eventData = {}) => {
-    if (!user || !sessionIdRef.current) return;
+    if (!user || !token || !sessionIdRef.current) return;
 
     try {
       const trackingData = {
