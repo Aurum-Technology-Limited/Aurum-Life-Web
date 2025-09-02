@@ -204,7 +204,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to track task action:', error);
     }
-  }, [user]);
+  }, [user, token]);
 
   // Track insight feedback
   const trackInsightFeedback = useCallback(async (insightId, feedbackType, insightType = null) => {
