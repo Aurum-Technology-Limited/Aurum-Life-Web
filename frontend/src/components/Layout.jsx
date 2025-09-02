@@ -64,11 +64,11 @@ const Layout = ({ children }) => {
       purpose: 'self_reflection'
     },
     { 
-      name: 'Insights', 
+      name: 'Intelligence Hub', 
       href: '/insights', 
       icon: ChartBarIcon, 
-      description: 'Analytics & alignment tracking',
-      purpose: 'performance_analysis'
+      description: 'Analytics & AI insights dashboard',
+      purpose: 'intelligence_analysis'
     },
     { 
       name: 'Feedback', 
