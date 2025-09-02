@@ -217,6 +217,10 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
   // Quick filter chips
   const [statusFilter, setStatusFilter] = useState('all'); // all, not_started, in_progress, completed, on_hold
   const [priorityFilter, setPriorityFilter] = useState('all'); // all, high, medium, low
+  
+  // Template-related state
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   // Memoize filtered projects to prevent recalculation on every render
   const filteredProjects = useMemo(() => {
