@@ -442,6 +442,66 @@ async def get_alignment_dashboard(
         logger.error(f"Error getting alignment dashboard: {e}")
         raise HTTPException(status_code=500, detail="Failed to get alignment dashboard")
 
+@api_router.get("/alignment/weekly-score", tags=["Alignment"])
+async def get_weekly_alignment_score(
+    use_hrm: bool = Query(True, description="Use HRM for enhanced analysis"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get weekly alignment score"""
+    try:
+        return await alignment_service.get_weekly_score(
+            user_id=str(current_user.id),
+            use_hrm=use_hrm
+        )
+    except Exception as e:
+        logger.error(f"Error getting weekly alignment score: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get weekly alignment score")
+
+@api_router.get("/alignment/monthly-score", tags=["Alignment"])
+async def get_monthly_alignment_score(
+    use_hrm: bool = Query(True, description="Use HRM for enhanced analysis"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get monthly alignment score"""
+    try:
+        return await alignment_service.get_monthly_score(
+            user_id=str(current_user.id),
+            use_hrm=use_hrm
+        )
+    except Exception as e:
+        logger.error(f"Error getting monthly alignment score: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get monthly alignment score")
+
+@api_router.post("/alignment/monthly-goal", tags=["Alignment"])
+async def set_monthly_alignment_goal(
+    goal_data: dict,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Set monthly alignment goal"""
+    try:
+        return await alignment_service.set_monthly_goal(
+            user_id=str(current_user.id),
+            goal=goal_data.get("goal", 80)
+        )
+    except Exception as e:
+        logger.error(f"Error setting monthly alignment goal: {e}")
+        raise HTTPException(status_code=500, detail="Failed to set monthly alignment goal")
+
+@api_router.get("/alignment-score", tags=["Alignment"])
+async def get_legacy_alignment_score(
+    use_hrm: bool = Query(True, description="Use HRM for enhanced analysis"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Legacy alignment score endpoint for backward compatibility"""
+    try:
+        return await alignment_service.get_alignment_dashboard_data(
+            user_id=str(current_user.id),
+            use_hrm=use_hrm
+        )
+    except Exception as e:
+        logger.error(f"Error getting legacy alignment score: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get alignment score")
+
 @api_router.get("/ai/today-priorities", tags=["AI Coach"])
 async def get_today_priorities_enhanced(
     top_n: int = Query(5, ge=1, le=20, description="Number of top tasks to return"),
