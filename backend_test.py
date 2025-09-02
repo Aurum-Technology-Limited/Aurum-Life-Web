@@ -76,6 +76,8 @@ class OnboardingTemplateTester:
                 response = requests.post(url, json=data, headers=headers, params=params, timeout=30)
             elif method.upper() == 'PUT':
                 response = requests.put(url, json=data, headers=headers, params=params, timeout=30)
+            elif method.upper() == 'DELETE':
+                response = requests.delete(url, headers=headers, params=params, timeout=30)
             else:
                 raise ValueError(f"Unsupported method: {method}")
                 
@@ -109,7 +111,15 @@ class OnboardingTemplateTester:
         if success and 'access_token' in response:
             self.token = response['access_token']
             self.user_id = response.get('user', {}).get('id')
-            self.log_test("Authentication", True, {'user_id': self.user_id}, response_time)
+            user_data = response.get('user', {})
+            
+            details = {
+                'user_id': self.user_id,
+                'has_completed_onboarding': user_data.get('has_completed_onboarding', False),
+                'user_level': user_data.get('level', 'unknown')
+            }
+            
+            self.log_test("Authentication", True, details, response_time)
             return True
         else:
             self.log_test("Authentication", False, response, response_time)
