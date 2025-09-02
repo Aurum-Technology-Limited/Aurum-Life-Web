@@ -9,6 +9,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { open: openSemanticSearch } = useSemanticSearch();
   
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
