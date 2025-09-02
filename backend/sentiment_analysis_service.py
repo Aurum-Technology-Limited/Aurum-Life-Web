@@ -49,7 +49,7 @@ class SentimentAnalysisService:
             # Construct analysis prompt
             analysis_prompt = self._build_sentiment_prompt(text, title)
             
-            # Call GPT-5 nano for analysis
+            # Call GPT-5 nano for analysis  
             response = self.openai_client.chat.completions.create(
                 model=self.model,
                 messages=[
@@ -58,8 +58,8 @@ class SentimentAnalysisService:
                 ],
                 max_completion_tokens=400,
                 reasoning_effort="low",  # GPT-5 nano parameter for faster responses
-                verbosity="medium",      # GPT-5 nano parameter for balanced detail
-                response_format={"type": "json_object"}
+                verbosity="medium"      # GPT-5 nano parameter for balanced detail
+                # Note: Removed response_format for now due to potential compatibility issues
             )
             
             # Parse response
