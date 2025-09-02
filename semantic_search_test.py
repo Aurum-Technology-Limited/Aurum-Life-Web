@@ -27,9 +27,9 @@ class SemanticSearchTester:
         self.tests_passed = 0
         self.test_results = []
         
-        # Test credentials - using the test user mentioned in review
-        self.test_username = "testuser"
-        self.test_password = "testuser"
+        # Test credentials - using known working credentials from test_result.md
+        self.test_email = "test@aurumlife.com"
+        self.test_password = "password123"
         self.test_user_id = "f9ed7066-5954-46e2-8de3-92d38a28832f"
 
     def log_test(self, name: str, success: bool, details: Dict = None, response_time: float = None):
