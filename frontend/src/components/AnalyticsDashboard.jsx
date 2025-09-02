@@ -66,7 +66,7 @@ const AnalyticsDashboard = () => {
     queryFn: async () => {
       const response = await fetch(`${backendUrl}/api/analytics/dashboard?days=${timeRange}`, {
         headers: {
-          'Authorization': `Bearer ${user.access_token}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -86,7 +86,7 @@ const AnalyticsDashboard = () => {
     queryFn: async () => {
       const response = await fetch(`${backendUrl}/api/analytics/preferences`, {
         headers: {
-          'Authorization': `Bearer ${user.access_token}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -118,7 +118,7 @@ const AnalyticsDashboard = () => {
       
       const response = await fetch(`${backendUrl}/api/analytics/dashboard?days=${timeRange}`, {
         headers: {
-          'Authorization': `Bearer ${user.access_token}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -527,7 +527,7 @@ const PrivacySettingsModal = ({ preferences, onClose, onUpdate }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.access_token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(settings)
       });
