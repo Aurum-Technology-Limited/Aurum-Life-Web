@@ -546,6 +546,7 @@ export const projectTemplatesAPI = {
   createTemplate: (data) => apiClient.post('/project-templates', data),
   updateTemplate: (id, data) => apiClient.put(`/project-templates/${id}`, data),
   deleteTemplate: (id) => apiClient.delete(`/project-templates/${id}`),
+  useTemplate: (templateId, projectData) => apiClient.post(`/project-templates/${templateId}/use`, projectData),
 };
 
 export const alignmentScoreAPI = {
