@@ -153,7 +153,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to track navigation:', error);
     }
-  }, [user]);
+  }, [user, token]);
 
   // Track search events
   const trackSearch = useCallback(async (searchTerm, searchType, resultCount = 0, selectionMade = false) => {
