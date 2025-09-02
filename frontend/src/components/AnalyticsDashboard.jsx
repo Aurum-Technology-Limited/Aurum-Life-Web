@@ -94,15 +94,7 @@ const AnalyticsDashboard = () => {
     try {
       analytics.trackFeatureUsage('analytics_export_data', { time_range: timeRange });
       
-      const response = await fetch(`${backendUrl}/api/analytics/dashboard?days=${timeRange}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error('Export failed');
-      
-      const data = await response.json();
+      const data = await analyticsAPI.getDashboard(timeRange);
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
