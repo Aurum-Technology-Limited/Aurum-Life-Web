@@ -24,6 +24,7 @@ const Layout = ({ children }) => {
     { name: 'Journal', href: '/journal', icon: DocumentTextIcon },
     { name: 'Insights', href: '/insights', icon: ChartBarIcon },
     { name: 'Feedback', href: '/feedback', icon: ChatIcon },
+    { name: 'AI Command', href: '/ai-command', icon: BeakerIcon },
     { name: 'AI Coach', href: '/ai-coach', icon: BeakerIcon },
     { name: 'Notifications', href: '/notifications', icon: BellIcon },
   ];
