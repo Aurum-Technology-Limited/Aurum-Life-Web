@@ -6,7 +6,7 @@ Uses OpenAI GPT-5 nano for sophisticated emotional intelligence analysis
 import os
 import json
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta, date
 from openai import OpenAI
 from models import (
