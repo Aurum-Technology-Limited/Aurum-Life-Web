@@ -127,7 +127,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to track feature usage:', error);
     }
-  }, [user]);
+  }, [user, token]);
 
   // Track navigation events
   const trackNavigation = useCallback(async (fromPage, toPage, navigationMethod = 'click') => {
