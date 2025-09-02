@@ -53,7 +53,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to initialize analytics session:', error);
     }
-  }, [user, backendUrl]);
+  }, [user, token, backendUrl]);
 
   // Track page views
   const trackPageView = useCallback(async (page, referrer = null) => {
