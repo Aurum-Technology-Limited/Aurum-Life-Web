@@ -238,6 +238,9 @@ function App() {
             case 'ai-actions':
               console.log('⚡ Rendering AI Quick Actions (Command Center) component');
               return <AICommandCenter {...props} onSectionChange={setActiveSection} />;
+            case 'analytics':
+              console.log('📈 Rendering Analytics Dashboard component');
+              return <AnalyticsDashboard {...props} onSectionChange={setActiveSection} />;
             case 'settings':
               console.log('⚙️ Rendering Settings component');
               return <Settings {...props} />;
