@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Bot, Target, TrendingUp, AlertTriangle, Loader2, AlertCircle, Brain, ChevronRight, Clock, Zap } from 'lucide-react';
 import api, { aiCoachAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
+import CrossNavigationWidget from './ui/CrossNavigationWidget';
+import AIQuotaWidget from './ui/AIQuotaWidget';
+import AIActionButton from './ui/AIActionButton';
 
 // Defensive check to ensure API dependency injection is working
 if (!api) {
