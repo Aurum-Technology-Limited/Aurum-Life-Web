@@ -233,7 +233,7 @@ async def update_journal_entry(entry_id: str, entry_data: JournalEntryUpdate, cu
 async def delete_journal_entry(entry_id: str, current_user: User = Depends(get_current_active_user)):
     """Delete a journal entry"""
     try:
-        success = await JournalService.delete_entry(current_user.id, entry_id)
+        success = await JournalService.soft_delete_entry(current_user.id, entry_id)
         if not success:
             raise HTTPException(status_code=404, detail="Journal entry not found")
         return {"success": True, "message": "Journal entry deleted successfully"}
