@@ -43,7 +43,6 @@ const AIIntelligenceCenter = lazy(() => import('./components/AIIntelligenceCente
 const HRMDemo = lazy(() => import('./components/HRMDemo'));
 
 // Import AI Command Center hook
-import { useAICommandCenter } from './components/AICommandCenter';
 import SemanticSearch, { useSemanticSearch } from './components/SemanticSearch';
 
 // Loading component for suspense fallback
