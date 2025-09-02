@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { analyticsAPI } from '../services/api';
 
 // Register ChartJS components
 ChartJS.register(
