@@ -292,7 +292,12 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
               )}
               
               <button
-                onClick={() => setShowFilters(!showFilters)}
+                onClick={() => {
+                  analytics.trackAIInteraction('my_ai_insights', 'toggle_filters', { 
+                    filters_shown: !showFilters 
+                  });
+                  setShowFilters(!showFilters);
+                }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
                   showFilters 
                     ? 'bg-purple-600 border-purple-600 text-white' 
