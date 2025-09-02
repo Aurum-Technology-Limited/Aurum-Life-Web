@@ -268,10 +268,13 @@ function App() {
               return <Feedback {...props} />;
             case 'ai-coach':
               console.log('🤖 Rendering AICoach component');
-              return <AICoach {...props} />;
+              return <AICoach {...props} onSectionChange={setActiveSection} />;
             case 'ai-intelligence':
               console.log('🧠 Rendering AIIntelligenceCenter component');
-              return <AIIntelligenceCenter {...props} />;
+              return <AIIntelligenceCenter {...props} onSectionChange={setActiveSection} />;
+            case 'ai-command':
+              console.log('🎯 Rendering AICommandCenter component');
+              return <AICommandCenter {...props} onSectionChange={setActiveSection} />;
             case 'settings':
               console.log('⚙️ Rendering Settings component');
               return <Settings {...props} />;
