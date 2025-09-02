@@ -1,5 +1,5 @@
 import React, { useMemo, memo } from 'react';
-import {HomeIcon, CalendarIcon, LightningBoltIcon, ViewGridIcon, FolderIcon, DocumentTextIcon, ClipboardListIcon, ChatIcon, ChartBarIcon, BeakerIcon, BellIcon, SearchIcon} from '@heroicons/react/outline';
+import {HomeIcon, CalendarIcon, LightningBoltIcon, ViewGridIcon, FolderIcon, DocumentTextIcon, ClipboardListIcon, ChatIcon, ChartBarIcon, BeakerIcon, BellIcon, SearchIcon, TrendingUpIcon} from '@heroicons/react/outline';
 import { Brain, Zap, Target } from 'lucide-react';
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
