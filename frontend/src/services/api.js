@@ -650,6 +650,100 @@ import { hrmAPI } from './hrmApi';
 // Re-export HRM API
 export { hrmAPI };
 
+// Semantic Search API
+export const semanticSearchAPI = {
+  /**
+   * Perform semantic search across user's content
+   * @param {string} query - Search query text
+   * @param {Array} contentTypes - Content types to search (default: ['all'])
+   * @param {number} limit - Maximum results (default: 10)
+   * @param {number} minSimilarity - Minimum similarity threshold (default: 0.3)
+   * @param {number} dateRangeDays - Limit to recent days (optional)
+   */
+  async search(query, contentTypes = ['all'], limit = 10, minSimilarity = 0.3, dateRangeDays = null) {
+    try {
+      const params = new URLSearchParams({
+        query,
+        limit: limit.toString(),
+        min_similarity: minSimilarity.toString()
+      });
+      
+      // Add content types
+      contentTypes.forEach(type => params.append('content_types', type));
+      
+      // Add date range if specified
+      if (dateRangeDays) {
+        params.append('date_range_days', dateRangeDays.toString());
+      }
+      
+      const response = await apiClient.get(`/semantic/search?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Semantic search failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Find content similar to a specific entity
+   * @param {string} entityType - Type of entity (task, project, journal_entry)
+   * @param {string} entityId - ID of the entity
+   * @param {number} limit - Maximum results (default: 5)
+   * @param {number} minSimilarity - Minimum similarity threshold (default: 0.4)
+   */
+  async findSimilar(entityType, entityId, limit = 5, minSimilarity = 0.4) {
+    try {
+      const params = new URLSearchParams({
+        limit: limit.toString(),
+        min_similarity: minSimilarity.toString()
+      });
+      
+      const response = await apiClient.get(`/semantic/similar/${entityType}/${entityId}?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Find similar content failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Search for content similar to a text query with specific content type
+   * @param {string} query - Search query
+   * @param {string} contentType - Specific content type to search
+   * @param {number} limit - Maximum results
+   */
+  async searchByType(query, contentType, limit = 10) {
+    return this.search(query, [contentType], limit);
+  },
+
+  /**
+   * Find similar journal entries
+   * @param {string} query - Search query
+   * @param {number} limit - Maximum results
+   */
+  async searchJournalEntries(query, limit = 10) {
+    return this.searchByType(query, 'journal_entry', limit);
+  },
+
+  /**
+   * Find similar tasks
+   * @param {string} query - Search query
+   * @param {number} limit - Maximum results
+   */
+  async searchTasks(query, limit = 10) {
+    return this.searchByType(query, 'task', limit);
+  },
+
+  /**
+   * Find similar projects
+   * @param {string} query - Search query
+   * @param {number} limit - Maximum results
+   */
+  async searchProjects(query, limit = 10) {
+    return this.searchByType(query, 'project', limit);
+  }
+};
+
 // Utility exports
 export const handleApiError = APIErrorHandler.extractErrorMessage;
 export const api = apiClient;
