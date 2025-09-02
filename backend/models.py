@@ -923,6 +923,14 @@ class DailyReflection(BaseDocument):
     challenges_faced: Optional[str] = None
     tomorrow_focus: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Sentiment Analysis Fields (New)
+    sentiment_score: Optional[float] = Field(None, ge=-1.0, le=1.0, description="AI-generated sentiment score")
+    sentiment_category: Optional[SentimentCategoryEnum] = None
+    sentiment_confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="Confidence in sentiment analysis")
+    emotional_keywords: List[str] = Field(default_factory=list, description="Key emotional words detected")
+    emotional_themes: List[str] = Field(default_factory=list, description="Major emotional themes")
+    sentiment_analysis_date: Optional[datetime] = None
 
 class DailyReflectionCreate(BaseModel):
     reflection_text: str
