@@ -56,7 +56,9 @@ class SentimentAnalysisService:
                     {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": analysis_prompt}
                 ],
-                max_completion_tokens=400,  # GPT-5 nano uses max_completion_tokens
+                max_completion_tokens=400,
+                reasoning_effort="low",  # GPT-5 nano parameter for faster responses
+                verbosity="medium",      # GPT-5 nano parameter for balanced detail
                 response_format={"type": "json_object"}
             )
             
