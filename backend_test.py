@@ -110,13 +110,24 @@ class OnboardingTemplateTester:
         
         if success and 'access_token' in response:
             self.token = response['access_token']
-            self.user_id = response.get('user', {}).get('id')
-            user_data = response.get('user', {})
+            # Try different ways to get user_id from response
+            if 'user' in response and isinstance(response['user'], dict):
+                self.user_id = response['user'].get('id')
+                user_data = response['user']
+            else:
+                # Fallback: get user info from /api/auth/me
+                me_success, me_response, _ = self.make_request('GET', 'auth/me')
+                if me_success:
+                    self.user_id = me_response.get('id')
+                    user_data = me_response
+                else:
+                    user_data = {}
             
             details = {
                 'user_id': self.user_id,
                 'has_completed_onboarding': user_data.get('has_completed_onboarding', False),
-                'user_level': user_data.get('level', 'unknown')
+                'user_level': user_data.get('level', 'unknown'),
+                'response_structure': list(response.keys())
             }
             
             self.log_test("Authentication", True, details, response_time)
