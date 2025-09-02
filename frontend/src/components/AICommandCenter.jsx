@@ -386,9 +386,12 @@ const AICommandCenter = ({ onSectionChange }) => {
 
 // Export hook for global access
 export const useAICommandCenter = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  
   return {
-    openQuickGoal: () => console.log('Quick goal opened'),
-    // Add other methods as needed
+    isOpen,
+    open: () => setIsOpen(true),
+    close: () => setIsOpen(false)
   };
 };
 
