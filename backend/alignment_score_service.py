@@ -279,3 +279,142 @@ class AlignmentScoreService:
                 'progress_percentage': 0,
                 'has_goal_set': False
             }
+
+    async def get_weekly_score(self, user_id: str, use_hrm: bool = False) -> Dict:
+        """
+        Get weekly alignment score with optional HRM enhancement
+        """
+        try:
+            rolling_weekly = await self.get_rolling_weekly_score(user_id)
+            
+            result = {
+                'weekly_score': rolling_weekly,
+                'period': 'last_7_days',
+                'generated_at': datetime.now().isoformat()
+            }
+            
+            # Optional HRM enhancement
+            if use_hrm:
+                try:
+                    from hrm_service import HierarchicalReasoningModel, AnalysisDepth
+                    hrm = HierarchicalReasoningModel(user_id)
+                    
+                    insight = await hrm.analyze_entity(
+                        entity_type='weekly_alignment',
+                        entity_id=None,
+                        analysis_depth=AnalysisDepth.BALANCED
+                    )
+                    
+                    result['hrm_enhancement'] = {
+                        'confidence_score': insight.confidence_score,
+                        'reasoning_summary': insight.summary,
+                        'recommendations': insight.recommendations[:2]
+                    }
+                    
+                except Exception as e:
+                    logger.warning(f"Failed to enhance weekly score with HRM: {e}")
+                    result['hrm_enhancement'] = {
+                        'confidence_score': 0.5,
+                        'reasoning_summary': "HRM analysis temporarily unavailable",
+                        'recommendations': ["Continue working on your current projects"]
+                    }
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error getting weekly score: {e}")
+            return {
+                'weekly_score': 0,
+                'period': 'last_7_days',
+                'generated_at': datetime.now().isoformat()
+            }
+
+    async def get_monthly_score(self, user_id: str, use_hrm: bool = False) -> Dict:
+        """
+        Get monthly alignment score with optional HRM enhancement
+        """
+        try:
+            monthly_score = await self.get_monthly_score(user_id)
+            monthly_goal = await self.get_user_monthly_goal(user_id)
+            
+            # Calculate progress percentage
+            progress_percentage = 0
+            if monthly_goal and monthly_goal > 0:
+                progress_percentage = min((monthly_score / monthly_goal) * 100, 100)
+            
+            result = {
+                'monthly_score': monthly_score,
+                'monthly_goal': monthly_goal,
+                'progress_percentage': round(progress_percentage, 1),
+                'period': 'current_month',
+                'generated_at': datetime.now().isoformat()
+            }
+            
+            # Optional HRM enhancement
+            if use_hrm:
+                try:
+                    from hrm_service import HierarchicalReasoningModel, AnalysisDepth
+                    hrm = HierarchicalReasoningModel(user_id)
+                    
+                    insight = await hrm.analyze_entity(
+                        entity_type='monthly_alignment',
+                        entity_id=None,
+                        analysis_depth=AnalysisDepth.BALANCED
+                    )
+                    
+                    result['hrm_enhancement'] = {
+                        'confidence_score': insight.confidence_score,
+                        'reasoning_summary': insight.summary,
+                        'recommendations': insight.recommendations[:2]
+                    }
+                    
+                except Exception as e:
+                    logger.warning(f"Failed to enhance monthly score with HRM: {e}")
+                    result['hrm_enhancement'] = {
+                        'confidence_score': 0.5,
+                        'reasoning_summary': "HRM analysis temporarily unavailable",
+                        'recommendations': ["Continue working on your current projects"]
+                    }
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error getting monthly score: {e}")
+            return {
+                'monthly_score': 0,
+                'monthly_goal': None,
+                'progress_percentage': 0,
+                'period': 'current_month',
+                'generated_at': datetime.now().isoformat()
+            }
+
+    async def set_monthly_goal(self, user_id: str, goal: int) -> Dict:
+        """
+        Set monthly alignment goal and return confirmation
+        """
+        try:
+            success = await self.set_user_monthly_goal(user_id, goal)
+            
+            if success:
+                return {
+                    'success': True,
+                    'message': f'Monthly goal set to {goal} points',
+                    'goal': goal,
+                    'set_at': datetime.now().isoformat()
+                }
+            else:
+                return {
+                    'success': False,
+                    'message': 'Failed to set monthly goal',
+                    'goal': None,
+                    'set_at': datetime.now().isoformat()
+                }
+                
+        except Exception as e:
+            logger.error(f"Error setting monthly goal: {e}")
+            return {
+                'success': False,
+                'message': f'Error setting monthly goal: {str(e)}',
+                'goal': None,
+                'set_at': datetime.now().isoformat()
+            }
