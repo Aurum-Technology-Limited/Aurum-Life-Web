@@ -505,7 +505,7 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
                       <AIInsightCard
                         key={insight.id}
                         insight={insight}
-                        onClick={setSelectedInsight}
+                        onClick={handleInsightSelection}
                         onPin={handlePin}
                         onFeedback={handleFeedback}
                         showActions={true}
