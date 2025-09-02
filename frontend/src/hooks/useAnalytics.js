@@ -105,7 +105,7 @@ export const useAnalytics = () => {
     } catch (error) {
       console.warn('Failed to track AI interaction:', error);
     }
-  }, [user]);
+  }, [user, token]);
 
   // Track general feature usage
   const trackFeatureUsage = useCallback(async (featureName, eventData = {}, duration = null) => {
