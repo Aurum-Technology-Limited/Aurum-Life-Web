@@ -233,6 +233,17 @@ class JournalEntry(BaseDocument):
     reading_time_minutes: int = 0
     deleted: bool = False
     deleted_at: Optional[datetime] = None
+    
+    # Sentiment Analysis Fields (New)
+    sentiment_score: Optional[float] = Field(None, ge=-1.0, le=1.0, description="AI-generated sentiment score")
+    sentiment_category: Optional[SentimentCategoryEnum] = None
+    sentiment_confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="Confidence in sentiment analysis")
+    emotional_keywords: List[str] = Field(default_factory=list, description="Key emotional words detected")
+    emotional_themes: List[str] = Field(default_factory=list, description="Major emotional themes")
+    dominant_emotions: List[str] = Field(default_factory=list, description="Primary emotions detected")
+    emotional_intensity: Optional[float] = Field(None, ge=0.0, le=1.0, description="Intensity of emotional expression")
+    sentiment_analysis_date: Optional[datetime] = None  # When sentiment was analyzed
+    sentiment_analysis_version: str = "1.0"  # Track analysis model version
 
 class JournalEntryCreate(BaseModel):
     title: str
