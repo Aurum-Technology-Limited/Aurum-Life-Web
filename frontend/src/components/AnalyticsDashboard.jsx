@@ -327,31 +327,51 @@ const AnalyticsDashboard = () => {
                 </h3>
                 
                 {dashboardData?.daily_stats?.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={dashboardData.daily_stats}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="#9CA3AF"
-                        fontSize={12}
-                      />
-                      <YAxis stroke="#9CA3AF" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#1F2937',
-                          border: '1px solid #374151',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="ai_interactions" 
-                        stroke="#10B981" 
-                        strokeWidth={2}
-                        dot={{ fill: '#10B981' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <div style={{ height: '300px' }}>
+                    <Line
+                      data={{
+                        labels: dashboardData.daily_stats.map(d => d.date),
+                        datasets: [
+                          {
+                            label: 'AI Interactions',
+                            data: dashboardData.daily_stats.map(d => d.ai_interactions),
+                            borderColor: '#10B981',
+                            backgroundColor: '#10B98120',
+                            tension: 0.1,
+                            fill: true,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: {
+                            display: false,
+                          },
+                        },
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            grid: {
+                              color: '#374151',
+                            },
+                            ticks: {
+                              color: '#9CA3AF',
+                            },
+                          },
+                          x: {
+                            grid: {
+                              color: '#374151',
+                            },
+                            ticks: {
+                              color: '#9CA3AF',
+                            },
+                          },
+                        },
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="text-center py-8">
                     <TrendingUp className="h-12 w-12 text-gray-600 mx-auto mb-2" />
