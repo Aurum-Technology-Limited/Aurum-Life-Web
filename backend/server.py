@@ -13,6 +13,7 @@ import uuid
 # Import our models and services
 from supabase_client import supabase_manager
 from models import *
+from user_behavior_analytics_service import UserBehaviorAnalyticsService
 from optimized_services import (
     OptimizedPillarService, 
     OptimizedAreaService, 
