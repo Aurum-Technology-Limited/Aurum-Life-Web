@@ -169,7 +169,7 @@ class AIIntegrationTester:
             "name": "AI Test Project",
             "description": "Test project for AI integration testing",
             "area_id": self.test_area_id,
-            "status": "active",
+            "status": "Not Started",
             "priority": "medium"
         }
         success, response = self.make_request('POST', 'projects', project_data)
