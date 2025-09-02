@@ -30,6 +30,7 @@ from supabase_services import SupabasePillarService, SupabaseAreaService, Supaba
 from supabase_auth import get_current_active_user
 from supabase_auth_endpoints import auth_router
 from analytics_service import AnalyticsService
+from user_behavior_analytics_service import UserBehaviorAnalyticsService
 from alignment_score_service import AlignmentScoreService
 from ai_coach_mvp_service import AiCoachMvpService
 from hrm_endpoints import hrm_router
