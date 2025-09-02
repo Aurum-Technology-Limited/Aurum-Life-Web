@@ -27,6 +27,9 @@ import AIInsightCard from './ui/AIInsightCard';
 import { useAnalytics } from '../hooks/useAnalytics';
 
 const AIIntelligenceCenter = ({ onSectionChange }) => {
+  // Analytics tracking
+  const analytics = useAnalytics();
+  
   // State management
   const [filters, setFilters] = useState({
     entity_type: '',
@@ -40,6 +43,15 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
   const [showFilters, setShowFilters] = useState(false);
 
   const queryClient = useQueryClient();
+
+  // Track page view when component mounts
+  useEffect(() => {
+    analytics.trackPageView('/ai-insights');
+    analytics.trackAIInteraction('my_ai_insights', 'page_load', {
+      filters_active: showFilters,
+      search_active: !!searchTerm
+    });
+  }, [analytics]);
 
   // Fetch AI quota for cross-navigation
   const { data: quota } = useQuery({
