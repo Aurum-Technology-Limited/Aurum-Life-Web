@@ -81,6 +81,7 @@ function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sectionParams, setSectionParams] = useState({}); // Add state for section parameters
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
+  const [isSearchTestPage, setIsSearchTestPage] = useState(false);
 
   // Initialize Semantic Search
   const { isOpen: isSemanticSearchOpen, close: closeSemanticSearch } = useSemanticSearch();
