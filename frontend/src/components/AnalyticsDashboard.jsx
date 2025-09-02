@@ -51,9 +51,6 @@ const AnalyticsDashboard = () => {
   const analytics = useAnalytics();
   const [timeRange, setTimeRange] = useState(30);
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
-  
-  // Backend URL from environment
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
   // Track analytics dashboard usage
   useEffect(() => {
@@ -61,43 +58,23 @@ const AnalyticsDashboard = () => {
     analytics.trackFeatureUsage('analytics_dashboard', { time_range: timeRange });
   }, [analytics, timeRange]);
 
-  // Fetch analytics dashboard data
+  // Fetch analytics dashboard data using API service
   const { data: dashboardData, isLoading, error, refetch } = useQuery({
     queryKey: ['analytics-dashboard', timeRange],
-    queryFn: async () => {
-      const response = await fetch(`${backendUrl}/api/analytics/dashboard?days=${timeRange}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics data');
-      }
-
-      return response.json();
-    },
+    queryFn: () => analyticsAPI.getDashboard(timeRange),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: !!user && !!token
+    enabled: !!user && !!token,
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  // Fetch user preferences
+  // Fetch user preferences using API service
   const { data: preferences } = useQuery({
     queryKey: ['analytics-preferences'],
-    queryFn: async () => {
-      const response = await fetch(`${backendUrl}/api/analytics/preferences`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch preferences');
-      }
-
-      return response.json();
-    },
-    enabled: !!user && !!token
+    queryFn: () => analyticsAPI.getPreferences(),
+    enabled: !!user && !!token,
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   // Colors for charts
