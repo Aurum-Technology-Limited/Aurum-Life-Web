@@ -130,7 +130,11 @@ class AuthConsistencyTester:
             
             if response.status_code < 400:
                 try:
-                    return True, response.json(), response_time
+                    response_data = response.json()
+                    # Handle case where response is a list
+                    if isinstance(response_data, list):
+                        return True, {'data': response_data, 'count': len(response_data)}, response_time
+                    return True, response_data, response_time
                 except:
                     return True, {'raw_response': response.text}, response_time
             else:
