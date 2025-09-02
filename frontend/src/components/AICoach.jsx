@@ -1011,7 +1011,7 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
       {/* MVP Features */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Feature 1: Goal Decomposition */}
-        <FeatureCard
+        <AIActionButton
           icon={Target}
           title="Goal Decomposition"
           description="Break down a large goal into a structured project with actionable tasks to get started."
@@ -1019,10 +1019,11 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
           onClick={() => setGoalModalOpen(true)}
           disabled={quota.remaining === 0 || rateLimited}
           isLoading={goalLoading}
+          quotaRequired={true}
         />
 
         {/* Feature 2: Weekly Strategic Review */}
-        <FeatureCard
+        <AIActionButton
           icon={TrendingUp}
           title="Weekly Strategic Review"
           description="Get insights on how well your completed projects aligned with your stated priorities."
@@ -1030,10 +1031,11 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
           onClick={handleWeeklyReview}
           disabled={quota.remaining === 0 || rateLimited}
           isLoading={reviewLoading}
+          quotaRequired={true}
         />
 
         {/* Feature 3: Obstacle Analysis */}
-        <FeatureCard
+        <AIActionButton
           icon={AlertTriangle}
           title="Obstacle Analysis"
           description="Get concrete suggestions for the next action when you're stuck on a specific project."
@@ -1041,6 +1043,7 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
           onClick={() => setObstacleModalOpen(true)}
           disabled={quota.remaining === 0 || rateLimited || projects.length === 0}
           isLoading={obstacleLoading}
+          quotaRequired={true}
         />
       </div>
 
