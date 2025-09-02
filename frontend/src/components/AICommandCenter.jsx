@@ -334,7 +334,7 @@ const AICommandCenter = ({ onSectionChange }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div 
             className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border border-purple-500/30 rounded-xl p-6 cursor-pointer hover:border-purple-400/50 transition-colors"
-            onClick={() => onSectionChange('ai-intelligence')}
+            onClick={() => onSectionChange('ai-insights')}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -342,9 +342,12 @@ const AICommandCenter = ({ onSectionChange }) => {
                   <Brain className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Intelligence Center</h3>
+                  <h3 className="text-lg font-semibold text-white">My AI Insights</h3>
                   <p className="text-purple-300 text-sm">
-                    Browse & manage your AI insights
+                    Browse what AI has learned about you
+                  </p>
+                  <p className="text-purple-400 text-xs mt-1">
+                    Review past analysis, manage insights, see patterns
                   </p>
                 </div>
               </div>
@@ -353,22 +356,25 @@ const AICommandCenter = ({ onSectionChange }) => {
           </div>
 
           <div 
-            className="bg-gradient-to-br from-yellow-900/50 to-yellow-800/30 border border-yellow-500/30 rounded-xl p-6 cursor-pointer hover:border-yellow-400/50 transition-colors"
-            onClick={() => onSectionChange('ai-coach')}
+            className="bg-gradient-to-br from-green-900/50 to-blue-800/30 border border-green-500/30 rounded-xl p-6 cursor-pointer hover:border-green-400/50 transition-colors"
+            onClick={() => onSectionChange('goal-planner')}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-yellow-600 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg bg-green-600 flex items-center justify-center">
                   <Target className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">AI Coach</h3>
-                  <p className="text-yellow-300 text-sm">
-                    Strategic guidance & goal planning
+                  <h3 className="text-lg font-semibold text-white">Goal Planner</h3>
+                  <p className="text-green-300 text-sm">
+                    Strategic planning & AI coaching
+                  </p>
+                  <p className="text-green-400 text-xs mt-1">
+                    Break down goals, weekly reviews, overcome obstacles
                   </p>
                 </div>
               </div>
-              <ArrowRight className="h-5 w-5 text-yellow-400" />
+              <ArrowRight className="h-5 w-5 text-green-400" />
             </div>
           </div>
         </div>
