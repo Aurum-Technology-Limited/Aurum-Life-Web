@@ -583,6 +583,96 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
         </div>
       )}
 
+      {/* Project Templates Modal */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) setShowTemplateModal(false); }}>
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <FileText className="h-6 w-6 text-purple-400" />
+                <div>
+                  <h2 className="text-xl font-bold text-white">Project Templates</h2>
+                  <p className="text-gray-400 text-sm">Choose a template to start your project faster</p>
+                </div>
+              </div>
+              <button 
+                className="text-gray-400 hover:text-white" 
+                onClick={() => setShowTemplateModal(false)}
+              >
+                <XIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {templates.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-300 mb-2">No templates available</h3>
+                <p className="text-gray-500">Templates will help you start projects faster with pre-defined tasks.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {templates.map((template) => (
+                  <div
+                    key={template.id}
+                    className={`border rounded-lg p-4 cursor-pointer transition-all hover:border-purple-400 ${
+                      selectedTemplate?.id === template.id 
+                        ? 'border-purple-500 bg-purple-900/20' 
+                        : 'border-gray-700 bg-gray-800/50'
+                    }`}
+                    onClick={() => setSelectedTemplate(template)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="text-white font-semibold">{template.name}</h3>
+                        <p className="text-gray-400 text-sm mt-1">{template.description}</p>
+                      </div>
+                      {template.category && (
+                        <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">
+                          {template.category}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {template.tasks && template.tasks.length > 0 && (
+                      <div className="mb-3">
+                        <div className="text-xs text-gray-500 mb-2">
+                          {template.tasks.length} pre-defined tasks
+                        </div>
+                        <div className="space-y-1">
+                          {template.tasks.slice(0, 3).map((task, index) => (
+                            <div key={index} className="text-xs text-gray-400 flex items-center">
+                              <span className="w-1 h-1 bg-gray-600 rounded-full mr-2"></span>
+                              {task.name}
+                            </div>
+                          ))}
+                          {template.tasks.length > 3 && (
+                            <div className="text-xs text-gray-500">
+                              +{template.tasks.length - 3} more tasks...
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedTemplate?.id === template.id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUseTemplate(template);
+                        }}
+                        className="w-full mt-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      >
+                        Use This Template
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Modals and forms are below ... existing code remains unchanged */}
     </div>
   );
