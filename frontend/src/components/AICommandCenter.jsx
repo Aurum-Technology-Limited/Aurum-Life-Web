@@ -24,6 +24,7 @@ const AICommandCenter = ({ isOpen, onClose, onCommand }) => {
   const [recentCommands, setRecentCommands] = useState([]);
   const [isListening, setIsListening] = useState(false);
   const inputRef = useRef(null);
+  const { open: openSemanticSearch } = useSemanticSearch();
 
   // Context-aware suggestions based on current state
   const contextSuggestions = [
