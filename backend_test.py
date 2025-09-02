@@ -28,9 +28,15 @@ class OnboardingTemplateTester:
         self.tests_passed = 0
         self.test_results = []
         
-        # Test credentials
+        # Test credentials - using the test account from review request
         self.test_email = "test@aurumlife.com"
         self.test_password = "password123"
+        
+        # Created entity IDs for cleanup and relationship testing
+        self.created_pillar_id = None
+        self.created_area_id = None
+        self.created_project_id = None
+        self.created_task_ids = []
 
     def log_test(self, name: str, success: bool, details: Dict = None, response_time: float = None):
         """Log test result"""
