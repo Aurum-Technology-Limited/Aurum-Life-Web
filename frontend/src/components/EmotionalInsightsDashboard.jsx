@@ -18,7 +18,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Star,
-  Play
+  Play,
+  X
 } from 'lucide-react';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { useAnalytics } from '../hooks/useAnalytics';
