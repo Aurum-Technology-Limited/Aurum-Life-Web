@@ -8,14 +8,15 @@ import {
   XIcon,
   PencilIcon,
   TrashIcon,
-  EyeIcon
+  EyeIcon,
+  FileText
 } from '@heroicons/react/outline';
 import { 
   FolderOpenIcon,
   FolderIcon as FolderIconSolid
 } from '@heroicons/react/solid';
 import { useAuth } from '../contexts/BackendAuthContext';
-import { projectsAPI, areasAPI } from '../services/api';
+import { projectsAPI, areasAPI, projectTemplatesAPI } from '../services/api';
 import { useProjectsQuery, useInvalidateQueries } from '../hooks/useQueries';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import ProjectDecompositionHelper from './ProjectDecompositionHelper';
