@@ -378,4 +378,12 @@ const AICommandCenter = ({ onSectionChange }) => {
   );
 };
 
+// Export hook for global access
+export const useAICommandCenter = () => {
+  return {
+    openQuickGoal: () => console.log('Quick goal opened'),
+    // Add other methods as needed
+  };
+};
+
 export default AICommandCenter;
