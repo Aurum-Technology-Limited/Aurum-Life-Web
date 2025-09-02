@@ -298,7 +298,7 @@ export const useAnalytics = () => {
             `${backendUrl}/api/analytics/end-session/${sessionIdRef.current}`, 
             data
           );
-        } catch (error) {
+        } catch (beaconError) {
           // Fallback to sync fetch as last resort
           try {
             fetch(`${backendUrl}/api/analytics/end-session/${sessionIdRef.current}`, {
