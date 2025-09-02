@@ -372,7 +372,10 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
                 </label>
                 <select
                   value={filters.entity_type}
-                  onChange={(e) => setFilters(prev => ({ ...prev, entity_type: e.target.value }))}
+                  onChange={(e) => {
+                    const newFilters = { ...filters, entity_type: e.target.value };
+                    handleFiltersChange(newFilters);
+                  }}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
                 >
                   <option value="">All Types</option>
