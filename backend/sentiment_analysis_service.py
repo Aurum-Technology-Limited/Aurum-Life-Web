@@ -61,7 +61,24 @@ class SentimentAnalysisService:
             )
             
             # Parse response
-            analysis_data = json.loads(response.choices[0].message.content)
+            raw_content = response.choices[0].message.content
+            logger.info(f"🔍 Raw GPT response: {raw_content}")
+            
+            try:
+                analysis_data = json.loads(raw_content)
+            except json.JSONDecodeError as e:
+                logger.error(f"❌ JSON parsing failed: {e}")
+                logger.error(f"Raw content: {raw_content}")
+                # Fallback to neutral sentiment
+                analysis_data = {
+                    'sentiment_score': 0.0,
+                    'confidence_score': 0.5,
+                    'emotional_keywords': [],
+                    'emotional_themes': [],
+                    'dominant_emotions': [],
+                    'emotional_intensity': 0.5,
+                    'reasoning': f'JSON parsing failed: {str(e)}'
+                }
             
             # Create sentiment result
             sentiment_result = SentimentAnalysisResult(
