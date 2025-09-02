@@ -220,7 +220,7 @@ class OnboardingTemplateTester:
             "description": "A test project for onboarding template testing",
             "icon": "💼",
             "priority": "medium",
-            "status": "not_started"
+            "status": "Not Started"
         }
         
         success, response, response_time = self.make_request(
