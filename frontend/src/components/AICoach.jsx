@@ -661,6 +661,16 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
   
   // Projects data for obstacle analysis
   const [projects, setProjects] = useState([]);
+  
+  // Related insights count for cross-navigation
+  const [relatedInsights, setRelatedInsights] = useState(0);
+  
+  // Handle prefill goal from AI Command Center
+  useEffect(() => {
+    if (prefillGoal) {
+      setGoalModalOpen(true);
+    }
+  }, [prefillGoal]);
 
   useEffect(() => {
     initializeCoach();
@@ -677,11 +687,32 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
       // Load user's projects for obstacle analysis
       await loadProjects();
       
+      // Load related insights count for cross-navigation
+      await loadRelatedInsights();
+      
     } catch (err) {
       setError('Failed to initialize AI Coach');
       console.error('AI Coach initialization error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const loadRelatedInsights = async () => {
+    try {
+      // Get count of recent AI insights
+      const params = new URLSearchParams({
+        limit: '100',
+        is_active: 'true'
+      });
+      const response = await fetch(`/api/hrm/insights?${params}`);
+      if (response.ok) {
+        const data = await response.json();
+        setRelatedInsights(data.total || 0);
+      }
+    } catch (err) {
+      console.error('Error loading related insights:', err);
+      setRelatedInsights(0);
     }
   };
 
