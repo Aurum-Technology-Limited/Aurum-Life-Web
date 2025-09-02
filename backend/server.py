@@ -464,7 +464,7 @@ async def get_monthly_alignment_score(
 ):
     """Get monthly alignment score"""
     try:
-        return await alignment_service.get_monthly_score(
+        return await alignment_service.get_monthly_score_enhanced(
             user_id=str(current_user.id),
             use_hrm=use_hrm
         )
