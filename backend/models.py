@@ -143,6 +143,40 @@ class EnergyLevelEnum(str, Enum):
     high = "high"             # 4
     very_high = "very_high"   # 5
 
+# Sentiment Analysis Models
+class SentimentCategoryEnum(str, Enum):
+    very_positive = "very_positive"    # 0.6 to 1.0
+    positive = "positive"              # 0.2 to 0.6
+    neutral = "neutral"                # -0.2 to 0.2
+    negative = "negative"              # -0.6 to -0.2
+    very_negative = "very_negative"    # -1.0 to -0.6
+
+class EmotionalInsightTypeEnum(str, Enum):
+    trend_analysis = "trend_analysis"
+    activity_correlation = "activity_correlation"
+    emotional_pattern = "emotional_pattern"
+    mood_prediction = "mood_prediction"
+    wellness_alert = "wellness_alert"
+
+class SentimentAnalysisResult(BaseModel):
+    """Detailed sentiment analysis result from GPT-5 nano"""
+    sentiment_score: float = Field(..., ge=-1.0, le=1.0, description="Sentiment score from -1 (very negative) to 1 (very positive)")
+    sentiment_category: SentimentCategoryEnum
+    confidence_score: float = Field(..., ge=0.0, le=1.0, description="Confidence in sentiment analysis")
+    emotional_keywords: List[str] = Field(default_factory=list, description="Key emotional words detected")
+    emotional_themes: List[str] = Field(default_factory=list, description="Major emotional themes")
+    reasoning: str = Field(default="", description="AI reasoning for the sentiment score")
+    dominant_emotions: List[str] = Field(default_factory=list, description="Primary emotions detected")
+    emotional_intensity: float = Field(default=0.5, ge=0.0, le=1.0, description="Intensity of emotional expression")
+    
+class SentimentTrendData(BaseModel):
+    """Sentiment trend data for insights dashboard"""
+    date: date
+    average_sentiment: float
+    entry_count: int
+    dominant_category: SentimentCategoryEnum
+    emotional_keywords: List[str] = []
+
 class JournalTemplateTypeEnum(str, Enum):
     daily_reflection = "daily_reflection"
     gratitude = "gratitude"
