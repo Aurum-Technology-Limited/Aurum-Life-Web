@@ -304,7 +304,7 @@ export const useAnalytics = () => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, endSession, initializeSession]);
+  }, [user, token, endSession, initializeSession]);
 
   // Window unload handler
   useEffect(() => {
