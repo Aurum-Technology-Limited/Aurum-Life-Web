@@ -274,7 +274,14 @@ class JournalService:
     
     @staticmethod
     async def _build_journal_entry_response(doc: dict) -> JournalEntryResponse:
-        """Build a JournalEntryResponse from a document"""
+        """Build a JournalEntryResponse from a document with sentiment data"""
+        # Get sentiment emoji if sentiment analysis is available
+        sentiment_emoji = None
+        if doc.get('sentiment_category'):
+            sentiment_emoji = SentimentAnalysisService.get_sentiment_emoji(
+                SentimentCategoryEnum(doc.get('sentiment_category'))
+            )
+        
         return JournalEntryResponse(
             id=doc["id"],
             user_id=doc["user_id"],
@@ -291,7 +298,18 @@ class JournalService:
             word_count=doc.get("word_count", 0),
             reading_time_minutes=doc.get("reading_time_minutes", 0),
             created_at=doc["created_at"],
-            updated_at=doc["updated_at"]
+            updated_at=doc["updated_at"],
+            
+            # Sentiment Analysis Fields
+            sentiment_score=doc.get("sentiment_score"),
+            sentiment_category=SentimentCategoryEnum(doc.get("sentiment_category")) if doc.get("sentiment_category") else None,
+            sentiment_confidence=doc.get("sentiment_confidence"),
+            emotional_keywords=doc.get("emotional_keywords", []),
+            emotional_themes=doc.get("emotional_themes", []),
+            dominant_emotions=doc.get("dominant_emotions", []),
+            emotional_intensity=doc.get("emotional_intensity"),
+            sentiment_analysis_date=doc.get("sentiment_analysis_date"),
+            sentiment_emoji=sentiment_emoji
         )
     
     @staticmethod
