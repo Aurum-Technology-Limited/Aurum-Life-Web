@@ -967,6 +967,14 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
 
   return (
     <div className="space-y-8">
+      
+      {/* Cross-Navigation Widget */}
+      <CrossNavigationWidget 
+        currentScreen="ai-coach"
+        onNavigate={(screen) => onSectionChange && onSectionChange(screen)}
+        relatedInsights={relatedInsights}
+      />
+      
       {/* Header */}
       <div className="text-center">
         <div className="flex items-center justify-center space-x-3 mb-4">
@@ -981,7 +989,7 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
       </div>
 
       {/* AI Interaction Quota */}
-      <QuotaDisplay remaining={quota.remaining} total={quota.total} />
+      <AIQuotaWidget remaining={quota.remaining} total={quota.total} />
       
       {/* Rate Limit Warning */}
       <RateLimitWarning show={rateLimited} />
