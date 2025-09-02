@@ -621,7 +621,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <FileText className="h-6 w-6 text-purple-400" />
+                <DocumentTextIcon className="h-6 w-6 text-purple-400" />
                 <div>
                   <h2 className="text-xl font-bold text-white">Project Templates</h2>
                   <p className="text-gray-400 text-sm">Choose a template to start your project faster</p>
