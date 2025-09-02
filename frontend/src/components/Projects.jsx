@@ -510,7 +510,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
             onClick={() => setShowTemplateModal(true)}
             className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
           >
-            <FileText className="h-4 w-4" />
+            <DocumentTextIcon className="h-4 w-4" />
             <span>Use Template</span>
           </button>
           <button
