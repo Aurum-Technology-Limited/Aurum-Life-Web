@@ -56,7 +56,6 @@ class SentimentAnalysisService:
                     {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": analysis_prompt}
                 ],
-                temperature=0.1,  # Low temperature for consistent analysis
                 max_completion_tokens=400,  # GPT-5 nano uses max_completion_tokens
                 response_format={"type": "json_object"}
             )
