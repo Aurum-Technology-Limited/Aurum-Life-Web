@@ -214,7 +214,6 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('🔍 Semantic search button clicked');
               openSemanticSearch();
             }}
             className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors"
