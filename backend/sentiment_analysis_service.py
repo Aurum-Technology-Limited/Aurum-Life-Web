@@ -28,7 +28,9 @@ class SentimentAnalysisService:
     def __init__(self):
         self.openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         self.supabase = get_supabase_client()
-        self.model = "gpt-5-nano"
+        # Use GPT-4o-mini as fallback if gpt-5-nano has issues
+        self.model = "gpt-4o-mini"  # Temporary fallback while debugging gpt-5-nano
+        # self.model = "gpt-5-nano"  # Original - has empty response issues
         
     async def analyze_journal_entry(self, user_id: str, entry_id: str, text: str, title: str = "") -> SentimentAnalysisResult:
         """
