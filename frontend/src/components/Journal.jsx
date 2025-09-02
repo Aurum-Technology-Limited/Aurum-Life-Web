@@ -15,6 +15,18 @@ import {
   Filler
 } from 'chart.js';
 
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
 const Journal = ({ onSectionChange, sectionParams }) => {
   const [currentView, setCurrentView] = useState('entries'); // 'entries', 'insights', 'templates', 'trash'
   const [searchTerm, setSearchTerm] = useState('');
