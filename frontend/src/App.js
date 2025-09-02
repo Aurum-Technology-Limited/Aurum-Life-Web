@@ -81,6 +81,9 @@ function App() {
 
   // Initialize AI Command Center
   const { isOpen: isCommandCenterOpen, close: closeCommandCenter } = useAICommandCenter();
+  
+  // Initialize Semantic Search
+  const { isOpen: isSemanticSearchOpen, close: closeSemanticSearch } = useSemanticSearch();
 
   // Debug effect to track activeSection changes
   useEffect(() => {
