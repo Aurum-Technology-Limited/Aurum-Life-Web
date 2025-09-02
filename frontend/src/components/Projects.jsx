@@ -474,6 +474,13 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
             className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
           />
           <button
+            onClick={() => setShowTemplateModal(true)}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+          >
+            <FileText className="h-4 w-4" />
+            <span>Use Template</span>
+          </button>
+          <button
             onClick={() => setShowCreateForm(true)}
             className="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors flex items-center space-x-2"
           >
