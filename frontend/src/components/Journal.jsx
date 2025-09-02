@@ -788,12 +788,42 @@ const Journal = ({ onSectionChange, sectionParams }) => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">New Journal Entry</h2>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewEntryTitle('');
+                  setNewEntryContent('');
+                  setRealTimeSentiment(null);
+                  setError(null);
+                }}
                 className="text-gray-400 hover:text-white"
               >
                 <X size={24} />
               </button>
             </div>
+            
+            {/* Real-time Sentiment Feedback */}
+            {realTimeSentiment && (
+              <div className="mb-4 p-3 rounded-lg bg-gray-800/50 border border-gray-700">
+                <div className="flex items-center gap-3 mb-2">
+                  <Zap size={16} className="text-yellow-400" />
+                  <span className="text-sm font-medium text-white">Live Emotional Analysis</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <SentimentIndicator
+                    sentimentCategory={realTimeSentiment.sentiment_analysis?.sentiment_category}
+                    sentimentScore={realTimeSentiment.sentiment_analysis?.sentiment_score}
+                    sentimentEmoji={realTimeSentiment.sentiment_emoji}
+                    emotionalKeywords={realTimeSentiment.sentiment_analysis?.emotional_keywords}
+                    showDetails={true}
+                    size="small"
+                  />
+                  <div className="text-xs text-gray-400">
+                    {realTimeSentiment.human_readable}
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="space-y-4">
               <input
                 type="text"
@@ -806,7 +836,14 @@ const Journal = ({ onSectionChange, sectionParams }) => {
                 placeholder="What's on your mind?"
                 rows={8}
                 value={newEntryContent}
-                onChange={(e) => setNewEntryContent(e.target.value)}
+                onChange={(e) => {
+                  setNewEntryContent(e.target.value);
+                  // Debounce real-time sentiment analysis
+                  clearTimeout(window.sentimentTimeout);
+                  window.sentimentTimeout = setTimeout(() => {
+                    analyzeSentimentRealTime(e.target.value);
+                  }, 1000);
+                }}
                 className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 resize-none"
               />
               <div className="flex justify-end space-x-3">
@@ -815,6 +852,7 @@ const Journal = ({ onSectionChange, sectionParams }) => {
                     setShowCreateModal(false);
                     setNewEntryTitle('');
                     setNewEntryContent('');
+                    setRealTimeSentiment(null);
                     setError(null);
                   }}
                   className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
@@ -823,8 +861,10 @@ const Journal = ({ onSectionChange, sectionParams }) => {
                 </button>
                 <button
                   onClick={handleCreateEntry}
-                  className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-300 transition-colors"
+                  disabled={isSyncing}
+                  className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
+                  {isSyncing && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>}
                   Save Entry
                 </button>
               </div>
