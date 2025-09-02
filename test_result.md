@@ -5640,6 +5640,8 @@ frontend:
   - task: "Today View HRM Integration and Analyze with AI Functionality"
     implemented: true
     working: false
+    -agent: "testing"
+    -message: "🚨 CRITICAL AUTHENTICATION/RENDERING ISSUE BLOCKING UI CLEANUP AND SEMANTIC SEARCH TESTING! Executed comprehensive testing of UI cleanup and semantic search functionality as requested in review. CRITICAL FINDINGS: The application has a severe authentication state management issue where the React app believes user is authenticated (console shows dashboard rendering) but the UI displays login form instead of dashboard with sidebar. This prevents testing of: 1) UI cleanup verification (removal of cluttered sidebar sections), 2) Semantic search button functionality in sidebar, 3) Complete semantic search workflow testing. POSITIVE FINDINGS: ✅ Keyboard shortcut (Ctrl+Shift+F) works perfectly and opens semantic search modal, ✅ Semantic search modal structure and styling are correct, ✅ Search input accepts queries. URGENT ACTION REQUIRED: Fix authentication state management to allow proper dashboard rendering with sidebar. The semantic search implementation appears functional based on keyboard shortcut testing, but full verification requires resolving the authentication/rendering disconnect. This is a critical system issue preventing comprehensive UI testing."
     file: "frontend/src/components/Today.jsx, frontend/src/services/hrmApi.js, frontend/src/components/ui/AIBadge.jsx, frontend/src/components/ui/AIInsightPanel.jsx"
     stuck_count: 0
     priority: "high"
