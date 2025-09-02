@@ -206,6 +206,43 @@ async def get_journal(current_user: User = Depends(get_current_active_user)):
         logger.error(f"Error getting journal entries: {e}")
         raise HTTPException(status_code=500, detail="Failed to get journal entries")
 
+@api_router.post("/journal", response_model=JournalEntry)
+async def create_journal_entry(entry_data: JournalEntryCreate, current_user: User = Depends(get_current_active_user)):
+    """Create a new journal entry"""
+    try:
+        return await JournalService.create_entry(current_user.id, entry_data)
+    except Exception as e:
+        logger.error(f"Error creating journal entry: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/journal/{entry_id}", response_model=dict)
+async def update_journal_entry(entry_id: str, entry_data: JournalEntryUpdate, current_user: User = Depends(get_current_active_user)):
+    """Update a journal entry"""
+    try:
+        success = await JournalService.update_entry(current_user.id, entry_id, entry_data)
+        if not success:
+            raise HTTPException(status_code=404, detail="Journal entry not found")
+        return {"success": True, "message": "Journal entry updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating journal entry: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/journal/{entry_id}", response_model=dict)
+async def delete_journal_entry(entry_id: str, current_user: User = Depends(get_current_active_user)):
+    """Delete a journal entry"""
+    try:
+        success = await JournalService.delete_entry(current_user.id, entry_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Journal entry not found")
+        return {"success": True, "message": "Journal entry deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting journal entry: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ================================
 # AI COACH ENDPOINTS (HRM-Enhanced)
 # ================================
