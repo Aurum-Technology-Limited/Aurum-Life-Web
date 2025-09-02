@@ -270,10 +270,35 @@ const Journal = ({ onSectionChange, sectionParams }) => {
           {entries.map((entry) => (
             <div key={entry.id} className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-white">{entry.title}</h3>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-semibold text-white">{entry.title}</h3>
+                  {entry.sentiment_category && (
+                    <SentimentBadge
+                      sentimentCategory={entry.sentiment_category}
+                      sentimentScore={entry.sentiment_score}
+                      sentimentEmoji={entry.sentiment_emoji}
+                      size="small"
+                    />
+                  )}
+                </div>
                 <span className="text-xs text-gray-500">{new Date(entry.created_at).toLocaleDateString()}</span>
               </div>
               <p className="text-gray-300 text-sm mb-4 line-clamp-3">{entry.content}</p>
+              
+              {/* Emotional Keywords */}
+              {entry.emotional_keywords && entry.emotional_keywords.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {entry.emotional_keywords.slice(0, 3).map((keyword, index) => (
+                    <span 
+                      key={index}
+                      className="px-2 py-1 text-xs rounded-full bg-purple-600/20 text-purple-400 border border-purple-600/30"
+                    >
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+              )}
+              
               <div className="flex items-center gap-3">
                 <button className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-500 transition-colors">View</button>
                 <button className="px-3 py-2 rounded bg-gray-600 text-white hover:bg-gray-500 transition-colors">Edit</button>
