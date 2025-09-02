@@ -672,11 +672,6 @@ def _get_entity_display_name(entity_type: str) -> str:
     }
     return names.get(entity_type, entity_type.replace('_', ' ').title())
 
-# Include all routers after endpoints are defined
-app.include_router(api_router)
-app.include_router(auth_router, prefix="/api")
-app.include_router(hrm_router)
-
 # ================================
 # USER BEHAVIOR ANALYTICS ENDPOINTS
 # ================================
@@ -914,3 +909,8 @@ async def delete_analytics_data(
     except Exception as e:
         logger.error(f"Error deleting analytics data: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete analytics data")
+
+# Include all routers after endpoints are defined
+app.include_router(api_router)
+app.include_router(auth_router, prefix="/api")
+app.include_router(hrm_router)
