@@ -1369,6 +1369,206 @@ class CustomAchievementResponse(BaseModel):
     target_name: Optional[str] = None  # Name of target project/course etc.
     estimated_completion: Optional[datetime] = None  # Based on current progress
 
+# User Behavior Analytics Models
+class UserActionTypeEnum(str, Enum):
+    """Types of user actions to track"""
+    page_view = "page_view"
+    ai_interaction = "ai_interaction"
+    feature_usage = "feature_usage"
+    task_action = "task_action"
+    project_action = "project_action"
+    navigation = "navigation"
+    search = "search"
+    insight_feedback = "insight_feedback"
+
+class AIFeatureTypeEnum(str, Enum):
+    """Types of AI features for tracking"""
+    my_ai_insights = "my_ai_insights"
+    ai_quick_actions = "ai_quick_actions" 
+    goal_planner = "goal_planner"
+    semantic_search = "semantic_search"
+    hrm_analysis = "hrm_analysis"
+
+class UserBehaviorEvent(BaseDocument):
+    """Individual user behavior event for analytics"""
+    user_id: str
+    session_id: str  # Browser session ID for grouping related events
+    
+    # Event identification
+    action_type: UserActionTypeEnum
+    feature_name: str  # Specific feature used (e.g., "task-completion", "insight-view")
+    ai_feature_type: Optional[AIFeatureTypeEnum] = None  # For AI-specific tracking
+    
+    # Event details
+    event_data: Optional[Dict[str, Any]] = {}  # Flexible JSON data for event specifics
+    duration_ms: Optional[int] = None  # Time spent on action/page (milliseconds)
+    success: bool = True  # Whether the action was successful
+    error_message: Optional[str] = None  # Error details if action failed
+    
+    # Context
+    page_url: Optional[str] = None
+    referrer_url: Optional[str] = None
+    user_agent: Optional[str] = None
+    screen_resolution: Optional[str] = None
+    timezone: Optional[str] = None
+    
+    # Privacy compliance
+    is_anonymized: bool = False  # Whether personal data has been anonymized
+    consent_given: bool = True  # User consent for tracking
+    
+    # Metadata
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    client_timestamp: Optional[datetime] = None  # Client-side timestamp for accuracy
+
+class UserBehaviorEventCreate(BaseModel):
+    """Create model for behavior events"""
+    session_id: str
+    action_type: UserActionTypeEnum
+    feature_name: str
+    ai_feature_type: Optional[AIFeatureTypeEnum] = None
+    event_data: Optional[Dict[str, Any]] = {}
+    duration_ms: Optional[int] = None
+    success: bool = True
+    error_message: Optional[str] = None
+    page_url: Optional[str] = None
+    referrer_url: Optional[str] = None
+    user_agent: Optional[str] = None
+    screen_resolution: Optional[str] = None
+    timezone: Optional[str] = None
+    client_timestamp: Optional[datetime] = None
+
+class UserSession(BaseDocument):
+    """User session tracking for analytics"""
+    user_id: str
+    session_id: str
+    
+    # Session details
+    start_time: datetime = Field(default_factory=datetime.utcnow)
+    end_time: Optional[datetime] = None
+    duration_ms: Optional[int] = None
+    is_active: bool = True
+    
+    # Session context
+    entry_page: Optional[str] = None
+    exit_page: Optional[str] = None
+    page_views: int = 0
+    ai_interactions: int = 0
+    feature_usages: int = 0
+    
+    # Device/Browser info
+    user_agent: Optional[str] = None
+    screen_resolution: Optional[str] = None
+    timezone: Optional[str] = None
+    device_type: Optional[str] = None  # desktop, mobile, tablet
+    
+    # Privacy
+    consent_given: bool = True
+    is_anonymized: bool = False
+
+class UserSessionCreate(BaseModel):
+    """Create model for user sessions"""
+    session_id: str
+    entry_page: Optional[str] = None
+    user_agent: Optional[str] = None
+    screen_resolution: Optional[str] = None
+    timezone: Optional[str] = None
+    device_type: Optional[str] = None
+
+class UserAnalyticsPreferences(BaseDocument):
+    """User preferences for analytics tracking"""
+    user_id: str
+    
+    # Consent settings
+    analytics_consent: bool = True
+    ai_behavior_tracking: bool = True
+    performance_tracking: bool = True
+    error_reporting: bool = True
+    
+    # Data retention preferences
+    data_retention_days: int = 365  # How long to keep user data
+    anonymize_after_days: int = 90   # When to anonymize personal data
+    
+    # Feature-specific preferences
+    track_ai_insights_usage: bool = True
+    track_ai_actions_usage: bool = True
+    track_goal_planner_usage: bool = True
+    track_navigation_patterns: bool = True
+    track_search_queries: bool = False  # More sensitive, default false
+    
+    # Privacy settings
+    share_anonymous_stats: bool = True  # Share anonymized data for product improvement
+    
+class UserAnalyticsPreferencesCreate(BaseModel):
+    """Create model for analytics preferences"""
+    analytics_consent: bool = True
+    ai_behavior_tracking: bool = True
+    performance_tracking: bool = True
+    error_reporting: bool = True
+    data_retention_days: int = 365
+    anonymize_after_days: int = 90
+    track_ai_insights_usage: bool = True
+    track_ai_actions_usage: bool = True
+    track_goal_planner_usage: bool = True
+    track_navigation_patterns: bool = True
+    track_search_queries: bool = False
+    share_anonymous_stats: bool = True
+
+class UserAnalyticsPreferencesUpdate(BaseModel):
+    """Update model for analytics preferences"""
+    analytics_consent: Optional[bool] = None
+    ai_behavior_tracking: Optional[bool] = None
+    performance_tracking: Optional[bool] = None
+    error_reporting: Optional[bool] = None
+    data_retention_days: Optional[int] = None
+    anonymize_after_days: Optional[int] = None
+    track_ai_insights_usage: Optional[bool] = None
+    track_ai_actions_usage: Optional[bool] = None
+    track_goal_planner_usage: Optional[bool] = None
+    track_navigation_patterns: Optional[bool] = None
+    track_search_queries: Optional[bool] = None
+    share_anonymous_stats: Optional[bool] = None
+
+# Analytics Dashboard Models
+class AIFeatureUsageStats(BaseModel):
+    """Statistics for AI feature usage"""
+    feature_type: AIFeatureTypeEnum
+    feature_name: str
+    total_sessions: int = 0
+    total_time_spent_ms: int = 0
+    average_session_duration_ms: float = 0.0
+    total_interactions: int = 0
+    success_rate: float = 1.0
+    last_used: Optional[datetime] = None
+
+class UserEngagementMetrics(BaseModel):
+    """User engagement metrics for dashboard"""
+    total_sessions: int = 0
+    total_time_spent_ms: int = 0
+    average_session_duration_ms: float = 0.0
+    total_page_views: int = 0
+    total_ai_interactions: int = 0
+    bounce_rate: float = 0.0  # Single-page sessions percentage
+    return_user_rate: float = 0.0  # Users who return within 7 days
+    
+class DailyUsageStats(BaseModel):
+    """Daily usage statistics"""
+    date: date
+    sessions: int = 0
+    unique_users: int = 0
+    total_time_spent_ms: int = 0
+    page_views: int = 0
+    ai_interactions: int = 0
+    most_used_feature: Optional[str] = None
+
+class AnalyticsDashboardResponse(BaseModel):
+    """Response model for analytics dashboard"""
+    user_engagement: UserEngagementMetrics
+    ai_feature_usage: List[AIFeatureUsageStats]
+    daily_stats: List[DailyUsageStats]
+    top_features: List[Dict[str, Any]]  # Most used features
+    user_journey_patterns: List[Dict[str, Any]]  # Common navigation patterns
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
 # Feedback System Models
 class FeedbackCategoryEnum(str, Enum):
     suggestion = "suggestion"
