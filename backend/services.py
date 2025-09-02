@@ -5,6 +5,7 @@ from supabase_client import find_document, find_documents, create_document, upda
 from sentiment_analysis_service import SentimentAnalysisService
 import logging
 import asyncio
+import uuid
 
 # New: import Supabase services for tasks and hierarchy lookups
 from supabase_services import SupabaseTaskService, SupabaseProjectService, SupabaseAreaService, SupabasePillarService
