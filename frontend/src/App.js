@@ -106,6 +106,7 @@ function App() {
       'ai-intelligence': 'AI Intelligence',
       'profile': 'Profile',
       'insights': 'Insights',
+      'analytics': 'Analytics',
       'settings': 'Settings',
       'notification-settings': 'Notifications',
       'notifications': 'Notification Center'
