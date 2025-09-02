@@ -10,36 +10,99 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
   const { open: openSemanticSearch } = useSemanticSearch();
 
   const navigation = useMemo(() => [
-    { name: 'Dashboard', key: 'dashboard', icon: HomeIcon },
-    { name: 'Today', key: 'today', icon: CalendarIcon },
-    { name: 'Pillars', key: 'pillars', icon: LightningBoltIcon },
-    { name: 'Areas', key: 'areas', icon: ViewGridIcon },
-    { name: 'Projects', key: 'projects', icon: FolderIcon },
-    { name: 'Tasks', key: 'tasks', icon: ClipboardListIcon },
-    { name: 'Templates', key: 'project-templates', icon: DocumentTextIcon },
-    { name: 'Journal', key: 'journal', icon: DocumentTextIcon },
-    { name: 'Insights', key: 'insights', icon: ChartBarIcon },
+    { 
+      name: 'Dashboard', 
+      key: 'dashboard', 
+      icon: HomeIcon, 
+      description: 'Overview & daily planning hub',
+      purpose: 'main_entry'
+    },
+    { 
+      name: 'Today', 
+      key: 'today', 
+      icon: CalendarIcon, 
+      description: 'Focus tasks & daily engagement',
+      purpose: 'daily_productivity'
+    },
+    { 
+      name: 'Pillars', 
+      key: 'pillars', 
+      icon: LightningBoltIcon, 
+      description: 'Core life domains & priorities',
+      purpose: 'strategic_structure'
+    },
+    { 
+      name: 'Areas', 
+      key: 'areas', 
+      icon: ViewGridIcon, 
+      description: 'Focus categories within pillars',
+      purpose: 'strategic_structure'
+    },
+    { 
+      name: 'Projects', 
+      key: 'projects', 
+      icon: FolderIcon, 
+      description: 'Initiatives & deliverables',
+      purpose: 'tactical_execution'
+    },
+    { 
+      name: 'Tasks', 
+      key: 'tasks', 
+      icon: ClipboardListIcon, 
+      description: 'Individual action items',
+      purpose: 'tactical_execution'
+    },
+    { 
+      name: 'Templates', 
+      key: 'project-templates', 
+      icon: DocumentTextIcon, 
+      description: 'Pre-built project blueprints',
+      purpose: 'productivity_tools'
+    },
+    { 
+      name: 'Journal', 
+      key: 'journal', 
+      icon: DocumentTextIcon, 
+      description: 'Personal reflection & notes',
+      purpose: 'self_reflection'
+    },
+    { 
+      name: 'Insights', 
+      key: 'insights', 
+      icon: ChartBarIcon, 
+      description: 'Analytics & alignment tracking',
+      purpose: 'performance_analysis'
+    },
     { 
       name: 'My AI Insights', 
       key: 'ai-insights', 
       icon: Brain, 
       description: 'Browse AI observations about you',
-      whenToUse: 'See what AI has learned from your productivity patterns'
+      whenToUse: 'See what AI has learned from your productivity patterns',
+      purpose: 'ai_intelligence'
     },
-    { name: 'Feedback', key: 'feedback', icon: ChatIcon },
+    { 
+      name: 'Feedback', 
+      key: 'feedback', 
+      icon: ChatIcon, 
+      description: 'Share suggestions & report issues',
+      purpose: 'system_improvement'
+    },
     { 
       name: 'AI Quick Actions', 
       key: 'ai-actions', 
       icon: Zap, 
       description: 'Fast AI help & overview',
-      whenToUse: 'Quick AI assistance or check your AI usage'
+      whenToUse: 'Quick AI assistance or check your AI usage',
+      purpose: 'ai_productivity'
     },
     { 
       name: 'Goal Planner', 
       key: 'goal-planner', 
       icon: Target, 
       description: 'Plan & achieve goals with AI',
-      whenToUse: 'Strategic planning, goal breakdown, overcome obstacles'
+      whenToUse: 'Strategic planning, goal breakdown, overcome obstacles',
+      purpose: 'ai_strategy'
     },
   ], []);
 
