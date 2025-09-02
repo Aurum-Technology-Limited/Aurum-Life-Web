@@ -109,7 +109,7 @@ export const useAnalytics = () => {
 
   // Track general feature usage
   const trackFeatureUsage = useCallback(async (featureName, eventData = {}, duration = null) => {
-    if (!user || !sessionIdRef.current) return;
+    if (!user || !token || !sessionIdRef.current) return;
 
     try {
       const trackingData = {
