@@ -329,7 +329,7 @@ class AlignmentScoreService:
                 'generated_at': datetime.now().isoformat()
             }
 
-    async def get_monthly_score(self, user_id: str, use_hrm: bool = False) -> Dict:
+    async def get_monthly_score_enhanced(self, user_id: str, use_hrm: bool = False) -> Dict:
         """
         Get monthly alignment score with optional HRM enhancement
         """
