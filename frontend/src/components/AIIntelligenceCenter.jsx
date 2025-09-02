@@ -24,6 +24,7 @@ import { hrmAPI, aiCoachAPI } from '../services/api';
 import CrossNavigationWidget from './ui/CrossNavigationWidget';
 import AIQuotaWidget from './ui/AIQuotaWidget';
 import AIInsightCard from './ui/AIInsightCard';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const AIIntelligenceCenter = ({ onSectionChange }) => {
   // State management
