@@ -595,6 +595,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     forgotPassword,
+    loginWithGoogle,
     logout,
     refreshUser
   };
