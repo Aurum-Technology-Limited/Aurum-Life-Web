@@ -283,7 +283,7 @@ export const useAnalytics = () => {
 
   // Page visibility change handler for session management
   useEffect(() => {
-    const handleVisibilityChange = () => {
+      const handleVisibilityChange = () => {
       if (document.hidden) {
         // Page is hidden, consider ending session after delay
         setTimeout(() => {
@@ -293,7 +293,7 @@ export const useAnalytics = () => {
         }, 30000); // 30 second delay
       } else {
         // Page is visible, reinitialize session if needed
-        if (!sessionIdRef.current && user) {
+        if (!sessionIdRef.current && user && token) {
           initializeSession();
         }
       }
