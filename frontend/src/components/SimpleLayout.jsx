@@ -53,13 +53,6 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
       purpose: 'tactical_execution'
     },
     { 
-      name: 'Templates', 
-      key: 'project-templates', 
-      icon: DocumentTextIcon, 
-      description: 'Pre-built project blueprints',
-      purpose: 'productivity_tools'
-    },
-    { 
       name: 'Journal', 
       key: 'journal', 
       icon: DocumentTextIcon, 
