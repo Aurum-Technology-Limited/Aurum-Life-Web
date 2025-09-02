@@ -89,29 +89,17 @@ class SemanticSearchTester:
             return False, {'error': str(e)}, response_time
 
     def test_authentication(self) -> bool:
-        """Test login with testuser credentials"""
-        print("\n🔐 Testing Authentication with testuser...")
+        """Test login with test user credentials"""
+        print("\n🔐 Testing Authentication with test user...")
         
-        # Try login with username first
         success, response, response_time = self.make_request(
             'POST', 
             'auth/login',
             data={
-                'email': self.test_username,
+                'email': self.test_email,
                 'password': self.test_password
             }
         )
-        
-        if not success:
-            # Try with email format if username fails
-            success, response, response_time = self.make_request(
-                'POST', 
-                'auth/login',
-                data={
-                    'email': f"{self.test_username}@aurumlife.com",
-                    'password': self.test_password
-                }
-            )
         
         if success and 'access_token' in response:
             self.token = response['access_token']
