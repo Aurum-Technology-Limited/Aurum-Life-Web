@@ -266,28 +266,51 @@ const AnalyticsDashboard = () => {
                 </h3>
                 
                 {dashboardData?.ai_feature_usage?.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={dashboardData.ai_feature_usage}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis 
-                        dataKey="feature_name" 
-                        stroke="#9CA3AF"
-                        fontSize={12}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis stroke="#9CA3AF" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#1F2937',
-                          border: '1px solid #374151',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Bar dataKey="total_interactions" fill="#8B5CF6" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div style={{ height: '300px' }}>
+                    <Bar
+                      data={{
+                        labels: dashboardData.ai_feature_usage.map(f => f.feature_name),
+                        datasets: [
+                          {
+                            label: 'Interactions',
+                            data: dashboardData.ai_feature_usage.map(f => f.total_interactions),
+                            backgroundColor: '#8B5CF6',
+                            borderColor: '#7C3AED',
+                            borderWidth: 1,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: {
+                            display: false,
+                          },
+                        },
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            grid: {
+                              color: '#374151',
+                            },
+                            ticks: {
+                              color: '#9CA3AF',
+                            },
+                          },
+                          x: {
+                            grid: {
+                              color: '#374151',
+                            },
+                            ticks: {
+                              color: '#9CA3AF',
+                              maxRotation: 45,
+                            },
+                          },
+                        },
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="text-center py-8">
                     <Brain className="h-12 w-12 text-gray-600 mx-auto mb-2" />
