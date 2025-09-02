@@ -970,7 +970,7 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
       
       {/* Cross-Navigation Widget */}
       <CrossNavigationWidget 
-        currentScreen="ai-coach"
+        currentScreen="goal-planner"
         onNavigate={(screen) => onSectionChange && onSectionChange(screen)}
         relatedInsights={relatedInsights}
       />
@@ -978,12 +978,12 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
       {/* Header */}
       <div className="text-center">
         <div className="flex items-center justify-center space-x-3 mb-4">
-          <div className="w-16 h-16 rounded-2xl bg-yellow-400 flex items-center justify-center">
-            <Brain size={32} style={{ color: '#0B0D14' }} />
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-600 to-blue-600 flex items-center justify-center">
+            <Target size={32} className="text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">AI Growth Coach</h1>
-            <p className="text-gray-400">Strategic guidance for your personal OS</p>
+            <h1 className="text-3xl font-bold text-white">Goal Planner</h1>
+            <p className="text-gray-400">AI coaching for strategic planning and goal achievement</p>
           </div>
         </div>
       </div>
