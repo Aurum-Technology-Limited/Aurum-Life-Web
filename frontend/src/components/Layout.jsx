@@ -14,16 +14,76 @@ const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-    { name: 'Today', href: '/today', icon: CalendarIcon },
-    { name: 'Pillars', href: '/pillars', icon: LightningBoltIcon },
-    { name: 'Areas', href: '/areas', icon: ViewGridIcon },
-    { name: 'Projects', href: '/projects', icon: FolderIcon },
-    { name: 'Tasks', href: '/tasks', icon: ClipboardListIcon },
-    { name: 'Templates', href: '/templates', icon: DocumentTextIcon },
-    { name: 'Journal', href: '/journal', icon: DocumentTextIcon },
-    { name: 'Insights', href: '/insights', icon: ChartBarIcon },
-    { name: 'Feedback', href: '/feedback', icon: ChatIcon },
+    { 
+      name: 'Dashboard', 
+      href: '/dashboard', 
+      icon: HomeIcon, 
+      description: 'Overview & daily planning hub',
+      purpose: 'main_entry'
+    },
+    { 
+      name: 'Today', 
+      href: '/today', 
+      icon: CalendarIcon, 
+      description: 'Focus tasks & daily engagement',
+      purpose: 'daily_productivity'
+    },
+    { 
+      name: 'Pillars', 
+      href: '/pillars', 
+      icon: LightningBoltIcon, 
+      description: 'Core life domains & priorities',
+      purpose: 'strategic_structure'
+    },
+    { 
+      name: 'Areas', 
+      href: '/areas', 
+      icon: ViewGridIcon, 
+      description: 'Focus categories within pillars',
+      purpose: 'strategic_structure'
+    },
+    { 
+      name: 'Projects', 
+      href: '/projects', 
+      icon: FolderIcon, 
+      description: 'Initiatives & deliverables',
+      purpose: 'tactical_execution'
+    },
+    { 
+      name: 'Tasks', 
+      href: '/tasks', 
+      icon: ClipboardListIcon, 
+      description: 'Individual action items',
+      purpose: 'tactical_execution'
+    },
+    { 
+      name: 'Templates', 
+      href: '/templates', 
+      icon: DocumentTextIcon, 
+      description: 'Pre-built project blueprints',
+      purpose: 'productivity_tools'
+    },
+    { 
+      name: 'Journal', 
+      href: '/journal', 
+      icon: DocumentTextIcon, 
+      description: 'Personal reflection & notes',
+      purpose: 'self_reflection'
+    },
+    { 
+      name: 'Insights', 
+      href: '/insights', 
+      icon: ChartBarIcon, 
+      description: 'Analytics & alignment tracking',
+      purpose: 'performance_analysis'
+    },
+    { 
+      name: 'Feedback', 
+      href: '/feedback', 
+      icon: ChatIcon, 
+      description: 'Share suggestions & report issues',
+      purpose: 'system_improvement'
+    },
     { name: 'My AI Insights', href: '/ai-insights', icon: Brain, description: 'Browse AI observations about you' },
     { name: 'AI Quick Actions', href: '/ai-actions', icon: Zap, description: 'Fast AI help & overview' },
     { name: 'Goal Planner', href: '/goal-planner', icon: Target, description: 'Plan & achieve goals with AI' },
