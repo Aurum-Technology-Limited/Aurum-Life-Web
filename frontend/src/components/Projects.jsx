@@ -637,7 +637,7 @@ const Projects = memo(({ onSectionChange, sectionParams }) => {
 
             {templates.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                <DocumentTextIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-300 mb-2">No templates available</h3>
                 <p className="text-gray-500">Templates will help you start projects faster with pre-defined tasks.</p>
               </div>
