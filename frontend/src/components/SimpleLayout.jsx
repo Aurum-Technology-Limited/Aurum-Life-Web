@@ -67,6 +67,13 @@ const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
       purpose: 'intelligence_analysis'
     },
     { 
+      name: 'Analytics', 
+      key: 'analytics', 
+      icon: TrendingUpIcon, 
+      description: 'Performance analytics & usage tracking',
+      purpose: 'analytics_dashboard'
+    },
+    { 
       name: 'My AI Insights', 
       key: 'ai-insights', 
       icon: Brain, 
