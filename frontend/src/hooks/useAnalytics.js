@@ -17,10 +17,10 @@ export const useAnalytics = () => {
 
   // Initialize session on hook mount
   useEffect(() => {
-    if (user && !sessionIdRef.current) {
+    if (user && token && !sessionIdRef.current) {
       initializeSession();
     }
-  }, [user]);
+  }, [user, token]);
 
   // Initialize analytics session
   const initializeSession = useCallback(async () => {
