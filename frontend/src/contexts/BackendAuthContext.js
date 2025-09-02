@@ -492,6 +492,14 @@ export const AuthProvider = ({ children }) => {
   }, [authService]);
   
   /**
+   * Google login handler (placeholder for compatibility)
+   * @returns {Promise<Object>} Login result
+   */
+  const loginWithGoogle = useCallback(async () => {
+    return { success: false, error: 'Google login not implemented in BackendAuthContext' };
+  }, []);
+  
+  /**
    * User logout handler
    * @returns {Promise<Object>} Logout result
    */
