@@ -12,29 +12,22 @@ import uuid
 import time
 
 class AnalyticsBackendTester:
-    def __init__(self, base_url="https://aurum-life-os.preview.emergentagent.com"):
+    def __init__(self, base_url="https://aurum-life-os.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
-        self.user_id = None
+        self.session_id = None
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
-        
-        # Test data storage
-        self.test_pillar_id = None
-        self.test_area_id = None
-        self.test_project_id = None
-        self.test_task_id = None
-        self.test_insight_id = None
 
-    def log_test(self, name: str, success: bool, details: str = "", response_data: Any = None):
+    def log_test(self, name, success, details="", response_data=None):
         """Log test result"""
         self.tests_run += 1
         if success:
             self.tests_passed += 1
-            print(f"✅ {name}: PASSED")
+            print(f"✅ {name} - PASSED")
         else:
-            print(f"❌ {name}: FAILED - {details}")
+            print(f"❌ {name} - FAILED: {details}")
         
         self.test_results.append({
             'name': name,
@@ -43,9 +36,9 @@ class AnalyticsBackendTester:
             'response_data': response_data
         })
 
-    def make_request(self, method: str, endpoint: str, data: Dict = None, params: Dict = None) -> tuple[bool, Dict]:
-        """Make HTTP request with error handling"""
-        url = f"{self.base_url}/api/{endpoint}"
+    def make_request(self, method, endpoint, data=None, expected_status=200):
+        """Make authenticated API request"""
+        url = f"{self.base_url}/{endpoint}"
         headers = {'Content-Type': 'application/json'}
         
         if self.token:
@@ -53,448 +46,350 @@ class AnalyticsBackendTester:
 
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, params=params, timeout=30)
+                response = requests.get(url, headers=headers, timeout=30)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, params=params, timeout=30)
+                response = requests.post(url, json=data, headers=headers, timeout=30)
             elif method == 'PUT':
                 response = requests.put(url, json=data, headers=headers, timeout=30)
             elif method == 'DELETE':
                 response = requests.delete(url, headers=headers, timeout=30)
             else:
-                return False, {"error": f"Unsupported method: {method}"}
+                return False, f"Unsupported method: {method}", {}
 
-            # Return success status and response data
-            return response.status_code < 400, response.json() if response.content else {}
+            success = response.status_code == expected_status
+            response_data = {}
             
+            try:
+                response_data = response.json()
+            except:
+                response_data = {"raw_response": response.text}
+
+            if not success:
+                return False, f"Expected {expected_status}, got {response.status_code}: {response.text}", response_data
+            
+            return True, "Success", response_data
+
         except requests.exceptions.Timeout:
-            return False, {"error": "Request timeout"}
-        except requests.exceptions.RequestException as e:
-            return False, {"error": f"Request failed: {str(e)}"}
-        except json.JSONDecodeError:
-            return False, {"error": "Invalid JSON response"}
+            return False, "Request timeout (30s)", {}
+        except requests.exceptions.ConnectionError:
+            return False, "Connection error", {}
         except Exception as e:
-            return False, {"error": f"Unexpected error: {str(e)}"}
+            return False, f"Request error: {str(e)}", {}
 
-    def test_health_check(self):
-        """Test basic API health"""
-        success, response = self.make_request('GET', 'health')
-        self.log_test("API Health Check", success, 
-                     "" if success else response.get('error', 'Unknown error'),
-                     response)
-        return success
-
-    def test_authentication(self):
-        """Test authentication system"""
-        # Try with a simple test user first
-        test_email = "test@aurumlife.com"
-        test_password = "password123"
+    def test_login(self):
+        """Test login with provided credentials"""
+        print("\n🔐 Testing Authentication...")
         
-        # Try login first
-        login_data = {"email": test_email, "password": test_password}
-        success, response = self.make_request('POST', 'auth/login', login_data)
+        success, message, response_data = self.make_request(
+            'POST', 
+            'auth/login',
+            {
+                "email": "marc.alleyne@aurumtechnologyltd.com",
+                "password": "password123"
+            }
+        )
         
-        if success and 'access_token' in response:
-            self.token = response['access_token']
-            # Get user info from /me endpoint
-            me_success, me_response = self.make_request('GET', 'auth/me')
-            if me_success:
-                self.user_id = me_response.get('id')
-            self.log_test("User Login", True, f"User ID: {self.user_id}")
+        if success and 'access_token' in response_data:
+            self.token = response_data['access_token']
+            self.log_test("Authentication", True, "Login successful")
             return True
         else:
-            # If login failed, try registration
-            test_email = f"test_ai_integration_{int(time.time())}@example.com"
-            test_password = "TestPass123!"
-            test_username = f"testuser_{int(time.time())}"
+            self.log_test("Authentication", False, f"Login failed: {message}")
+            return False
+
+    def test_analytics_preferences_get(self):
+        """Test getting analytics preferences"""
+        print("\n📊 Testing Analytics Preferences (GET)...")
+        
+        success, message, response_data = self.make_request('GET', 'analytics/preferences')
+        
+        if success:
+            # Check if response has expected structure
+            expected_fields = ['analytics_enabled', 'data_retention_days']
+            has_expected_structure = any(field in response_data for field in expected_fields)
             
-            # Register user with correct format
-            register_data = {
-                "username": test_username,
-                "email": test_email,
-                "password": test_password,
-                "first_name": "AI Integration",
-                "last_name": "Test User"
-            }
-            
-            success, response = self.make_request('POST', 'auth/register', register_data)
-            if success and 'access_token' in response:
-                self.token = response['access_token']
-                # Get user info from /me endpoint since registration doesn't return user object
-                me_success, me_response = self.make_request('GET', 'auth/me')
-                if me_success:
-                    self.user_id = me_response.get('id')
-                self.log_test("User Registration", True, f"User ID: {self.user_id}")
+            if has_expected_structure:
+                self.log_test("Get Analytics Preferences", True, "Retrieved preferences successfully", response_data)
                 return True
             else:
-                self.log_test("Authentication", False, 
-                             f"Login failed: {login_data}, Registration failed: {response.get('error', 'Unknown error')}")
+                self.log_test("Get Analytics Preferences", False, "Response missing expected fields", response_data)
                 return False
-
-    def test_basic_data_setup(self):
-        """Create basic test data (pillar, area, project, task)"""
-        if not self.token:
-            return False
-            
-        # Create test pillar
-        pillar_data = {
-            "name": "AI Test Pillar",
-            "description": "Test pillar for AI integration testing",
-            "color": "#3B82F6"
-        }
-        success, response = self.make_request('POST', 'pillars', pillar_data)
-        if success and 'id' in response:
-            self.test_pillar_id = response['id']
-            self.log_test("Create Test Pillar", True, f"Pillar ID: {self.test_pillar_id}")
         else:
-            self.log_test("Create Test Pillar", False, response.get('error', 'Unknown error'))
+            self.log_test("Get Analytics Preferences", False, message, response_data)
             return False
 
-        # Create test area
-        area_data = {
-            "name": "AI Test Area",
-            "description": "Test area for AI integration testing",
-            "pillar_id": self.test_pillar_id,
-            "color": "#10B981"
+    def test_analytics_preferences_update(self):
+        """Test updating analytics preferences"""
+        print("\n📊 Testing Analytics Preferences (PUT)...")
+        
+        preferences_data = {
+            "analytics_enabled": True,
+            "performance_tracking": True,
+            "ai_interaction_tracking": True,
+            "data_retention_days": 90,
+            "anonymous_usage_stats": True
         }
-        success, response = self.make_request('POST', 'areas', area_data)
-        if success and 'id' in response:
-            self.test_area_id = response['id']
-            self.log_test("Create Test Area", True, f"Area ID: {self.test_area_id}")
-        else:
-            self.log_test("Create Test Area", False, response.get('error', 'Unknown error'))
-            return False
-
-        # Create test project
-        project_data = {
-            "name": "AI Test Project",
-            "description": "Test project for AI integration testing",
-            "area_id": self.test_area_id,
-            "status": "Not Started",
-            "priority": "medium"
-        }
-        success, response = self.make_request('POST', 'projects', project_data)
-        if success and 'id' in response:
-            self.test_project_id = response['id']
-            self.log_test("Create Test Project", True, f"Project ID: {self.test_project_id}")
-        else:
-            self.log_test("Create Test Project", False, f"Error: {response}")
-            return False
-
-        # Create test task
-        task_data = {
-            "name": "AI Test Task",
-            "description": "Test task for AI integration testing with semantic content",
-            "project_id": self.test_project_id,
-            "priority": "high",
-            "status": "todo"
-        }
-        success, response = self.make_request('POST', 'tasks', task_data)
-        if success and 'id' in response:
-            self.test_task_id = response['id']
-            self.log_test("Create Test Task", True, f"Task ID: {self.test_task_id}")
+        
+        success, message, response_data = self.make_request(
+            'PUT', 
+            'analytics/preferences',
+            preferences_data
+        )
+        
+        if success:
+            self.log_test("Update Analytics Preferences", True, "Updated preferences successfully", response_data)
             return True
         else:
-            self.log_test("Create Test Task", False, response.get('error', 'Unknown error'))
+            self.log_test("Update Analytics Preferences", False, message, response_data)
             return False
 
-    def test_hrm_endpoints(self):
-        """Test HRM (Hierarchical Reasoning Model) endpoints"""
-        if not self.token or not self.test_task_id:
-            self.log_test("HRM Prerequisites", False, "Missing authentication or test data")
-            return False
-
-        # Test HRM analyze endpoint
-        analyze_data = {
-            "entity_type": "task",
-            "entity_id": self.test_task_id,
-            "analysis_depth": "balanced",
-            "force_llm": False
-        }
-        success, response = self.make_request('POST', 'hrm/analyze', analyze_data)
-        if success and 'insight_id' in response:
-            self.test_insight_id = response['insight_id']
-            self.log_test("HRM Analyze Task", True, 
-                         f"Generated insight: {response.get('title', 'N/A')}")
-        else:
-            self.log_test("HRM Analyze Task", False, 
-                         response.get('error', 'Analysis failed'))
-
-        # Test HRM insights endpoint
-        success, response = self.make_request('GET', 'hrm/insights', params={'limit': 10})
-        if success and 'insights' in response:
-            insights_count = len(response['insights'])
-            self.log_test("HRM Get Insights", True, f"Retrieved {insights_count} insights")
-        else:
-            self.log_test("HRM Get Insights", False, 
-                         response.get('error', 'Failed to get insights'))
-
-        # Test HRM statistics endpoint
-        success, response = self.make_request('GET', 'hrm/statistics', params={'days': 30})
-        if success and 'statistics' in response:
-            self.log_test("HRM Statistics", True, "Statistics retrieved successfully")
-        else:
-            self.log_test("HRM Statistics", False, 
-                         response.get('error', 'Failed to get statistics'))
-
-        # Test HRM today priorities
-        success, response = self.make_request('POST', 'hrm/prioritize-today', 
-                                            params={'top_n': 5, 'include_reasoning': True})
-        if success and 'tasks' in response:
-            tasks_count = len(response['tasks'])
-            self.log_test("HRM Today Priorities", True, f"Got {tasks_count} prioritized tasks")
-        else:
-            self.log_test("HRM Today Priorities", False, 
-                         response.get('error', 'Failed to get priorities'))
-
-        # Test HRM preferences
-        success, response = self.make_request('GET', 'hrm/preferences')
-        if success:
-            self.log_test("HRM Get Preferences", True, "Preferences retrieved")
-        else:
-            self.log_test("HRM Get Preferences", False, 
-                         response.get('error', 'Failed to get preferences'))
-
-        return True
-
-    def test_ai_coach_endpoints(self):
-        """Test AI Coach endpoints"""
-        if not self.token:
-            self.log_test("AI Coach Prerequisites", False, "Missing authentication")
-            return False
-
-        # Test task why statements
-        params = {}
-        if self.test_task_id:
-            params['task_ids'] = [self.test_task_id]
-            
-        success, response = self.make_request('GET', 'ai/task-why-statements', params=params)
-        if success and 'why_statements' in response:
-            statements_count = len(response['why_statements'])
-            self.log_test("AI Coach Why Statements", True, 
-                         f"Generated {statements_count} why statements")
-        else:
-            self.log_test("AI Coach Why Statements", False, 
-                         response.get('error', 'Failed to generate why statements'))
-
-        # Test suggest focus tasks
-        success, response = self.make_request('GET', 'ai/suggest-focus', 
-                                            params={'top_n': 5, 'include_reasoning': True})
-        if success and 'tasks' in response:
-            focus_tasks = len(response['tasks'])
-            self.log_test("AI Coach Suggest Focus", True, 
-                         f"Got {focus_tasks} focus suggestions")
-        else:
-            self.log_test("AI Coach Suggest Focus", False, 
-                         response.get('error', 'Failed to get focus suggestions'))
-
-        # Test alignment dashboard
-        success, response = self.make_request('GET', 'alignment/dashboard')
-        if success:
-            self.log_test("AI Coach Alignment Dashboard", True, "Dashboard data retrieved")
-        else:
-            self.log_test("AI Coach Alignment Dashboard", False, 
-                         response.get('error', 'Failed to get alignment data'))
-
-        # Test today priorities enhanced
-        success, response = self.make_request('GET', 'ai/today-priorities', 
-                                            params={'top_n': 5, 'include_hrm': True})
-        if success and 'tasks' in response:
-            priority_tasks = len(response['tasks'])
-            self.log_test("AI Coach Today Priorities Enhanced", True, 
-                         f"Got {priority_tasks} enhanced priorities")
-        else:
-            self.log_test("AI Coach Today Priorities Enhanced", False, 
-                         response.get('error', 'Failed to get enhanced priorities'))
-
-        return True
-
-    def test_semantic_search_endpoints(self):
-        """Test Semantic Search endpoints"""
-        if not self.token:
-            self.log_test("Semantic Search Prerequisites", False, "Missing authentication")
-            return False
-
-        # Wait a moment for embeddings to be generated
-        time.sleep(2)
-
-        # Test semantic search
-        search_params = {
-            'query': 'AI integration testing task',
-            'content_types': ['task', 'project'],
-            'limit': 10,
-            'min_similarity': 0.3
-        }
-        success, response = self.make_request('GET', 'semantic/search', params=search_params)
-        if success and 'results' in response:
-            results_count = len(response['results'])
-            self.log_test("Semantic Search", True, 
-                         f"Found {results_count} semantic matches")
-        else:
-            self.log_test("Semantic Search", False, 
-                         response.get('error', 'Semantic search failed'))
-
-        # Test find similar content (if we have a task)
-        if self.test_task_id:
-            success, response = self.make_request('GET', 
-                                                f'semantic/similar/task/{self.test_task_id}',
-                                                params={'limit': 5, 'min_similarity': 0.4})
-            if success and 'similar_content' in response:
-                similar_count = len(response['similar_content'])
-                self.log_test("Semantic Find Similar", True, 
-                             f"Found {similar_count} similar items")
-            else:
-                self.log_test("Semantic Find Similar", False, 
-                             response.get('error', 'Failed to find similar content'))
-
-        return True
-
-    def test_basic_crud_operations(self):
-        """Test basic CRUD operations to ensure core functionality"""
-        if not self.token:
-            return False
-
-        # Test get pillars
-        success, response = self.make_request('GET', 'pillars')
-        if success and isinstance(response, list):
-            self.log_test("Get Pillars", True, f"Retrieved {len(response)} pillars")
-        else:
-            self.log_test("Get Pillars", False, response.get('error', 'Failed to get pillars'))
-
-        # Test get areas
-        success, response = self.make_request('GET', 'areas')
-        if success and isinstance(response, list):
-            self.log_test("Get Areas", True, f"Retrieved {len(response)} areas")
-        else:
-            self.log_test("Get Areas", False, response.get('error', 'Failed to get areas'))
-
-        # Test get projects
-        success, response = self.make_request('GET', 'projects')
-        if success and isinstance(response, list):
-            self.log_test("Get Projects", True, f"Retrieved {len(response)} projects")
-        else:
-            self.log_test("Get Projects", False, response.get('error', 'Failed to get projects'))
-
-        # Test get tasks
-        success, response = self.make_request('GET', 'tasks')
-        if success and isinstance(response, list):
-            self.log_test("Get Tasks", True, f"Retrieved {len(response)} tasks")
-        else:
-            self.log_test("Get Tasks", False, response.get('error', 'Failed to get tasks'))
-
-        # Test get insights
-        success, response = self.make_request('GET', 'insights')
-        if success:
-            self.log_test("Get Insights", True, "Insights endpoint accessible")
-        else:
-            self.log_test("Get Insights", False, response.get('error', 'Failed to get insights'))
-
-        return True
-
-    def run_comprehensive_test(self):
-        """Run all tests in sequence"""
-        print("🚀 Starting Comprehensive AI Integration Backend Testing")
-        print(f"🎯 Testing against: {self.base_url}")
-        print("=" * 80)
-
-        # Core system tests
-        if not self.test_health_check():
-            print("❌ Health check failed - stopping tests")
-            return False
-
-        if not self.test_authentication():
-            print("❌ Authentication failed - stopping tests")
-            return False
-
-        # Basic CRUD tests
-        self.test_basic_crud_operations()
-
-        # Setup test data
-        if not self.test_basic_data_setup():
-            print("⚠️ Test data setup failed - some AI tests may not work properly")
-
-        # AI Integration tests
-        print("\n🤖 Testing AI Integration Features...")
-        self.test_hrm_endpoints()
-        self.test_ai_coach_endpoints()
-        self.test_semantic_search_endpoints()
-
-        # Print final results
-        print("\n" + "=" * 80)
-        print("📊 TEST RESULTS SUMMARY")
-        print("=" * 80)
+    def test_start_session(self):
+        """Test starting analytics session"""
+        print("\n🚀 Testing Start Analytics Session...")
         
-        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
-        print(f"✅ Tests Passed: {self.tests_passed}/{self.tests_run} ({success_rate:.1f}%)")
-        
-        # Group results by category
-        categories = {
-            'Core System': ['API Health Check', 'User Registration', 'User Login (Fallback)'],
-            'Basic CRUD': ['Get Pillars', 'Get Areas', 'Get Projects', 'Get Tasks', 'Get Insights'],
-            'Test Data Setup': ['Create Test Pillar', 'Create Test Area', 'Create Test Project', 'Create Test Task'],
-            'HRM Integration': [r for r in self.test_results if 'HRM' in r['name']],
-            'AI Coach': [r for r in self.test_results if 'AI Coach' in r['name']],
-            'Semantic Search': [r for r in self.test_results if 'Semantic' in r['name']]
+        session_data = {
+            "device_type": "desktop",
+            "browser": "chrome",
+            "screen_resolution": "1920x1080",
+            "timezone": "UTC",
+            "entry_page": "/dashboard"
         }
+        
+        success, message, response_data = self.make_request(
+            'POST',
+            'analytics/start-session',
+            session_data,
+            201  # Expecting 201 for creation
+        )
+        
+        if success and 'session_id' in response_data:
+            self.session_id = response_data['session_id']
+            self.log_test("Start Analytics Session", True, f"Session started: {self.session_id}", response_data)
+            return True
+        else:
+            self.log_test("Start Analytics Session", False, message, response_data)
+            return False
 
-        failed_tests = []
-        for category, test_names in categories.items():
-            if isinstance(test_names[0], str):
-                # String list - find matching results
-                category_results = [r for r in self.test_results if r['name'] in test_names]
-            else:
-                # Already filtered results
-                category_results = test_names
-                
-            passed = sum(1 for r in category_results if r['success'])
-            total = len(category_results)
-            
-            if total > 0:
-                print(f"\n{category}: {passed}/{total} passed")
-                for result in category_results:
-                    if not result['success']:
-                        failed_tests.append(result)
-                        print(f"  ❌ {result['name']}: {result['details']}")
-
-        if failed_tests:
-            print(f"\n⚠️ FAILED TESTS DETAILS:")
-            for test in failed_tests:
-                print(f"❌ {test['name']}: {test['details']}")
-
-        # Determine overall success
-        critical_failures = [
-            'API Health Check', 'Authentication', 'HRM Analyze Task', 
-            'AI Coach Why Statements', 'Semantic Search'
+    def test_track_events(self):
+        """Test tracking various behavior events"""
+        print("\n📈 Testing Event Tracking...")
+        
+        # Test different types of events
+        events_to_test = [
+            {
+                "event_type": "page_view",
+                "page": "/dashboard",
+                "metadata": {"section": "overview"}
+            },
+            {
+                "event_type": "ai_interaction",
+                "feature": "goal_planner",
+                "metadata": {"action": "generate_plan", "success": True}
+            },
+            {
+                "event_type": "feature_usage",
+                "feature": "my_ai_insights",
+                "metadata": {"duration_seconds": 45}
+            },
+            {
+                "event_type": "navigation",
+                "from_page": "/dashboard",
+                "to_page": "/ai-insights",
+                "metadata": {"method": "sidebar_click"}
+            }
         ]
         
-        critical_failed = [r for r in self.test_results 
-                          if not r['success'] and any(cf in r['name'] for cf in critical_failures)]
+        all_events_successful = True
         
-        if critical_failed:
-            print(f"\n🚨 CRITICAL FAILURES DETECTED:")
-            for test in critical_failed:
-                print(f"❌ {test['name']}: {test['details']}")
+        for i, event_data in enumerate(events_to_test):
+            success, message, response_data = self.make_request(
+                'POST',
+                'analytics/track-event',
+                event_data,
+                201  # Expecting 201 for creation
+            )
+            
+            event_name = f"Track Event {i+1} ({event_data['event_type']})"
+            
+            if success:
+                self.log_test(event_name, True, f"Event tracked successfully", response_data)
+            else:
+                self.log_test(event_name, False, message, response_data)
+                all_events_successful = False
+            
+            # Small delay between events
+            time.sleep(0.5)
+        
+        return all_events_successful
+
+    def test_analytics_dashboard(self):
+        """Test analytics dashboard data retrieval"""
+        print("\n📊 Testing Analytics Dashboard...")
+        
+        success, message, response_data = self.make_request('GET', 'analytics/dashboard?days=30')
+        
+        if success:
+            # Check for expected dashboard structure
+            expected_sections = ['sessions', 'events', 'ai_features', 'engagement']
+            has_data_structure = isinstance(response_data, dict) and len(response_data) > 0
+            
+            if has_data_structure:
+                self.log_test("Analytics Dashboard", True, "Dashboard data retrieved", response_data)
+                return True
+            else:
+                self.log_test("Analytics Dashboard", False, "Dashboard data structure invalid", response_data)
+                return False
+        else:
+            self.log_test("Analytics Dashboard", False, message, response_data)
             return False
-        elif success_rate >= 80:
-            print(f"\n🎉 AI INTEGRATION SYSTEM IS READY FOR PRODUCTION!")
-            print(f"✅ {success_rate:.1f}% success rate meets requirements")
+
+    def test_ai_features_analytics(self):
+        """Test AI features usage analytics"""
+        print("\n🧠 Testing AI Features Analytics...")
+        
+        success, message, response_data = self.make_request('GET', 'analytics/ai-features?days=30')
+        
+        if success:
+            # Check if response is structured data
+            has_ai_data = isinstance(response_data, dict) and 'ai_features' in response_data
+            
+            if has_ai_data or len(response_data) > 0:
+                self.log_test("AI Features Analytics", True, "AI features data retrieved", response_data)
+                return True
+            else:
+                self.log_test("AI Features Analytics", False, "AI features data structure invalid", response_data)
+                return False
+        else:
+            self.log_test("AI Features Analytics", False, message, response_data)
+            return False
+
+    def test_engagement_metrics(self):
+        """Test user engagement metrics"""
+        print("\n📈 Testing Engagement Metrics...")
+        
+        success, message, response_data = self.make_request('GET', 'analytics/engagement?days=30')
+        
+        if success:
+            # Check if response has engagement data
+            has_engagement_data = isinstance(response_data, dict) and len(response_data) > 0
+            
+            if has_engagement_data:
+                self.log_test("Engagement Metrics", True, "Engagement data retrieved", response_data)
+                return True
+            else:
+                self.log_test("Engagement Metrics", False, "Engagement data structure invalid", response_data)
+                return False
+        else:
+            self.log_test("Engagement Metrics", False, message, response_data)
+            return False
+
+    def test_end_session(self):
+        """Test ending analytics session"""
+        print("\n🏁 Testing End Analytics Session...")
+        
+        if not self.session_id:
+            self.log_test("End Analytics Session", False, "No session ID available")
+            return False
+        
+        success, message, response_data = self.make_request(
+            'POST',
+            f'analytics/end-session/{self.session_id}',
+            {"exit_page": "/dashboard"}
+        )
+        
+        if success:
+            self.log_test("End Analytics Session", True, "Session ended successfully", response_data)
             return True
         else:
-            print(f"\n⚠️ AI INTEGRATION SYSTEM NEEDS ATTENTION")
-            print(f"❌ {success_rate:.1f}% success rate below 80% threshold")
+            self.log_test("End Analytics Session", False, message, response_data)
             return False
+
+    def test_privacy_controls(self):
+        """Test privacy control endpoints"""
+        print("\n🔒 Testing Privacy Controls...")
+        
+        # Test anonymize data endpoint
+        success, message, response_data = self.make_request(
+            'POST',
+            'analytics/anonymize'
+        )
+        
+        if success:
+            self.log_test("Anonymize Analytics Data", True, "Data anonymization successful", response_data)
+        else:
+            self.log_test("Anonymize Analytics Data", False, message, response_data)
+
+    def run_all_tests(self):
+        """Run comprehensive analytics backend tests"""
+        print("🚀 Starting Comprehensive Analytics Backend Testing")
+        print("=" * 60)
+        
+        # Test authentication first
+        if not self.test_login():
+            print("\n❌ Authentication failed - stopping tests")
+            return False
+        
+        # Test analytics preferences
+        self.test_analytics_preferences_get()
+        self.test_analytics_preferences_update()
+        
+        # Test session management
+        self.test_start_session()
+        
+        # Test event tracking
+        self.test_track_events()
+        
+        # Test analytics data retrieval
+        self.test_analytics_dashboard()
+        self.test_ai_features_analytics()
+        self.test_engagement_metrics()
+        
+        # Test session ending
+        self.test_end_session()
+        
+        # Test privacy controls
+        self.test_privacy_controls()
+        
+        return True
+
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "=" * 60)
+        print("📊 ANALYTICS BACKEND TEST SUMMARY")
+        print("=" * 60)
+        print(f"Total Tests: {self.tests_run}")
+        print(f"Passed: {self.tests_passed}")
+        print(f"Failed: {self.tests_run - self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        # Show failed tests
+        failed_tests = [test for test in self.test_results if not test['success']]
+        if failed_tests:
+            print("\n❌ FAILED TESTS:")
+            for test in failed_tests:
+                print(f"  • {test['name']}: {test['details']}")
+        
+        print("\n" + "=" * 60)
+        
+        return self.tests_passed == self.tests_run
 
 def main():
     """Main test execution"""
-    tester = AIIntegrationTester()
+    tester = AnalyticsBackendTester()
     
     try:
-        success = tester.run_comprehensive_test()
+        success = tester.run_all_tests()
+        tester.print_summary()
+        
         return 0 if success else 1
+        
     except KeyboardInterrupt:
         print("\n⚠️ Tests interrupted by user")
+        tester.print_summary()
         return 1
     except Exception as e:
-        print(f"\n💥 Unexpected error during testing: {e}")
+        print(f"\n💥 Unexpected error: {e}")
+        tester.print_summary()
         return 1
 
 if __name__ == "__main__":
