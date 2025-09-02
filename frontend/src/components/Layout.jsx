@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {HomeIcon, CalendarIcon, LightningBoltIcon, ViewGridIcon, FolderIcon, DocumentTextIcon, ClipboardListIcon, ChatIcon, ChartBarIcon, BeakerIcon, AdjustmentsIcon, BellIcon, SearchIcon} from '@heroicons/react/outline';
+import {HomeIcon, CalendarIcon, LightningBoltIcon, ViewGridIcon, FolderIcon, DocumentTextIcon, ClipboardListIcon, ChatIcon, ChartBarIcon, BeakerIcon, AdjustmentsIcon, BellIcon, SearchIcon, Brain, Zap, Target} from '@heroicons/react/outline';
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { useSemanticSearch } from './SemanticSearch';
@@ -24,8 +24,9 @@ const Layout = ({ children }) => {
     { name: 'Journal', href: '/journal', icon: DocumentTextIcon },
     { name: 'Insights', href: '/insights', icon: ChartBarIcon },
     { name: 'Feedback', href: '/feedback', icon: ChatIcon },
-    { name: 'AI Command', href: '/ai-command', icon: BeakerIcon },
-    { name: 'AI Coach', href: '/ai-coach', icon: BeakerIcon },
+    { name: 'My AI Insights', href: '/ai-insights', icon: Brain, description: 'Browse AI observations about you' },
+    { name: 'AI Quick Actions', href: '/ai-actions', icon: Zap, description: 'Fast AI help & overview' },
+    { name: 'Goal Planner', href: '/goal-planner', icon: Target, description: 'Plan & achieve goals with AI' },
     { name: 'Notifications', href: '/notifications', icon: BellIcon },
   ];
 
@@ -59,18 +60,21 @@ const Layout = ({ children }) => {
                   e.target.nextElementSibling.style.display = 'flex';
                 }}
               />
-              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
-                <span className="text-black font-bold text-sm">AL</span>
+              <div 
+                className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg items-center justify-center text-black font-bold text-sm hidden"
+                style={{ display: 'none' }}
+              >
+                AL
               </div>
             </div>
-              <span className="text-white font-semibold">Aurum Life</span>
+              <span className="text-xl font-bold text-white">Aurum Life</span>
             </div>
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+            className="text-gray-400 hover:text-white transition-colors"
           >
-            <AdjustmentsIcon className="h-5 w-5" />
+            {sidebarCollapsed ? '→' : '←'}
           </button>
         </div>
 
@@ -79,54 +83,69 @@ const Layout = ({ children }) => {
           {navigation.map((item) => {
             const active = isActive(item.href);
             return (
-              <button
-                key={item.name}
-                onClick={() => handleNavClick(item.href)}
-                className={`group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                  active
-                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`}
-                title={sidebarCollapsed ? item.name : ''}
-              >
-                <item.icon
-                  className={`${sidebarCollapsed ? 'h-6 w-6' : 'h-5 w-5'} ${
-                    active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
-                  } ${sidebarCollapsed ? '' : 'mr-3'} transition-colors`}
-                  aria-hidden="true"
-                />
-                {!sidebarCollapsed && item.name}
-              </button>
+              <div key={item.name} className="relative group">
+                <button
+                  onClick={() => handleNavClick(item.href)}
+                  className={`group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                    active
+                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`}
+                  title={sidebarCollapsed ? item.name : ''}
+                >
+                  <item.icon
+                    className={`${sidebarCollapsed ? 'h-6 w-6' : 'h-5 w-5'} ${
+                      active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
+                    } ${sidebarCollapsed ? '' : 'mr-3'} transition-colors`}
+                    aria-hidden="true"
+                  />
+                  {!sidebarCollapsed && (
+                    <div className="flex flex-col items-start">
+                      <span>{item.name}</span>
+                      {item.description && (
+                        <span className="text-xs text-gray-400 font-normal mt-0.5">
+                          {item.description}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </button>
+                
+                {/* Tooltip for collapsed sidebar */}
+                {sidebarCollapsed && item.description && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+                    <div className="font-medium">{item.name}</div>
+                    <div className="text-gray-400">{item.description}</div>
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
+
+        {/* Search button */}
+        <div className="p-4 border-t border-gray-700">
+          <button
+            onClick={openSemanticSearch}
+            className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors ${
+              sidebarCollapsed ? 'justify-center' : 'justify-start'
+            }`}
+            title={sidebarCollapsed ? 'Semantic Search' : ''}
+          >
+            <SearchIcon className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'}`} />
+            {!sidebarCollapsed && 'Semantic Search'}
+          </button>
+        </div>
+
+        {/* User menu */}
+        <div className="p-4 border-t border-gray-700">
+          <UserMenu collapsed={sidebarCollapsed} />
+        </div>
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top header */}
-        <header className="bg-gray-900 border-b border-gray-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-white">
-              {navigation.find(item => isActive(item.href))?.name || 'Aurum Life'}
-            </h1>
-            {user && (
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={openSemanticSearch}
-                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Semantic Search (Ctrl+Shift+F)"
-                >
-                  <SearchIcon className="h-5 w-5" />
-                </button>
-                <UserMenu />
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-[#0B0D14] p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto">
           {children}
         </main>
       </div>
