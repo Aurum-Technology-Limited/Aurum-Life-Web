@@ -266,14 +266,14 @@ function App() {
             case 'feedback':
               console.log('💬 Rendering Feedback component');
               return <Feedback {...props} />;
-            case 'ai-coach':
-              console.log('🤖 Rendering AICoach component');
+            case 'goal-planner':
+              console.log('🎯 Rendering Goal Planner (AI Coach) component');
               return <AICoach {...props} onSectionChange={setActiveSection} />;
-            case 'ai-intelligence':
-              console.log('🧠 Rendering AIIntelligenceCenter component');
+            case 'ai-insights':
+              console.log('🧠 Rendering My AI Insights (Intelligence Center) component');
               return <AIIntelligenceCenter {...props} onSectionChange={setActiveSection} />;
-            case 'ai-command':
-              console.log('🎯 Rendering AICommandCenter component');
+            case 'ai-actions':
+              console.log('⚡ Rendering AI Quick Actions (Command Center) component');
               return <AICommandCenter {...props} onSectionChange={setActiveSection} />;
             case 'settings':
               console.log('⚙️ Rendering Settings component');
