@@ -318,6 +318,9 @@ function App() {
                     onClose={closeSemanticSearch} 
                     onResultSelect={handleSemanticSearchResult} 
                   />
+                  
+                  {/* Authentication Debug Panel - Development Only */}
+                  {process.env.NODE_ENV === 'development' && <AuthDebugPanel />}
                   </div>
                 </DndProvider>
               </NotificationProvider>
