@@ -157,7 +157,7 @@ export const useAnalytics = () => {
 
   // Track search events
   const trackSearch = useCallback(async (searchTerm, searchType, resultCount = 0, selectionMade = false) => {
-    if (!user || !sessionIdRef.current) return;
+    if (!user || !token || !sessionIdRef.current) return;
 
     try {
       const trackingData = {
