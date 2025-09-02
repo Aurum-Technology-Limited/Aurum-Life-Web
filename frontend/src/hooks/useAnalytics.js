@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
+import { analyticsAPI } from '../services/api';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
