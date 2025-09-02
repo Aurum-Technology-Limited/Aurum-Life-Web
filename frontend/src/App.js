@@ -27,7 +27,6 @@ const Today = lazy(() => import('./components/Today'));
 const Pillars = lazy(() => import('./components/Pillars'));
 const Areas = lazy(() => import('./components/Areas'));
 const Projects = lazy(() => import('./components/Projects'));
-const ProjectTemplates = lazy(() => import('./components/ProjectTemplates'));
 const Journal = lazy(() => import('./components/Journal'));
 const Tasks = lazy(() => import('./components/Tasks'));
 const Feedback = lazy(() => import('./components/Feedback'));
