@@ -35,6 +35,7 @@ const AICommandCenter = lazy(() => import('./components/AICommandCenter'));
 const Profile = lazy(() => import('./components/Profile'));
 const ProfilePage = lazy(() => import('./components/ProfilePage'));
 const EnhancedInsights = lazy(() => import('./components/EnhancedInsights'));
+const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard'));
 const Settings = lazy(() => import('./components/Settings'));
 const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
 const NotificationCenter = lazy(() => import('./components/NotificationCenter'));
