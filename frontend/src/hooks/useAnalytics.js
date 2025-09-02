@@ -208,7 +208,7 @@ export const useAnalytics = () => {
 
   // Track insight feedback
   const trackInsightFeedback = useCallback(async (insightId, feedbackType, insightType = null) => {
-    if (!user || !sessionIdRef.current) return;
+    if (!user || !token || !sessionIdRef.current) return;
 
     try {
       const trackingData = {
