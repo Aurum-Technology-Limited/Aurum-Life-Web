@@ -32,6 +32,191 @@ class SentimentAnalysisService:
         self.model = "gpt-4o-mini"  # Temporary fallback while debugging gpt-5-nano
         # self.model = "gpt-5-nano"  # Original - has empty response issues
         
+    async def analyze_text(self, text: str, title: str = None, user_id: str = None) -> Dict[str, Any]:
+        """
+        Analyze sentiment of text with AI quota tracking
+        CONSUMES: 1 AI interaction per analysis
+        """
+        try:
+            # Check quota before proceeding (if user_id provided)
+            if user_id:
+                from ai_quota_service import ai_quota_service, AIFeatureType
+                has_quota, quota_info = await ai_quota_service.check_quota_available(
+                    user_id, AIFeatureType.SENTIMENT_ANALYSIS
+                )
+                
+                if not has_quota:
+                    logger.warning(f"❌ Sentiment analysis blocked - no quota remaining for user {user_id}")
+                    return {
+                        "error": "AI quota exceeded",
+                        "quota_info": quota_info,
+                        "sentiment_analysis": {
+                            "sentiment_category": "neutral",
+                            "confidence_score": 0.0,
+                            "emotional_keywords": [],
+                            "message": "AI quota exceeded - upgrade for unlimited sentiment analysis"
+                        }
+                    }
+            
+            # Validate input
+            if not text or not text.strip():
+                return {
+                    "error": "Empty or invalid text provided",
+                    "sentiment_analysis": {
+                        "sentiment_category": "neutral",
+                        "confidence_score": 0.0,
+                        "emotional_keywords": [],
+                        "wellness_indicators": []
+                    }
+                }
+            
+            start_time = datetime.utcnow()
+            
+            # Construct analysis prompt
+            analysis_prompt = self._build_sentiment_prompt(text, title)
+            
+            # Call OpenAI for analysis (using GPT-4o-mini temporarily)
+            response = self.openai_client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": self._get_system_prompt()},
+                    {"role": "user", "content": analysis_prompt}
+                ],
+                temperature=0.1,  # GPT-4o-mini supports temperature
+                max_tokens=400,   # GPT-4o-mini uses max_tokens
+                response_format={"type": "json_object"}
+            )
+            
+            processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+            
+            # Parse response
+            raw_content = response.choices[0].message.content
+            logger.info(f"🔍 Raw GPT response: {raw_content}")
+            
+            try:
+                analysis_data = json.loads(raw_content)
+            except json.JSONDecodeError as e:
+                logger.error(f"❌ JSON parsing failed: {e}")
+                logger.error(f"Raw content: {raw_content}")
+                
+                # Log failed interaction
+                if user_id:
+                    await ai_quota_service.log_ai_interaction(
+                        user_id, AIFeatureType.SENTIMENT_ANALYSIS,
+                        success=False, error_message=f"JSON parsing failed: {e}"
+                    )
+                
+                # Try to extract sentiment from text response
+                try:
+                    # Look for patterns in the text response
+                    sentiment_score = 0.0
+                    confidence_score = 0.8
+                    
+                    # Simple keyword-based fallback
+                    positive_words = ['amazing', 'wonderful', 'happy', 'accomplished', 'joy', 'grateful', 'excited', 'proud', 'love', 'great']
+                    negative_words = ['terrible', 'awful', 'sad', 'frustrated', 'angry', 'worried', 'anxious', 'stressed', 'disappointed']
+                    
+                    text_lower = raw_content.lower()
+                    positive_count = sum(1 for word in positive_words if word in text_lower)
+                    negative_count = sum(1 for word in negative_words if word in text_lower)
+                    
+                    if positive_count > negative_count:
+                        sentiment_score = min(0.8, 0.3 + (positive_count * 0.1))
+                    elif negative_count > positive_count:
+                        sentiment_score = max(-0.8, -0.3 - (negative_count * 0.1))
+                    
+                    analysis_data = {
+                        'sentiment_score': sentiment_score,
+                        'confidence_score': confidence_score,
+                        'emotional_keywords': [],
+                        'emotional_themes': [],
+                        'dominant_emotions': [],
+                        'emotional_intensity': 0.5,
+                        'reasoning': f'Fallback analysis applied due to JSON parsing issue. Raw response: {raw_content[:100]}...'
+                    }
+                    
+                    # Log failed but recovered interaction
+                    if user_id:
+                        await ai_quota_service.log_ai_interaction(
+                            user_id, AIFeatureType.SENTIMENT_ANALYSIS,
+                            success=True, processing_time_ms=processing_time,
+                            metadata={"fallback_used": True, "error": str(e)}
+                        )
+                    
+                except Exception as fallback_error:
+                    logger.error(f"Fallback analysis also failed: {fallback_error}")
+                    
+                    # Log completely failed interaction
+                    if user_id:
+                        await ai_quota_service.log_ai_interaction(
+                            user_id, AIFeatureType.SENTIMENT_ANALYSIS,
+                            success=False, error_message=f"Complete analysis failure: {fallback_error}"
+                        )
+                    
+                    # Final fallback to neutral
+                    analysis_data = {
+                        'sentiment_score': 0.0,
+                        'confidence_score': 0.0,
+                        'emotional_keywords': [],
+                        'emotional_themes': [],
+                        'dominant_emotions': [],
+                        'emotional_intensity': 0.5,
+                        'reasoning': f'Analysis failed completely. JSON error: {str(e)}'
+                    }
+            
+            # Log successful interaction
+            if user_id and 'sentiment_score' in analysis_data:
+                await ai_quota_service.log_ai_interaction(
+                    user_id, AIFeatureType.SENTIMENT_ANALYSIS,
+                    success=True, processing_time_ms=processing_time,
+                    metadata={
+                        "sentiment_score": analysis_data.get('sentiment_score'),
+                        "confidence": analysis_data.get('confidence_score')
+                    }
+                )
+            
+            # Format response
+            sentiment_category = self._score_to_category(analysis_data.get('sentiment_score', 0.0))
+            
+            return {
+                "sentiment_analysis": {
+                    "sentiment_category": sentiment_category.value,
+                    "confidence_score": float(analysis_data.get('confidence_score', 0.8)),
+                    "emotional_keywords": analysis_data.get('emotional_keywords', []),
+                    "emotional_themes": analysis_data.get('emotional_themes', []),
+                    "dominant_emotions": analysis_data.get('dominant_emotions', []),
+                    "emotional_intensity": float(analysis_data.get('emotional_intensity', 0.5)),
+                    "reasoning": analysis_data.get('reasoning', ''),
+                    "sentiment_score": float(analysis_data.get('sentiment_score', 0.0))
+                },
+                "processing_time_ms": processing_time,
+                "quota_info": quota_info if user_id else None
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Sentiment analysis failed: {e}")
+            
+            # Log failed interaction
+            if user_id:
+                try:
+                    from ai_quota_service import ai_quota_service, AIFeatureType
+                    await ai_quota_service.log_ai_interaction(
+                        user_id, AIFeatureType.SENTIMENT_ANALYSIS,
+                        success=False, error_message=str(e)
+                    )
+                except:
+                    pass  # Don't fail if quota logging fails
+            
+            return {
+                "error": f"Sentiment analysis failed: {str(e)}",
+                "sentiment_analysis": {
+                    "sentiment_category": "neutral",
+                    "confidence_score": 0.0,
+                    "emotional_keywords": [],
+                    "wellness_indicators": []
+                }
+            }
+        
     async def analyze_journal_entry(self, user_id: str, entry_id: str, text: str, title: str = "") -> SentimentAnalysisResult:
         """
         Analyze sentiment of a journal entry using GPT-5 nano
