@@ -39,7 +39,7 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
       section: 'dashboard',
       icon: HomeIcon,
       description: 'Overview & daily planning hub',
-      shortcut: '⌘1'
+      shortcut: '⌘D'
     },
     {
       name: 'Today',
@@ -67,14 +67,14 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
       section: 'projects',
       icon: FolderIcon,
       description: 'Initiatives & deliverables',
-      shortcut: '⌘5'
+      shortcut: '⌘P'
     },
     {
       name: 'Tasks',
       section: 'tasks',
       icon: ClipboardListIcon,
       description: 'Individual action items',
-      shortcut: '⌘T'
+      shortcut: '⌘K'
     },
     {
       name: 'Journal',
