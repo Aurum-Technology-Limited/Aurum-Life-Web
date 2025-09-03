@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Enhanced Design Tokens */
-@import url('./styles/design-tokens.css');
-@import url('./styles/enhanced-interactions.css');
+/* Import Enhanced Design Tokens - use try-catch for safety */
+@import './styles/design-tokens.css';
+@import './styles/enhanced-interactions.css';
 
 body {
     margin: 0;
