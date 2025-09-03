@@ -304,53 +304,29 @@ async def get_ai_quota(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Get user's AI interaction quota for the current month
+    Get user's AI interaction quota with real usage tracking
     
     Returns:
-        dict: Quota information with remaining and total interactions
+        dict: Quota information with remaining, used, and breakdown by feature
     """
     try:
-        from calendar import monthrange
-        from datetime import datetime, timedelta
-        import calendar
+        # Use the real quota service instead of hardcoded values
+        quota_info = await ai_quota_service.get_user_quota(str(current_user.id))
         
-        # Get current month boundaries
-        now = datetime.utcnow()
-        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        logger.info(f"📊 AI quota for user {current_user.id}: {quota_info['used']}/{quota_info['total']}")
         
-        # Calculate next month start
-        if now.month == 12:
-            next_month = month_start.replace(year=month_start.year + 1, month=1)
-        else:
-            next_month = month_start.replace(month=month_start.month + 1)
-        
-        # For MVP, we'll implement a simple quota system
-        # In production, this would track actual AI usage from a quota table
-        monthly_quota = 250  # 250 AI interactions per month (increased from 50)
-        
-        # Count AI coach interactions for this month
-        # This is a simplified implementation - in production you'd track this in a dedicated table
-        used_quota = 0  # For new users, start with 0 used
-        
-        remaining = max(0, monthly_quota - used_quota)
-        
-        return {
-            'remaining': remaining,
-            'total': monthly_quota,
-            'used': used_quota,
-            'resets_at': next_month.isoformat(),
-            'period': 'monthly'
-        }
+        return quota_info
         
     except Exception as e:
         logger.error(f"❌ Failed to get AI quota: {e}")
-        # Return default quota on error
+        # Return conservative quota on error
         return {
-            'remaining': 10,
-            'total': 10,
-            'used': 0,
+            'remaining': 5,
+            'total': 250,
+            'used': 245,
             'resets_at': None,
-            'period': 'monthly'
+            'period': 'monthly',
+            'error': 'Failed to fetch real quota data'
         }
 
 @api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse, tags=["AI Coach"])
