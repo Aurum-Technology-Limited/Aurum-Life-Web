@@ -13,9 +13,11 @@ import {
   CogIcon,
   UserIcon,
   PlusIcon,
-  XIcon
+  XIcon,
+  BeakerIcon,
+  SparklesIcon,
+  TargetIcon
 } from '@heroicons/react/outline';
-import { Brain, Zap, Target } from '@heroicons/react/solid';
 
 // Quick Win #3: Command Palette System for Power Users
 
