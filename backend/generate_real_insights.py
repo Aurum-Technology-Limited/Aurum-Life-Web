@@ -28,7 +28,6 @@ class RealInsightGenerator:
     def __init__(self):
         self.supabase = get_supabase_client()
         self.blackboard = BlackboardService()
-        self.hrm = HierarchicalReasoningModel()
         
     async def get_user_data_summary(self, user_id: str) -> Dict[str, Any]:
         """Analyze user's actual data to create insights"""
