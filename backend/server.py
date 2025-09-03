@@ -305,16 +305,20 @@ async def get_ai_quota(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Get user's AI interaction quota with real usage tracking
+    Get user's AI interaction quota with real usage tracking and tier support
     
     Returns:
-        dict: Quota information with remaining, used, and breakdown by feature
+        dict: Quota information with remaining, used, tier, and breakdown by feature
     """
     try:
-        # Use the real quota service instead of hardcoded values
-        quota_info = await ai_quota_service.get_user_quota(str(current_user.id))
+        # For now, assume all users are on 'free' tier (50 interactions)
+        # In production, you'd get the user's actual tier from their subscription
+        user_tier = 'free'  # Default to free tier with 50 interactions
         
-        logger.info(f"📊 AI quota for user {current_user.id}: {quota_info['used']}/{quota_info['total']}")
+        # Use the real quota service with tier support
+        quota_info = await ai_quota_service.get_user_quota(str(current_user.id), user_tier)
+        
+        logger.info(f"📊 AI quota for user {current_user.id} ({user_tier}): {quota_info['used']}/{quota_info['total']}")
         
         return quota_info
         
@@ -323,8 +327,9 @@ async def get_ai_quota(
         # Return conservative quota on error
         return {
             'remaining': 5,
-            'total': 250,
-            'used': 245,
+            'total': 50,  # Updated to free tier limit
+            'used': 45,
+            'tier': 'free',
             'resets_at': None,
             'period': 'monthly',
             'error': 'Failed to fetch real quota data'
