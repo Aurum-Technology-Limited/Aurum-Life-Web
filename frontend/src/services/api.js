@@ -335,7 +335,7 @@ class JournalAPIService extends BaseAPIService {
   }
   
   /**
-   * Retrieves journal entries with filtering and pagination
+   * Retrieves journal entries with retry logic
    * @param {Object} options - Query options
    * @returns {Promise} Journal entries
    */
@@ -353,7 +353,48 @@ class JournalAPIService extends BaseAPIService {
     if (dateFrom) params.date_from = dateFrom;
     if (dateTo) params.date_to = dateTo;
     
-    return this.get('', params);
+    // Retry logic for journal entries
+    return this.getWithRetry('', params, 3);
+  }
+  
+  /**
+   * Retrieves journal templates with retry logic
+   * @returns {Promise} Journal templates
+   */
+  async getTemplates() {
+    return this.getWithRetry('/templates', {}, 3);
+  }
+  
+  /**
+   * GET request with retry logic
+   * @param {string} path - API path
+   * @param {Object} params - Query parameters
+   * @param {number} retries - Number of retry attempts
+   * @returns {Promise} API response
+   */
+  async getWithRetry(path = '', params = {}, retries = 3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`🔄 Journal API attempt ${attempt}/${retries}: GET ${this.endpoint}${path}`);
+        
+        const response = await this.get(path, params);
+        console.log(`✅ Journal API success on attempt ${attempt}`);
+        return response;
+        
+      } catch (error) {
+        console.warn(`❌ Journal API attempt ${attempt} failed:`, error.message);
+        
+        if (attempt === retries) {
+          console.error(`🚫 Journal API failed after ${retries} attempts`);
+          throw error;
+        }
+        
+        // Wait before retrying (exponential backoff)
+        const delay = API_CONFIG.RETRY_DELAY * Math.pow(2, attempt - 1);
+        console.log(`⏳ Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
   
   /**
