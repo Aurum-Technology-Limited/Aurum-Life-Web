@@ -267,8 +267,8 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
   }, [filteredInsights]);
 
   const handleFeedback = (insightId, feedback) => {
-    // Track feedback event
-    analytics.trackInsightFeedback(insightId, feedback, selectedInsight?.insight_type);
+    // Disable analytics temporarily to avoid 403 errors
+    // analytics.trackInsightFeedback(insightId, feedback, selectedInsight?.insight_type);
     feedbackMutation.mutate({ insightId, feedback });
   };
 
