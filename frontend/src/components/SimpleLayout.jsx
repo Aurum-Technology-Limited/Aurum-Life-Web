@@ -1,256 +1,361 @@
-import React, { useMemo, memo } from 'react';
-import {HomeIcon, CalendarIcon, LightningBoltIcon, ViewGridIcon, FolderIcon, DocumentTextIcon, ClipboardListIcon, ChatIcon, ChartBarIcon, BeakerIcon, BellIcon, SearchIcon, TrendingUpIcon} from '@heroicons/react/outline';
-import { Brain, Zap, Target } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  HomeIcon,
+  CalendarIcon,
+  LightningBoltIcon,
+  ViewGridIcon,
+  FolderIcon,
+  DocumentTextIcon,
+  ClipboardListIcon,
+  ChatIcon,
+  ChartBarIcon,
+  BeakerIcon,
+  AdjustmentsIcon,
+  BellIcon,
+  SearchIcon,
+  XIcon,
+  MenuIcon
+} from '@heroicons/react/outline';
+import { Brain, Zap, Target } from '@heroicons/react/solid';
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { useSemanticSearch } from './SemanticSearch';
+import { useCommandPalette } from './CommandPalette';
 
-const SimpleLayout = memo(({ children, activeSection, setActiveSection }) => {
+const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
   const { user } = useAuth();
   const { open: openSemanticSearch } = useSemanticSearch();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // Initialize command palette with navigation handler
+  const { isOpen: commandPaletteOpen, open: openCommandPalette, close: closeCommandPalette, CommandPalette } = useCommandPalette(setActiveSection);
 
-  const navigation = useMemo(() => [
-    { 
-      name: 'Dashboard', 
-      key: 'dashboard', 
-      icon: HomeIcon, 
+  const navigation = [
+    {
+      name: 'Dashboard',
+      section: 'dashboard',
+      icon: HomeIcon,
       description: 'Overview & daily planning hub',
-      purpose: 'main_entry'
+      shortcut: '⌘1'
     },
-    { 
-      name: 'Today', 
-      key: 'today', 
-      icon: CalendarIcon, 
+    {
+      name: 'Today',
+      section: 'today',
+      icon: CalendarIcon,
       description: 'Focus tasks & daily engagement',
-      purpose: 'daily_productivity'
+      shortcut: '⌘2'
     },
-    { 
-      name: 'Pillars', 
-      key: 'pillars', 
-      icon: LightningBoltIcon, 
+    {
+      name: 'Pillars',
+      section: 'pillars',
+      icon: LightningBoltIcon,
       description: 'Core life domains & priorities',
-      purpose: 'strategic_structure'
+      shortcut: '⌘3'
     },
-    { 
-      name: 'Areas', 
-      key: 'areas', 
-      icon: ViewGridIcon, 
+    {
+      name: 'Areas',
+      section: 'areas',
+      icon: ViewGridIcon,
       description: 'Focus categories within pillars',
-      purpose: 'strategic_structure'
+      shortcut: '⌘4'
     },
-    { 
-      name: 'Projects', 
-      key: 'projects', 
-      icon: FolderIcon, 
+    {
+      name: 'Projects',
+      section: 'projects',
+      icon: FolderIcon,
       description: 'Initiatives & deliverables',
-      purpose: 'tactical_execution'
+      shortcut: '⌘5'
     },
-    { 
-      name: 'Tasks', 
-      key: 'tasks', 
-      icon: ClipboardListIcon, 
+    {
+      name: 'Tasks',
+      section: 'tasks',
+      icon: ClipboardListIcon,
       description: 'Individual action items',
-      purpose: 'tactical_execution'
+      shortcut: '⌘T'
     },
-    { 
-      name: 'Journal', 
-      key: 'journal', 
-      icon: DocumentTextIcon, 
+    {
+      name: 'Journal',
+      section: 'journal',
+      icon: DocumentTextIcon,
       description: 'Personal reflection & notes',
-      purpose: 'self_reflection'
+      shortcut: '⌘J'
     },
-    { 
-      name: 'Intelligence Hub', 
-      key: 'insights', 
-      icon: ChartBarIcon, 
-      description: 'Analytics & AI insights dashboard',
-      purpose: 'intelligence_analysis'
-    },
-    { 
-      name: 'Analytics', 
-      key: 'analytics', 
-      icon: TrendingUpIcon, 
-      description: 'Performance analytics & usage tracking',
-      purpose: 'analytics_dashboard'
-    },
-    { 
-      name: 'My AI Insights', 
-      key: 'ai-insights', 
-      icon: Brain, 
+    {
+      name: 'Analytics',
+      section: 'analytics',
+      icon: ChartBarIcon,
+      description: 'Performance insights & data',
+      shortcut: '⌘A'
+    }
+  ];
+
+  const aiNavigation = [
+    {
+      name: 'My AI Insights',
+      section: 'ai-insights',
+      icon: Brain,
       description: 'Browse AI observations about you',
-      whenToUse: 'See what AI has learned from your productivity patterns',
-      purpose: 'ai_intelligence'
+      shortcut: '⌘I'
     },
-    { 
-      name: 'Feedback', 
-      key: 'feedback', 
-      icon: ChatIcon, 
-      description: 'Share suggestions & report issues',
-      purpose: 'system_improvement'
-    },
-    { 
-      name: 'AI Quick Actions', 
-      key: 'ai-actions', 
-      icon: Zap, 
+    {
+      name: 'AI Quick Actions',
+      section: 'ai-actions',
+      icon: Zap,
       description: 'Fast AI help & overview',
-      whenToUse: 'Quick AI assistance or check your AI usage',
-      purpose: 'ai_productivity'
+      shortcut: '⌘Q'
     },
-    { 
-      name: 'Goal Planner', 
-      key: 'goal-planner', 
-      icon: Target, 
+    {
+      name: 'Goal Planner',
+      section: 'goal-planner',
+      icon: Target,
       description: 'Plan & achieve goals with AI',
-      whenToUse: 'Strategic planning, goal breakdown, overcome obstacles',
-      purpose: 'ai_strategy'
+      shortcut: '⌘G'
+    }
+  ];
+
+  const secondaryNavigation = [
+    {
+      name: 'Feedback',
+      section: 'feedback',
+      icon: ChatIcon,
+      description: 'Share suggestions & report issues'
     },
-  ], []);
+    {
+      name: 'Settings',
+      section: 'settings',
+      icon: AdjustmentsIcon,
+      description: 'Application preferences'
+    },
+    {
+      name: 'Notifications',
+      section: 'notifications',
+      icon: BellIcon,
+      description: 'View your notifications'
+    }
+  ];
 
-  const currentPageName = useMemo(() => {
-    return navigation.find(item => activeSection === item.key)?.name || 'Aurum Life';
-  }, [navigation, activeSection]);
-
-  const isActive = (key) => {
-    return activeSection === key;
-  };
-
-  const handleNavClick = (key) => {
-    setActiveSection(key);
-  };
-
-  // Robust image fallback handler (prevents errors if logo asset is missing)
-  const handleLogoError = (e) => {
-    try {
-      if (!e || !e.target) return;
-      const imgEl = e.target;
-      // Hide broken image element
-      imgEl.style.display = 'none';
-      // Prefer an explicitly marked fallback sibling for resilience
-      const fallback = imgEl.parentElement?.querySelector('[data-fallback-logo]');
-      if (fallback) {
-        fallback.style.display = 'flex';
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Skip if user is typing in an input field
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
         return;
       }
-      // Secondary fallback logic
-      const parentEl = imgEl.parentElement;
-      if (parentEl) {
-        const fallbackElement = parentEl.querySelector('.logo-fallback');
-        if (fallbackElement) {
-          fallbackElement.style.display = 'flex';
-        } else {
-          console.warn('No fallback element found for logo');
-        }
+
+      const shortcuts = {
+        '1': 'dashboard',
+        '2': 'today',
+        '3': 'pillars',
+        '4': 'areas',
+        '5': 'projects',
+        't': 'tasks',
+        'j': 'journal',
+        'a': 'analytics',
+        'i': 'ai-insights',
+        'q': 'ai-actions',
+        'g': 'goal-planner'
+      };
+
+      if ((e.metaKey || e.ctrlKey) && shortcuts[e.key.toLowerCase()]) {
+        e.preventDefault();
+        setActiveSection(shortcuts[e.key.toLowerCase()]);
       }
-    } catch (error) {
-      console.warn('Error in logo fallback handler:', error);
-    }
-  };
 
-  return (
-    <div className="flex h-screen bg-[#0B0D14]">
-      {/* Sidebar */}
-      <div className="w-64 bg-gray-900 flex flex-col border-r border-gray-700 fixed left-0 top-0 h-full z-10">
-        {/* Logo */}
-        <div className="flex items-center space-x-2 p-4">
-          <div className="w-8 h-8 flex items-center justify-center">
-            <img 
-              src="/aurum-brain-logo.svg" 
-              alt="Aurum Life Logo" 
-              className="w-8 h-8 object-contain"
-              onError={handleLogoError}
-            />
-            <div 
-              data-fallback-logo
-              className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg items-center justify-center text-black font-bold text-sm logo-fallback"
-              style={{ display: 'none' }}
-            >
-              AL
-            </div>
-          </div>
-          <span className="text-xl font-bold text-white">Aurum Life</span>
+      // Open semantic search with Cmd+/
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        openSemanticSearch();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [setActiveSection, openSemanticSearch]);
+
+  const isActive = (section) => activeSection === section;
+
+  const NavigationGroup = ({ title, items, className = "" }) => (
+    <div className={`space-y-1 ${className}`}>
+      {title && (
+        <div className="px-3 mb-2">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            {title}
+          </h3>
         </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-2 py-4 space-y-2 overflow-y-auto">
-          {navigation.map((item) => {
-            const active = isActive(item.key);
-            const IconComponent = item.icon;
-            
-            return (
-              <div key={item.key} className="relative">
-                <button
-                  onClick={() => handleNavClick(item.key)}
-                  className={`group flex items-start w-full px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    active
-                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black shadow-lg'
-                      : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                  }`}
-                >
-                  <IconComponent
-                    className={`h-5 w-5 mt-0.5 mr-3 flex-shrink-0 ${
-                      active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
-                    } transition-colors`}
-                    aria-hidden="true"
-                  />
-                  <div className="flex flex-col items-start text-left min-w-0 flex-1">
-                    <span className="font-medium truncate w-full">{item.name}</span>
-                    {item.description && (
-                      <span className={`text-xs mt-1 font-normal leading-tight ${
-                        active ? 'text-black/70' : 'text-gray-500 group-hover:text-gray-400'
+      )}
+      {items.map((item) => {
+        const active = isActive(item.section);
+        return (
+          <div key={item.section} className="relative group">
+            <button
+              onClick={() => setActiveSection(item.section)}
+              className={`nav-item group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                active
+                  ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-800'
+              }`}
+              title={sidebarCollapsed ? `${item.name} ${item.shortcut || ''}` : ''}
+            >
+              <item.icon
+                className={`${sidebarCollapsed ? 'h-6 w-6' : 'h-5 w-5'} ${
+                  active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
+                } ${sidebarCollapsed ? '' : 'mr-3'} transition-colors flex-shrink-0`}
+                aria-hidden="true"
+              />
+              {!sidebarCollapsed && (
+                <div className="flex flex-col items-start flex-1 min-w-0">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="truncate">{item.name}</span>
+                    {item.shortcut && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded border ml-2 ${
+                        active 
+                          ? 'text-gray-700 border-gray-400 bg-gray-100'
+                          : 'text-gray-500 border-gray-600 bg-gray-800'
                       }`}>
-                        {item.description}
+                        {item.shortcut}
                       </span>
                     )}
                   </div>
-                </button>
+                  {item.description && (
+                    <span className={`text-xs font-normal mt-0.5 truncate w-full ${
+                      active ? 'text-gray-700' : 'text-gray-400'
+                    }`}>
+                      {item.description}
+                    </span>
+                  )}
+                </div>
+              )}
+            </button>
+            
+            {/* Enhanced Tooltip for collapsed sidebar */}
+            {sidebarCollapsed && item.description && (
+              <div className="absolute left-full ml-3 px-3 py-2 bg-gray-800 border border-gray-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 whitespace-nowrap shadow-xl">
+                <div className="font-medium">{item.name}</div>
+                <div className="text-gray-300 text-xs">{item.description}</div>
+                {item.shortcut && (
+                  <div className="text-gray-400 text-xs mt-1">{item.shortcut}</div>
+                )}
+                {/* Arrow */}
+                <div className="absolute right-full top-1/2 transform -translate-y-1/2">
+                  <div className="border-4 border-transparent border-r-gray-800"></div>
+                </div>
               </div>
-            );
-          })}
-        </nav>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 
-        {/* Search button */}
-        <div className="px-4 pb-2">
+  return (
+    <div className="flex h-screen bg-[#0B0D14]">
+      {/* Enhanced Sidebar */}
+      <div className={`${
+        sidebarCollapsed ? 'w-16' : 'w-80'
+      } bg-gray-900 transition-all duration-300 ease-in-out flex flex-col border-r border-gray-700 shadow-xl`}>
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+          {!sidebarCollapsed && (
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
+                <span className="text-black font-bold text-sm">AL</span>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-white">Aurum Life</div>
+                <div className="text-xs text-gray-400">Emotional OS</div>
+              </div>
+            </div>
+          )}
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openSemanticSearch();
-            }}
-            className="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-gray-800"
+            title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
-            <SearchIcon className="h-5 w-5 mr-3" />
-            Semantic Search
+            {sidebarCollapsed ? (
+              <MenuIcon className="h-5 w-5" />
+            ) : (
+              <XIcon className="h-5 w-5" />
+            )}
           </button>
         </div>
 
-        {/* User menu */}
+        {/* Command Palette Button */}
+        {!sidebarCollapsed && (
+          <div className="px-4 py-3 border-b border-gray-700">
+            <button
+              onClick={openCommandPalette}
+              className="w-full flex items-center px-3 py-2 text-sm text-gray-400 bg-gray-800 rounded-lg border border-gray-700 hover:bg-gray-750 hover:text-white transition-all"
+            >
+              <SearchIcon className="h-4 w-4 mr-3" />
+              <span>Search commands...</span>
+              <kbd className="ml-auto text-xs px-1.5 py-0.5 bg-gray-700 border border-gray-600 rounded">
+                ⌘K
+              </kbd>
+            </button>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto scrollbar-enhanced">
+          <NavigationGroup 
+            title={!sidebarCollapsed ? "Core Workflow" : null}
+            items={navigation} 
+          />
+          
+          <NavigationGroup 
+            title={!sidebarCollapsed ? "AI Features" : null}
+            items={aiNavigation}
+            className="pt-2 border-t border-gray-800"
+          />
+          
+          <NavigationGroup 
+            title={!sidebarCollapsed ? "Tools" : null}
+            items={secondaryNavigation}
+            className="pt-2 border-t border-gray-800"
+          />
+        </nav>
+
+        {/* Enhanced Search Button */}
         <div className="p-4 border-t border-gray-700">
-          <UserMenu onSectionChange={setActiveSection} />
+          <button
+            onClick={openSemanticSearch}
+            className={`flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all duration-200 shadow-md hover:shadow-lg ${
+              sidebarCollapsed ? 'justify-center' : 'justify-start'
+            }`}
+            title={sidebarCollapsed ? 'Semantic Search (⌘/)' : ''}
+          >
+            <SearchIcon className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'}`} />
+            {!sidebarCollapsed && (
+              <div className="flex items-center justify-between w-full">
+                <span>Semantic Search</span>
+                <kbd className="text-xs px-1.5 py-0.5 bg-purple-500 border border-purple-400 rounded">
+                  ⌘/
+                </kbd>
+              </div>
+            )}
+          </button>
+        </div>
+
+        {/* Enhanced User Menu */}
+        <div className="p-4 border-t border-gray-700">
+          <UserMenu collapsed={sidebarCollapsed} />
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden ml-64">
-        <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">{currentPageName}</h1>
-            {user && (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-400">
-                  Welcome, {user.first_name || user.username || 'User'}
-                </span>
-              </div>
-            )}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#0B0D14]">
+          <div className="fade-in-up">
+            {children}
           </div>
-        </header>
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          {children}
         </main>
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette />
     </div>
   );
-});
-
-SimpleLayout.displayName = 'SimpleLayout';
+};
 
 export default SimpleLayout;

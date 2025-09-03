@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Enhanced Design Tokens */
+@import './styles/design-tokens.css';
+@import './styles/enhanced-interactions.css';
+
 body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
@@ -9,6 +13,8 @@ body {
         "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 code {
@@ -139,9 +145,18 @@ code {
   .char-counter.error {
     color: #EF4444;
   }
+
+  /* Enhanced Utility Classes from Design Tokens */
+  .aurum-text { color: var(--aurum-primary) !important; }
+  .aurum-bg { background-color: var(--aurum-primary) !important; }
+  .aurum-border { border-color: var(--aurum-primary) !important; }
+  
+  .emotion-joy-text { color: var(--emotion-joy) !important; }
+  .emotion-calm-text { color: var(--emotion-calm) !important; }
+  .emotion-focus-text { color: var(--emotion-focus) !important; }
+  .emotion-energy-text { color: var(--emotion-energy) !important; }
+  .emotion-growth-text { color: var(--emotion-growth) !important; }
 }
-
-
 
 @layer base {
   :root {
@@ -199,8 +214,6 @@ code {
     }
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
@@ -254,7 +267,7 @@ code {
 
 /* Better focus styles for accessibility */
 button:focus-visible {
-  outline: 2px solid #F59E0B;
+  outline: 2px solid var(--aurum-primary);
   outline-offset: 2px;
 }
 
@@ -273,6 +286,14 @@ button:focus-visible {
 /* Enhanced shadow effects */
 .shadow-xl {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Enhanced Command Palette Styles */
+.command-palette {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
 }
 
 /* Responsive breakpoints improvements */
