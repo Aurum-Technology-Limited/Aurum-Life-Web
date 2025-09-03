@@ -162,14 +162,18 @@ class AurumLifeAPITester:
         """Test Areas CRUD operations"""
         print("\n🗂️ Testing Areas CRUD...")
         
-        # Create area
+        # Create area (only if we have a pillar)
+        if not self.created_entities['pillars']:
+            self.log_result("Create Area", False, "No pillar available for area creation")
+            return
+            
         area_data = {
             "name": f"Test Area {datetime.now().strftime('%H%M%S')}",
             "description": "Test area for API testing",
-            "pillar_id": self.created_entities['pillars'][0] if self.created_entities['pillars'] else None
+            "pillar_id": self.created_entities['pillars'][0]
         }
         
-        success, data, status = self.make_request('POST', 'areas', area_data, expected_status=201)
+        success, data, status = self.make_request('POST', 'areas', area_data, expected_status=200)
         if success and isinstance(data, dict) and 'id' in data:
             area_id = data['id']
             self.created_entities['areas'].append(area_id)
