@@ -37,9 +37,12 @@ class AIQuotaService:
         }
         self.default_quota_limit = self.monthly_quota_limits['pro']  # Default to pro tier
     
-    async def get_user_quota(self, user_id: str) -> Dict[str, Any]:
+    async def get_user_quota(self, user_id: str, tier: str = 'pro') -> Dict[str, Any]:
         """Get user's current quota status with real usage tracking"""
         try:
+            # Get quota limit for user's tier (default to pro for now)
+            quota_limit = self.monthly_quota_limits.get(tier, self.default_quota_limit)
+            
             # Get current month boundaries
             now = datetime.utcnow()
             month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -56,14 +59,15 @@ class AIQuotaService:
             ).gte('created_at', month_start.isoformat()).execute()
             
             used_quota = response.count or 0
-            remaining = max(0, self.monthly_quota_limit - used_quota)
+            remaining = max(0, quota_limit - used_quota)
             
-            logger.info(f"📊 User {user_id} quota: {used_quota}/{self.monthly_quota_limit} used, {remaining} remaining")
+            logger.info(f"📊 User {user_id} quota ({tier}): {used_quota}/{quota_limit} used, {remaining} remaining")
             
             return {
                 'remaining': remaining,
-                'total': self.monthly_quota_limit,
+                'total': quota_limit,
                 'used': used_quota,
+                'tier': tier,
                 'resets_at': next_month.isoformat(),
                 'period': 'monthly',
                 'usage_breakdown': await self._get_usage_breakdown(user_id, month_start)
