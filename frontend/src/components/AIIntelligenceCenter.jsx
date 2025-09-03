@@ -288,10 +288,37 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
     return (
       <div className="min-h-screen bg-[#0B0D14] text-white p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 text-center">
-            <XCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
-            <h2 className="text-lg font-semibold text-red-400">Failed to Load AI Insights</h2>
-            <p className="text-red-300 mt-1">Please try refreshing the page</p>
+          <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <XCircle className="h-8 w-8 text-red-400" />
+              <div>
+                <h2 className="text-lg font-semibold text-red-400">Failed to Load AI Insights</h2>
+                <p className="text-red-300 text-sm">API Error Details:</p>
+              </div>
+            </div>
+            <div className="bg-red-900/10 border border-red-600 rounded p-3 mb-4">
+              <code className="text-red-200 text-sm">
+                {error?.message || error?.toString() || 'Unknown error'}
+              </code>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  console.log('🔄 Manual refresh triggered from error state');
+                  queryClient.removeQueries(['hrm-insights']);
+                  refetch();
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Reload Page
+              </button>
+            </div>
           </div>
         </div>
       </div>
