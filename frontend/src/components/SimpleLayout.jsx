@@ -14,9 +14,10 @@ import {
   BellIcon,
   SearchIcon,
   XIcon,
-  MenuIcon
+  MenuIcon,
+  SparklesIcon,
+  TargetIcon
 } from '@heroicons/react/outline';
-import { Brain, Zap, Target } from '@heroicons/react/solid';
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { useSemanticSearch } from './SemanticSearch';
