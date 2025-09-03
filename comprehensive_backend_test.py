@@ -168,7 +168,8 @@ class AurumLifeE2ETester:
         
         # Test basic semantic search
         success, status, data, response_time = self.make_request('GET', 'semantic/search?query=productivity&limit=5')
-        self.log_test("Semantic Search", success, status, data.get('error'), response_time)
+        error_msg = data.get('error') if isinstance(data, dict) else str(data)[:100]
+        self.log_test("Semantic Search", success, status, error_msg, response_time)
 
     def test_analytics_intelligence(self):
         """Test analytics and intelligence features"""
