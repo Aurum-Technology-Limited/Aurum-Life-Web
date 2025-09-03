@@ -120,11 +120,13 @@ class AurumLifeE2ETester:
         
         # Test journal entries endpoint
         success, status, data, response_time = self.make_request('GET', 'journal')
-        self.log_test("Journal Entries Endpoint", success, status, data.get('error'), response_time)
+        error_msg = data.get('error') if isinstance(data, dict) else str(data)[:100]
+        self.log_test("Journal Entries Endpoint", success, status, error_msg, response_time)
         
         # Test journal templates endpoint  
         success, status, data, response_time = self.make_request('GET', 'journal/templates')
-        self.log_test("Journal Templates Endpoint", success, status, data.get('error'), response_time)
+        error_msg = data.get('error') if isinstance(data, dict) else str(data)[:100]
+        self.log_test("Journal Templates Endpoint", success, status, error_msg, response_time)
 
     def test_ai_powered_features(self):
         """Test AI-powered features"""
