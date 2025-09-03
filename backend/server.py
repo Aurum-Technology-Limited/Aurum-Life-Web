@@ -1330,40 +1330,28 @@ async def get_emotional_wellness_score(
         logger.error(f"Error getting emotional wellness score: {e}")
         raise HTTPException(status_code=500, detail="Failed to get emotional wellness score")
 
-@api_router.post("/sentiment/analyze-text", tags=["Sentiment Analysis", "Emotional OS"])
+@api_router.post("/sentiment/analyze-text", tags=["Sentiment Analysis"])
 async def analyze_text_sentiment(
     request: SentimentAnalysisRequest,
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Analyze sentiment for arbitrary text (for real-time analysis during writing)
-    
-    This endpoint:
-    1. Performs real-time sentiment analysis on provided text
-    2. Returns emotional insights without storing data
-    3. Useful for live feedback during journal writing
-    4. Provides immediate emotional awareness
+    Analyze sentiment of text with AI quota tracking
+    CONSUMES: 1 AI interaction per analysis
     """
     try:
-        # Create a temporary sentiment analysis (without storing)
-        sentiment_result = await sentiment_analysis_service.analyze_journal_entry(
-            str(current_user.id),
-            "temp_analysis",  # Temporary ID
-            request.text,
-            ""  # No title
+        # Use enhanced sentiment analysis with quota tracking
+        result = await sentiment_analysis_service.analyze_text(
+            text=request.text,
+            title=request.title,
+            user_id=str(current_user.id)  # Pass user_id for quota tracking
         )
         
-        return {
-            "sentiment_analysis": sentiment_result.dict(),
-            "sentiment_emoji": sentiment_analysis_service.get_sentiment_emoji(sentiment_result.sentiment_category),
-            "sentiment_color": sentiment_analysis_service.get_sentiment_color(sentiment_result.sentiment_category),
-            "human_readable": f"{sentiment_result.sentiment_category.value.replace('_', ' ').title()}",
-            "analyzed_at": datetime.utcnow().isoformat()
-        }
+        return result
         
     except Exception as e:
-        logger.error(f"Error analyzing text sentiment: {e}")
-        raise HTTPException(status_code=500, detail="Failed to analyze text sentiment")
+        logger.error(f"❌ Sentiment analysis endpoint failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Sentiment analysis failed: {str(e)}")
 
 # Include all routers after endpoints are defined
 app.include_router(api_router)
