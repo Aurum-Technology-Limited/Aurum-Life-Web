@@ -96,21 +96,21 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
     {
       name: 'My AI Insights',
       section: 'ai-insights',
-      icon: Brain,
+      icon: BeakerIcon,
       description: 'Browse AI observations about you',
       shortcut: '⌘I'
     },
     {
       name: 'AI Quick Actions',
       section: 'ai-actions',
-      icon: Zap,
+      icon: SparklesIcon,
       description: 'Fast AI help & overview',
       shortcut: '⌘Q'
     },
     {
       name: 'Goal Planner',
       section: 'goal-planner',
-      icon: Target,
+      icon: TargetIcon,
       description: 'Plan & achieve goals with AI',
       shortcut: '⌘G'
     }
