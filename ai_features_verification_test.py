@@ -131,7 +131,7 @@ class AIFeaturesVerificationTester:
         
         if success:
             # Check if response contains expected sentiment data
-            if 'sentiment_category' in response or 'sentiment' in response:
+            if 'sentiment_analysis' in response:
                 self.log("   ✅ Sentiment analysis returned valid data", "PASS")
                 return True
             else:
