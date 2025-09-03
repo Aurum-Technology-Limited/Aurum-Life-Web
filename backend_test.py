@@ -276,7 +276,7 @@ class AurumLifeAPITester:
             update_data = {
                 "title": f"Updated Test Entry {datetime.now().strftime('%H%M%S')}",
                 "content": "This is an updated test journal entry.",
-                "mood": "happy"
+                "mood": "grateful"
             }
             
             success, data, status = self.make_request('PUT', f'journal/{entry_id}', update_data, expected_status=200)
