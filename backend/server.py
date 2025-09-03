@@ -1420,7 +1420,7 @@ async def analyze_text_sentiment(
         # Use enhanced sentiment analysis with quota tracking
         result = await sentiment_analysis_service.analyze_text(
             text=request.text,
-            title=request.title,
+            title=getattr(request, 'title', None),  # Handle optional title attribute
             user_id=str(current_user.id)  # Pass user_id for quota tracking
         )
         
