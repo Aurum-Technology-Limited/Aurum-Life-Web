@@ -50,4 +50,8 @@ gotrue>=2.4.4
 
 # Security dependencies
 bleach>=6.2.0
-pip-audit>=2.6.0openai
+pip-audit>=2.6.0
+
+# OpenAI dependencies for sentiment analysis and AI features
+openai>=1.12.0
+vaderSentiment>=3.3.2
