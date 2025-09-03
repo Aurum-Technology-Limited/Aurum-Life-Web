@@ -537,9 +537,9 @@ async def main():
     """Main function to generate insights for test user"""
     generator = RealInsightGenerator()
     
-    # Use the actual user ID found in the database
-    test_user_id = 'f9ed7066-5954-46e2-8de3-92d38a28832f'
-    logger.info(f"🎯 Generating insights for user ID: {test_user_id}")
+    # Use the authenticated user's actual ID instead of the task user ID
+    test_user_id = '051d28a8-664e-4dea-9b0c-ca0a12beba99'
+    logger.info(f"🎯 Generating insights for authenticated user ID: {test_user_id}")
     
     try:
         # Generate insights
