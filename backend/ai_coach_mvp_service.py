@@ -410,7 +410,13 @@ Provide a practical, actionable breakdown that the user can immediately implemen
             
             # Get AI decomposition
             msg = UserMessage(text=decomposition_prompt)
-            ai_response = await llm.send_message(msg)
+            
+            # Add timeout for AI response
+            import asyncio
+            try:
+                ai_response = await asyncio.wait_for(llm.send_message(msg), timeout=25.0)
+            except asyncio.TimeoutError:
+                raise Exception("AI processing timed out after 25 seconds. Please try a simpler goal or try again later.")
             
             if not ai_response or not ai_response.strip():
                 raise Exception("AI returned empty response")
