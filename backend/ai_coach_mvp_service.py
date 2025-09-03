@@ -258,8 +258,9 @@ class AiCoachMvpService:
                 try:
                     await ai_quota_service.log_ai_interaction(
                         user_id, AIFeatureType.TODAY_PRIORITIES,
-                        success=True, processing_time_ms=processing_time,
-                        metadata={'tasks_coached': len([i for i in top if i.get('ai_powered')])}
+                        success=True,
+                        feature_details={'tasks_coached': len([i for i in top if i.get('ai_powered')])},
+                        tokens_used=processing_time
                     )
                     logger.info(f"✅ AI quota consumed: today_priorities for user {user_id}")
                 except Exception as e:
