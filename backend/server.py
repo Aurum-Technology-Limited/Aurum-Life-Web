@@ -326,7 +326,7 @@ async def get_ai_quota(
         
         # For MVP, we'll implement a simple quota system
         # In production, this would track actual AI usage from a quota table
-        monthly_quota = 50  # 50 AI interactions per month
+        monthly_quota = 250  # 250 AI interactions per month (increased from 50)
         
         # Count AI coach interactions for this month
         # This is a simplified implementation - in production you'd track this in a dedicated table
