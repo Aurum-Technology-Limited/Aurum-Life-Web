@@ -16,7 +16,7 @@ import {
   XIcon,
   BeakerIcon,
   SparklesIcon,
-  TargetIcon
+  LocationMarkerIcon
 } from '@heroicons/react/outline';
 
 // Quick Win #3: Command Palette System for Power Users
