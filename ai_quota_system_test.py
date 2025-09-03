@@ -430,7 +430,8 @@ class AIQuotaSystemTester:
         journal_entry = {
             "title": f"Test Entry - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             "content": "Today was an amazing day! I accomplished so much and feel really positive about my progress. I'm excited about the future and all the opportunities ahead.",
-            "mood": "positive",
+            "mood": "optimistic",
+            "energy_level": "high",
             "tags": ["test", "sentiment", "positive"]
         }
         
