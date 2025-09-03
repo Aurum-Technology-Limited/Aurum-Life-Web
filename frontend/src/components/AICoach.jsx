@@ -764,7 +764,8 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
       setGoalLoading(true);
       setError(null);
       
-      const response = await aiCoachAPI.decomposeGoal(goalText);
+      // Use decomposeProject method since decomposeGoal doesn't exist
+      const response = await aiCoachAPI.decomposeProject(goalText, '', 'goal_breakdown');
       
       // Update quota after successful request
       await loadQuota();
@@ -776,7 +777,7 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
       
     } catch (err) {
       if (err.response?.status === 429) {
-        setError('Too many requests. Please wait a moment before trying again.');
+        setError('AI quota exceeded. You have used all your monthly AI interactions.');
       } else if (err.response?.status === 402) {
         setError('Monthly AI interaction limit reached.');
       } else {
