@@ -34,7 +34,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
       name: 'Dashboard',
       description: 'Overview & daily planning hub',
       icon: HomeIcon,
-      shortcut: '⌘1',
+      shortcut: '⌘D',
       keywords: ['home', 'overview', 'main'],
       category: 'Navigation'
     },
@@ -70,7 +70,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
       name: 'Projects',
       description: 'Initiatives & deliverables',
       icon: FolderIcon,
-      shortcut: '⌘5',
+      shortcut: '⌘P',
       keywords: ['initiatives', 'work', 'deliverables'],
       category: 'Navigation'
     },
@@ -79,7 +79,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
       name: 'Tasks',
       description: 'Individual action items',
       icon: ClipboardListIcon,
-      shortcut: '⌘T',
+      shortcut: '⌘K',
       keywords: ['todo', 'actions', 'items'],
       category: 'Navigation'
     },
