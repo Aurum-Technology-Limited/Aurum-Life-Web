@@ -41,9 +41,12 @@ const Journal = ({ onSectionChange, sectionParams }) => {
   const [error, setError] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [viewingEntry, setViewingEntry] = useState(null);
+  const [editingEntry, setEditingEntry] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newEntryTitle, setNewEntryTitle] = useState('');
   const [newEntryContent, setNewEntryContent] = useState('');
+  const [editEntryTitle, setEditEntryTitle] = useState('');
+  const [editEntryContent, setEditEntryContent] = useState('');
 
   // Sentiment analysis states
   const [sentimentTrends, setSentimentTrends] = useState([]);
