@@ -436,6 +436,8 @@ class RealInsightGenerator:
         try:
             insight_id = str(uuid.uuid4())
             
+            print(f"Storing insight: {insight_data.get('title')}")
+            
             # Prepare insight data for database
             db_insight = {
                 'id': insight_id,
@@ -461,18 +463,24 @@ class RealInsightGenerator:
                 'last_accessed_at': None
             }
             
+            print(f"Database insight object prepared: {db_insight['title']}")
+            
             # Insert into database
             response = self.supabase.table('insights').insert(db_insight).execute()
             
+            print(f"Database response: {response}")
+            
             if response.data:
-                logger.info(f"✅ Stored insight: {insight_data.get('title')}")
+                print(f"✅ Stored insight: {insight_data.get('title')}")
                 return insight_id
             else:
-                logger.error(f"❌ Failed to store insight: {response}")
+                print(f"❌ Failed to store insight: {response}")
                 return None
                 
         except Exception as e:
-            logger.error(f"❌ Error storing insight: {e}")
+            print(f"❌ Error storing insight: {e}")
+            import traceback
+            traceback.print_exc()
             return None
     
     async def clear_old_generic_insights(self, user_id: str):
