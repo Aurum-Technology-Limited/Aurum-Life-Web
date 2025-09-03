@@ -246,6 +246,7 @@ class AiCoachMvpService:
                     item['coaching_message'] = (resp or '').strip()
                     item['ai_powered'] = True
                 except Exception as e:
+                    import logging
                     logger = logging.getLogger(__name__)
                     logger.error(f"AI coaching failed: {e}")
                     item['coaching_message'] = None
