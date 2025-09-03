@@ -44,6 +44,13 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
 
   const queryClient = useQueryClient();
 
+  // Clear React Query cache and force fresh data fetch
+  useEffect(() => {
+    // Clear all hrm-related queries when component mounts to avoid stale data
+    queryClient.removeQueries(['hrm-insights']);
+    queryClient.removeQueries(['hrm-statistics']);
+  }, [queryClient]);
+
   // Track page view when component mounts
   useEffect(() => {
     analytics.trackPageView('/ai-insights');
