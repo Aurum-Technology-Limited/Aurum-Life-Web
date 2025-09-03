@@ -362,7 +362,14 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
       </div>
 
       {/* Command Palette */}
-      <CommandPalette />
+      <CommandPalette 
+        isOpen={commandPaletteOpen}
+        onClose={closeCommandPalette}
+        onNavigate={(section) => {
+          setActiveSection(section);
+          closeCommandPalette();
+        }}
+      />
     </div>
   );
 };
