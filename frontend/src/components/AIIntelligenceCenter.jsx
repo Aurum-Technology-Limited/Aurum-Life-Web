@@ -76,22 +76,43 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
   });
 
   // Fetch insights with filters
-  const { data: insightsData, isLoading, error } = useQuery({
+  const { data: insightsData, isLoading, error, refetch } = useQuery({
     queryKey: ['hrm-insights', filters, searchTerm],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== '' && value !== null && value !== undefined) {
-          params.append(key, value.toString());
+      try {
+        console.log('🔍 Fetching insights with filters:', filters);
+        
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== '' && value !== null && value !== undefined) {
+            params.append(key, value.toString());
+          }
+        });
+        if (searchTerm) {
+          params.append('search', searchTerm);
         }
-      });
-      if (searchTerm) {
-        params.append('search', searchTerm);
+        
+        console.log('📡 API params:', params.toString());
+        const result = await hrmAPI.getInsights(params);
+        
+        console.log('📊 API response:', result);
+        console.log(`✅ Loaded ${result?.insights?.length || 0} insights`);
+        
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to fetch insights:', error);
+        
+        // Return empty state instead of throwing to prevent app crash
+        return {
+          insights: [],
+          total: 0,
+          filters_applied: filters
+        };
       }
-      return await hrmAPI.getInsights(params);
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchInterval: 5 * 60 * 1000 // Refresh every 5 minutes
+    staleTime: 0, // Always fetch fresh data
+    refetchInterval: false, // Disable automatic refetching to reduce load
+    retry: 1 // Only retry once
   });
 
   // Fetch statistics for dashboard overview
