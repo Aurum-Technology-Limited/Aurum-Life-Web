@@ -20,15 +20,17 @@ import { Brain, Zap, Target } from '@heroicons/react/solid';
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { useSemanticSearch } from './SemanticSearch';
-import { useCommandPalette } from './CommandPalette';
+import CommandPalette from './CommandPalette';
 
 const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
   const { user } = useAuth();
   const { open: openSemanticSearch } = useSemanticSearch();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   
-  // Initialize command palette with navigation handler
-  const { isOpen: commandPaletteOpen, open: openCommandPalette, close: closeCommandPalette, CommandPalette } = useCommandPalette(setActiveSection);
+  // Command palette handlers
+  const openCommandPalette = () => setCommandPaletteOpen(true);
+  const closeCommandPalette = () => setCommandPaletteOpen(false);
 
   const navigation = [
     {
