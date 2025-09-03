@@ -498,10 +498,9 @@ async def main():
                     break
         
         if not test_user:
-            # If not found in users table, try to use a default UUID
-            # You can replace this with the actual user ID
-            test_user_id = '8d8f8e5a-4d4c-4a4a-8f8f-8e5a4d4c4a4a'  # placeholder
-            logger.info(f"🎯 Using placeholder user ID: {test_user_id}")
+            # Use the actual user ID found in the database
+            test_user_id = 'f9ed7066-5954-46e2-8de3-92d38a28832f'  # actual user ID from tasks
+            logger.info(f"🎯 Using actual user ID from database: {test_user_id}")
         else:
             test_user_id = test_user.get('id')
             logger.info(f"🎯 Generating insights for user: {test_user.get('email')}")
