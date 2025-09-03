@@ -28,7 +28,7 @@ const AUTH_CONFIG = {
   HEALTH_CHECK_INTERVAL: 120000, // 2 minutes
   
   // Request timeout
-  REQUEST_TIMEOUT: 10000 // 10 seconds
+  REQUEST_TIMEOUT: 30000 // 30 seconds (increased from 10 seconds)
 };
 
 // Error messages
