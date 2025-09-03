@@ -285,39 +285,96 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
   }, [analytics]);
 
   if (error) {
+    const isAuthError = error?.message?.includes('401') || 
+                       error?.message?.includes('403') || 
+                       error?.message?.includes('authenticate') ||
+                       error?.message?.includes('token');
+    
     return (
       <div className="min-h-screen bg-[#0B0D14] text-white p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
-            <div className="flex items-center gap-3 mb-4">
-              <XCircle className="h-8 w-8 text-red-400" />
+          
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-purple-600 rounded-lg">
+                <XCircle className="h-8 w-8 text-white" />
+              </div>
               <div>
-                <h2 className="text-lg font-semibold text-red-400">Failed to Load AI Insights</h2>
-                <p className="text-red-300 text-sm">API Error Details:</p>
+                <h1 className="text-3xl font-bold text-white">AI Insights Loading Issue</h1>
+                <p className="text-gray-400">We're working to load your personalized insights</p>
               </div>
             </div>
-            <div className="bg-red-900/10 border border-red-600 rounded p-3 mb-4">
-              <code className="text-red-200 text-sm">
-                {error?.message || error?.toString() || 'Unknown error'}
-              </code>
+          </div>
+          
+          <div className="bg-red-900/20 border border-red-500 rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <XCircle className="h-6 w-6 text-red-400" />
+              <div>
+                <h2 className="text-lg font-semibold text-red-400">
+                  {isAuthError ? 'Authentication Issue' : 'Loading Error'}
+                </h2>
+                <p className="text-red-300 text-sm">
+                  {isAuthError 
+                    ? 'Please log in again to access your AI insights'
+                    : 'There was an issue loading your insights'
+                  }
+                </p>
+              </div>
             </div>
+            
+            {/* Error Details */}
+            <div className="bg-red-900/10 border border-red-600 rounded p-3 mb-4">
+              <details>
+                <summary className="text-red-300 cursor-pointer hover:text-red-200">
+                  Error Details (Click to expand)
+                </summary>
+                <code className="text-red-200 text-sm block mt-2 whitespace-pre-wrap">
+                  {error?.message || error?.toString() || 'Unknown error'}
+                </code>
+              </details>
+            </div>
+            
+            {/* Action Buttons */}
             <div className="flex gap-4">
+              {isAuthError && (
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                >
+                  Return to Login
+                </button>
+              )}
               <button
                 onClick={() => {
                   console.log('🔄 Manual refresh triggered from error state');
                   queryClient.removeQueries(['hrm-insights']);
+                  queryClient.removeQueries(['hrm-statistics']);
                   refetch();
                 }}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
               >
                 Try Again
               </button>
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
               >
                 Reload Page
               </button>
+            </div>
+            
+            {/* Help Information */}
+            <div className="mt-6 p-4 bg-gray-900/50 border border-gray-700 rounded-lg">
+              <h3 className="text-white font-medium mb-2">Expected Insights Available:</h3>
+              <ul className="text-gray-300 text-sm space-y-1">
+                <li>• Task Completion Opportunity (High Priority)</li>
+                <li>• Start Your Reflection Journey (High Priority)</li>
+                <li>• Most Active Project Analysis (Medium Priority)</li>
+              </ul>
+              <p className="text-gray-400 text-xs mt-2">
+                Your personalized insights are ready but require authentication to display.
+              </p>
             </div>
           </div>
         </div>
