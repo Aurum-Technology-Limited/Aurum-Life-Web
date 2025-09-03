@@ -193,26 +193,6 @@ const Journal = ({ onSectionChange, sectionParams }) => {
     }
   };
 
-  // Handle delete entry
-  const handleDeleteEntry = async (entryId) => {
-    if (!window.confirm('Are you sure you want to delete this journal entry?')) {
-      return;
-    }
-
-    try {
-      setIsSyncing(true);
-      await journalAPI.deleteEntry(entryId);
-      
-      // Refresh entries list
-      await fetchEntriesWithFallback();
-      setError(null);
-    } catch (error) {
-      setError('Failed to delete entry. Please try again.');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
   // Fetch entries with fallback
   const fetchEntriesWithFallback = async () => {
     try {
