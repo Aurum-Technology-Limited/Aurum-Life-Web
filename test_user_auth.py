@@ -156,6 +156,8 @@ def main():
     # Test login credentials
     working_password = test_login_credentials()
     
+    test_email = "marc.alleyne@aurumtechnologyltd.com"
+    
     if working_password:
         print(f"\n🎉 SUCCESS!")
         print(f"Working credentials: {test_email} / {working_password}")
