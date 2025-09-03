@@ -110,7 +110,7 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
     {
       name: 'Goal Planner',
       section: 'goal-planner',
-      icon: TargetIcon,
+      icon: LocationMarkerIcon,
       description: 'Plan & achieve goals with AI',
       shortcut: '⌘G'
     }
