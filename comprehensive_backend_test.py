@@ -159,7 +159,8 @@ class AurumLifeE2ETester:
         for endpoint, name in alignment_endpoints:
             # Use longer timeout for alignment endpoints due to known issues
             success, status, data, response_time = self.make_request('GET', endpoint, timeout=35)
-            self.log_test(name, success, status, data.get('error'), response_time)
+            error_msg = data.get('error') if isinstance(data, dict) else str(data)[:100]
+            self.log_test(name, success, status, error_msg, response_time)
 
     def test_semantic_search_features(self):
         """Test semantic search features"""
