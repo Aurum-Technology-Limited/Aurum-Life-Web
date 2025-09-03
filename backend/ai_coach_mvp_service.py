@@ -191,7 +191,7 @@ class AiCoachMvpService:
         # 6) Sort descending
         scored.sort(key=lambda x: x['score'], reverse=True)
         
-        # 7) Optional: Gemini 2.0-flash coaching for top N
+        # 7) Optional: AI coaching for top N with quota tracking
         def init_llm():
             api_key = os.environ.get('OPENAI_API_KEY')
             if not api_key:
@@ -200,7 +200,28 @@ class AiCoachMvpService:
         
         llm = init_llm()
         top = scored[:max(0, int(coaching_top_n))]
+        
+        # Check quota before making AI calls
+        ai_calls_needed = len(top) if llm and top else 0
+        if ai_calls_needed > 0:
+            try:
+                from ai_quota_service import ai_quota_service, AIFeatureType
+                has_quota, quota_info = await ai_quota_service.check_quota_available(
+                    user_id, AIFeatureType.TODAY_PRIORITIES
+                )
+                
+                if not has_quota:
+                    logger.warning(f"❌ AI coaching blocked - no quota remaining for user {user_id}")
+                    # Continue without AI coaching
+                    llm = None
+            except Exception as e:
+                logger.error(f"Quota check failed: {e}")
+                # Continue without AI coaching to avoid breaking the endpoint
+                llm = None
+        
         if llm and top:
+            start_time = datetime.utcnow()
+            
             for item in top:
                 t = item['task']
                 p = item.get('project') or {}
@@ -226,9 +247,28 @@ class AiCoachMvpService:
                     item['ai_powered'] = True
                 except Exception as e:
                     logger = logging.getLogger(__name__)
-                    logger.error(f"Gemini coaching failed: {e}")
+                    logger.error(f"AI coaching failed: {e}")
                     item['coaching_message'] = None
                     item['ai_powered'] = False
+            
+            # Log successful AI interaction (1 interaction for the whole request)
+            if any(item.get('ai_powered') for item in top):
+                processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+                try:
+                    await ai_quota_service.log_ai_interaction(
+                        user_id, AIFeatureType.TODAY_PRIORITIES,
+                        success=True, processing_time_ms=processing_time,
+                        metadata={'tasks_coached': len([i for i in top if i.get('ai_powered')])}
+                    )
+                    logger.info(f"✅ AI quota consumed: today_priorities for user {user_id}")
+                except Exception as e:
+                    logger.error(f"Failed to log AI interaction: {e}")
+                    
+        else:
+            # No AI coaching applied (no quota consumed)
+            for item in top:
+                item['coaching_message'] = None
+                item['ai_powered'] = False
         
         # 8) Build API response list
         out = []
