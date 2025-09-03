@@ -47,15 +47,24 @@ async def analyze_entity(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Perform HRM analysis on any entity in the hierarchy
-    
-    This endpoint triggers the core HRM analysis that:
-    1. Applies rule-based reasoning
-    2. Uses LLM augmentation when needed
-    3. Stores results in the blackboard
-    4. Returns structured insights
+    Perform HRM analysis on any entity with quota tracking.
+    CONSUMES: 1 AI interaction per analysis
     """
     try:
+        # Check quota before proceeding
+        from ai_quota_service import ai_quota_service, AIFeatureType
+        has_quota, quota_info = await ai_quota_service.check_quota_available(
+            str(current_user.id), AIFeatureType.HRM_ANALYSIS
+        )
+        
+        if not has_quota:
+            raise HTTPException(
+                status_code=429,
+                detail=f"AI quota exceeded. You have {quota_info['remaining']} interactions remaining this month."
+            )
+        
+        start_time = datetime.utcnow()
+        
         # Initialize HRM for user
         hrm = HierarchicalReasoningModel(str(current_user.id))
         
@@ -74,6 +83,23 @@ async def analyze_entity(
             analysis_depth=depth,
             force_llm=request.force_llm
         )
+        
+        # Record successful AI interaction
+        processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+        await ai_quota_service.log_ai_interaction(
+            str(current_user.id),
+            AIFeatureType.HRM_ANALYSIS,
+            success=True,
+            feature_details={
+                'entity_type': request.entity_type,
+                'entity_id': request.entity_id,
+                'analysis_depth': request.analysis_depth,
+                'force_llm': request.force_llm
+            },
+            tokens_used=processing_time
+        )
+        
+        logger.info(f"✅ AI quota consumed: hrm_analysis for user {current_user.id}")
         
         # Return insight data
         response = {
