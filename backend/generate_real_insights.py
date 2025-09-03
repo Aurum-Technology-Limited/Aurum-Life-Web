@@ -483,28 +483,11 @@ async def main():
     """Main function to generate insights for test user"""
     generator = RealInsightGenerator()
     
-    # Get the test user ID
+    # Use the actual user ID found in the database
+    test_user_id = 'f9ed7066-5954-46e2-8de3-92d38a28832f'
+    logger.info(f"🎯 Generating insights for user ID: {test_user_id}")
+    
     try:
-        supabase = get_supabase_client()
-        # Get users from the users table instead of auth.admin
-        users_response = supabase.table('users').select('*').execute()
-        
-        test_user = None
-        if users_response.data:
-            # Look for the test user
-            for user in users_response.data:
-                if user.get('email') == 'marc.alleyne@aurumtechnologyltd.com':
-                    test_user = user
-                    break
-        
-        if not test_user:
-            # Use the actual user ID found in the database
-            test_user_id = 'f9ed7066-5954-46e2-8de3-92d38a28832f'  # actual user ID from tasks
-            logger.info(f"🎯 Using actual user ID from database: {test_user_id}")
-        else:
-            test_user_id = test_user.get('id')
-            logger.info(f"🎯 Generating insights for user: {test_user.get('email')}")
-        
         # Generate insights
         count = await generator.generate_and_store_insights(str(test_user_id))
         
