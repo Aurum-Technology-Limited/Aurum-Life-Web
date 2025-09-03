@@ -194,6 +194,8 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
       )}
       {items.map((item) => {
         const active = isActive(item.section);
+        const IconComponent = item.icon;
+        
         return (
           <div key={item.section} className="relative group">
             <button
@@ -205,12 +207,14 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
               }`}
               title={sidebarCollapsed ? `${item.name} ${item.shortcut || ''}` : ''}
             >
-              <item.icon
-                className={`${sidebarCollapsed ? 'h-6 w-6' : 'h-5 w-5'} ${
-                  active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
-                } ${sidebarCollapsed ? '' : 'mr-3'} transition-colors flex-shrink-0`}
-                aria-hidden="true"
-              />
+              {IconComponent && (
+                <IconComponent
+                  className={`${sidebarCollapsed ? 'h-6 w-6' : 'h-5 w-5'} ${
+                    active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
+                  } ${sidebarCollapsed ? '' : 'mr-3'} transition-colors flex-shrink-0`}
+                  aria-hidden="true"
+                />
+              )}
               {!sidebarCollapsed && (
                 <div className="flex flex-col items-start flex-1 min-w-0">
                   <div className="flex items-center justify-between w-full">
