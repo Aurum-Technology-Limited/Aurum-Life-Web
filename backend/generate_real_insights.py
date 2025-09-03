@@ -491,7 +491,10 @@ async def main():
         # Generate insights
         count = await generator.generate_and_store_insights(str(test_user_id))
         
-        print(f"\n🎉 SUCCESS: Generated {count} real insights based on user data!")
+        if count > 0:
+            print(f"\n🎉 SUCCESS: Generated {count} real insights based on user data!")
+        else:
+            print(f"\n⚠️  Generated {count} insights - there may have been errors. Check the logs above.")
         print("The 'My AI Insights' page should now show meaningful, personalized insights.")
         
     except Exception as e:
