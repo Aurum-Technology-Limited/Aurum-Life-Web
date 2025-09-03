@@ -374,34 +374,62 @@ class RealInsightGenerator:
     
     async def generate_insights_for_user(self, user_id: str) -> List[Dict[str, Any]]:
         """Generate comprehensive insights for a user"""
-        logger.info(f"Generating insights for user {user_id}")
+        print(f"Generating insights for user {user_id}")
         
-        # Get user data
-        user_data = await self.get_user_data_summary(user_id)
-        all_insights = []
-        
-        # Generate different types of insights
-        task_insights = self.analyze_task_patterns(user_data.get('tasks', []))
-        project_insights = self.analyze_project_patterns(
-            user_data.get('projects', []), 
-            user_data.get('tasks', [])
-        )
-        journal_insights = self.analyze_journal_patterns(user_data.get('journal_entries', []))
-        alignment_insights = self.analyze_goal_alignment(user_data)
-        
-        all_insights.extend(task_insights)
-        all_insights.extend(project_insights) 
-        all_insights.extend(journal_insights)
-        all_insights.extend(alignment_insights)
-        
-        # Limit to top 10 most important insights
-        all_insights.sort(key=lambda x: (
-            {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}[x.get('priority', 'low')],
-            x.get('confidence_score', 0),
-            x.get('impact_score', 0)
-        ), reverse=True)
-        
-        return all_insights[:10]
+        try:
+            # Get user data
+            user_data = await self.get_user_data_summary(user_id)
+            print(f"User data summary: tasks={user_data.get('total_tasks', 0)}, projects={user_data.get('total_projects', 0)}, journals={user_data.get('total_journals', 0)}, pillars={user_data.get('total_pillars', 0)}")
+            
+            all_insights = []
+            
+            # Generate different types of insights
+            print("Analyzing task patterns...")
+            task_insights = self.analyze_task_patterns(user_data.get('tasks', []))
+            print(f"Generated {len(task_insights)} task insights")
+            
+            print("Analyzing project patterns...")
+            project_insights = self.analyze_project_patterns(
+                user_data.get('projects', []), 
+                user_data.get('tasks', [])
+            )
+            print(f"Generated {len(project_insights)} project insights")
+            
+            print("Analyzing journal patterns...")
+            journal_insights = self.analyze_journal_patterns(user_data.get('journal_entries', []))
+            print(f"Generated {len(journal_insights)} journal insights")
+            
+            print("Analyzing goal alignment...")
+            alignment_insights = self.analyze_goal_alignment(user_data)
+            print(f"Generated {len(alignment_insights)} alignment insights")
+            
+            all_insights.extend(task_insights)
+            all_insights.extend(project_insights) 
+            all_insights.extend(journal_insights)
+            all_insights.extend(alignment_insights)
+            
+            print(f"Total insights before sorting: {len(all_insights)}")
+            
+            # Limit to top 10 most important insights
+            all_insights.sort(key=lambda x: (
+                {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}[x.get('priority', 'low')],
+                x.get('confidence_score', 0),
+                x.get('impact_score', 0)
+            ), reverse=True)
+            
+            final_insights = all_insights[:10]
+            print(f"Final insights to return: {len(final_insights)}")
+            
+            for i, insight in enumerate(final_insights):
+                print(f"Insight {i+1}: {insight.get('title', 'No title')}")
+            
+            return final_insights
+            
+        except Exception as e:
+            print(f"Error in generate_insights_for_user: {e}")
+            import traceback
+            traceback.print_exc()
+            return []
     
     async def store_insight_in_blackboard(self, user_id: str, insight_data: Dict[str, Any]) -> str:
         """Store insight in the blackboard/database"""
