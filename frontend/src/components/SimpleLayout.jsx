@@ -144,6 +144,13 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
         return;
       }
 
+      // Command palette shortcut
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+        return;
+      }
+
       const shortcuts = {
         '1': 'dashboard',
         '2': 'today',
