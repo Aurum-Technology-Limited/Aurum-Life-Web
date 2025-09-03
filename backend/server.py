@@ -454,6 +454,77 @@ async def suggest_focus_tasks(
         logger.error(f"Error suggesting focus tasks: {e}")
         raise HTTPException(status_code=500, detail="Failed to suggest focus tasks")
 
+@api_router.post("/ai/decompose-project", tags=["AI Coach"])
+async def decompose_project(
+    request: dict,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Decompose a goal or project into structured breakdown with AI coaching.
+    CONSUMES: 1 AI interaction per decomposition request
+    """
+    try:
+        # Check quota before proceeding
+        has_quota, quota_info = await ai_quota_service.check_quota_available(
+            str(current_user.id), AIFeatureType.PROJECT_DECOMPOSITION
+        )
+        
+        if not has_quota:
+            raise HTTPException(
+                status_code=429,
+                detail=f"AI quota exceeded. You have {quota_info['remaining']} interactions remaining this month."
+            )
+        
+        project_name = request.get('project_name', '')
+        project_description = request.get('project_description', '')
+        template_type = request.get('template_type', 'general')
+        
+        if not project_name.strip():
+            raise HTTPException(status_code=400, detail="Project name is required")
+        
+        start_time = datetime.utcnow()
+        
+        # Use AI Coach service to decompose the project/goal
+        decomposition_result = await ai_coach_service.decompose_project_with_ai(
+            user_id=str(current_user.id),
+            project_name=project_name,
+            project_description=project_description,
+            template_type=template_type
+        )
+        
+        # Record successful AI interaction
+        processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+        await ai_quota_service.log_ai_interaction(
+            str(current_user.id),
+            AIFeatureType.PROJECT_DECOMPOSITION,
+            success=True,
+            feature_details={
+                'project_name': project_name,
+                'template_type': template_type,
+                'has_description': bool(project_description.strip())
+            },
+            tokens_used=processing_time
+        )
+        
+        logger.info(f"✅ AI quota consumed: project_decomposition for user {current_user.id}")
+        
+        return decomposition_result
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions (like quota exceeded)
+        raise
+    except Exception as e:
+        # Log failed interaction (doesn't consume quota)
+        await ai_quota_service.log_ai_interaction(
+            str(current_user.id),
+            AIFeatureType.PROJECT_DECOMPOSITION,
+            success=False,
+            error_message=str(e)
+        )
+        
+        logger.error(f"Error decomposing project: {e}")
+        raise HTTPException(status_code=500, detail="Failed to decompose project")
+
 @api_router.get("/alignment/dashboard", tags=["Alignment"])
 async def get_alignment_dashboard(
     current_user: User = Depends(get_current_active_user)
