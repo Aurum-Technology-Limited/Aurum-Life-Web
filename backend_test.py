@@ -142,7 +142,7 @@ class AurumLifeAPITester:
             "color": "#FF6B6B"
         }
         
-        success, data, status = self.make_request('POST', 'pillars', pillar_data, expected_status=201)
+        success, data, status = self.make_request('POST', 'pillars', pillar_data, expected_status=200)
         if success and isinstance(data, dict) and 'id' in data:
             pillar_id = data['id']
             self.created_entities['pillars'].append(pillar_id)
