@@ -141,7 +141,8 @@ class AurumLifeE2ETester:
         
         for endpoint, name in ai_endpoints:
             success, status, data, response_time = self.make_request('GET', endpoint)
-            self.log_test(name, success, status, data.get('error'), response_time)
+            error_msg = data.get('error') if isinstance(data, dict) else str(data)[:100]
+            self.log_test(name, success, status, error_msg, response_time)
 
     def test_alignment_endpoints_detailed(self):
         """Test alignment endpoints - KNOWN TIMEOUT ISSUES"""
