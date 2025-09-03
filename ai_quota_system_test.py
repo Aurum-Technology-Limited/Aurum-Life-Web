@@ -85,7 +85,7 @@ class AIQuotaSystemTester:
         """Test user authentication"""
         print("\n🔐 Testing Authentication...")
         
-        # Try to login with test user
+        # First try to login with test user
         login_data = {
             "email": self.test_email,
             "password": self.test_password
@@ -106,14 +106,53 @@ class AIQuotaSystemTester:
             except json.JSONDecodeError:
                 self.log_result("User Authentication", False, "Invalid JSON response")
         else:
-            error_msg = f"Status: {response.status_code if success else 'Request failed'}"
-            if success:
-                try:
-                    error_data = response.json()
-                    error_msg += f" - {error_data.get('detail', 'Unknown error')}"
-                except:
-                    pass
-            self.log_result("User Authentication", False, error_msg)
+            # If login fails, try to register the user first
+            print("   Login failed, attempting to register user...")
+            
+            register_data = {
+                "email": self.test_email,
+                "password": self.test_password,
+                "first_name": "Marc",
+                "last_name": "Alleyne",
+                "username": "marc_alleyne",
+                "birth_date": "1990-01-01"
+            }
+            
+            success, response = self.make_request('POST', 'auth/register', register_data)
+            
+            if success and response.status_code in [200, 201]:
+                self.log_result("User Registration", True, f"Registered user {self.test_email}")
+                
+                # Now try to login again
+                success, response = self.make_request('POST', 'auth/login', login_data)
+                
+                if success and response.status_code == 200:
+                    try:
+                        data = response.json()
+                        if 'access_token' in data:
+                            self.token = data['access_token']
+                            self.user_id = data.get('user', {}).get('id')
+                            self.log_result("User Authentication", True, f"Logged in as {self.test_email}")
+                            return True
+                        else:
+                            self.log_result("User Authentication", False, "No access token in response after registration")
+                    except json.JSONDecodeError:
+                        self.log_result("User Authentication", False, "Invalid JSON response after registration")
+                else:
+                    self.log_result("User Authentication", False, f"Login failed after registration: {response.status_code if success else 'Request failed'}")
+            else:
+                error_msg = f"Registration failed: {response.status_code if success else 'Request failed'}"
+                if success:
+                    try:
+                        error_data = response.json()
+                        error_msg += f" - {error_data.get('detail', 'Unknown error')}"
+                    except:
+                        pass
+                self.log_result("User Registration", False, error_msg)
+                
+                # Still try original login error message
+                error_msg = f"Login Status: {response.status_code if success else 'Request failed'}"
+                self.log_result("User Authentication", False, error_msg)
         
         return False
 
