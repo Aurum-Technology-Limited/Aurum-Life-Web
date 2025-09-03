@@ -127,7 +127,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
       id: 'goal-planner',
       name: 'Goal Planner',
       description: 'Plan & achieve goals with AI',
-      icon: TargetIcon,
+      icon: LocationMarkerIcon,
       shortcut: '⌘G',
       keywords: ['goals', 'planning', 'ai', 'objectives'],
       category: 'AI Features'
