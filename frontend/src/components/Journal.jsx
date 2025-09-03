@@ -159,16 +159,26 @@ const Journal = ({ onSectionChange, sectionParams }) => {
   const fetchEntriesWithFallback = async () => {
     try {
       setLoading(true);
+      console.log('📖 Journal: Fetching entries...');
+      
       const response = await journalAPI.getEntries({
         skip: 0,
         limit: 20,
         moodFilter: selectedMoodFilter || null,
         tagFilter: selectedTagFilter || null
       });
-      const data = response.data || [];
+      
+      console.log('📖 Journal: Raw API response:', response);
+      
+      // Handle both direct data and wrapped data response formats
+      const data = response.data || response || [];
+      console.log('📖 Journal: Processed data:', data);
+      
       setEntries(Array.isArray(data) ? data : []);
       setError(null);
+      console.log('✅ Journal: Entries loaded successfully');
     } catch (err) {
+      console.error('❌ Journal entries fetch error:', err);
       console.warn('⚠️ Journal entries endpoint not available:', err.message);
       setEntries([]);
       setError(handleApiError(err, 'Failed to load entries'));
