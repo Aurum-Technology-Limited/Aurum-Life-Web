@@ -186,15 +186,64 @@ Provide actionable insights that help users make better decisions.
         WHERE t.id = %s AND t.user_id = %s
         """
         
-        task_resp = self.supabase.rpc('execute_sql', {
-            'query': task_query,
-            'params': [task_id, self.user_id]
-        }).execute()
+        # Query task with relationships using proper Supabase syntax
+        task_resp = self.supabase.table('tasks').select('''
+            id, name, description, status, priority, due_date, 
+            project_id, 
+            projects(id, name, description, area_id),
+            projects.areas(id, name, pillar_id),
+            projects.areas.pillars(id, name)
+        ''').eq('id', task_id).eq('user_id', self.user_id).execute()
         
         if not task_resp.data:
             return {}
         
         task_data = task_resp.data[0]
+        
+        # Format the data for compatibility
+        formatted_task = {
+            'task_id': task_data['id'],
+            'task_name': task_data['name'],
+            'task_description': task_data.get('description', ''),
+            'task_status': task_data.get('status', ''),
+            'task_priority': task_data.get('priority', ''),
+            'task_due_date': task_data.get('due_date'),
+            'project_id': task_data.get('project_id'),
+            'project_name': task_data.get('projects', {}).get('name') if task_data.get('projects') else None,
+            'project_description': task_data.get('projects', {}).get('description') if task_data.get('projects') else None,
+            'area_id': None,
+            'area_name': None,
+            'pillar_id': None,
+            'pillar_name': None
+        }
+        
+        # Extract nested relationship data
+        if task_data.get('projects'):
+            project = task_data['projects']
+            if isinstance(project, list) and len(project) > 0:
+                project = project[0]
+            
+            if project and project.get('areas'):
+                area = project['areas']
+                if isinstance(area, list) and len(area) > 0:
+                    area = area[0]
+                    
+                formatted_task.update({
+                    'area_id': area.get('id'),
+                    'area_name': area.get('name')
+                })
+                
+                if area and area.get('pillars'):
+                    pillar = area['pillars'] 
+                    if isinstance(pillar, list) and len(pillar) > 0:
+                        pillar = pillar[0]
+                        
+                    formatted_task.update({
+                        'pillar_id': pillar.get('id'),
+                        'pillar_name': pillar.get('name')
+                    })
+        
+        task_data = formatted_task
         
         # Get dependencies if any
         dependencies = []
