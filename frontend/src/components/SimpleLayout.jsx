@@ -16,7 +16,7 @@ import {
   XIcon,
   MenuIcon,
   SparklesIcon,
-  TargetIcon
+  LocationMarkerIcon
 } from '@heroicons/react/outline';
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
