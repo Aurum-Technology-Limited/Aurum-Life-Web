@@ -460,23 +460,36 @@ class RealInsightGenerator:
     async def generate_and_store_insights(self, user_id: str):
         """Main method to generate and store insights for a user"""
         try:
+            logger.info(f"Starting insight generation for user {user_id}")
+            
             # Clear old generic insights first
             await self.clear_old_generic_insights(user_id)
+            logger.info("Cleared old generic insights")
             
             # Generate new insights
             insights = await self.generate_insights_for_user(user_id)
+            logger.info(f"Generated {len(insights)} insights")
+            
+            if not insights:
+                logger.warning("No insights generated - this may indicate no user data or errors")
+                return 0
             
             stored_count = 0
-            for insight in insights:
+            for i, insight in enumerate(insights):
+                logger.info(f"Storing insight {i+1}: {insight.get('title', 'No title')}")
                 insight_id = await self.store_insight_in_blackboard(user_id, insight)
                 if insight_id:
                     stored_count += 1
+                else:
+                    logger.error(f"Failed to store insight: {insight.get('title')}")
             
             logger.info(f"✅ Generated and stored {stored_count} insights for user {user_id}")
             return stored_count
             
         except Exception as e:
             logger.error(f"❌ Error generating insights: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return 0
 
 async def main():
