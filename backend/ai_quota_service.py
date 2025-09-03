@@ -29,7 +29,13 @@ class AIQuotaService:
     
     def __init__(self):
         self.supabase = get_supabase_client()
-        self.monthly_quota_limit = 250  # Monthly AI interaction limit
+        self.monthly_quota_limits = {
+            'free': 50,      # Free tier: 50 interactions/month
+            'pro': 100,      # Pro tier: 100 interactions/month  
+            'premium': 300,  # Premium tier: 300 interactions/month
+            'enterprise': 1000  # Enterprise: 1000 interactions/month
+        }
+        self.default_quota_limit = self.monthly_quota_limits['pro']  # Default to pro tier
     
     async def get_user_quota(self, user_id: str) -> Dict[str, Any]:
         """Get user's current quota status with real usage tracking"""
