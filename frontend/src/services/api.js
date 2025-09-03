@@ -13,8 +13,8 @@ import { getBackendBaseUrl } from './baseUrl';
 
 // Configuration constants
 const API_CONFIG = {
-  TIMEOUT: 10000,
-  ALIGNMENT_TIMEOUT: 25000, // Longer timeout for alignment endpoints
+  TIMEOUT: 30000, // Increased from 10s to 30s
+  ALIGNMENT_TIMEOUT: 45000, // Increased from 25s to 45s
   MAX_RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
   TOKEN_STORAGE_KEY: 'auth_token',
