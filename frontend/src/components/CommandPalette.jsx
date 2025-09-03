@@ -454,9 +454,8 @@ export const useCommandPalette = (onNavigate) => {
     isOpen,
     open,
     close,
-    CommandPalette: (props) => (
+    CommandPaletteComponent: () => (
       <CommandPalette 
-        {...props}
         isOpen={isOpen} 
         onClose={close} 
         onNavigate={onNavigate}
