@@ -105,7 +105,7 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
       section: 'ai-actions',
       icon: SparklesIcon,
       description: 'Fast AI help & overview',
-      shortcut: '⌘Q'
+      shortcut: '⌘U'
     },
     {
       name: 'Goal Planner',
