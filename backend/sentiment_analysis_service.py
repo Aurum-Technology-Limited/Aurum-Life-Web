@@ -139,8 +139,9 @@ class SentimentAnalysisService:
                     if user_id:
                         await ai_quota_service.log_ai_interaction(
                             user_id, AIFeatureType.SENTIMENT_ANALYSIS,
-                            success=True, processing_time_ms=processing_time,
-                            metadata={"fallback_used": True, "error": str(e)}
+                            success=True, 
+                            feature_details={"fallback_used": True, "error": str(e)},
+                            tokens_used=processing_time
                         )
                     
                 except Exception as fallback_error:
