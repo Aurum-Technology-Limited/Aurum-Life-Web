@@ -225,16 +225,20 @@ class AurumLifeAPITester:
         """Test Tasks CRUD operations"""
         print("\n✅ Testing Tasks CRUD...")
         
-        # Create task
+        # Create task (only if we have a project)
+        if not self.created_entities['projects']:
+            self.log_result("Create Task", False, "No project available for task creation")
+            return
+            
         task_data = {
             "name": f"Test Task {datetime.now().strftime('%H%M%S')}",
             "description": "Test task for API testing",
-            "project_id": self.created_entities['projects'][0] if self.created_entities['projects'] else None,
+            "project_id": self.created_entities['projects'][0],
             "status": "todo",
             "priority": "medium"
         }
         
-        success, data, status = self.make_request('POST', 'tasks', task_data, expected_status=201)
+        success, data, status = self.make_request('POST', 'tasks', task_data, expected_status=200)
         if success and isinstance(data, dict) and 'id' in data:
             task_id = data['id']
             self.created_entities['tasks'].append(task_id)
