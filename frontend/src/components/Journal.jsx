@@ -369,8 +369,18 @@ const Journal = ({ onSectionChange, sectionParams }) => {
               )}
               
               <div className="flex items-center gap-3">
-                <button className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-500 transition-colors">View</button>
-                <button className="px-3 py-2 rounded bg-gray-600 text-white hover:bg-gray-500 transition-colors">Edit</button>
+                <button 
+                  onClick={() => handleViewEntry(entry)}
+                  className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-500 transition-colors"
+                >
+                  View
+                </button>
+                <button 
+                  onClick={() => handleEditEntry(entry)}
+                  className="px-3 py-2 rounded bg-gray-600 text-white hover:bg-gray-500 transition-colors"
+                >
+                  Edit
+                </button>
                 <button 
                   onClick={() => handleDeleteEntry(entry.id)}
                   className="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-500 transition-colors"
