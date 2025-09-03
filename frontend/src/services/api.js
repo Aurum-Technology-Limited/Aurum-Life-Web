@@ -285,6 +285,34 @@ class BaseAPIService {
   }
   
   /**
+   * GET request with retry logic for critical endpoints
+   * @param {string} path - API path
+   * @param {Object} params - Query parameters  
+   * @param {number} maxRetries - Maximum retry attempts
+   * @returns {Promise} API response
+   */
+  async getWithRetry(path = '', params = {}, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await this.get(path, params);
+      } catch (error) {
+        if (attempt === maxRetries) {
+          throw error;
+        }
+        
+        // Check if error is retryable
+        if (APIErrorHandler.isRetryableError(error)) {
+          const delay = API_CONFIG.RETRY_DELAY * Math.pow(2, attempt - 1);
+          console.log(`⏳ Retrying API request in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          throw error; // Don't retry non-retryable errors
+        }
+      }
+    }
+  }
+  
+  /**
    * Generic POST request with error handling
    * @param {string} path - API path
    * @param {Object} data - Request body data
