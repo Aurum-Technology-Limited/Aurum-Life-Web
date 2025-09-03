@@ -260,8 +260,26 @@ class BaseAPIService {
    */
   async get(path = '', params = {}) {
     try {
-      return await apiClient.get(`${this.endpoint}${path}`, { params });
+      const fullPath = `${this.endpoint}${path}`;
+      console.log(`🌐 API Request: GET ${fullPath}`, { params });
+      
+      const response = await apiClient.get(fullPath, { params });
+      console.log(`✅ API Response: GET ${fullPath}`, { 
+        status: response.status, 
+        dataType: typeof response.data,
+        dataLength: Array.isArray(response.data) ? response.data.length : 'not-array'
+      });
+      
+      return response;
     } catch (error) {
+      console.error(`❌ API Error: GET ${this.endpoint}${path}`, {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        request: !!error.request,
+        code: error.code
+      });
       throw new Error(APIErrorHandler.extractErrorMessage(error));
     }
   }
