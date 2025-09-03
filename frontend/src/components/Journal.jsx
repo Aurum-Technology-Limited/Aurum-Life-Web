@@ -944,6 +944,135 @@ const Journal = ({ onSectionChange, sectionParams }) => {
           </div>
         </div>
       )}
+
+      {/* View Entry Modal */}
+      {viewingEntry && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg p-6 w-full max-w-2xl mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">{viewingEntry.title}</h2>
+              <button
+                onClick={() => setViewingEntry(null)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-sm text-gray-400">
+                <span>Created: {new Date(viewingEntry.created_at).toLocaleString()}</span>
+                {viewingEntry.sentiment_category && (
+                  <SentimentBadge
+                    sentimentCategory={viewingEntry.sentiment_category}
+                    sentimentScore={viewingEntry.sentiment_score}
+                    sentimentEmoji={viewingEntry.sentiment_emoji}
+                    size="small"
+                  />
+                )}
+              </div>
+              
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <p className="text-gray-300 whitespace-pre-wrap">{viewingEntry.content}</p>
+              </div>
+              
+              {viewingEntry.emotional_keywords && viewingEntry.emotional_keywords.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-white mb-2">Emotional Keywords</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {viewingEntry.emotional_keywords.map((keyword, index) => (
+                      <span 
+                        key={index}
+                        className="px-2 py-1 text-xs rounded-full bg-purple-600/20 text-purple-400 border border-purple-600/30"
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setViewingEntry(null);
+                    handleEditEntry(viewingEntry);
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => setViewingEntry(null)}
+                  className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-300 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Entry Modal */}
+      {editingEntry && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg p-6 w-full max-w-2xl mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">Edit Journal Entry</h2>
+              <button
+                onClick={() => {
+                  setEditingEntry(null);
+                  setEditEntryTitle('');
+                  setEditEntryContent('');
+                  setError(null);
+                }}
+                className="text-gray-400 hover:text-white"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Entry title..."
+                value={editEntryTitle}
+                onChange={(e) => setEditEntryTitle(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
+              />
+              <textarea
+                placeholder="What's on your mind?"
+                rows={8}
+                value={editEntryContent}
+                onChange={(e) => setEditEntryContent(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 resize-none"
+              />
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setEditingEntry(null);
+                    setEditEntryTitle('');
+                    setEditEntryContent('');
+                    setError(null);
+                  }}
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateEntry}
+                  disabled={isSyncing}
+                  className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-300 transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isSyncing && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>}
+                  Update Entry
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
