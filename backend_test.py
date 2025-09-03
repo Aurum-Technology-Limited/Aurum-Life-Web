@@ -1,5 +1,379 @@
 #!/usr/bin/env python3
 """
+Comprehensive Backend API Testing for Aurum Life Application
+Testing all endpoints with authentication and CRUD operations
+"""
+
+import requests
+import sys
+import json
+from datetime import datetime
+import time
+
+class AurumLifeAPITester:
+    def __init__(self, base_url="https://emotional-os-1.preview.emergentagent.com"):
+        self.base_url = base_url
+        self.token = None
+        self.user_id = None
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.test_results = []
+        
+        # Test credentials
+        self.test_email = "marc.alleyne@aurumtechnologyltd.com"
+        self.test_password = "password123"
+        
+        # Store created entities for cleanup
+        self.created_entities = {
+            'pillars': [],
+            'areas': [],
+            'projects': [],
+            'tasks': [],
+            'journal_entries': []
+        }
+
+    def log_result(self, test_name, success, details="", response_data=None):
+        """Log test result"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {test_name}")
+        else:
+            print(f"❌ {test_name} - {details}")
+        
+        self.test_results.append({
+            'test': test_name,
+            'success': success,
+            'details': details,
+            'response_data': response_data
+        })
+
+    def make_request(self, method, endpoint, data=None, expected_status=200):
+        """Make HTTP request with proper headers"""
+        url = f"{self.base_url}/api/{endpoint}"
+        headers = {'Content-Type': 'application/json'}
+        
+        if self.token:
+            headers['Authorization'] = f'Bearer {self.token}'
+
+        try:
+            if method == 'GET':
+                response = requests.get(url, headers=headers, timeout=30)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers, timeout=30)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=headers, timeout=30)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=headers, timeout=30)
+            
+            success = response.status_code == expected_status
+            response_data = None
+            
+            try:
+                response_data = response.json()
+            except:
+                response_data = response.text
+            
+            return success, response_data, response.status_code
+            
+        except Exception as e:
+            return False, str(e), 0
+
+    def test_health_check(self):
+        """Test basic health endpoints"""
+        print("\n🏥 Testing Health Endpoints...")
+        
+        # Test root endpoint
+        success, data, status = self.make_request('GET', '', expected_status=200)
+        self.log_result("Root endpoint", success, f"Status: {status}")
+        
+        # Test health endpoint
+        success, data, status = self.make_request('GET', 'health', expected_status=200)
+        self.log_result("Health check", success, f"Status: {status}")
+
+    def test_authentication(self):
+        """Test authentication flow"""
+        print("\n🔐 Testing Authentication...")
+        
+        # Test login
+        login_data = {
+            "email": self.test_email,
+            "password": self.test_password
+        }
+        
+        success, data, status = self.make_request('POST', 'auth/login', login_data, expected_status=200)
+        
+        if success and isinstance(data, dict) and 'access_token' in data:
+            self.token = data['access_token']
+            self.user_id = data.get('user', {}).get('id')
+            self.log_result("Login successful", True, f"Token received, User ID: {self.user_id}")
+        else:
+            self.log_result("Login failed", False, f"Status: {status}, Data: {data}")
+            return False
+        
+        return True
+
+    def test_ai_quota(self):
+        """Test AI quota endpoint"""
+        print("\n🤖 Testing AI Quota...")
+        
+        success, data, status = self.make_request('GET', 'ai/quota', expected_status=200)
+        
+        if success and isinstance(data, dict):
+            remaining = data.get('remaining', 0)
+            total = data.get('total', 0)
+            expected_total = 250  # Should be 250 after recent update
+            
+            if total == expected_total:
+                self.log_result("AI Quota Check", True, f"Quota: {remaining}/{total}")
+            else:
+                self.log_result("AI Quota Check", False, f"Expected {expected_total}, got {total}")
+        else:
+            self.log_result("AI Quota Check", False, f"Status: {status}")
+
+    def test_pillars_crud(self):
+        """Test Pillars CRUD operations"""
+        print("\n⛰️ Testing Pillars CRUD...")
+        
+        # Create pillar
+        pillar_data = {
+            "name": f"Test Pillar {datetime.now().strftime('%H%M%S')}",
+            "description": "Test pillar for API testing",
+            "color": "#FF6B6B"
+        }
+        
+        success, data, status = self.make_request('POST', 'pillars', pillar_data, expected_status=201)
+        if success and isinstance(data, dict) and 'id' in data:
+            pillar_id = data['id']
+            self.created_entities['pillars'].append(pillar_id)
+            self.log_result("Create Pillar", True, f"Created pillar ID: {pillar_id}")
+        else:
+            self.log_result("Create Pillar", False, f"Status: {status}, Data: {data}")
+            return
+        
+        # Get pillars
+        success, data, status = self.make_request('GET', 'pillars', expected_status=200)
+        if success and isinstance(data, list):
+            self.log_result("Get Pillars", True, f"Retrieved {len(data)} pillars")
+        else:
+            self.log_result("Get Pillars", False, f"Status: {status}")
+
+    def test_areas_crud(self):
+        """Test Areas CRUD operations"""
+        print("\n🗂️ Testing Areas CRUD...")
+        
+        # Create area
+        area_data = {
+            "name": f"Test Area {datetime.now().strftime('%H%M%S')}",
+            "description": "Test area for API testing",
+            "pillar_id": self.created_entities['pillars'][0] if self.created_entities['pillars'] else None
+        }
+        
+        success, data, status = self.make_request('POST', 'areas', area_data, expected_status=201)
+        if success and isinstance(data, dict) and 'id' in data:
+            area_id = data['id']
+            self.created_entities['areas'].append(area_id)
+            self.log_result("Create Area", True, f"Created area ID: {area_id}")
+        else:
+            self.log_result("Create Area", False, f"Status: {status}, Data: {data}")
+            return
+        
+        # Get areas
+        success, data, status = self.make_request('GET', 'areas', expected_status=200)
+        if success and isinstance(data, list):
+            self.log_result("Get Areas", True, f"Retrieved {len(data)} areas")
+        else:
+            self.log_result("Get Areas", False, f"Status: {status}")
+
+    def test_projects_crud(self):
+        """Test Projects CRUD operations"""
+        print("\n📁 Testing Projects CRUD...")
+        
+        # Create project
+        project_data = {
+            "name": f"Test Project {datetime.now().strftime('%H%M%S')}",
+            "description": "Test project for API testing",
+            "area_id": self.created_entities['areas'][0] if self.created_entities['areas'] else None,
+            "status": "active"
+        }
+        
+        success, data, status = self.make_request('POST', 'projects', project_data, expected_status=201)
+        if success and isinstance(data, dict) and 'id' in data:
+            project_id = data['id']
+            self.created_entities['projects'].append(project_id)
+            self.log_result("Create Project", True, f"Created project ID: {project_id}")
+        else:
+            self.log_result("Create Project", False, f"Status: {status}, Data: {data}")
+            return
+        
+        # Get projects
+        success, data, status = self.make_request('GET', 'projects', expected_status=200)
+        if success and isinstance(data, list):
+            self.log_result("Get Projects", True, f"Retrieved {len(data)} projects")
+        else:
+            self.log_result("Get Projects", False, f"Status: {status}")
+
+    def test_tasks_crud(self):
+        """Test Tasks CRUD operations"""
+        print("\n✅ Testing Tasks CRUD...")
+        
+        # Create task
+        task_data = {
+            "name": f"Test Task {datetime.now().strftime('%H%M%S')}",
+            "description": "Test task for API testing",
+            "project_id": self.created_entities['projects'][0] if self.created_entities['projects'] else None,
+            "status": "todo",
+            "priority": "medium"
+        }
+        
+        success, data, status = self.make_request('POST', 'tasks', task_data, expected_status=201)
+        if success and isinstance(data, dict) and 'id' in data:
+            task_id = data['id']
+            self.created_entities['tasks'].append(task_id)
+            self.log_result("Create Task", True, f"Created task ID: {task_id}")
+        else:
+            self.log_result("Create Task", False, f"Status: {status}, Data: {data}")
+            return
+        
+        # Get tasks
+        success, data, status = self.make_request('GET', 'tasks', expected_status=200)
+        if success and isinstance(data, list):
+            self.log_result("Get Tasks", True, f"Retrieved {len(data)} tasks")
+        else:
+            self.log_result("Get Tasks", False, f"Status: {status}")
+
+    def test_journal_crud(self):
+        """Test Journal CRUD operations (PRIORITY - recently fixed)"""
+        print("\n📖 Testing Journal CRUD (PRIORITY)...")
+        
+        # Create journal entry
+        journal_data = {
+            "title": f"Test Entry {datetime.now().strftime('%H%M%S')}",
+            "content": "This is a test journal entry for API testing. It contains some meaningful content to test the functionality.",
+            "mood": "neutral",
+            "tags": ["test", "api"]
+        }
+        
+        success, data, status = self.make_request('POST', 'journal', journal_data, expected_status=201)
+        if success and isinstance(data, dict) and 'id' in data:
+            entry_id = data['id']
+            self.created_entities['journal_entries'].append(entry_id)
+            self.log_result("Create Journal Entry", True, f"Created entry ID: {entry_id}")
+            
+            # Test update journal entry
+            update_data = {
+                "title": f"Updated Test Entry {datetime.now().strftime('%H%M%S')}",
+                "content": "This is an updated test journal entry.",
+                "mood": "happy"
+            }
+            
+            success, data, status = self.make_request('PUT', f'journal/{entry_id}', update_data, expected_status=200)
+            self.log_result("Update Journal Entry", success, f"Status: {status}")
+            
+        else:
+            self.log_result("Create Journal Entry", False, f"Status: {status}, Data: {data}")
+            return
+        
+        # Get journal entries
+        success, data, status = self.make_request('GET', 'journal', expected_status=200)
+        if success and isinstance(data, list):
+            self.log_result("Get Journal Entries", True, f"Retrieved {len(data)} entries")
+        else:
+            self.log_result("Get Journal Entries", False, f"Status: {status}")
+
+    def test_insights_endpoints(self):
+        """Test insights and analytics endpoints"""
+        print("\n📊 Testing Insights & Analytics...")
+        
+        # Test insights
+        success, data, status = self.make_request('GET', 'insights', expected_status=200)
+        self.log_result("Get Insights", success, f"Status: {status}")
+        
+        # Test alignment dashboard
+        success, data, status = self.make_request('GET', 'alignment/dashboard', expected_status=200)
+        self.log_result("Alignment Dashboard", success, f"Status: {status}")
+        
+        # Test AI today priorities
+        success, data, status = self.make_request('GET', 'ai/today-priorities', expected_status=200)
+        self.log_result("AI Today Priorities", success, f"Status: {status}")
+
+    def test_semantic_search(self):
+        """Test semantic search functionality"""
+        print("\n🔍 Testing Semantic Search...")
+        
+        # Test semantic search
+        search_params = "query=test&limit=5"
+        success, data, status = self.make_request('GET', f'semantic/search?{search_params}', expected_status=200)
+        
+        if success and isinstance(data, dict):
+            results = data.get('results', [])
+            self.log_result("Semantic Search", True, f"Found {len(results)} results")
+        else:
+            self.log_result("Semantic Search", success, f"Status: {status}")
+
+    def test_ai_features(self):
+        """Test AI-related endpoints"""
+        print("\n🧠 Testing AI Features...")
+        
+        # Test task why statements
+        success, data, status = self.make_request('GET', 'ai/task-why-statements', expected_status=200)
+        self.log_result("AI Task Why Statements", success, f"Status: {status}")
+        
+        # Test suggest focus
+        success, data, status = self.make_request('GET', 'ai/suggest-focus', expected_status=200)
+        self.log_result("AI Suggest Focus", success, f"Status: {status}")
+
+    def run_all_tests(self):
+        """Run all backend tests"""
+        print("🚀 Starting Comprehensive Backend API Testing...")
+        print(f"📍 Testing against: {self.base_url}")
+        print(f"👤 Using credentials: {self.test_email}")
+        
+        start_time = time.time()
+        
+        # Run tests in order
+        self.test_health_check()
+        
+        if not self.test_authentication():
+            print("❌ Authentication failed - stopping tests")
+            return False
+        
+        self.test_ai_quota()
+        self.test_pillars_crud()
+        self.test_areas_crud()
+        self.test_projects_crud()
+        self.test_tasks_crud()
+        self.test_journal_crud()  # Priority test
+        self.test_insights_endpoints()
+        self.test_semantic_search()
+        self.test_ai_features()
+        
+        # Print summary
+        end_time = time.time()
+        duration = end_time - start_time
+        
+        print(f"\n📊 Test Summary:")
+        print(f"✅ Tests passed: {self.tests_passed}/{self.tests_run}")
+        print(f"⏱️ Duration: {duration:.2f} seconds")
+        print(f"📈 Success rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        
+        # Show failed tests
+        failed_tests = [r for r in self.test_results if not r['success']]
+        if failed_tests:
+            print(f"\n❌ Failed Tests ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"  • {test['test']}: {test['details']}")
+        
+        return self.tests_passed == self.tests_run
+
+def main():
+    tester = AurumLifeAPITester()
+    success = tester.run_all_tests()
+    return 0 if success else 1
+
+if __name__ == "__main__":
+    sys.exit(main())
+"""
 Comprehensive Analytics System Backend Testing
 Tests all analytics endpoints with authentication and data flow validation
 """
