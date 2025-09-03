@@ -590,16 +590,53 @@ export const alignmentScoreAPI = {
   getDashboardData: async (useHRM = true) => {
     try {
       const params = useHRM ? { use_hrm: true } : {};
-      return await apiClient.get('/alignment/dashboard', { params });
+      return await apiClient.get('/alignment/dashboard', { 
+        params,
+        timeout: API_CONFIG.ALIGNMENT_TIMEOUT 
+      });
     } catch (error) {
-      return apiClient.get('/alignment-score', { params: useHRM ? { use_hrm: true } : {} });
+      console.warn('Primary alignment endpoint failed, trying fallback:', error.message);
+      try {
+        return await apiClient.get('/alignment-score', { 
+          params: useHRM ? { use_hrm: true } : {},
+          timeout: API_CONFIG.ALIGNMENT_TIMEOUT 
+        });
+      } catch (fallbackError) {
+        console.error('Both alignment endpoints failed:', fallbackError.message);
+        throw fallbackError;
+      }
     }
   },
-  getWeeklyScore: (useHRM = true) => 
-    apiClient.get('/alignment/weekly-score', { params: useHRM ? { use_hrm: true } : {} }),
-  getMonthlyScore: (useHRM = true) => 
-    apiClient.get('/alignment/monthly-score', { params: useHRM ? { use_hrm: true } : {} }),
-  setMonthlyGoal: (goal) => apiClient.post('/alignment/monthly-goal', { goal }),
+  getWeeklyScore: async (useHRM = true) => {
+    try {
+      return await apiClient.get('/alignment/weekly-score', { 
+        params: useHRM ? { use_hrm: true } : {},
+        timeout: API_CONFIG.ALIGNMENT_TIMEOUT 
+      });
+    } catch (error) {
+      console.error('Weekly alignment score failed:', error.message);
+      throw error;
+    }
+  },
+  getMonthlyScore: async (useHRM = true) => {
+    try {
+      return await apiClient.get('/alignment/monthly-score', { 
+        params: useHRM ? { use_hrm: true } : {},
+        timeout: API_CONFIG.ALIGNMENT_TIMEOUT 
+      });
+    } catch (error) {
+      console.error('Monthly alignment score failed:', error.message);
+      throw error;
+    }
+  },
+  setMonthlyGoal: async (goal) => {
+    try {
+      return await apiClient.post('/alignment/monthly-goal', { goal });
+    } catch (error) {
+      console.error('Set monthly goal failed:', error.message);
+      throw error;
+    }
+  },
 };
 
 export const aiCoachAPI = {
