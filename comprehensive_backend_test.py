@@ -209,11 +209,13 @@ class AurumLifeE2ETester:
         
         # Test root endpoint
         success, status, data, response_time = self.make_request('GET', '', expected_status=200)
-        self.log_test("Root Endpoint", success, status, data.get('error'), response_time)
+        error_msg = data.get('error') if isinstance(data, dict) else str(data)[:100]
+        self.log_test("Root Endpoint", success, status, error_msg, response_time)
         
         # Test health endpoint
         success, status, data, response_time = self.make_request('GET', 'health', expected_status=200)
-        self.log_test("Health Check", success, status, data.get('error'), response_time)
+        error_msg = data.get('error') if isinstance(data, dict) else str(data)[:100]
+        self.log_test("Health Check", success, status, error_msg, response_time)
 
     def run_comprehensive_tests(self):
         """Run all comprehensive E2E backend tests"""
