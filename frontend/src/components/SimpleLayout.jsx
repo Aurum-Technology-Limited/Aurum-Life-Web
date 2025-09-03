@@ -153,16 +153,16 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
       }
 
       const shortcuts = {
-        '1': 'dashboard',
+        'd': 'dashboard',
         '2': 'today',
         '3': 'pillars',
         '4': 'areas',
-        '5': 'projects',
-        't': 'tasks',
+        'p': 'projects',
+        'k': 'tasks',
         'j': 'journal',
         'a': 'analytics',
         'i': 'ai-insights',
-        'q': 'ai-actions',
+        'u': 'ai-actions',
         'g': 'goal-planner'
       };
 
