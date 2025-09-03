@@ -76,11 +76,18 @@ class AIQuotaService:
         except Exception as e:
             logger.error(f"❌ Failed to get quota for user {user_id}: {e}")
             # Return conservative quota on error
+            next_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            if next_month.month == 12:
+                next_month = next_month.replace(year=next_month.year + 1, month=1)
+            else:
+                next_month = next_month.replace(month=next_month.month + 1)
+                
             return {
                 'remaining': 5,
-                'total': self.monthly_quota_limit,
+                'total': self.monthly_quota_limits.get(tier, self.default_quota_limit),
                 'used': 0,
-                'resets_at': next_month.isoformat() if 'next_month' in locals() else None,
+                'tier': tier,
+                'resets_at': next_month.isoformat(),
                 'period': 'monthly'
             }
     
