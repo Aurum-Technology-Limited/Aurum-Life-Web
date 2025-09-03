@@ -1336,3 +1336,4 @@ async def analyze_text_sentiment(
 app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
 app.include_router(hrm_router)
+app.include_router(webhook_router, prefix="/api")
