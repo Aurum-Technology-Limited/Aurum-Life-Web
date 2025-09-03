@@ -119,7 +119,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
       name: 'AI Quick Actions',
       description: 'Fast AI help & overview',
       icon: SparklesIcon,
-      shortcut: '⌘Q',
+      shortcut: '⌘U',
       keywords: ['ai', 'quick', 'help', 'actions'],
       category: 'AI Features'
     },
