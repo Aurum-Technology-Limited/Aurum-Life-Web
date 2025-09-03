@@ -109,7 +109,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
       id: 'ai-insights',
       name: 'My AI Insights',
       description: 'Browse AI observations about you',
-      icon: Brain,
+      icon: BeakerIcon,
       shortcut: '⌘I',
       keywords: ['ai', 'insights', 'observations', 'analysis'],
       category: 'AI Features'
@@ -118,7 +118,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
       id: 'ai-actions',
       name: 'AI Quick Actions',
       description: 'Fast AI help & overview',
-      icon: Zap,
+      icon: SparklesIcon,
       shortcut: '⌘Q',
       keywords: ['ai', 'quick', 'help', 'actions'],
       category: 'AI Features'
@@ -127,7 +127,7 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
       id: 'goal-planner',
       name: 'Goal Planner',
       description: 'Plan & achieve goals with AI',
-      icon: Target,
+      icon: TargetIcon,
       shortcut: '⌘G',
       keywords: ['goals', 'planning', 'ai', 'objectives'],
       category: 'AI Features'
