@@ -21,7 +21,7 @@ from typing import Dict, List, Any, Optional
 import time
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
 
 class TodayPrioritizationAPITester:
     def __init__(self):

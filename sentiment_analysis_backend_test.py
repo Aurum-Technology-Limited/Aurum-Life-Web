@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 class SentimentAnalysisAPITester:
-    def __init__(self, base_url="https://emotional-os-1.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://journal-analytics-1.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
@@ -416,7 +416,7 @@ def main():
     """Main test execution"""
     print("🧠 Aurum Life Sentiment Analysis API Tester")
     print("Testing GPT-4o-mini integration and all 6 sentiment endpoints")
-    print("Backend URL: https://emotional-os-1.preview.emergentagent.com/api")
+    print("Backend URL: https://journal-analytics-1.preview.emergentagent.com/api")
     print()
     
     tester = SentimentAnalysisAPITester()

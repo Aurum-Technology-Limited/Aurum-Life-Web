@@ -169,7 +169,7 @@ export function getBackendBaseUrl() {
   
   // Step 3: Last resort - use sensible fallback based on environment
   const currentDomain = typeof window !== 'undefined' ? window.location?.origin : null;
-  const devFallback = currentDomain || 'https://emotional-os-1.preview.emergentagent.com';
+  const devFallback = currentDomain || 'https://journal-analytics-1.preview.emergentagent.com';
   
   URLLogger.log('fallback', 'Using computed fallback:', devFallback);
   return devFallback;

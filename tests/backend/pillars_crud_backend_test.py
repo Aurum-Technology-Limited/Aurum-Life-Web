@@ -23,7 +23,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
 
 class PillarsCRUDTester:
     def __init__(self):

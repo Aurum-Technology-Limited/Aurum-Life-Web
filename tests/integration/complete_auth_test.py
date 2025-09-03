@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
 # Using working credentials from previous test
 TEST_EMAIL = "authtest_ad92d043@aurumtechnologyltd.com"
 TEST_PASSWORD = "TestPassword123!"

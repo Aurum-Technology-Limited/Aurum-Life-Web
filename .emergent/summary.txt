@@ -5,9 +5,9 @@ A major pivot occurred with the implementation of a full sentiment analysis syst
 </analysis>
 
 <product_requirements>
-The user envisioned Aurum Life as an intelligent life operating system, later expanding to an Emotional OS. This necessitated an **LLM-augmented Hierarchical Reasoning Model (HRM)** for contextual insights across tasks, projects, areas, and pillars. Core features included My AI Insights, AI Quick Actions, Goal Planner, and **semantic search (RAG)** using  for personalized data retrieval. A smart onboarding system with a birth date field was also a requirement. The AI model transitioned from Gemini to OpenAI (GPT-5 nano, then  for reasoning;  for embeddings).
+The user envisioned Aurum Life as an intelligent life operating system, later expanding to an Emotional OS. This required an **LLM-augmented Hierarchical Reasoning Model (HRM)** for contextual insights across tasks, projects, areas, and pillars, with features like My AI Insights, AI Quick Actions, Goal Planner, and **semantic search (RAG)** using . A smart onboarding system with a birth date field was also needed. AI models transitioned from Gemini to OpenAI (GPT-5 nano, then  for reasoning;  for embeddings).
 
-The Emotional OS evolution specifically required **sentiment analysis for journal entries**, morning, and evening reflections. This meant abstracting raw sentiment scores into human-readable categories with emojis, a contextualized insights dashboard showing sentiment trends and correlations with Pillars/Projects, basic rule-based interpretations, and deep **AI Coach integration** for empathetic feedback and activity recommendations. Automated connections correlating sentiment with user activities were also crucial.
+The Emotional OS evolution specifically required **sentiment analysis for journal entries**, abstracting scores into human-readable categories with emojis, a contextualized insights dashboard showing sentiment trends, rule-based interpretations, and deep **AI Coach integration** for empathetic feedback. Automated correlations between sentiment and user activities were crucial. Recently, ensuring all UI buttons and functions work, setting AI interaction limits (250/month), and fixing journal entry CRUD operations (including view/edit buttons) were explicit requests.
 </product_requirements>
 
 <key_technical_concepts>
@@ -15,17 +15,18 @@ The Emotional OS evolution specifically required **sentiment analysis for journa
 - **Blackboard Pattern**: Centralized AI insight repository.
 - **pgvector**: PostgreSQL extension for vector embeddings, enabling RAG.
 - **RAG (Retrieval-Augmented Generation)**: AI referencing user data for context.
-- **OpenAI (GPT-5 nano, text-embedding-3-small, GPT-4o-mini)**: Primary LLMs for reasoning and embeddings.
+- **OpenAI (GPT-4o-mini, text-embedding-3-small)**: Primary LLMs for reasoning and embeddings.
 - **FastAPI**: Python backend framework.
 - **React**: JavaScript frontend framework.
-- **Supabase**: Backend-as-a-Service (PostgreSQL, Auth).
+- **Supabase**: Backend-as-a-Service (PostgreSQL, Auth, RLS).
 - **Chart.js**: Frontend library for data visualization.
+- **Supabase Database Triggers**: Event-driven background processing for performance.
 </key_technical_concepts>
 
 <code_architecture>
 The application uses a  (React) and  (FastAPI) architecture.
 
-get_sentiment_emojijournal_entriessupabasepython-dotenvuuidvaderSentimentopenaiwindow.location.origin
+get_sentiment_emojijournal_entriesdeletedjournal_templatessupabasepython-dotenvuuidvaderSentimentopenaijournal_entrieswebhook_logsgetEntrieswindow.location.origin
 -   ****: Stores API keys for OpenAI and Supabase.
 -   ****: Now dynamically configured, removed hardcoded .
 -   **🚀 Starting Aurum Life Analytics Tables Migration
@@ -36,19 +37,23 @@ Please create .env file with SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY**: Helpe
 </code_architecture>
 
 <pending_tasks>
-- **Semantic Search Button Click**: Enhance the semantic search button's click functionality to consistently open the search modal, aligning it with the existing keyboard shortcut. (This is a minor enhancement identified during final testing).
+- **Database RLS Policy Fix**: Run the provided SQL script () in the Supabase dashboard to correct Row Level Security policies, which is blocking journal entry creation.
+- **AI Account Reset Verification**: Verify the test account () AI usage reset once the RLS policy issue is resolved and full E2E testing can proceed without authentication/creation blocks.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer had just completed a major round of fixes and cleanup following recurring authentication issues and user feedback on UI clutter.
+Immediately prior to this summary, the AI engineer had just completed a major round of fixes and cleanup across several core functionalities.
 
-The **authentication system** was systematically addressed. The root cause was identified as hardcoded backend URLs in  and . These were updated to dynamically resolve the  from , ensuring stability across deployment environments. An  component was also introduced for real-time diagnostics, and React state management for authentication in  and  was refined to prevent UI/state desyncs. This resolved persistent login and token management problems, making authentication 100% reliable.
+The **Semantic Search button functionality** was resolved. Initial issues were identified, and through isolation testing with a temporary component, it was confirmed that the button's  handler and the  hook were working. Debugging code was then removed, and the temporary test component/route were cleaned up, leading to a fully functional and reliable semantic search.
 
-Simultaneously, **UI clutter** in  was removed. This included static Choose Your Tool and Optimized Navigation text, leading to a cleaner, more professional sidebar. The **semantic search button** functionality was re-verified; while its keyboard shortcut (Ctrl+Shift+F) was confirmed to work perfectly in opening the search modal, the button click itself had a minor, persistent issue.
+Following this, **Journal entry CRUD operations** were extensively addressed. The initial 405 Method Not Allowed error was traced to missing POST, PUT, and DELETE endpoints in , which were subsequently added. Further issues with  and  endpoints (404 errors) were also fixed by adding the necessary frontend API methods and corresponding backend routes. A database schema issue for  (missing  column) was identified, and a manual SQL fix was provided. Additionally, the  component was updated to correctly pass parameters to the  API call and new  and  button functionalities with modals were implemented.
 
-This work built upon the successful implementation of the **user behavior analytics system** (backend models, services, endpoints, frontend tracking hook, and Chart.js dashboard) and the comprehensive **sentiment analysis system** using GPT-4o-mini (backend service, data models, endpoints, frontend emotional insights dashboard integrated into the Journal's Insights tab). Both systems are fully functional backend-wise and largely integrated into the frontend, collecting and visualizing data effectively.
+Performance enhancements were initiated by implementing **Supabase Database Triggers** for sentiment analysis, alignment recalculation, HRM insights, cache invalidation, and analytics aggregation. These database-level triggers were explained as more efficient than HTTP webhooks, addressing a user's query about webhook implementation.
+
+Most recently, the **AI Quota** was updated to 250 interactions/month in the backend. An attempt was made to reset the test user's AI usage via a script. Crucially, a **critical database RLS policy issue** was discovered, preventing journal entry creation due to a conflict with  table policies. An SQL script () has been provided to the user to resolve this. Frontend authentication persistence was also reviewed and improved. All frontend API calls now include increased timeouts and retry logic to enhance robustness against network issues.
 </current_work>
 
 <optional_next_step>
-Enhance the semantic search button's click functionality to open the search modal.
+Wait for the user to run the provided SQL script to fix the database RLS policy, then proceed with comprehensive E2E testing.
 </optional_next_step>
+

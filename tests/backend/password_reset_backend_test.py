@@ -13,9 +13,9 @@ import time
 from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL
-BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
 TEST_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
-ORIGIN_HEADER = "https://emotional-os-1.preview.emergentagent.com"
+ORIGIN_HEADER = "https://journal-analytics-1.preview.emergentagent.com"
 
 class PasswordResetTest:
     def __init__(self):

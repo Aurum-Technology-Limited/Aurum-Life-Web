@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 class AurumLifeE2ETester:
-    def __init__(self, base_url="https://emotional-os-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://journal-analytics-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.user_id = None

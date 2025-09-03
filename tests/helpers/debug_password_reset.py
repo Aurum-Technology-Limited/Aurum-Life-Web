@@ -18,7 +18,7 @@ def debug_generate_link():
         opts = {
             "email": "marc.alleyne@aurumtechnologyltd.com", 
             "type": "recovery",
-            "options": {"redirect_to": "https://emotional-os-1.preview.emergentagent.com/reset-password"}
+            "options": {"redirect_to": "https://journal-analytics-1.preview.emergentagent.com/reset-password"}
         }
         
         print("Calling supabase.auth.admin.generate_link with:")

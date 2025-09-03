@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
 CORRECT_EMAIL = "marc.alleyne@aurumtechnologyltd.com"
 CORRECT_PASSWORD = "Test$1920"
 

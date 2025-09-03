@@ -6,7 +6,7 @@ Test successful profile update with valid data
 import requests
 import json
 
-BACKEND_URL = "https://emotional-os-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
 
 def test_success():
     # Login first
