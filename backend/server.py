@@ -395,18 +395,23 @@ async def suggest_focus_tasks(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Get AI-suggested focus tasks with HRM prioritization and detailed reasoning.
-    
-    This endpoint uses the Hierarchical Reasoning Model to intelligently
-    prioritize tasks based on multiple factors and provides transparent reasoning.
-    
-    Enhanced with HRM:
-    - Confidence scores for priority rankings
-    - Detailed reasoning paths
-    - Personalized recommendations
-    - Alignment analysis
+    Get AI-suggested focus tasks with quota tracking.
+    CONSUMES: 1 AI interaction per request (covers multiple tasks)
     """
     try:
+        # Check quota before proceeding
+        has_quota, quota_info = await ai_quota_service.check_quota_available(
+            str(current_user.id), AIFeatureType.FOCUS_SUGGESTIONS
+        )
+        
+        if not has_quota:
+            raise HTTPException(
+                status_code=429,
+                detail=f"AI quota exceeded. You have {quota_info['remaining']} interactions remaining this month."
+            )
+        
+        start_time = datetime.utcnow()
+        
         # Get today's priorities with HRM enhancement
         priorities = await ai_coach_service.get_today_priorities(
             user_id=str(current_user.id),
@@ -414,9 +419,32 @@ async def suggest_focus_tasks(
             use_hrm=include_reasoning
         )
         
+        # Record successful AI interaction
+        processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+        await ai_quota_service.log_ai_interaction(
+            str(current_user.id),
+            AIFeatureType.FOCUS_SUGGESTIONS,
+            success=True,
+            feature_details={'task_count': top_n, 'include_reasoning': include_reasoning},
+            tokens_used=processing_time
+        )
+        
+        logger.info(f"✅ AI quota consumed: focus_suggestions for user {current_user.id}")
+        
         return priorities
         
+    except HTTPException:
+        # Re-raise HTTP exceptions (like quota exceeded)
+        raise
     except Exception as e:
+        # Log failed interaction (doesn't consume quota)
+        await ai_quota_service.log_ai_interaction(
+            str(current_user.id),
+            AIFeatureType.FOCUS_SUGGESTIONS,
+            success=False,
+            error_message=str(e)
+        )
+        
         logger.error(f"Error suggesting focus tasks: {e}")
         raise HTTPException(status_code=500, detail="Failed to suggest focus tasks")
 
