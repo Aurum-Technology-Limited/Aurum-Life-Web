@@ -53,12 +53,14 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
 
   // Track page view when component mounts
   useEffect(() => {
-    analytics.trackPageView('/ai-insights');
-    analytics.trackAIInteraction('my_ai_insights', 'page_load', {
-      filters_active: showFilters,
-      search_active: !!searchTerm
-    });
-  }, [analytics]);
+    // Disable analytics temporarily to avoid 403 errors
+    // analytics.trackPageView('/ai-insights');
+    // analytics.trackAIInteraction('my_ai_insights', 'page_load', {
+    //   filters_active: showFilters,
+    //   search_active: !!searchTerm
+    // });
+    console.log('AI Insights page loaded');
+  }, []);
 
   // Fetch AI quota for cross-navigation
   const { data: quota } = useQuery({
