@@ -169,11 +169,12 @@ class SentimentAnalysisService:
             if user_id and 'sentiment_score' in analysis_data:
                 await ai_quota_service.log_ai_interaction(
                     user_id, AIFeatureType.SENTIMENT_ANALYSIS,
-                    success=True, processing_time_ms=processing_time,
-                    metadata={
+                    success=True, 
+                    feature_details={
                         "sentiment_score": analysis_data.get('sentiment_score'),
                         "confidence": analysis_data.get('confidence_score')
-                    }
+                    },
+                    tokens_used=processing_time
                 )
             
             # Format response
