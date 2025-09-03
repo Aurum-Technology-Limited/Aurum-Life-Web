@@ -430,38 +430,4 @@ const CommandPalette = ({ isOpen, onClose, onNavigate }) => {
   );
 };
 
-// Hook for using the command palette
-export const useCommandPalette = (onNavigate) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Open with Cmd+K or Ctrl+K
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const open = () => setIsOpen(true);
-  const close = () => setIsOpen(false);
-
-  return {
-    isOpen,
-    open,
-    close,
-    CommandPaletteComponent: () => (
-      <CommandPalette 
-        isOpen={isOpen} 
-        onClose={close} 
-        onNavigate={onNavigate}
-      />
-    )
-  };
-};
-
 export default CommandPalette;
