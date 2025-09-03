@@ -210,7 +210,7 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
             >
               {IconComponent && (
                 <IconComponent
-                  className={`${sidebarCollapsed ? 'h-6 w-6' : 'h-5 w-5'} ${
+                  className={`${sidebarCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${
                     active ? 'text-black' : 'text-gray-400 group-hover:text-gray-300'
                   } ${sidebarCollapsed ? '' : 'mr-3'} transition-colors flex-shrink-0`}
                   aria-hidden="true"
