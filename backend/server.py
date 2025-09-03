@@ -335,27 +335,56 @@ async def get_task_why_statements(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Generate contextual why statements for tasks with HRM-enhanced reasoning.
-    
-    This endpoint provides intelligent explanations for why tasks matter,
-    connecting them to the user's broader goals and hierarchy.
-    
-    Enhanced with HRM:
-    - Confidence scores for each explanation
-    - Hierarchical reasoning paths
-    - Personalized recommendations
+    Generate contextual why statements for tasks with quota tracking.
+    CONSUMES: 1 AI interaction per request
     """
     try:
-        # Get basic why statements from AI Coach service with HRM enhancement
+        # Check quota before proceeding
+        has_quota, quota_info = await ai_quota_service.check_quota_available(
+            str(current_user.id), AIFeatureType.TASK_WHY_STATEMENTS
+        )
+        
+        if not has_quota:
+            raise HTTPException(
+                status_code=429, 
+                detail=f"AI quota exceeded. You have {quota_info['remaining']} interactions remaining this month."
+            )
+        
+        start_time = datetime.utcnow()
+        
+        # Get task why statements with HRM enhancement
         enhanced_response = await ai_coach_service.generate_task_why_statements(
             user_id=str(current_user.id),
             task_ids=task_ids,
             use_hrm=True
         )
         
+        # Record successful AI interaction
+        processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+        await ai_quota_service.log_ai_interaction(
+            str(current_user.id),
+            AIFeatureType.TASK_WHY_STATEMENTS,
+            success=True,
+            feature_details={'task_count': len(task_ids) if task_ids else 0},
+            tokens_used=processing_time  # Approximate token usage
+        )
+        
+        logger.info(f"✅ AI quota consumed: task_why_statements for user {current_user.id}")
+        
         return enhanced_response
         
+    except HTTPException:
+        # Re-raise HTTP exceptions (like quota exceeded)
+        raise
     except Exception as e:
+        # Log failed interaction (doesn't consume quota)
+        await ai_quota_service.log_ai_interaction(
+            str(current_user.id),
+            AIFeatureType.TASK_WHY_STATEMENTS,
+            success=False,
+            error_message=str(e)
+        )
+        
         logger.error(f"Error generating task why statements: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate why statements")
 
