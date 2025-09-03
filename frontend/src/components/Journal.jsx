@@ -190,10 +190,19 @@ const Journal = ({ onSectionChange, sectionParams }) => {
   // Fetch templates with fallback
   const fetchTemplatesWithFallback = async () => {
     try {
+      console.log('📋 Journal: Fetching templates...');
+      
       const response = await journalAPI.getTemplates();
-      const data = response.data || [];
+      console.log('📋 Journal: Raw templates response:', response);
+      
+      // Handle both direct data and wrapped data response formats
+      const data = response.data || response || [];
+      console.log('📋 Journal: Processed templates data:', data);
+      
       setTemplates(Array.isArray(data) ? data : []);
+      console.log('✅ Journal: Templates loaded successfully');
     } catch (err) {
+      console.error('❌ Journal templates fetch error:', err);
       console.warn('⚠️ Journal templates endpoint not available:', err.message);
       setTemplates([]);
     }
