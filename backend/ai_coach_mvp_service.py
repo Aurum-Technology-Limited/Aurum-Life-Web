@@ -331,6 +331,171 @@ class AiCoachMvpService:
         
         return { 'date': datetime.now(user_tz).isoformat(), 'tasks': out }
     
+    # Feature: Project/Goal Decomposition with AI
+    async def decompose_project_with_ai(self, user_id: str, project_name: str, 
+                                       project_description: str = '', 
+                                       template_type: str = 'general') -> Dict[str, Any]:
+        """
+        Decompose a project or goal into structured breakdown using AI
+        
+        Args:
+            user_id: User identifier
+            project_name: Name of the project/goal to decompose
+            project_description: Optional description for context
+            template_type: Type of template (general, goal_breakdown, etc.)
+        
+        Returns:
+            Structured breakdown with projects, areas, tasks, and AI insights
+        """
+        try:
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
+            import os
+            
+            # Initialize AI chat
+            api_key = os.environ.get('OPENAI_API_KEY')
+            if not api_key:
+                raise Exception("OpenAI API key not configured")
+            
+            llm = LlmChat(
+                api_key=api_key, 
+                session_id=f"goal-decomposition-{user_id}",
+                system_message="You are the Aurum Life AI Coach specialized in goal decomposition. Break down goals into actionable projects and tasks following the Pillars → Areas → Projects → Tasks hierarchy."
+            ).with_model("openai", "gpt-5-nano")
+            
+            # Create comprehensive decomposition prompt
+            decomposition_prompt = f"""
+Goal/Project to decompose: "{project_name}"
+Description: {project_description or "No additional description provided"}
+
+Please provide a structured breakdown following this format:
+
+{{
+  "goal_analysis": {{
+    "main_objective": "Clear statement of what will be achieved",
+    "success_criteria": ["Measurable outcome 1", "Measurable outcome 2"],
+    "estimated_duration": "Time estimate (e.g., '3 months')",
+    "difficulty_level": "Easy/Medium/Hard",
+    "key_benefits": ["Benefit 1", "Benefit 2"]
+  }},
+  "suggested_structure": {{
+    "recommended_area": "Which life area this fits into",
+    "related_pillar": "Which life pillar this supports"
+  }},
+  "project_breakdown": {{
+    "title": "Refined project title",
+    "description": "Enhanced project description",
+    "phases": [
+      {{
+        "phase_name": "Phase 1 name",
+        "description": "What happens in this phase",
+        "estimated_duration": "Time estimate",
+        "tasks": [
+          {{"task": "Specific actionable task 1", "priority": "High/Medium/Low"}},
+          {{"task": "Specific actionable task 2", "priority": "High/Medium/Low"}}
+        ]
+      }}
+    ]
+  }},
+  "next_steps": {{
+    "immediate_actions": ["First thing to do", "Second thing to do"],
+    "weekly_milestones": ["Week 1 goal", "Week 2 goal"],
+    "potential_obstacles": ["Obstacle 1", "Obstacle 2"],
+    "success_strategies": ["Strategy 1", "Strategy 2"]
+  }}
+}}
+
+Provide a practical, actionable breakdown that the user can immediately implement.
+"""
+            
+            # Get AI decomposition
+            msg = UserMessage(text=decomposition_prompt)
+            ai_response = await llm.send_message(msg)
+            
+            if not ai_response or not ai_response.strip():
+                raise Exception("AI returned empty response")
+            
+            # Try to parse as JSON, fall back to text if needed
+            try:
+                import json
+                breakdown_data = json.loads(ai_response)
+            except json.JSONDecodeError:
+                # Fallback: Structure the text response
+                breakdown_data = {
+                    "goal_analysis": {
+                        "main_objective": project_name,
+                        "success_criteria": ["Complete the goal as described"],
+                        "estimated_duration": "To be determined",
+                        "difficulty_level": "Medium",
+                        "key_benefits": ["Achievement of stated goal"]
+                    },
+                    "project_breakdown": {
+                        "title": project_name,
+                        "description": project_description or f"Work towards achieving: {project_name}",
+                        "phases": [{
+                            "phase_name": "Implementation",
+                            "description": "Execute the goal plan",
+                            "estimated_duration": "1-3 months",
+                            "tasks": [
+                                {"task": "Define specific requirements", "priority": "High"},
+                                {"task": "Create detailed action plan", "priority": "High"},
+                                {"task": "Begin implementation", "priority": "Medium"}
+                            ]
+                        }]
+                    },
+                    "next_steps": {
+                        "immediate_actions": ["Start with the first task", "Set up tracking system"],
+                        "ai_response_text": ai_response  # Include raw response for reference
+                    }
+                }
+            
+            logger.info(f"✅ Project decomposition successful for: {project_name}")
+            
+            return {
+                "success": True,
+                "breakdown": breakdown_data,
+                "project_name": project_name,
+                "template_type": template_type,
+                "ai_powered": True
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Project decomposition failed: {e}")
+            
+            # Return a basic fallback structure
+            return {
+                "success": False,
+                "error": str(e),
+                "fallback_breakdown": {
+                    "goal_analysis": {
+                        "main_objective": project_name,
+                        "success_criteria": ["Define and achieve the stated goal"],
+                        "estimated_duration": "To be determined based on complexity",
+                        "difficulty_level": "Medium",
+                        "key_benefits": ["Personal growth and achievement"]
+                    },
+                    "project_breakdown": {
+                        "title": project_name,
+                        "description": project_description or f"Project focused on: {project_name}",
+                        "phases": [{
+                            "phase_name": "Planning and Execution",
+                            "description": "Plan and execute the project systematically",
+                            "estimated_duration": "1-6 months",
+                            "tasks": [
+                                {"task": "Research and planning", "priority": "High"},
+                                {"task": "Break down into smaller steps", "priority": "High"},
+                                {"task": "Begin execution", "priority": "Medium"},
+                                {"task": "Monitor progress and adjust", "priority": "Medium"}
+                            ]
+                        }]
+                    },
+                    "next_steps": {
+                        "immediate_actions": ["Start with research and planning", "Set measurable milestones"],
+                        "note": "AI decomposition failed, using structured template"
+                    }
+                },
+                "ai_powered": False
+            }
+    
     # Feature 1: Contextual "Why" Statements
     async def generate_task_why_statements(self, user_id: str, task_ids: List[str] = None, use_hrm: bool = False) -> TaskWhyStatementResponse:
         """
