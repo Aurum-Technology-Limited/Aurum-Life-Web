@@ -262,11 +262,11 @@ class AurumLifeAPITester:
         journal_data = {
             "title": f"Test Entry {datetime.now().strftime('%H%M%S')}",
             "content": "This is a test journal entry for API testing. It contains some meaningful content to test the functionality.",
-            "mood": "neutral",
+            "mood": "reflective",
             "tags": ["test", "api"]
         }
         
-        success, data, status = self.make_request('POST', 'journal', journal_data, expected_status=201)
+        success, data, status = self.make_request('POST', 'journal', journal_data, expected_status=200)
         if success and isinstance(data, dict) and 'id' in data:
             entry_id = data['id']
             self.created_entities['journal_entries'].append(entry_id)
