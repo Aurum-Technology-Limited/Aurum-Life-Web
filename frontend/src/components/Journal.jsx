@@ -132,27 +132,82 @@ const Journal = ({ onSectionChange, sectionParams }) => {
         title: newEntryTitle.trim(),
         content: newEntryContent.trim()
       };
+
+      await journalAPI.createEntry(entryData);
       
-      const response = await journalAPI.createEntry(entryData);
-      
-      // Add the new entry to the entries list
-      if (response.data) {
-        setEntries(prev => [response.data, ...prev]);
-      }
-      
-      // Reset form and close modal
+      // Reset form
       setNewEntryTitle('');
       setNewEntryContent('');
-      setRealTimeSentiment(null);
       setShowCreateModal(false);
+      
+      // Refresh entries list
+      await fetchEntriesWithFallback();
       setError(null);
+    } catch (error) {
+      setError('Failed to create entry. Please try again.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
-      // Refresh insights if we're on the insights tab
-      if (currentView === 'insights') {
-        fetchSentimentInsights();
-      }
-    } catch (err) {
-      setError(handleApiError(err, 'Failed to create entry'));
+  // Handle view entry
+  const handleViewEntry = (entry) => {
+    setViewingEntry(entry);
+  };
+
+  // Handle edit entry
+  const handleEditEntry = (entry) => {
+    setEditingEntry(entry);
+    setEditEntryTitle(entry.title || '');
+    setEditEntryContent(entry.content || '');
+  };
+
+  // Handle update entry
+  const handleUpdateEntry = async () => {
+    if (!editEntryTitle.trim() || !editEntryContent.trim()) {
+      setError('Please fill in both title and content');
+      return;
+    }
+
+    try {
+      setIsSyncing(true);
+      const entryData = {
+        title: editEntryTitle.trim(),
+        content: editEntryContent.trim()
+      };
+
+      await journalAPI.updateEntry(editingEntry.id, entryData);
+      
+      // Close edit modal
+      setEditingEntry(null);
+      setEditEntryTitle('');
+      setEditEntryContent('');
+      
+      // Refresh entries list
+      await fetchEntriesWithFallback();
+      setError(null);
+    } catch (error) {
+      setError('Failed to update entry. Please try again.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Handle delete entry
+  const handleDeleteEntry = async (entryId) => {
+    if (!window.confirm('Are you sure you want to delete this journal entry?')) {
+      return;
+    }
+
+    try {
+      setIsSyncing(true);
+      await journalAPI.deleteEntry(entryId);
+      
+      // Refresh entries list
+      await fetchEntriesWithFallback();
+      setError(null);
+    } catch (error) {
+      setError('Failed to delete entry. Please try again.');
     } finally {
       setIsSyncing(false);
     }
