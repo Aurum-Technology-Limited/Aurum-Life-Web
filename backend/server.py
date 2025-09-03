@@ -34,6 +34,7 @@ from analytics_service import AnalyticsService
 from user_behavior_analytics_service import UserBehaviorAnalyticsService
 from sentiment_analysis_service import SentimentAnalysisService
 from alignment_score_service import AlignmentScoreService
+from ai_coach_mvp_service import AiCoachMvpService
 from ai_quota_service import ai_quota_service, AIFeatureType
 from hrm_endpoints import hrm_router
 from webhook_handlers import webhook_router
