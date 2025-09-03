@@ -5,6 +5,7 @@ Reference: aurum_life_hrm_phase3_prd.md - Section 4.1
 
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from typing import List, Dict, Optional, Any
+from datetime import datetime
 import logging
 
 from supabase_auth import get_current_active_user
