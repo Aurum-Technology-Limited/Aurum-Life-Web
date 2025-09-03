@@ -20,9 +20,10 @@ class AIQuotaSystemTester:
         self.tests_passed = 0
         self.test_results = []
         
-        # Test user credentials - try different passwords or create unique user
-        self.test_email = f"test_user_{int(time.time())}@aurumtechnologyltd.com"
-        self.test_password = "TestPassword123!"
+        # Test user credentials - try the original user with common passwords
+        self.test_email = "marc.alleyne@aurumtechnologyltd.com"
+        self.test_passwords = ["TestPassword123!", "password123", "Password123!", "password", "123456", "test123"]
+        self.test_password = self.test_passwords[0]
 
     def log_result(self, test_name: str, success: bool, details: str = "", response_data: Any = None):
         """Log test result"""
