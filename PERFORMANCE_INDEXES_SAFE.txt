@@ -1,0 +1,75 @@
+-- Performance Optimization Indexes for Aurum Life
+-- SAFE VERSION - Only creates indexes that are most likely to exist
+-- For Supabase SQL Editor
+
+-- BASIC INDEXES - These should work for most tables
+-- Each table typically has user_id and created_at
+
+-- Tasks indexes
+CREATE INDEX IF NOT EXISTS idx_tasks_user_created 
+ON public.tasks(user_id, created_at DESC);
+
+-- Projects indexes
+CREATE INDEX IF NOT EXISTS idx_projects_user_created 
+ON public.projects(user_id, created_at DESC);
+
+-- Journal entries indexes
+CREATE INDEX IF NOT EXISTS idx_journal_entries_user_created 
+ON public.journal_entries(user_id, created_at DESC);
+
+-- Areas indexes
+CREATE INDEX IF NOT EXISTS idx_areas_user 
+ON public.areas(user_id);
+
+-- Pillars indexes
+CREATE INDEX IF NOT EXISTS idx_pillars_user 
+ON public.pillars(user_id);
+
+-- Daily reflections indexes
+CREATE INDEX IF NOT EXISTS idx_daily_reflections_user 
+ON public.daily_reflections(user_id);
+
+-- AI interactions indexes
+CREATE INDEX IF NOT EXISTS idx_ai_interactions_user_created 
+ON public.ai_interactions(user_id, created_at DESC);
+
+-- Alignment scores indexes
+CREATE INDEX IF NOT EXISTS idx_alignment_scores_user_created 
+ON public.alignment_scores(user_id, created_at DESC);
+
+-- User stats indexes
+CREATE INDEX IF NOT EXISTS idx_user_stats_user 
+ON public.user_stats(user_id);
+
+-- Feedback indexes
+CREATE INDEX IF NOT EXISTS idx_feedback_created 
+ON public.feedback(created_at DESC);
+
+-- Notifications indexes
+CREATE INDEX IF NOT EXISTS idx_notifications_user 
+ON public.notifications(user_id);
+
+-- Resources indexes
+CREATE INDEX IF NOT EXISTS idx_resources_user 
+ON public.resources(user_id);
+
+-- User profiles indexes
+CREATE INDEX IF NOT EXISTS idx_user_profiles_user 
+ON public.user_profiles(user_id);
+
+-- Update statistics for query planner
+-- These ANALYZE commands will help PostgreSQL optimize queries
+-- If any table doesn't exist, that specific ANALYZE will fail but others will continue
+ANALYZE public.tasks;
+ANALYZE public.projects;
+ANALYZE public.journal_entries;
+ANALYZE public.areas;
+ANALYZE public.pillars;
+ANALYZE public.daily_reflections;
+ANALYZE public.ai_interactions;
+ANALYZE public.alignment_scores;
+ANALYZE public.user_stats;
+ANALYZE public.feedback;
+ANALYZE public.notifications;
+ANALYZE public.resources;
+ANALYZE public.user_profiles;

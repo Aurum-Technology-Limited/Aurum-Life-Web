@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useCallback } from 'react';
 import {
   Loader2,
   CheckSquare,
@@ -15,20 +15,25 @@ import {
   Brain,
   Sparkles
 } from 'lucide-react';
-import { useDataContext } from '../contexts/DataContext';
-import { tasksAPI, handleApiError, hrmAPI } from '../services/api';
+import { 
+  useTasks, 
+  useCreateTask, 
+  useUpdateTask, 
+  useDeleteTask, 
+  useToggleTaskCompletion,
+  useProjects 
+} from '../hooks/useGraphQL';
 import FileAttachment from './ui/FileAttachment';
 import TaskWhyStatements from './TaskWhyStatements';
 import AIBadge from './ui/AIBadge';
 import AIInsightPanel from './ui/AIInsightPanel';
-
-// ... rest of imports remain
+import { TaskItem } from './optimized/OptimizedTasks';
 
 const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading, onAnalyzeWithAI, hrmInsight }) => {
   const [showInsightPanel, setShowInsightPanel] = useState(false);
   const priorityColor =
-    task.priority === 'high' ? 'text-red-400' :
-    task.priority === 'medium' ? 'text-yellow-400' : 'text-green-400';
+    task.priority === 'HIGH' ? 'text-red-400' :
+    task.priority === 'MEDIUM' ? 'text-yellow-400' : 'text-green-400';
 
   return (
     <div className="space-y-2">
@@ -39,13 +44,13 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading, onAnalyzeWit
               <input
                 type="checkbox"
                 checked={task.completed}
-                onChange={() => onToggle(task.id, !task.completed)}
+                onChange={() => onToggle(task.id)}
                 className="rounded bg-gray-700 border-gray-600 text-yellow-400 focus:ring-yellow-400 focus:ring-2"
               />
               <span className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.name}</span>
-              {hrmInsight && (
+              {task.hrmPriorityScore && (
                 <AIBadge 
-                  confidence={hrmInsight.confidence_score || 0} 
+                  confidence={task.hrmPriorityScore / 10} 
                   variant="confidence" 
                   size="xs"
                   onClick={() => setShowInsightPanel(!showInsightPanel)}
@@ -55,16 +60,16 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading, onAnalyzeWit
             {task.description && (
               <p className="text-sm text-gray-400 mt-1">{task.description}</p>
             )}
-            {hrmInsight?.priority_score && (
+            {task.hrmPriorityScore && (
               <div className="text-xs text-yellow-400 mt-1">
-                AI Priority Score: {hrmInsight.priority_score.toFixed(1)}
+                AI Priority Score: {task.hrmPriorityScore.toFixed(1)}
               </div>
             )}
           </div>
           <div className="text-right text-xs text-gray-500">
-            <div className={priorityColor}>{(task.priority || 'medium').toUpperCase()}</div>
-            {task.due_date && (
-              <div>{new Date(task.due_date).toLocaleDateString()}</div>
+            <div className={priorityColor}>{task.priority}</div>
+            {task.dueDate && (
+              <div>{new Date(task.dueDate).toLocaleDateString()}</div>
             )}
           </div>
         </div>
@@ -95,12 +100,13 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading, onAnalyzeWit
       </div>
       
       {/* AI Insight Panel */}
-      {showInsightPanel && hrmInsight && (
+      {showInsightPanel && task.hrmReasoningSummary && (
         <AIInsightPanel 
-          insight={hrmInsight}
-          isExpanded={true}
+          insight={{
+            summary: task.hrmReasoningSummary,
+            confidence_score: task.hrmPriorityScore / 10
+          }}
           onClose={() => setShowInsightPanel(false)}
-          showCloseButton={true}
         />
       )}
     </div>
@@ -109,540 +115,308 @@ const TaskCard = memo(({ task, onToggle, onEdit, onDelete, loading, onAnalyzeWit
 
 TaskCard.displayName = 'TaskCard';
 
-const TaskModal = memo(({ task, isOpen, onClose, onSave, loading, defaultProjectId }) => {
-  const [name, setName] = useState(task?.name || '');
-  const [description, setDescription] = useState(task?.description || '');
-
-  useEffect(() => {
-    setName(task?.name || '');
-    setDescription(task?.description || '');
-  }, [task]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-white font-semibold">{task ? 'Edit Task' : 'Create Task'}</div>
-          <button className="text-gray-400 hover:text-white" onClick={onClose}>✕</button>
-        </div>
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs text-gray-400">Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" placeholder="Task name" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400">Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full mt-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm" rows={3} placeholder="Optional details" />
-          </div>
-          {/* Visible FileAttachment placeholder */}
-          <FileAttachment parentType="task" parentId={task?.id} parentName={task?.name || name} />
-          <div className="flex justify-end gap-2 pt-2">
-            <button className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 rounded" onClick={onClose}>Cancel</button>
-            <button className="px-3 py-1.5 text-sm bg-yellow-600 hover:bg-yellow-700 rounded text-black font-semibold" disabled={loading || !name.trim()} onClick={() => onSave({ name: name.trim(), description: description.trim() })}>
-              {loading ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-TaskModal.displayName = 'TaskModal';
-
-const Tasks = memo(({ onSectionChange, sectionParams }) => {
-  const { onDataMutation } = useDataContext();
-  const [tasks, setTasks] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
+const Tasks = ({ onSectionChange, defaultProjectId }) => {
+  const [selectedProjectId, setSelectedProjectId] = useState(defaultProjectId || null);
+  const [newTaskName, setNewTaskName] = useState('');
+  const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [newTaskPriority, setNewTaskPriority] = useState('MEDIUM');
+  const [newTaskDueDate, setNewTaskDueDate] = useState('');
   const [editingTask, setEditingTask] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, active, completed
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null);
-  const [modalLoading, setModalLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [priorityChip, setPriorityChip] = useState('all'); // all, high, medium, low
-  const [dueChip, setDueChip] = useState('all'); // all, overdue, today, week
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
-  const [total, setTotal] = useState(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [taskInsights, setTaskInsights] = useState({}); // Store HRM insights for tasks
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [isWhyStatementsOpen, setIsWhyStatementsOpen] = useState(false);
+  const [selectedTaskForWhy, setSelectedTaskForWhy] = useState(null);
 
-  // URL query sync for search
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const q = params.get('tasks_q');
-      if (q && !search) setSearch(q);
-    } catch {}
+  // GraphQL Hooks
+  const filter = {
+    projectId: selectedProjectId,
+    completed: showCompleted ? null : false
+  };
+  
+  const { tasks, loading: tasksLoading, error: tasksError, refetch } = useTasks(filter);
+  const { projects, loading: projectsLoading } = useProjects();
+  const { createTask, loading: creating } = useCreateTask();
+  const { updateTask, loading: updating } = useUpdateTask();
+  const { deleteTask, loading: deleting } = useDeleteTask();
+  const { toggleTask, loading: toggling } = useToggleTaskCompletion();
+
+  // Group tasks by project
+  const tasksByProject = tasks.reduce((acc, task) => {
+    const projectId = task.project?.id || 'no-project';
+    if (!acc[projectId]) {
+      acc[projectId] = [];
+    }
+    acc[projectId].push(task);
+    return acc;
+  }, {});
+
+  // Handlers
+  const handleCreateTask = useCallback(async () => {
+    if (!newTaskName.trim() || !selectedProjectId) return;
+
+    const input = {
+      projectId: selectedProjectId,
+      name: newTaskName,
+      description: newTaskDescription,
+      priority: newTaskPriority,
+      dueDate: newTaskDueDate ? new Date(newTaskDueDate).toISOString() : null
+    };
+
+    const result = await createTask(input);
+    
+    if (result.data?.createTask?.success) {
+      setNewTaskName('');
+      setNewTaskDescription('');
+      setNewTaskPriority('MEDIUM');
+      setNewTaskDueDate('');
+      refetch();
+    }
+  }, [newTaskName, newTaskDescription, newTaskPriority, newTaskDueDate, selectedProjectId, createTask, refetch]);
+
+  const handleToggleTask = useCallback(async (taskId) => {
+    await toggleTask(taskId);
+    refetch();
+  }, [toggleTask, refetch]);
+
+  const handleUpdateTask = useCallback(async () => {
+    if (!editingTask) return;
+
+    const input = {
+      id: editingTask.id,
+      name: editingTask.name,
+      description: editingTask.description,
+      priority: editingTask.priority,
+      dueDate: editingTask.dueDate
+    };
+
+    const result = await updateTask(input);
+    
+    if (result.data?.updateTask?.success) {
+      setEditingTask(null);
+      refetch();
+    }
+  }, [editingTask, updateTask, refetch]);
+
+  const handleDeleteTask = useCallback(async (taskId) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      await deleteTask(taskId);
+      refetch();
+    }
+  }, [deleteTask, refetch]);
+
+  const handleAnalyzeWithAI = useCallback((task) => {
+    setSelectedTaskForWhy(task);
+    setIsWhyStatementsOpen(true);
   }, []);
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(t);
-  }, [search]);
-
-  useEffect(() => {
-    try {
-      const url = new URL(window.location.href);
-      if (debouncedSearch) {
-        url.searchParams.set('tasks_q', debouncedSearch);
-      } else {
-        url.searchParams.delete('tasks_q');
-      }
-      window.history.replaceState({}, '', url);
-    } catch {}
-  }, [debouncedSearch]);
-
-  // Extract project filter from section params
-  const activeProjectId = sectionParams?.projectId || null;
-  const activeProjectName = sectionParams?.projectName || null;
-
-  useEffect(() => {
-    fetchTasks();
-  }, [debouncedSearch, priorityChip, dueChip, filter, activeProjectId, page, limit]);
-
-  const fetchTasks = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Map UI chips and filters to API params
-      const apiParams = {
-        projectId: activeProjectId || null,
-        q: debouncedSearch || null,
-        status: filter !== 'all' ? filter : null,
-        priority: priorityChip !== 'all' ? priorityChip : null,
-        dueDate: dueChip !== 'all' ? dueChip : null,
-        page,
-        limit,
-        returnMeta: true,
-      };
-
-      const response = await tasksAPI.getTasks(apiParams);
-      const data = response.data;
-      if (data && typeof data === 'object' && Array.isArray(data.tasks)) {
-        setTasks(data.tasks);
-        setTotal(data.total ?? null);
-        setHasMore(Boolean(data.has_more));
-      } else if (Array.isArray(data)) {
-        // Fallback for backward-compat
-        setTasks(data);
-        setTotal(null);
-        setHasMore(false);
-      } else {
-        setTasks([]);
-        setTotal(null);
-        setHasMore(false);
-      }
-    } catch (err) {
-      setError(handleApiError(err, 'Failed to load tasks'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filter tasks by project if projectId is provided
-  const filteredTasksByProject = activeProjectId 
-    ? tasks.filter(task => task.project_id === activeProjectId)
-    : tasks;
-
-  const handleToggleTask = async (taskId, completed) => {
-    try {
-      setActionLoading(taskId);
-      
-      await tasksAPI.updateTask(taskId, { completed });
-      
-      // Update local state optimistically
-      setTasks(prev => prev.map(task => 
-        task.id === taskId 
-          ? { ...task, completed, completed_at: completed ? new Date().toISOString() : null }
-          : task
-      ));
-      
-      // Notify data context of the mutation
-      onDataMutation('task', completed ? 'complete' : 'uncomplete', { taskId, completed });
-    } catch (err) {
-      setError(handleApiError(err, 'Failed to update task'));
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleEditTask = (task) => {
-    setEditingTask(task);
-    setModalOpen(true);
-  };
-
-  const handleCreateTask = () => {
-    setEditingTask(null);
-    setModalOpen(true);
-    
-    // If we're viewing tasks for a specific project, pre-populate the project_id
-    if (activeProjectId) {
-      // We'll need to modify the modal to handle this pre-population
-      // For now, this will be handled in the modal's useEffect
-    }
-  };
-
-  const handleSaveTask = async (formData) => {
-    try {
-      setModalLoading(true);
-      
-      if (editingTask) {
-        await tasksAPI.updateTask(editingTask.id, formData);
-        // Update local state
-        setTasks(prev => prev.map(task =>
-          task.id === editingTask.id
-            ? { ...task, ...formData }
-            : task
-        ));
-        
-        // Notify data context of the mutation
-        onDataMutation('task', 'update', { taskId: editingTask.id, ...formData });
-        
-        // Consistency window for tasks after update
-        try { localStorage.setItem('TASKS_FORCE_STANDARD_UNTIL', String(Date.now() + 2000)); } catch {}
-      } else {
-        const response = await tasksAPI.createTask(formData);
-        // Add to local state
-        setTasks(prev => [...prev, response.data]);
-        
-        // Notify data context of the mutation
-        onDataMutation('task', 'create', response.data);
-        
-        // Consistency window for tasks after create
-        try { localStorage.setItem('TASKS_FORCE_STANDARD_UNTIL', String(Date.now() + 2500)); } catch {}
-      }
-      
-      setModalOpen(false);
-      setEditingTask(null);
-    } catch (err) {
-      setError(handleApiError(err, editingTask ? 'Failed to update task' : 'Failed to create task'));
-    } finally {
-      setModalLoading(false);
-    }
-  };
-
-  const handleDeleteTask = async (taskId) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
-    
-    try {
-      await tasksAPI.deleteTask(taskId);
-      setTasks(prev => prev.filter(task => task.id !== taskId));
-      
-      // Notify data context of the mutation
-      onDataMutation('task', 'delete', { taskId });
-    } catch (err) {
-      setError(handleApiError(err, 'Failed to delete task'));
-    }
-  };
-
-  // Analyze task with HRM
-  const handleAnalyzeWithAI = async (task) => {
-    try {
-      const insight = await hrmAPI.analyzeTaskWithContext(task.id);
-      setTaskInsights(prev => ({
-        ...prev,
-        [task.id]: insight
-      }));
-    } catch (error) {
-      console.error('Failed to analyze task with AI:', error);
-    }
-  };
-
-  const filteredTasks = filteredTasksByProject
-    .filter(task => {
-      switch (filter) {
-        case 'active': return !task.completed;
-        case 'completed': return task.completed;
-        default: return true;
-      }
-    })
-    .filter(task => {
-      // Priority chip
-      if (priorityChip !== 'all') {
-        if ((task.priority || 'medium') !== priorityChip) return false;
-      }
-      // Due chip
-      if (dueChip !== 'all') {
-        const due = task.due_date ? new Date(task.due_date) : null;
-        const now = new Date();
-        const endOfToday = new Date(); endOfToday.setHours(23,59,59,999);
-        const endOfWeek = new Date(); const d = endOfWeek.getDate(); endOfWeek.setDate(d + (7 - endOfWeek.getDay())); endOfWeek.setHours(23,59,59,999);
-        if (dueChip === 'overdue' && !(due && due < now && !task.completed)) return false;
-        if (dueChip === 'today' && !(due && due <= endOfToday)) return false;
-        if (dueChip === 'week' && !(due && due <= endOfWeek)) return false;
-      }
-      return true;
-    })
-    .filter(task => {
-      const q = (debouncedSearch || search).trim().toLowerCase();
-      if (!q) return true;
-      const fields = [task.name, task.description, task.category, activeProjectName]
-        .map(v => (v || '').toLowerCase());
-      return fields.some(f => f.includes(q));
-    });
-
-  const completedCount = filteredTasksByProject.filter(t => t.completed).length;
-  const activeCount = filteredTasksByProject.filter(t => !t.completed).length;
-  const overdueCount = filteredTasksByProject.filter(t => !t.completed && t.is_overdue).length;
-
-  if (loading) {
+  if (tasksLoading || projectsLoading) {
     return (
-      <div className="space-y-8">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 size={48} className="animate-spin text-yellow-400" />
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="animate-spin h-8 w-8 text-gray-400" />
+      </div>
+    );
+  }
+
+  if (tasksError) {
+    return (
+      <div className="text-center text-red-400 p-8">
+        <AlertCircle className="h-12 w-12 mx-auto mb-4" />
+        <p>Error loading tasks: {tasksError.message}</p>
+        <button
+          onClick={() => refetch()}
+          className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center space-x-3">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Task Management
-            </h1>
-            {activeProjectName && (
-              <>
-                <span className="text-2xl text-gray-500">›</span>
-                <div className="flex items-center space-x-2">
-                  <FolderOpen className="h-5 w-5 text-yellow-400" />
-                  <span className="text-xl font-medium text-yellow-400">{activeProjectName}</span>
-                </div>
-              </>
-            )}
-          </div>
-          <p className="text-gray-400">
-            {activeProjectName 
-              ? `Manage tasks for ${activeProjectName} project`
-              : 'Organize your goals and track your productivity'
-            }
-          </p>
-          {activeProjectName && onSectionChange && (
-            <button
-              onClick={() => onSectionChange('projects')}
-              className="mt-2 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
-            >
-              ← Back to all projects
-            </button>
-          )}
-        </div>
-        <div className="flex items-center space-x-3">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tasks..."
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-          />
-          <button
-            data-testid="task-new"
-            onClick={handleCreateTask}
-            className="flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
-            style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-          >
-            <Plus size={20} />
-            <span>Add Task</span>
-          </button>
+        <h1 className="text-3xl font-bold text-white">Tasks</h1>
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center space-x-2 text-gray-400">
+            <input
+              type="checkbox"
+              checked={showCompleted}
+              onChange={(e) => setShowCompleted(e.target.checked)}
+              className="rounded bg-gray-700 border-gray-600 text-yellow-400"
+            />
+            <span>Show completed</span>
+          </label>
         </div>
       </div>
 
-      {error && (
-        <div className="p-4 rounded-lg bg-red-900/20 border border-red-500/30 flex items-center space-x-2">
-          <AlertCircle size={20} className="text-red-400" />
-          <span className="text-red-400">{error}</span>
-          <button
-            onClick={fetchTasks}
-            className="ml-auto px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm transition-colors"
-          >
-            Retry
-          </button>
+      {/* Project Filter */}
+      <div className="flex items-center space-x-4">
+        <select
+          value={selectedProjectId || ''}
+          onChange={(e) => setSelectedProjectId(e.target.value || null)}
+          className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-400"
+        >
+          <option value="">All Projects</option>
+          {projects.map(project => (
+            <option key={project.id} value={project.id}>
+              {project.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* New Task Form */}
+      {selectedProjectId && (
+        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+          <h2 className="text-xl font-semibold text-white mb-4">Add New Task</h2>
+          <div className="space-y-4">
+            <input
+              type="text"
+              placeholder="Task name"
+              value={newTaskName}
+              onChange={(e) => setNewTaskName(e.target.value)}
+              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400"
+            />
+            <textarea
+              placeholder="Description (optional)"
+              value={newTaskDescription}
+              onChange={(e) => setNewTaskDescription(e.target.value)}
+              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400"
+              rows={2}
+            />
+            <div className="flex items-center space-x-4">
+              <select
+                value={newTaskPriority}
+                onChange={(e) => setNewTaskPriority(e.target.value)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-400"
+              >
+                <option value="LOW">Low Priority</option>
+                <option value="MEDIUM">Medium Priority</option>
+                <option value="HIGH">High Priority</option>
+              </select>
+              <input
+                type="date"
+                value={newTaskDueDate}
+                onChange={(e) => setNewTaskDueDate(e.target.value)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-400"
+              />
+              <button
+                onClick={handleCreateTask}
+                disabled={!newTaskName.trim() || creating}
+                className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-600 text-black font-medium rounded-lg transition-colors flex items-center space-x-2"
+              >
+                {creating ? (
+                  <Loader2 className="animate-spin h-4 w-4" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+                <span>{creating ? 'Creating...' : 'Add Task'}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
-              <CheckSquare size={20} style={{ color: '#0B0D14' }} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">{filteredTasksByProject.length}</h3>
-              <p className="text-sm text-gray-400">
-                {activeProjectName ? `${activeProjectName} Tasks` : 'Total Tasks'}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-blue-400 flex items-center justify-center">
-              <Clock size={20} style={{ color: '#0B0D14' }} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">{activeCount}</h3>
-              <p className="text-sm text-gray-400">Active Tasks</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-green-400 flex items-center justify-center">
-              <Check size={20} style={{ color: '#0B0D14' }} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">{completedCount}</h3>
-              <p className="text-sm text-gray-400">Completed</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-red-400 flex items-center justify-center">
-              <Flag size={20} style={{ color: '#0B0D14' }} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-white">{overdueCount}</h3>
-              <p className="text-sm text-gray-400">Overdue</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 items-center">
-        {[
-          { key: 'all', label: 'All Tasks' },
-          { key: 'active', label: 'Active' },
-          { key: 'completed', label: 'Completed' }
-        ].map((filterOption) => (
-          <button
-            key={filterOption.key}
-            onClick={() => setFilter(filterOption.key)}
-            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-              filter === filterOption.key
-                ? 'text-gray-900 font-medium'
-                : 'text-gray-400 hover:text-white'
-            }`}
-            style={{
-              backgroundColor: filter === filterOption.key ? '#F4B400' : 'transparent',
-              border: filter === filterOption.key ? 'none' : '1px solid #374151'
-            }}
-          >
-            {filterOption.label}
-          </button>
-        ))}
-        {/* Quick chips */}
-        <div className="flex items-center gap-2 ml-2">
-          {['all','high','medium','low'].map(p => (
-            <button key={p} onClick={() => setPriorityChip(p)} className={`px-2 py-1 rounded text-xs ${priorityChip===p? 'bg-yellow-600 text-black':'bg-gray-800 text-gray-300 border border-gray-700'}`}>prio:{p}</button>
-          ))}
-          {['all','overdue','today','week'].map(d => (
-            <button key={d} onClick={() => setDueChip(d)} className={`px-2 py-1 rounded text-xs ${dueChip===d? 'bg-yellow-600 text-black':'bg-gray-800 text-gray-300 border border-gray-700'}`}>due:{d}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tasks Grid */}
-      {filteredTasks.length > 0 ? (
-        <div className="space-y-8">
-          {/* Task Why Statements - Show insights for active tasks */}
-          {filteredTasks.filter(task => !task.completed).length > 0 && (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
-                  <Sparkles className="h-5 w-5 text-yellow-400" />
-                  <span>AI Task Insights</span>
-                </h3>
-                <button
-                  onClick={async () => {
-                    const activeTasks = filteredTasks.filter(task => !task.completed).slice(0, 5);
-                    for (const task of activeTasks) {
-                      await handleAnalyzeWithAI(task);
-                    }
-                  }}
-                  className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors flex items-center space-x-1"
-                >
-                  <Brain className="h-4 w-4" />
-                  <span>Analyze All</span>
-                </button>
-              </div>
-              <TaskWhyStatements 
-                taskIds={filteredTasks.filter(task => !task.completed).slice(0, 5).map(task => task.id)}
-                showAll={false}
-              />
-            </div>
-          )}
-          
-          {/* Tasks List */}
-          <div className="space-y-4">
-            {filteredTasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onToggle={handleToggleTask}
-                onEdit={handleEditTask}
-                onDelete={handleDeleteTask}
-                onAnalyzeWithAI={handleAnalyzeWithAI}
-                hrmInsight={taskInsights[task.id]}
-                loading={actionLoading === task.id}
-              />
-            ))}
-          </div>
+      {/* Tasks List */}
+      {tasks.length === 0 ? (
+        <div className="text-center py-12">
+          <CheckSquare className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-400">No tasks yet. Select a project and create your first task!</p>
         </div>
       ) : (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-lg bg-yellow-400/20 flex items-center justify-center mx-auto mb-4">
-            <CheckSquare size={32} className="text-yellow-400" />
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">
-            {filter === 'completed' ? 'No completed tasks' : 
-             filter === 'active' ? 'No active tasks' : (search ? 'No tasks match your search' : 'No tasks yet')}
-          </h3>
-          <p className="text-gray-400 mb-6">
-            {filter === 'all' ? (search ? 'Try a different search term' : 'Create your first task to get started') : 
-             `Switch to ${filter === 'completed' ? 'active' : 'all'} tasks to see more`}
-          </p>
-          {filter === 'all' && !search && (
-            <button
-              onClick={handleCreateTask}
-              className="px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
-              style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
-            >
-              Create Your First Task
-            </button>
-          )}
+        <div className="space-y-6">
+          {Object.entries(tasksByProject).map(([projectId, projectTasks]) => {
+            const project = projects.find(p => p.id === projectId);
+            return (
+              <div key={projectId} className="space-y-4">
+                <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
+                  <FolderOpen className="h-5 w-5 text-gray-400" />
+                  <span>{project?.name || 'No Project'}</span>
+                  <span className="text-sm text-gray-500">({projectTasks.length})</span>
+                </h3>
+                {projectTasks.map(task => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onToggle={handleToggleTask}
+                    onEdit={setEditingTask}
+                    onDelete={handleDeleteTask}
+                    loading={toggling || updating || deleting}
+                    onAnalyzeWithAI={handleAnalyzeWithAI}
+                    hrmInsight={task.hrmPriorityScore ? task : null}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      <TaskModal
-        task={editingTask}
-        isOpen={modalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          setEditingTask(null);
-        }}
-        onSave={handleSaveTask}
-        loading={modalLoading}
-        defaultProjectId={activeProjectId}
-      />
+      {/* Edit Task Modal */}
+      {editingTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-semibold text-white mb-4">Edit Task</h2>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={editingTask.name}
+                onChange={(e) => setEditingTask({ ...editingTask, name: e.target.value })}
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+              />
+              <textarea
+                value={editingTask.description || ''}
+                onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                rows={3}
+              />
+              <select
+                value={editingTask.priority}
+                onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value })}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
+              >
+                <option value="LOW">Low Priority</option>
+                <option value="MEDIUM">Medium Priority</option>
+                <option value="HIGH">High Priority</option>
+              </select>
+              <input
+                type="date"
+                value={editingTask.dueDate ? editingTask.dueDate.split('T')[0] : ''}
+                onChange={(e) => setEditingTask({ ...editingTask, dueDate: e.target.value })}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
+              />
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => setEditingTask(null)}
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateTask}
+                  disabled={updating}
+                  className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-600 text-black font-medium rounded-lg"
+                >
+                  {updating ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Task Why Statements Modal */}
+      {isWhyStatementsOpen && selectedTaskForWhy && (
+        <TaskWhyStatements
+          task={selectedTaskForWhy}
+          onClose={() => {
+            setIsWhyStatementsOpen(false);
+            setSelectedTaskForWhy(null);
+          }}
+        />
+      )}
     </div>
   );
-});
+};
 
-Tasks.displayName = 'Tasks';
-
-export { TaskModal };
 export default Tasks;

@@ -1,15 +1,17 @@
-import React from 'react';
-import { Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import React, { useEffect } from 'react';
+import { LazyDoughnut } from './LazyChart';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+// Lazy load and register Chart.js components only when this component is used
+const registerChartComponents = async () => {
+  const { Chart: ChartJS, ArcElement, Tooltip, Legend } = await import('chart.js');
+  ChartJS.register(ArcElement, Tooltip, Legend);
+};
 
 const DonutChart = ({ data, title, size = 'md', showLegend = true }) => {
+  // Register chart components on first render
+  useEffect(() => {
+    registerChartComponents();
+  }, []);
   const sizeClasses = {
     sm: 'w-20 h-20',
     md: 'w-32 h-32', 
@@ -114,7 +116,7 @@ const DonutChart = ({ data, title, size = 'md', showLegend = true }) => {
         <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
       )}
       <div className={`relative ${sizeClasses[size]}`}>
-        <Doughnut data={chartData} options={options} />
+        <LazyDoughnut data={chartData} options={options} />
         {/* Center text showing total */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">

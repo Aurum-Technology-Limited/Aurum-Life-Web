@@ -2,6 +2,8 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import "./App.css";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { ApolloProvider } from '@apollo/client';
+import { apolloClient } from './services/apolloClient';
 import { AuthProvider } from './contexts/BackendAuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -275,11 +277,12 @@ function App() {
     return (
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
-            <AuthProvider>
-              <DataProvider>
-                <NotificationProvider>
-                  <DndProvider backend={HTML5Backend}>
+          <ApolloProvider client={apolloClient}>
+            <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
+              <AuthProvider>
+                <DataProvider>
+                  <NotificationProvider>
+                    <DndProvider backend={HTML5Backend}>
                     <div className="App">
                       <PasswordReset />
                     </div>
@@ -296,11 +299,12 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
-          <AuthProvider>
-            <DataProvider>
-              <NotificationProvider>
-                <DndProvider backend={HTML5Backend}>
+        <ApolloProvider client={apolloClient}>
+          <GoogleOAuthProvider clientId="514537887764-mgfh2g9k8ni7tanhm32o2o4mg1atrcgb.apps.googleusercontent.com">
+            <AuthProvider>
+              <DataProvider>
+                <NotificationProvider>
+                  <DndProvider backend={HTML5Backend}>
                   <div className="App">
                   <AppWrapper onNavigateToSection={handleSectionChange}>
                     <SimpleLayout 

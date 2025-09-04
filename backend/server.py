@@ -38,11 +38,65 @@ from ai_coach_mvp_service import AiCoachMvpService
 from ai_quota_service import ai_quota_service, AIFeatureType
 from hrm_endpoints import hrm_router
 from webhook_handlers import webhook_router
+from cache_service import cache_service
+from functools import wraps
+import json
+import hashlib
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 ROOT_DIR = PathlibPath(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 app = FastAPI(title="Aurum Life API", version="1.0.0")
+
+# Security Headers Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # Security headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        
+        # Remove server header
+        response.headers.pop("Server", None)
+        
+        # Content Security Policy (adjust based on your needs)
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: https: blob:; "
+            "connect-src 'self' https://api.openai.com https://*.supabase.co wss://*.supabase.co; "
+            "frame-ancestors 'none';"
+        )
+        response.headers["Content-Security-Policy"] = csp
+        
+        return response
+
+# Add security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Add input validation middleware
+from input_validation import InputValidationMiddleware
+app.add_middleware(InputValidationMiddleware)
+
+# Import GraphQL router
+from graphql_app import graphql_router
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -65,7 +119,8 @@ async def root():
     return {"message": "Aurum Life API is running", "version": "1.0.0"}
 
 @api_router.get("/health")
-async def health_check():
+@limiter.limit("60/minute")  # Health check can be called frequently
+async def health_check(request: Request):
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/")
@@ -85,9 +140,98 @@ ai_coach_service = AiCoachMvpService()
 user_behavior_analytics_service = UserBehaviorAnalyticsService()
 sentiment_analysis_service = SentimentAnalysisService()
 
-# Upload endpoints omitted for brevity (unchanged)
+# Caching decorator for user-specific endpoints
+def cache_user_endpoint(ttl=300, cache_prefix=None):
+    """
+    Decorator to cache user-specific endpoint responses
+    
+    Args:
+        ttl: Time to live in seconds (default: 5 minutes)
+        cache_prefix: Optional prefix for cache key
+    """
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, current_user=None, **kwargs):
+            # Skip caching if no user
+            if not current_user:
+                return await func(*args, current_user=current_user, **kwargs)
+            
+            # Generate cache key based on function name, user ID, and kwargs
+            prefix = cache_prefix or func.__name__
+            cache_key_parts = [prefix, str(current_user.id)]
+            
+            # Add relevant kwargs to cache key (exclude complex objects)
+            for key, value in sorted(kwargs.items()):
+                if isinstance(value, (str, int, float, bool)):
+                    cache_key_parts.append(f"{key}:{value}")
+            
+            cache_key = ":".join(cache_key_parts)
+            
+            # Try to get from cache
+            try:
+                cached_data = await cache_service.get(cache_key)
+                if cached_data is not None:
+                    logger.debug(f"Cache hit for {cache_key}")
+                    return cached_data
+            except Exception as e:
+                logger.warning(f"Cache get error: {e}")
+            
+            # Execute function if not cached
+            result = await func(*args, current_user=current_user, **kwargs)
+            
+            # Cache the result (non-blocking)
+            try:
+                await cache_service.set(cache_key, result, ttl_seconds=ttl)
+                logger.debug(f"Cached result for {cache_key}")
+            except Exception as e:
+                logger.warning(f"Cache set error: {e}")
+            
+            return result
+        return wrapper
+    return decorator
+
+# Image upload endpoint with WebP conversion
+@api_router.post("/upload/image")
+async def upload_image(
+    file: UploadFile = File(...),
+    generate_webp: bool = Form(True),
+    generate_responsive: bool = Form(True),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Upload and process image with WebP conversion and responsive sizes
+    """
+    try:
+        # Validate file
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="File must be an image")
+        
+        # Read file content
+        file_content = await file.read()
+        
+        # Process image with optimization
+        from image_processor import process_upload_with_optimization
+        result = await process_upload_with_optimization(
+            file_content=file_content,
+            filename=file.filename,
+            user_id=str(current_user.id),
+            storage_service=supabase_manager  # Use your storage service
+        )
+        
+        logger.info(f"Image uploaded and processed for user {current_user.id}: {file.filename}")
+        
+        return {
+            "success": True,
+            "message": "Image uploaded successfully",
+            "data": result
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading image: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload image")
 
 # Essential API endpoints
+@cache_user_endpoint(ttl=180)  # Cache for 3 minutes
 @api_router.get("/pillars")
 async def get_pillars(current_user: User = Depends(get_current_active_user)):
     try:
@@ -106,6 +250,7 @@ async def create_pillar(payload: PillarCreate, current_user: User = Depends(get_
         logger.error(f"Error creating pillar: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
+@cache_user_endpoint(ttl=180)  # Cache for 3 minutes
 @api_router.get("/areas")
 async def get_areas(current_user: User = Depends(get_current_active_user)):
     try:
@@ -124,6 +269,7 @@ async def create_area(payload: AreaCreate, current_user: User = Depends(get_curr
         logger.error(f"Error creating area: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
+@cache_user_endpoint(ttl=180)  # Cache for 3 minutes
 @api_router.get("/projects")
 async def get_projects(current_user: User = Depends(get_current_active_user)):
     try:
@@ -142,6 +288,7 @@ async def create_project(payload: ProjectCreate, current_user: User = Depends(ge
         logger.error(f"Error creating project: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
+@cache_user_endpoint(ttl=120)  # Cache for 2 minutes
 @api_router.get("/tasks")
 async def get_tasks(
     project_id: Optional[str] = Query(default=None),
@@ -187,7 +334,9 @@ async def create_task(payload: TaskCreate, current_user: User = Depends(get_curr
         raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.get("/insights")
+@limiter.limit("20/minute")  # 20 requests per minute
 async def get_insights(
+    request: Request,
     date_range: Optional[str] = Query(default='all_time'),
     area_id: Optional[str] = Query(default=None),
     current_user: User = Depends(get_current_active_user)
@@ -199,6 +348,7 @@ async def get_insights(
         logger.error(f"Error getting insights: {e}")
         raise HTTPException(status_code=500, detail="Failed to get insights")
 
+@cache_user_endpoint(ttl=180)  # Cache for 3 minutes
 @api_router.get("/journal")
 async def get_journal(current_user: User = Depends(get_current_active_user)):
     try:
@@ -301,7 +451,9 @@ async def delete_journal_template(template_id: str, current_user: User = Depends
 # ================================
 
 @api_router.get("/ai/quota", tags=["AI Coach"])
+@limiter.limit("30/minute")  # 30 requests per minute
 async def get_ai_quota(
+    request: Request,
     current_user: User = Depends(get_current_active_user)
 ):
     """
@@ -336,7 +488,9 @@ async def get_ai_quota(
         }
 
 @api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse, tags=["AI Coach"])
+@limiter.limit("10/minute")  # 10 requests per minute (AI generation)
 async def get_task_why_statements(
+    request: Request,
     task_ids: Optional[List[str]] = Query(None, description="Specific task IDs to analyze"),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -455,7 +609,9 @@ async def suggest_focus_tasks(
         raise HTTPException(status_code=500, detail="Failed to suggest focus tasks")
 
 @api_router.post("/ai/decompose-project", tags=["AI Coach"])
+@limiter.limit("5/minute")  # 5 requests per minute (heavy AI operation)
 async def decompose_project(
+    req: Request,
     request: dict,
     current_user: User = Depends(get_current_active_user)
 ):
@@ -525,6 +681,7 @@ async def decompose_project(
         logger.error(f"Error decomposing project: {e}")
         raise HTTPException(status_code=500, detail="Failed to decompose project")
 
+@cache_user_endpoint(ttl=300)  # Cache for 5 minutes
 @api_router.get("/alignment/dashboard", tags=["Alignment"])
 async def get_alignment_dashboard(
     current_user: User = Depends(get_current_active_user)
@@ -1435,3 +1592,4 @@ app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
 app.include_router(hrm_router)
 app.include_router(webhook_router, prefix="/api")
+app.include_router(graphql_router, prefix="/graphql")
