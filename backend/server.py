@@ -42,11 +42,19 @@ from cache_service import cache_service
 from functools import wraps
 import json
 import hashlib
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 ROOT_DIR = PathlibPath(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 app = FastAPI(title="Aurum Life API", version="1.0.0")
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -69,7 +77,8 @@ async def root():
     return {"message": "Aurum Life API is running", "version": "1.0.0"}
 
 @api_router.get("/health")
-async def health_check():
+@limiter.limit("60/minute")  # Health check can be called frequently
+async def health_check(request: Request):
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/")
@@ -245,7 +254,9 @@ async def create_task(payload: TaskCreate, current_user: User = Depends(get_curr
         raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.get("/insights")
+@limiter.limit("20/minute")  # 20 requests per minute
 async def get_insights(
+    request: Request,
     date_range: Optional[str] = Query(default='all_time'),
     area_id: Optional[str] = Query(default=None),
     current_user: User = Depends(get_current_active_user)
@@ -360,7 +371,9 @@ async def delete_journal_template(template_id: str, current_user: User = Depends
 # ================================
 
 @api_router.get("/ai/quota", tags=["AI Coach"])
+@limiter.limit("30/minute")  # 30 requests per minute
 async def get_ai_quota(
+    request: Request,
     current_user: User = Depends(get_current_active_user)
 ):
     """
@@ -395,7 +408,9 @@ async def get_ai_quota(
         }
 
 @api_router.get("/ai/task-why-statements", response_model=TaskWhyStatementResponse, tags=["AI Coach"])
+@limiter.limit("10/minute")  # 10 requests per minute (AI generation)
 async def get_task_why_statements(
+    request: Request,
     task_ids: Optional[List[str]] = Query(None, description="Specific task IDs to analyze"),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -514,7 +529,9 @@ async def suggest_focus_tasks(
         raise HTTPException(status_code=500, detail="Failed to suggest focus tasks")
 
 @api_router.post("/ai/decompose-project", tags=["AI Coach"])
+@limiter.limit("5/minute")  # 5 requests per minute (heavy AI operation)
 async def decompose_project(
+    req: Request,
     request: dict,
     current_user: User = Depends(get_current_active_user)
 ):
