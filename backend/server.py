@@ -38,6 +38,10 @@ from ai_coach_mvp_service import AiCoachMvpService
 from ai_quota_service import ai_quota_service, AIFeatureType
 from hrm_endpoints import hrm_router
 from webhook_handlers import webhook_router
+from cache_service import cache_service
+from functools import wraps
+import json
+import hashlib
 
 ROOT_DIR = PathlibPath(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -85,9 +89,60 @@ ai_coach_service = AiCoachMvpService()
 user_behavior_analytics_service = UserBehaviorAnalyticsService()
 sentiment_analysis_service = SentimentAnalysisService()
 
+# Caching decorator for user-specific endpoints
+def cache_user_endpoint(ttl=300, cache_prefix=None):
+    """
+    Decorator to cache user-specific endpoint responses
+    
+    Args:
+        ttl: Time to live in seconds (default: 5 minutes)
+        cache_prefix: Optional prefix for cache key
+    """
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, current_user=None, **kwargs):
+            # Skip caching if no user
+            if not current_user:
+                return await func(*args, current_user=current_user, **kwargs)
+            
+            # Generate cache key based on function name, user ID, and kwargs
+            prefix = cache_prefix or func.__name__
+            cache_key_parts = [prefix, str(current_user.id)]
+            
+            # Add relevant kwargs to cache key (exclude complex objects)
+            for key, value in sorted(kwargs.items()):
+                if isinstance(value, (str, int, float, bool)):
+                    cache_key_parts.append(f"{key}:{value}")
+            
+            cache_key = ":".join(cache_key_parts)
+            
+            # Try to get from cache
+            try:
+                cached_data = await cache_service.get(cache_key)
+                if cached_data is not None:
+                    logger.debug(f"Cache hit for {cache_key}")
+                    return cached_data
+            except Exception as e:
+                logger.warning(f"Cache get error: {e}")
+            
+            # Execute function if not cached
+            result = await func(*args, current_user=current_user, **kwargs)
+            
+            # Cache the result (non-blocking)
+            try:
+                await cache_service.set(cache_key, result, ttl_seconds=ttl)
+                logger.debug(f"Cached result for {cache_key}")
+            except Exception as e:
+                logger.warning(f"Cache set error: {e}")
+            
+            return result
+        return wrapper
+    return decorator
+
 # Upload endpoints omitted for brevity (unchanged)
 
 # Essential API endpoints
+@cache_user_endpoint(ttl=180)  # Cache for 3 minutes
 @api_router.get("/pillars")
 async def get_pillars(current_user: User = Depends(get_current_active_user)):
     try:
@@ -106,6 +161,7 @@ async def create_pillar(payload: PillarCreate, current_user: User = Depends(get_
         logger.error(f"Error creating pillar: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
+@cache_user_endpoint(ttl=180)  # Cache for 3 minutes
 @api_router.get("/areas")
 async def get_areas(current_user: User = Depends(get_current_active_user)):
     try:
@@ -124,6 +180,7 @@ async def create_area(payload: AreaCreate, current_user: User = Depends(get_curr
         logger.error(f"Error creating area: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
+@cache_user_endpoint(ttl=180)  # Cache for 3 minutes
 @api_router.get("/projects")
 async def get_projects(current_user: User = Depends(get_current_active_user)):
     try:
@@ -142,6 +199,7 @@ async def create_project(payload: ProjectCreate, current_user: User = Depends(ge
         logger.error(f"Error creating project: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
+@cache_user_endpoint(ttl=120)  # Cache for 2 minutes
 @api_router.get("/tasks")
 async def get_tasks(
     project_id: Optional[str] = Query(default=None),
@@ -199,6 +257,7 @@ async def get_insights(
         logger.error(f"Error getting insights: {e}")
         raise HTTPException(status_code=500, detail="Failed to get insights")
 
+@cache_user_endpoint(ttl=180)  # Cache for 3 minutes
 @api_router.get("/journal")
 async def get_journal(current_user: User = Depends(get_current_active_user)):
     try:
@@ -525,6 +584,7 @@ async def decompose_project(
         logger.error(f"Error decomposing project: {e}")
         raise HTTPException(status_code=500, detail="Failed to decompose project")
 
+@cache_user_endpoint(ttl=300)  # Cache for 5 minutes
 @api_router.get("/alignment/dashboard", tags=["Alignment"])
 async def get_alignment_dashboard(
     current_user: User = Depends(get_current_active_user)

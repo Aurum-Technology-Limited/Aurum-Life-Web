@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { LazyBar, LazyLine, LazyDoughnut } from './ui/LazyChart';
 import {
   Brain,
   TrendingUp,
@@ -33,24 +21,44 @@ import { useAuth } from '../contexts/BackendAuthContext';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { analyticsAPI } from '../services/api';
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+// Lazy load and register Chart.js components when needed
+const registerChartComponents = async () => {
+  const {
+    Chart: ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+  } = await import('chart.js');
+  
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+  );
+};
 
 const AnalyticsDashboard = () => {
   const { user, token } = useAuth();
   const analytics = useAnalytics();
   const [timeRange, setTimeRange] = useState(30);
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+
+  // Register chart components on mount
+  useEffect(() => {
+    registerChartComponents();
+  }, []);
 
   // Track analytics dashboard usage
   useEffect(() => {
@@ -237,7 +245,7 @@ const AnalyticsDashboard = () => {
                 
                 {dashboardData?.ai_feature_usage?.length > 0 ? (
                   <div style={{ height: '300px' }}>
-                    <Bar
+                    <LazyBar
                       data={{
                         labels: dashboardData.ai_feature_usage.map(f => f.feature_name),
                         datasets: [
@@ -298,7 +306,7 @@ const AnalyticsDashboard = () => {
                 
                 {dashboardData?.daily_stats?.length > 0 ? (
                   <div style={{ height: '300px' }}>
-                    <Line
+                    <LazyLine
                       data={{
                         labels: dashboardData.daily_stats.map(d => d.date),
                         datasets: [
