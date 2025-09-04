@@ -2,7 +2,7 @@
 
 ## Context & Overview
 
-You are a UI-UX frontend specialist tasked with modernizing and improving the Aurum Life web application - an "Emotional OS" and AI-enhanced personal operating system. The application helps users transform their potential through hierarchical life management (Pillars → Areas → Projects → Tasks) with integrated AI coaching, sentiment analysis, and emotional intelligence features.
+You are a UI-UX frontend specialist tasked with modernizing and improving the Aurum Life web application - a "Life OS" and AI-enhanced personal operating system. The application helps users transform their potential through hierarchical life management (Pillars → Areas → Projects → Tasks) with integrated AI coaching, sentiment analysis, and emotional intelligence features.
 
 ## Current Technology Stack
 
@@ -308,4 +308,4 @@ Accent colors:
 
 ---
 
-Remember: The goal is to modernize while maintaining the unique "Emotional OS" identity of Aurum Life. Every design decision should reinforce the brand's focus on personal growth, emotional intelligence, and AI-enhanced productivity.
+Remember: The goal is to modernize while maintaining the unique "Life OS" identity of Aurum Life. Every design decision should reinforce the brand's focus on personal growth, emotional intelligence, and AI-enhanced productivity.
