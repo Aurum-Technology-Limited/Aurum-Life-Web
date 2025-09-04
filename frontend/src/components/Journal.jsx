@@ -1,31 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Plus, Edit2, Trash2, AlertCircle, BookOpen, TrendingUp, FileText, RotateCcw, Search, Filter, Calendar, Tag, Smile, Meh, Frown, X, Brain, Heart, Zap, Target, BarChart3, Activity, Sparkles } from 'lucide-react';
 import { journalAPI, sentimentAPI, handleApiError } from '../services/api';
 import SentimentIndicator, { SentimentBadge } from './ui/SentimentIndicator';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+import { OptimizedLineChart } from './optimized/OptimizedCharts';
+import { OptimizedJournalEntryCard } from './optimized/OptimizedLists';
 
 const Journal = ({ onSectionChange, sectionParams }) => {
   const [currentView, setCurrentView] = useState('entries'); // 'entries', 'insights', 'templates', 'trash'
@@ -580,9 +558,11 @@ const Journal = ({ onSectionChange, sectionParams }) => {
                     <p className="text-gray-400 text-sm">Your sentiment patterns over time</p>
                   </div>
                 </div>
-                <div className="h-64">
-                  <Line data={chartData} options={chartOptions} />
-                </div>
+                <OptimizedLineChart
+                  data={chartData}
+                  height={256}
+                  showLegend={false}
+                />
               </div>
             )}
 

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { UserIcon, CogIcon, LogoutIcon } from '@heroicons/react/outline';
+import { AvatarCDNImage } from './ui/CDNImage';
 
 const UserMenu = ({ onSectionChange }) => {
   const { user, logout } = useAuth();
@@ -52,10 +53,12 @@ const UserMenu = ({ onSectionChange }) => {
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
             {user.profile_picture ? (
-              <img
-                className="h-8 w-8 rounded-full"
-                src={user.profile_picture}
+              <AvatarCDNImage
+                bucket="avatars"
+                path={user.profile_picture}
                 alt="Profile"
+                size={32}
+                className="h-8 w-8"
               />
             ) : (
               <div className="h-8 w-8 bg-yellow-500 rounded-full flex items-center justify-center">

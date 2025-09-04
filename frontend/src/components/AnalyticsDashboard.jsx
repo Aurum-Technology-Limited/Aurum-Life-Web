@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { LazyBar, LazyLine, LazyDoughnut } from './ui/LazyChart';
+import { OptimizedBarChart, OptimizedLineChart } from './optimized/OptimizedCharts';
 import {
   Brain,
   TrendingUp,
@@ -244,50 +244,22 @@ const AnalyticsDashboard = () => {
                 </h3>
                 
                 {dashboardData?.ai_feature_usage?.length > 0 ? (
-                  <div style={{ height: '300px' }}>
-                    <LazyBar
-                      data={{
-                        labels: dashboardData.ai_feature_usage.map(f => f.feature_name),
-                        datasets: [
-                          {
-                            label: 'Interactions',
-                            data: dashboardData.ai_feature_usage.map(f => f.total_interactions),
-                            backgroundColor: '#8B5CF6',
-                            borderColor: '#7C3AED',
-                            borderWidth: 1,
-                          },
-                        ],
-                      }}
-                      options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: {
-                            display: false,
-                          },
+                  <OptimizedBarChart
+                    data={{
+                      labels: dashboardData.ai_feature_usage.map(f => f.feature_name),
+                      datasets: [
+                        {
+                          label: 'Interactions',
+                          data: dashboardData.ai_feature_usage.map(f => f.total_interactions),
+                          backgroundColor: '#8B5CF6',
+                          borderColor: '#7C3AED',
+                          borderWidth: 1,
                         },
-                        scales: {
-                          y: {
-                            beginAtZero: true,
-                            grid: {
-                              color: '#374151',
-                            },
-                            ticks: {
-                              color: '#9CA3AF',
-                            },
-                          },
-                          x: {
-                            grid: {
-                              color: '#374151',
-                            },
-                            ticks: {
-                              color: '#9CA3AF',
-                              maxRotation: 45,
-                            },
-                          },
-                        },
-                      }}
-                    />
+                      ],
+                    }}
+                    height={300}
+                    showLegend={false}
+                  />
                   </div>
                 ) : (
                   <div className="text-center py-8">
@@ -305,19 +277,18 @@ const AnalyticsDashboard = () => {
                 </h3>
                 
                 {dashboardData?.daily_stats?.length > 0 ? (
-                  <div style={{ height: '300px' }}>
-                    <LazyLine
-                      data={{
-                        labels: dashboardData.daily_stats.map(d => d.date),
-                        datasets: [
-                          {
-                            label: 'AI Interactions',
-                            data: dashboardData.daily_stats.map(d => d.ai_interactions),
-                            borderColor: '#10B981',
-                            backgroundColor: '#10B98120',
-                            tension: 0.1,
-                            fill: true,
-                          },
+                  <OptimizedLineChart
+                    data={{
+                      labels: dashboardData.daily_stats.map(d => d.date),
+                      datasets: [
+                        {
+                          label: 'AI Interactions',
+                          data: dashboardData.daily_stats.map(d => d.ai_interactions),
+                          borderColor: '#10B981',
+                          backgroundColor: '#10B98120',
+                          tension: 0.1,
+                          fill: true,
+                        },
                         ],
                       }}
                       options={{
@@ -338,18 +309,10 @@ const AnalyticsDashboard = () => {
                               color: '#9CA3AF',
                             },
                           },
-                          x: {
-                            grid: {
-                              color: '#374151',
-                            },
-                            ticks: {
-                              color: '#9CA3AF',
-                            },
-                          },
-                        },
+                        ],
                       }}
+                      height={300}
                     />
-                  </div>
                 ) : (
                   <div className="text-center py-8">
                     <TrendingUp className="h-12 w-12 text-gray-600 mx-auto mb-2" />
