@@ -1,0 +1,82 @@
+-- Performance Optimization Indexes for Aurum Life
+-- For Supabase SQL Editor - without CONCURRENTLY
+-- This will work in Supabase's transaction-wrapped environment
+
+-- Tasks table indexes
+CREATE INDEX IF NOT EXISTS idx_tasks_user_created 
+ON tasks(user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_user_completed 
+ON tasks(user_id, completed, due_date);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_project_id
+ON tasks(project_id) WHERE project_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_tasks_area_id
+ON tasks(area_id) WHERE area_id IS NOT NULL;
+
+-- Projects table indexes  
+CREATE INDEX IF NOT EXISTS idx_projects_user_archived 
+ON projects(user_id, archived, updated_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_projects_area_id
+ON projects(area_id) WHERE area_id IS NOT NULL;
+
+-- Journal entries indexes
+CREATE INDEX IF NOT EXISTS idx_journal_user_date 
+ON journal_entries(user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_journal_user_sentiment
+ON journal_entries(user_id, sentiment_score) WHERE sentiment_score IS NOT NULL;
+
+-- Areas-Pillars relationship
+CREATE INDEX IF NOT EXISTS idx_areas_pillar 
+ON areas(pillar_id, user_id);
+
+CREATE INDEX IF NOT EXISTS idx_areas_user_id
+ON areas(user_id);
+
+-- Daily reflections for stats
+CREATE INDEX IF NOT EXISTS idx_reflections_user_date 
+ON daily_reflections(user_id, reflection_date DESC);
+
+-- AI interactions for quota tracking
+CREATE INDEX IF NOT EXISTS idx_ai_interactions_user_type 
+ON ai_interactions(user_id, feature_type, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_ai_interactions_user_created
+ON ai_interactions(user_id, created_at DESC);
+
+-- Alignment scores for dashboard
+CREATE INDEX IF NOT EXISTS idx_alignment_scores_user_date
+ON alignment_scores(user_id, calculated_at DESC);
+
+-- User stats for quick lookups
+CREATE INDEX IF NOT EXISTS idx_user_stats_user_id
+ON user_stats(user_id);
+
+-- Feedback for support queries
+CREATE INDEX IF NOT EXISTS idx_feedback_user_created
+ON feedback(user_id, created_at DESC) WHERE user_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_feedback_status
+ON feedback(status, created_at DESC);
+
+-- Analytics events for performance tracking
+CREATE INDEX IF NOT EXISTS idx_analytics_events_user_created
+ON analytics_events(user_id, created_at DESC) WHERE user_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_analytics_events_session
+ON analytics_events(session_id, created_at);
+
+-- Update table statistics after creating indexes
+ANALYZE tasks;
+ANALYZE projects;
+ANALYZE journal_entries;
+ANALYZE areas;
+ANALYZE daily_reflections;
+ANALYZE ai_interactions;
+ANALYZE alignment_scores;
+ANALYZE user_stats;
+ANALYZE feedback;
+ANALYZE analytics_events;
