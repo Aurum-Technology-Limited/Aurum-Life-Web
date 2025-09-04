@@ -1,6 +1,6 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useEffect, memo } from 'react';
 import { TrendingUp, Target, BookOpen, Trophy, Flame, Loader2 } from 'lucide-react';
-import { useDashboardQuery, usePrefetchQueries } from '../hooks/useQueries';
+import { useDashboard } from '../hooks/useGraphQL';
 import AlignmentScore from './AlignmentScore';
 import LoginStreakTracker from './LoginStreakTracker';
 
@@ -35,50 +35,35 @@ const StatCard = memo(({ title, value, subtitle, icon: Icon, trend, loading = fa
 StatCard.displayName = 'StatCard';
 
 const Dashboard = memo(({ onSectionChange }) => {
-  // Replace useState and useEffect with TanStack Query
+  // Use GraphQL hook for dashboard data
   const { 
-    data: dashboardData, 
-    isLoading: loading, 
-    error, 
-    isError,
+    dashboard: dashboardData, 
+    loading, 
+    error,
     refetch: refetchDashboard 
-  } = useDashboardQuery();
+  } = useDashboard();
   
-  // Prefetch related data for faster navigation
-  const { prefetchAreas, prefetchProjects, prefetchInsights } = usePrefetchQueries();
+  const isError = !!error;
   
-  // Performance logging for TanStack Query
+  // Performance logging for GraphQL
   useEffect(() => {
     if (loading) {
-      console.log('🏠 Dashboard: TanStack Query - Loading dashboard data...');
+      console.log('🏠 Dashboard: GraphQL - Loading dashboard data...');
     } else if (dashboardData) {
-      console.log('🏠 Dashboard: TanStack Query - Data loaded from cache/network');
+      console.log('🏠 Dashboard: GraphQL - Data loaded from Apollo cache/network');
       console.log('🏠 Dashboard: Data source:', dashboardData ? 'Available' : 'Not available');
     }
   }, [loading, dashboardData]);
-  
-  // Prefetch commonly accessed routes on dashboard load
-  useEffect(() => {
-    // Prefetch with a small delay to prioritize dashboard loading first
-    const timer = setTimeout(() => {
-      console.log('🚀 Dashboard: Prefetching Areas, Insights, and Projects for faster navigation');
-      prefetchAreas();
-      prefetchInsights();
-      prefetchProjects();
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [prefetchAreas, prefetchInsights, prefetchProjects]);
 
   const getCompletionRate = () => {
-    if (!dashboardData?.stats) return 0;
-    const { habits_completed_today, total_habits } = dashboardData.stats;
-    return total_habits > 0 ? Math.round((habits_completed_today / total_habits) * 100) : 0;
+    if (!dashboardData?.userStats?.taskStats) return 0;
+    const { completed, total } = dashboardData.userStats.taskStats;
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
-  const getActiveCourses = () => {
-    if (!dashboardData?.recent_courses) return 0;
-    return dashboardData.recent_courses.filter(course => course.progress_percentage < 100).length;
+  const getActiveTasks = () => {
+    if (!dashboardData?.recentTasks) return 0;
+    return dashboardData.recentTasks.filter(task => !task.completed).length;
   };
 
   // Handle error state with retry functionality
@@ -117,31 +102,31 @@ const Dashboard = memo(({ onSectionChange }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           title="Current Streak"
-          value={dashboardData?.user?.current_streak || 0}
+          value={dashboardData?.userStats?.currentStreak || 0}
           subtitle="days of consistency"
           icon={Flame}
           trend={12}
           loading={loading}
         />
         <StatCard
-          title="Habits Today"
-          value={dashboardData ? `${dashboardData.stats?.habits_completed_today || 0}/${dashboardData.stats?.total_habits || 0}` : '-'}
+          title="Tasks Completed"
+          value={dashboardData ? `${dashboardData.userStats?.taskStats?.completed || 0}/${dashboardData.userStats?.taskStats?.total || 0}` : '-'}
           subtitle={`${getCompletionRate()}% complete`}
           icon={Target}
           trend={8}
           loading={loading}
         />
         <StatCard
-          title="Active Learning"
-          value={getActiveCourses()}
-          subtitle="courses in progress"
+          title="Active Tasks"
+          value={getActiveTasks()}
+          subtitle="tasks in progress"
           icon={BookOpen}
           loading={loading}
         />
         <StatCard
-          title="Achievements"
-          value={dashboardData?.stats?.badges_earned || 0}
-          subtitle="badges earned"
+          title="Total Points"
+          value={dashboardData?.userStats?.totalPoints || 0}
+          subtitle="alignment points"
           icon={Trophy}
           loading={loading}
         />
@@ -172,31 +157,37 @@ const Dashboard = memo(({ onSectionChange }) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {dashboardData?.recent_habits?.slice(0, 3).map((habit) => (
+              {dashboardData?.recentTasks?.slice(0, 3).map((task) => (
                 <div 
-                  key={habit.id}
+                  key={task.id}
                   className="flex items-center justify-between p-4 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors cursor-pointer"
-                  onClick={() => onSectionChange('habits')}
+                  onClick={() => onSectionChange('tasks')}
                 >
                   <div className="flex items-center space-x-3">
                     <div 
-                      className={`w-4 h-4 rounded-full ${habit.is_completed_today ? 'bg-yellow-400' : 'bg-gray-600'}`}
+                      className={`w-4 h-4 rounded-full ${task.completed ? 'bg-yellow-400' : 'bg-gray-600'}`}
                     />
                     <div>
-                      <p className="font-medium text-white">{habit.name}</p>
-                      <p className="text-sm text-gray-400">{habit.description}</p>
+                      <p className="font-medium text-white">{task.name}</p>
+                      <p className="text-sm text-gray-400">{task.priority} priority</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-yellow-400">{habit.current_streak} days</p>
-                    <p className="text-xs text-gray-500">streak</p>
+                    {task.dueDate && (
+                      <>
+                        <p className="text-sm font-medium text-yellow-400">
+                          {new Date(task.dueDate).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-gray-500">due date</p>
+                      </>
+                    )}
                   </div>
                 </div>
               )) || (
                 <div className="text-center text-gray-400 py-8">
-                  <p>No habits yet. Create your first habit!</p>
+                  <p>No tasks yet. Create your first task!</p>
                   <button
-                    onClick={() => onSectionChange('habits')}
+                    onClick={() => onSectionChange('tasks')}
                     className="mt-2 text-yellow-400 hover:text-yellow-300"
                   >
                     Get started →
@@ -206,12 +197,12 @@ const Dashboard = memo(({ onSectionChange }) => {
             </div>
           )}
           <button
-            onClick={() => onSectionChange('habits')}
+            onClick={() => onSectionChange('tasks')}
             className="w-full mt-4 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105"
             style={{ backgroundColor: '#F4B400', color: '#0B0D14' }}
             disabled={loading}
           >
-            {loading ? 'Loading...' : 'View All Habits'}
+            {loading ? 'Loading...' : 'View All Tasks'}
           </button>
         </div>
 
@@ -229,7 +220,7 @@ const Dashboard = memo(({ onSectionChange }) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {dashboardData?.recent_tasks?.filter(task => !task.completed).slice(0, 3).map((task) => (
+              {dashboardData?.upcomingDeadlines?.slice(0, 3).map((task) => (
                 <div 
                   key={task.id}
                   className="flex items-center justify-between p-4 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors cursor-pointer"
@@ -238,20 +229,20 @@ const Dashboard = memo(({ onSectionChange }) => {
                   <div className="flex items-center space-x-3">
                     <div 
                       className={`w-2 h-8 rounded-full ${
-                        task.priority === 'high' ? 'bg-red-400' :
-                        task.priority === 'medium' ? 'bg-yellow-400' : 'bg-green-400'
+                        task.priority === 'HIGH' ? 'bg-red-400' :
+                        task.priority === 'MEDIUM' ? 'bg-yellow-400' : 'bg-green-400'
                       }`}
                     />
                     <div>
-                      <p className="font-medium text-white">{task.title}</p>
-                      <p className="text-sm text-gray-400">{task.description}</p>
+                      <p className="font-medium text-white">{task.name}</p>
+                      <p className="text-sm text-gray-400">Project: {task.project?.name || 'No project'}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-300">
-                      {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
+                      {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
                     </p>
-                    <p className="text-xs text-gray-500 capitalize">{task.priority}</p>
+                    <p className="text-xs text-gray-500 capitalize">{task.priority.toLowerCase()}</p>
                   </div>
                 </div>
               )) || (
@@ -278,60 +269,50 @@ const Dashboard = memo(({ onSectionChange }) => {
         </div>
       </div>
 
-      {/* Progress Overview */}
+      {/* Recent Insights */}
       <div className="p-6 rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-        <h2 className="text-2xl font-bold text-white mb-6">Learning Progress</h2>
+        <h2 className="text-2xl font-bold text-white mb-6">Recent Insights</h2>
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="p-4 rounded-lg bg-gray-800/50 animate-pulse">
-                <div className="h-32 bg-gray-700 rounded-lg mb-4"></div>
                 <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-700 rounded w-full mb-2"></div>
                 <div className="h-3 bg-gray-700 rounded w-1/2"></div>
               </div>
             ))}
           </div>
-        ) : dashboardData?.recent_courses?.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {dashboardData.recent_courses.map((course) => (
+        ) : dashboardData?.recentInsights?.length > 0 ? (
+          <div className="space-y-4">
+            {dashboardData.recentInsights.map((insight) => (
               <div 
-                key={course.id}
-                className="p-4 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all cursor-pointer hover:scale-105"
-                onClick={() => onSectionChange('learning')}
+                key={insight.id}
+                className="p-4 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all cursor-pointer"
+                onClick={() => onSectionChange('insights')}
               >
-                <img 
-                  src={course.image_url} 
-                  alt={course.title}
-                  className="w-full h-32 object-cover rounded-lg mb-4"
-                />
-                <h3 className="font-semibold text-white mb-2">{course.title}</h3>
-                <div className="mb-3">
-                  <div className="flex justify-between text-sm text-gray-400 mb-1">
-                    <span>Progress</span>
-                    <span>{course.progress_percentage || 0}%</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="h-2 rounded-full transition-all duration-500"
-                      style={{ 
-                        backgroundColor: '#F4B400',
-                        width: `${course.progress_percentage || 0}%`
-                      }}
-                    />
-                  </div>
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-semibold text-white">{insight.title}</h3>
+                  <span className="text-xs px-2 py-1 rounded-full bg-yellow-400/20 text-yellow-400">
+                    {Math.round(insight.confidenceScore * 100)}% confidence
+                  </span>
                 </div>
-                <p className="text-sm text-gray-400">by {course.instructor}</p>
+                <p className="text-sm text-gray-400 mb-2">{insight.summary}</p>
+                <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <span>Impact: {Math.round((insight.impactScore || 0) * 100)}%</span>
+                  <span>•</span>
+                  <span>{new Date(insight.createdAt).toLocaleDateString()}</span>
+                </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center text-gray-400 py-8">
-            <p>No courses enrolled yet. Start your learning journey!</p>
+            <p>No insights available yet. Keep using the app to generate insights!</p>
             <button
-              onClick={() => onSectionChange('learning')}
+              onClick={() => onSectionChange('insights')}
               className="mt-2 text-yellow-400 hover:text-yellow-300"
             >
-              Browse courses →
+              View all insights →
             </button>
           </div>
         )}
