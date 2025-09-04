@@ -16,6 +16,8 @@ import {
   GET_TASK_DETAIL,
   GET_JOURNAL_ENTRIES,
   GET_JOURNAL_INSIGHTS,
+  GET_ANALYTICS_DASHBOARD,
+  GET_ANALYTICS_PREFERENCES,
 } from '../graphql/queries';
 import {
   CREATE_TASK,
@@ -34,6 +36,7 @@ import {
   CREATE_PILLAR,
   UPDATE_PILLAR,
   DELETE_PILLAR,
+  UPDATE_ANALYTICS_PREFERENCES,
 } from '../graphql/mutations';
 import { optimisticTaskUpdate, optimisticProjectUpdate } from '../services/apolloClient';
 
@@ -761,6 +764,56 @@ export function useDeletePillar() {
 
   return {
     deletePillar: (id) => deletePillar({ variables: { id } }),
+    loading,
+    error,
+  };
+}
+
+// Analytics Hooks
+export function useAnalyticsDashboard(days = 30) {
+  const { data, loading, error, refetch } = useQuery(GET_ANALYTICS_DASHBOARD, {
+    variables: { days },
+    fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
+  });
+
+  return {
+    dashboard: data?.analyticsDashboard,
+    loading,
+    error,
+    refetch,
+  };
+}
+
+export function useAnalyticsPreferences() {
+  const { data, loading, error, refetch } = useQuery(GET_ANALYTICS_PREFERENCES, {
+    fetchPolicy: 'cache-first',
+  });
+
+  return {
+    preferences: data?.analyticsPreferences,
+    loading,
+    error,
+    refetch,
+  };
+}
+
+export function useUpdateAnalyticsPreferences() {
+  const [updatePreferences, { loading, error }] = useMutation(UPDATE_ANALYTICS_PREFERENCES, {
+    onCompleted: (data) => {
+      if (data.updateAnalyticsPreferences.success) {
+        toast.success(data.updateAnalyticsPreferences.message || 'Preferences updated successfully');
+      } else {
+        toast.error(data.updateAnalyticsPreferences.message || 'Failed to update preferences');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update preferences');
+    },
+  });
+
+  return {
+    updatePreferences: (preferences) => updatePreferences({ variables: { preferences } }),
     loading,
     error,
   };

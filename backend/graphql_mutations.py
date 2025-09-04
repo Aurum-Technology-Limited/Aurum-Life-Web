@@ -9,11 +9,13 @@ from datetime import datetime
 import logging
 
 from graphql_schema import (
-    Task, Project, JournalEntry, Area, Pillar,
+    Task, Project, JournalEntry, Area, Pillar, AnalyticsPreferences,
     CreateTaskInput, UpdateTaskInput, CreateProjectInput, UpdateProjectInput,
     CreateJournalEntryInput, UpdateJournalEntryInput, CreateAreaInput, UpdateAreaInput,
-    CreatePillarInput, UpdatePillarInput, TaskMutationResponse, ProjectMutationResponse,
-    JournalMutationResponse, AreaMutationResponse, PillarMutationResponse, DeleteResponse
+    CreatePillarInput, UpdatePillarInput, UpdateAnalyticsPreferencesInput,
+    TaskMutationResponse, ProjectMutationResponse, JournalMutationResponse,
+    AreaMutationResponse, PillarMutationResponse, DeleteResponse,
+    AnalyticsPreferencesMutationResponse
 )
 from supabase_client import supabase_manager
 from cache_service import cache_service
@@ -648,6 +650,79 @@ class Mutation:
         except Exception as e:
             logger.error(f"Error deleting pillar: {e}")
             return DeleteResponse(
+                success=False,
+                message=str(e)
+            )
+    
+    # Analytics Mutations
+    @strawberry.mutation
+    async def update_analytics_preferences(self, info, preferences: UpdateAnalyticsPreferencesInput) -> AnalyticsPreferencesMutationResponse:
+        """Update analytics preferences"""
+        user = info.context["user"]
+        
+        try:
+            # Check if preferences exist
+            existing = await supabase_manager.client.table('user_analytics_preferences')\
+                .select('id')\
+                .eq('user_id', str(user.id))\
+                .single()\
+                .execute()
+            
+            update_data = {}
+            if preferences.analytics_consent is not None:
+                update_data['analytics_consent'] = preferences.analytics_consent
+            if preferences.ai_behavior_tracking is not None:
+                update_data['ai_behavior_tracking'] = preferences.ai_behavior_tracking
+            if preferences.performance_tracking is not None:
+                update_data['performance_tracking'] = preferences.performance_tracking
+            if preferences.error_reporting is not None:
+                update_data['error_reporting'] = preferences.error_reporting
+            if preferences.data_retention_days is not None:
+                update_data['data_retention_days'] = preferences.data_retention_days
+            if preferences.anonymize_after_days is not None:
+                update_data['anonymize_after_days'] = preferences.anonymize_after_days
+            if preferences.share_anonymous_stats is not None:
+                update_data['share_anonymous_stats'] = preferences.share_anonymous_stats
+            
+            update_data['updated_at'] = datetime.utcnow().isoformat()
+            
+            if existing.data:
+                # Update existing preferences
+                response = await supabase_manager.client.table('user_analytics_preferences')\
+                    .update(update_data)\
+                    .eq('user_id', str(user.id))\
+                    .execute()
+            else:
+                # Create new preferences
+                update_data['user_id'] = str(user.id)
+                response = await supabase_manager.client.table('user_analytics_preferences')\
+                    .insert(update_data)\
+                    .execute()
+            
+            if response.data:
+                prefs = response.data[0]
+                return AnalyticsPreferencesMutationResponse(
+                    success=True,
+                    message="Analytics preferences updated successfully",
+                    preferences=AnalyticsPreferences(
+                        analytics_consent=prefs.get('analytics_consent', True),
+                        ai_behavior_tracking=prefs.get('ai_behavior_tracking', True),
+                        performance_tracking=prefs.get('performance_tracking', True),
+                        error_reporting=prefs.get('error_reporting', True),
+                        data_retention_days=prefs.get('data_retention_days', 365),
+                        anonymize_after_days=prefs.get('anonymize_after_days', 90),
+                        share_anonymous_stats=prefs.get('share_anonymous_stats', True)
+                    )
+                )
+            
+            return AnalyticsPreferencesMutationResponse(
+                success=False,
+                message="Failed to update preferences"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error updating analytics preferences: {e}")
+            return AnalyticsPreferencesMutationResponse(
                 success=False,
                 message=str(e)
             )

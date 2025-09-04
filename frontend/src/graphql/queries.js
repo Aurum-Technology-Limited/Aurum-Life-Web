@@ -368,3 +368,63 @@ export const GET_JOURNAL_INSIGHTS = gql`
     }
   }
 `;
+
+// Analytics Queries
+export const GET_ANALYTICS_DASHBOARD = gql`
+  query GetAnalyticsDashboard($days: Int!) {
+    analyticsDashboard(days: $days) {
+      userEngagement {
+        totalSessions
+        totalAiInteractions
+        totalTimeSpentMs
+        averageSessionDurationMs
+        uniqueFeaturesUsed
+        engagementScore
+      }
+      aiFeatureUsage {
+        featureName
+        totalInteractions
+        successRate
+        averageResponseTimeMs
+        lastUsed
+      }
+      dailyStats {
+        date
+        sessions
+        aiInteractions
+        featuresUsed
+        tasksCompleted
+        timeSpentMs
+      }
+      featureAdoption {
+        featureName
+        adoptionRate
+        usageFrequency
+        userSatisfaction
+      }
+      errorTracking {
+        errorType
+        occurrences
+        affectedUsers
+        lastOccurred
+        severity
+      }
+      topPages
+      topFeatures
+    }
+  }
+`;
+
+export const GET_ANALYTICS_PREFERENCES = gql`
+  query GetAnalyticsPreferences {
+    analyticsPreferences {
+      analyticsConsent
+      aiBehaviorTracking
+      performanceTracking
+      errorReporting
+      dataRetentionDays
+      anonymizeAfterDays
+      shareAnonymousStats
+    }
+  }
+`;

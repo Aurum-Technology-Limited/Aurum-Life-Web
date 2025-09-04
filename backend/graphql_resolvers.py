@@ -19,7 +19,9 @@ from graphql_schema import (
     CreateJournalEntryInput, TaskMutationResponse, ProjectMutationResponse,
     JournalMutationResponse, PaginationInput, TaskFilterInput, ProjectFilterInput,
     TaskStatus, Priority, ProjectStatus, JournalInsights, SentimentTrend,
-    WellnessScore, EmotionalInsight, ActivityCorrelation
+    WellnessScore, EmotionalInsight, ActivityCorrelation, AnalyticsDashboard,
+    UserEngagement, AIFeatureUsage, DailyStats, FeatureAdoption, ErrorTracking,
+    AnalyticsPreferences
 )
 from supabase_client import supabase_manager
 from cache_service import cache_service
@@ -576,6 +578,223 @@ class Query:
             upcoming_deadlines=upcoming_deadlines,
             recent_insights=recent_insights,
             alignment_trend=[]  # TODO: Implement alignment trend
+        )
+    
+    @strawberry.field(name="analyticsDashboard")
+    async def analytics_dashboard(self, info, days: int = 30) -> AnalyticsDashboard:
+        """Get analytics dashboard data"""
+        user = info.context["user"]
+        
+        # Calculate date range
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        
+        # Fetch user behavior events
+        events_response = await supabase_manager.client.table('user_behavior_events')\
+            .select('*')\
+            .eq('user_id', str(user.id))\
+            .gte('timestamp', start_date.isoformat())\
+            .lte('timestamp', end_date.isoformat())\
+            .execute()
+        
+        events = events_response.data or []
+        
+        # Fetch sessions
+        sessions_response = await supabase_manager.client.table('user_sessions')\
+            .select('*')\
+            .eq('user_id', str(user.id))\
+            .gte('start_time', start_date.isoformat())\
+            .execute()
+        
+        sessions = sessions_response.data or []
+        
+        # Calculate user engagement metrics
+        total_sessions = len(sessions)
+        total_ai_interactions = len([e for e in events if e['action_type'] == 'ai_interaction'])
+        total_time_spent_ms = sum(s.get('duration_ms', 0) for s in sessions if s.get('duration_ms'))
+        avg_session_duration = total_time_spent_ms // total_sessions if total_sessions > 0 else 0
+        unique_features = len(set(e['feature_name'] for e in events))
+        engagement_score = min(1.0, (total_sessions * 0.3 + total_ai_interactions * 0.5 + unique_features * 0.2) / 100)
+        
+        user_engagement = UserEngagement(
+            total_sessions=total_sessions,
+            total_ai_interactions=total_ai_interactions,
+            total_time_spent_ms=total_time_spent_ms,
+            average_session_duration_ms=avg_session_duration,
+            unique_features_used=unique_features,
+            engagement_score=engagement_score
+        )
+        
+        # Calculate AI feature usage
+        ai_feature_usage = []
+        ai_events = [e for e in events if e['action_type'] == 'ai_interaction']
+        feature_groups = defaultdict(list)
+        for event in ai_events:
+            feature_groups[event.get('ai_feature_type', 'unknown')].append(event)
+        
+        for feature_name, feature_events in feature_groups.items():
+            success_count = len([e for e in feature_events if e.get('success', True)])
+            total_count = len(feature_events)
+            success_rate = success_count / total_count if total_count > 0 else 0
+            
+            # Calculate average response time
+            response_times = [e.get('duration_ms', 0) for e in feature_events if e.get('duration_ms')]
+            avg_response_time = sum(response_times) // len(response_times) if response_times else 0
+            
+            # Get last used timestamp
+            last_used = max((datetime.fromisoformat(e['timestamp'].replace('Z', '+00:00')) 
+                           for e in feature_events), default=None)
+            
+            ai_feature_usage.append(AIFeatureUsage(
+                feature_name=feature_name,
+                total_interactions=total_count,
+                success_rate=success_rate,
+                average_response_time_ms=avg_response_time,
+                last_used=last_used
+            ))
+        
+        # Calculate daily stats
+        daily_stats = []
+        events_by_date = defaultdict(list)
+        sessions_by_date = defaultdict(list)
+        
+        for event in events:
+            date_key = event['timestamp'][:10]  # YYYY-MM-DD
+            events_by_date[date_key].append(event)
+        
+        for session in sessions:
+            date_key = session['start_time'][:10]
+            sessions_by_date[date_key].append(session)
+        
+        # Get tasks completed by date
+        tasks_response = await supabase_manager.client.table('tasks')\
+            .select('completed_at')\
+            .eq('user_id', str(user.id))\
+            .eq('completed', True)\
+            .gte('completed_at', start_date.isoformat())\
+            .lte('completed_at', end_date.isoformat())\
+            .execute()
+        
+        tasks_by_date = defaultdict(int)
+        for task in (tasks_response.data or []):
+            if task.get('completed_at'):
+                date_key = task['completed_at'][:10]
+                tasks_by_date[date_key] += 1
+        
+        # Build daily stats
+        current_date = start_date
+        while current_date <= end_date:
+            date_key = current_date.strftime('%Y-%m-%d')
+            day_events = events_by_date.get(date_key, [])
+            day_sessions = sessions_by_date.get(date_key, [])
+            
+            daily_stats.append(DailyStats(
+                date=date_key,
+                sessions=len(day_sessions),
+                ai_interactions=len([e for e in day_events if e['action_type'] == 'ai_interaction']),
+                features_used=len(set(e['feature_name'] for e in day_events)),
+                tasks_completed=tasks_by_date.get(date_key, 0),
+                time_spent_ms=sum(s.get('duration_ms', 0) for s in day_sessions if s.get('duration_ms'))
+            ))
+            
+            current_date += timedelta(days=1)
+        
+        # Calculate feature adoption (simplified)
+        feature_adoption = []
+        all_features = ['my_ai_insights', 'ai_quick_actions', 'goal_planner', 'semantic_search']
+        
+        for feature in all_features:
+            feature_count = len([e for e in events if e.get('ai_feature_type') == feature])
+            adoption_rate = min(1.0, feature_count / max(total_sessions, 1))
+            
+            if feature_count > 20:
+                frequency = 'high'
+            elif feature_count > 5:
+                frequency = 'medium'
+            else:
+                frequency = 'low'
+            
+            feature_adoption.append(FeatureAdoption(
+                feature_name=feature,
+                adoption_rate=adoption_rate,
+                usage_frequency=frequency,
+                user_satisfaction=None  # Would need feedback data
+            ))
+        
+        # Error tracking (simplified)
+        error_events = [e for e in events if not e.get('success', True)]
+        error_groups = defaultdict(list)
+        for error in error_events:
+            error_type = error.get('error_message', 'Unknown error')[:50]  # Truncate
+            error_groups[error_type].append(error)
+        
+        error_tracking = []
+        for error_type, errors in list(error_groups.items())[:10]:  # Top 10 errors
+            last_error = max(errors, key=lambda e: e['timestamp'])
+            error_tracking.append(ErrorTracking(
+                error_type=error_type,
+                occurrences=len(errors),
+                affected_users=1,  # Current user only
+                last_occurred=datetime.fromisoformat(last_error['timestamp'].replace('Z', '+00:00')),
+                severity='medium'  # Would need proper classification
+            ))
+        
+        # Top pages and features
+        page_counts = defaultdict(int)
+        feature_counts = defaultdict(int)
+        
+        for event in events:
+            if event['action_type'] == 'page_view':
+                page_counts[event.get('page_url', '/')] += 1
+            feature_counts[event.get('feature_name', 'unknown')] += 1
+        
+        top_pages = [{'url': url, 'views': count} for url, count in 
+                     sorted(page_counts.items(), key=lambda x: x[1], reverse=True)[:5]]
+        top_features = [{'name': name, 'uses': count} for name, count in 
+                       sorted(feature_counts.items(), key=lambda x: x[1], reverse=True)[:5]]
+        
+        return AnalyticsDashboard(
+            user_engagement=user_engagement,
+            ai_feature_usage=ai_feature_usage,
+            daily_stats=daily_stats,
+            feature_adoption=feature_adoption,
+            error_tracking=error_tracking,
+            top_pages=top_pages,
+            top_features=top_features
+        )
+    
+    @strawberry.field(name="analyticsPreferences")
+    async def analytics_preferences(self, info) -> Optional[AnalyticsPreferences]:
+        """Get user's analytics preferences"""
+        user = info.context["user"]
+        
+        response = await supabase_manager.client.table('user_analytics_preferences')\
+            .select('*')\
+            .eq('user_id', str(user.id))\
+            .single()\
+            .execute()
+        
+        if response.data:
+            prefs = response.data
+            return AnalyticsPreferences(
+                analytics_consent=prefs.get('analytics_consent', True),
+                ai_behavior_tracking=prefs.get('ai_behavior_tracking', True),
+                performance_tracking=prefs.get('performance_tracking', True),
+                error_reporting=prefs.get('error_reporting', True),
+                data_retention_days=prefs.get('data_retention_days', 365),
+                anonymize_after_days=prefs.get('anonymize_after_days', 90),
+                share_anonymous_stats=prefs.get('share_anonymous_stats', True)
+            )
+        
+        # Return defaults if no preferences found
+        return AnalyticsPreferences(
+            analytics_consent=True,
+            ai_behavior_tracking=True,
+            performance_tracking=True,
+            error_reporting=True,
+            data_retention_days=365,
+            anonymize_after_days=90,
+            share_anonymous_stats=True
         )
 
 # Field Resolvers for related data

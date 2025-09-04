@@ -208,6 +208,68 @@ class JournalInsights:
     wellness_score: WellnessScore
     emotional_insights: List[EmotionalInsight]
     activity_correlations: List[ActivityCorrelation]
+
+# Analytics Types
+@strawberry.type
+class UserEngagement:
+    total_sessions: int
+    total_ai_interactions: int
+    total_time_spent_ms: int
+    average_session_duration_ms: int
+    unique_features_used: int
+    engagement_score: float
+
+@strawberry.type
+class AIFeatureUsage:
+    feature_name: str
+    total_interactions: int
+    success_rate: float
+    average_response_time_ms: int
+    last_used: Optional[datetime]
+
+@strawberry.type
+class DailyStats:
+    date: str
+    sessions: int
+    ai_interactions: int
+    features_used: int
+    tasks_completed: int
+    time_spent_ms: int
+
+@strawberry.type
+class FeatureAdoption:
+    feature_name: str
+    adoption_rate: float
+    usage_frequency: str
+    user_satisfaction: Optional[float]
+
+@strawberry.type
+class ErrorTracking:
+    error_type: str
+    occurrences: int
+    affected_users: int
+    last_occurred: datetime
+    severity: str
+
+@strawberry.type
+class AnalyticsPreferences:
+    analytics_consent: bool
+    ai_behavior_tracking: bool
+    performance_tracking: bool
+    error_reporting: bool
+    data_retention_days: int
+    anonymize_after_days: int
+    share_anonymous_stats: bool
+
+@strawberry.type
+class AnalyticsDashboard:
+    user_engagement: UserEngagement
+    ai_feature_usage: List[AIFeatureUsage]
+    daily_stats: List[DailyStats]
+    feature_adoption: List[FeatureAdoption]
+    error_tracking: List[ErrorTracking]
+    top_pages: List[Dict[str, Any]]
+    top_features: List[Dict[str, Any]]
     
     # Related
     task: Optional[Task] = None
@@ -368,6 +430,16 @@ class UpdatePillarInput:
     archived: Optional[bool] = None
 
 @strawberry.input
+class UpdateAnalyticsPreferencesInput:
+    analytics_consent: Optional[bool] = None
+    ai_behavior_tracking: Optional[bool] = None
+    performance_tracking: Optional[bool] = None
+    error_reporting: Optional[bool] = None
+    data_retention_days: Optional[int] = None
+    anonymize_after_days: Optional[int] = None
+    share_anonymous_stats: Optional[bool] = None
+
+@strawberry.input
 class PaginationInput:
     limit: int = 20
     offset: int = 0
@@ -434,3 +506,7 @@ class PillarMutationResponse(MutationResponse):
 @strawberry.type
 class DeleteResponse(MutationResponse):
     pass
+
+@strawberry.type
+class AnalyticsPreferencesMutationResponse(MutationResponse):
+    preferences: Optional[AnalyticsPreferences] = None

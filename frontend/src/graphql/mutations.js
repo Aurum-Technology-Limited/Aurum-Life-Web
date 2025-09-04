@@ -274,3 +274,22 @@ export const DELETE_PILLAR = gql`
     }
   }
 `;
+
+// Analytics Mutations
+export const UPDATE_ANALYTICS_PREFERENCES = gql`
+  mutation UpdateAnalyticsPreferences($preferences: UpdateAnalyticsPreferencesInput!) {
+    updateAnalyticsPreferences(preferences: $preferences) {
+      success
+      message
+      preferences {
+        analyticsConsent
+        aiBehaviorTracking
+        performanceTracking
+        errorReporting
+        dataRetentionDays
+        anonymizeAfterDays
+        shareAnonymousStats
+      }
+    }
+  }
+`;
