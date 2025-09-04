@@ -45,11 +45,50 @@ import hashlib
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 ROOT_DIR = PathlibPath(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 app = FastAPI(title="Aurum Life API", version="1.0.0")
+
+# Security Headers Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # Security headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        
+        # Remove server header
+        response.headers.pop("Server", None)
+        
+        # Content Security Policy (adjust based on your needs)
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: https: blob:; "
+            "connect-src 'self' https://api.openai.com https://*.supabase.co wss://*.supabase.co; "
+            "frame-ancestors 'none';"
+        )
+        response.headers["Content-Security-Policy"] = csp
+        
+        return response
+
+# Add security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Add input validation middleware
+from input_validation import InputValidationMiddleware
+app.add_middleware(InputValidationMiddleware)
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -148,7 +187,45 @@ def cache_user_endpoint(ttl=300, cache_prefix=None):
         return wrapper
     return decorator
 
-# Upload endpoints omitted for brevity (unchanged)
+# Image upload endpoint with WebP conversion
+@api_router.post("/upload/image")
+async def upload_image(
+    file: UploadFile = File(...),
+    generate_webp: bool = Form(True),
+    generate_responsive: bool = Form(True),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Upload and process image with WebP conversion and responsive sizes
+    """
+    try:
+        # Validate file
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="File must be an image")
+        
+        # Read file content
+        file_content = await file.read()
+        
+        # Process image with optimization
+        from image_processor import process_upload_with_optimization
+        result = await process_upload_with_optimization(
+            file_content=file_content,
+            filename=file.filename,
+            user_id=str(current_user.id),
+            storage_service=supabase_manager  # Use your storage service
+        )
+        
+        logger.info(f"Image uploaded and processed for user {current_user.id}: {file.filename}")
+        
+        return {
+            "success": True,
+            "message": "Image uploaded successfully",
+            "data": result
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading image: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload image")
 
 # Essential API endpoints
 @cache_user_endpoint(ttl=180)  # Cache for 3 minutes
