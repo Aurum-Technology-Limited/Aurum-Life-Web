@@ -9,10 +9,11 @@ from datetime import datetime
 import logging
 
 from graphql_schema import (
-    Task, Project, JournalEntry,
+    Task, Project, JournalEntry, Area, Pillar,
     CreateTaskInput, UpdateTaskInput, CreateProjectInput, UpdateProjectInput,
-    CreateJournalEntryInput, TaskMutationResponse, ProjectMutationResponse,
-    JournalMutationResponse
+    CreateJournalEntryInput, UpdateJournalEntryInput, CreateAreaInput, UpdateAreaInput,
+    CreatePillarInput, UpdatePillarInput, TaskMutationResponse, ProjectMutationResponse,
+    JournalMutationResponse, AreaMutationResponse, PillarMutationResponse, DeleteResponse
 )
 from supabase_client import supabase_manager
 from cache_service import cache_service
@@ -428,3 +429,225 @@ class Mutation:
                 
         except Exception as e:
             logger.error(f"Error updating alignment score: {e}")
+    
+    # Area Mutations
+    @strawberry.mutation
+    async def create_area(self, info, area: CreateAreaInput) -> AreaMutationResponse:
+        """Create a new area"""
+        user = info.context["user"]
+        
+        try:
+            area_data = {
+                'user_id': str(user.id),
+                'name': area.name,
+                'description': area.description or '',
+                'icon': area.icon or '🎯',
+                'color': area.color or '#F4B400',
+                'importance': area.importance or 3,
+                'pillar_id': area.pillar_id if area.pillar_id else None
+            }
+            
+            response = await supabase_manager.client.table('areas')\
+                .insert(area_data)\
+                .execute()
+            
+            if response.data:
+                created_area = Area(**response.data[0])
+                return AreaMutationResponse(
+                    success=True,
+                    message="Area created successfully",
+                    area=created_area
+                )
+            
+            return AreaMutationResponse(
+                success=False,
+                message="Failed to create area"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error creating area: {e}")
+            return AreaMutationResponse(
+                success=False,
+                message=str(e)
+            )
+    
+    @strawberry.mutation
+    async def update_area(self, info, id: strawberry.ID, area: UpdateAreaInput) -> AreaMutationResponse:
+        """Update an area"""
+        user = info.context["user"]
+        
+        try:
+            update_data = {}
+            if area.name is not None:
+                update_data['name'] = area.name
+            if area.description is not None:
+                update_data['description'] = area.description
+            if area.icon is not None:
+                update_data['icon'] = area.icon
+            if area.color is not None:
+                update_data['color'] = area.color
+            if area.importance is not None:
+                update_data['importance'] = area.importance
+            if area.archived is not None:
+                update_data['archived'] = area.archived
+            
+            update_data['updated_at'] = datetime.utcnow().isoformat()
+            
+            response = await supabase_manager.client.table('areas')\
+                .update(update_data)\
+                .eq('id', id)\
+                .eq('user_id', str(user.id))\
+                .execute()
+            
+            if response.data:
+                updated_area = Area(**response.data[0])
+                return AreaMutationResponse(
+                    success=True,
+                    message="Area updated successfully",
+                    area=updated_area
+                )
+            
+            return AreaMutationResponse(
+                success=False,
+                message="Area not found"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error updating area: {e}")
+            return AreaMutationResponse(
+                success=False,
+                message=str(e)
+            )
+    
+    @strawberry.mutation
+    async def delete_area(self, info, id: strawberry.ID) -> DeleteResponse:
+        """Delete an area"""
+        user = info.context["user"]
+        
+        try:
+            response = await supabase_manager.client.table('areas')\
+                .delete()\
+                .eq('id', id)\
+                .eq('user_id', str(user.id))\
+                .execute()
+            
+            return DeleteResponse(
+                success=True,
+                message="Area deleted successfully"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error deleting area: {e}")
+            return DeleteResponse(
+                success=False,
+                message=str(e)
+            )
+    
+    # Pillar Mutations
+    @strawberry.mutation
+    async def create_pillar(self, info, pillar: CreatePillarInput) -> PillarMutationResponse:
+        """Create a new pillar"""
+        user = info.context["user"]
+        
+        try:
+            pillar_data = {
+                'user_id': str(user.id),
+                'name': pillar.name,
+                'description': pillar.description or '',
+                'icon': pillar.icon or '🏔️',
+                'color': pillar.color or '#7C3AED'
+            }
+            
+            response = await supabase_manager.client.table('pillars')\
+                .insert(pillar_data)\
+                .execute()
+            
+            if response.data:
+                created_pillar = Pillar(**response.data[0])
+                return PillarMutationResponse(
+                    success=True,
+                    message="Pillar created successfully",
+                    pillar=created_pillar
+                )
+            
+            return PillarMutationResponse(
+                success=False,
+                message="Failed to create pillar"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error creating pillar: {e}")
+            return PillarMutationResponse(
+                success=False,
+                message=str(e)
+            )
+    
+    @strawberry.mutation
+    async def update_pillar(self, info, id: strawberry.ID, pillar: UpdatePillarInput) -> PillarMutationResponse:
+        """Update a pillar"""
+        user = info.context["user"]
+        
+        try:
+            update_data = {}
+            if pillar.name is not None:
+                update_data['name'] = pillar.name
+            if pillar.description is not None:
+                update_data['description'] = pillar.description
+            if pillar.icon is not None:
+                update_data['icon'] = pillar.icon
+            if pillar.color is not None:
+                update_data['color'] = pillar.color
+            if pillar.archived is not None:
+                update_data['archived'] = pillar.archived
+            
+            update_data['updated_at'] = datetime.utcnow().isoformat()
+            
+            response = await supabase_manager.client.table('pillars')\
+                .update(update_data)\
+                .eq('id', id)\
+                .eq('user_id', str(user.id))\
+                .execute()
+            
+            if response.data:
+                updated_pillar = Pillar(**response.data[0])
+                return PillarMutationResponse(
+                    success=True,
+                    message="Pillar updated successfully",
+                    pillar=updated_pillar
+                )
+            
+            return PillarMutationResponse(
+                success=False,
+                message="Pillar not found"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error updating pillar: {e}")
+            return PillarMutationResponse(
+                success=False,
+                message=str(e)
+            )
+    
+    @strawberry.mutation
+    async def delete_pillar(self, info, id: strawberry.ID) -> DeleteResponse:
+        """Delete a pillar"""
+        user = info.context["user"]
+        
+        try:
+            response = await supabase_manager.client.table('pillars')\
+                .delete()\
+                .eq('id', id)\
+                .eq('user_id', str(user.id))\
+                .execute()
+            
+            return DeleteResponse(
+                success=True,
+                message="Pillar deleted successfully"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error deleting pillar: {e}")
+            return DeleteResponse(
+                success=False,
+                message=str(e)
+            )

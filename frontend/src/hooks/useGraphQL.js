@@ -15,6 +15,7 @@ import {
   GET_PROJECT_DETAIL,
   GET_TASK_DETAIL,
   GET_JOURNAL_ENTRIES,
+  GET_JOURNAL_INSIGHTS,
 } from '../graphql/queries';
 import {
   CREATE_TASK,
@@ -24,6 +25,15 @@ import {
   CREATE_PROJECT,
   UPDATE_PROJECT,
   CREATE_JOURNAL_ENTRY,
+  UPDATE_JOURNAL_ENTRY,
+  DELETE_JOURNAL_ENTRY,
+  ANALYZE_JOURNAL_SENTIMENT,
+  CREATE_AREA,
+  UPDATE_AREA,
+  DELETE_AREA,
+  CREATE_PILLAR,
+  UPDATE_PILLAR,
+  DELETE_PILLAR,
 } from '../graphql/mutations';
 import { optimisticTaskUpdate, optimisticProjectUpdate } from '../services/apolloClient';
 
@@ -62,6 +72,7 @@ export function useAreas(pillarId = null, archived = false) {
   const { data, loading, error, refetch } = useQuery(GET_AREAS, {
     variables: { pillarId, archived },
     fetchPolicy: 'cache-first',
+    skip: false, // Always query, let GraphQL handle filtering
   });
 
   return {
@@ -72,26 +83,50 @@ export function useAreas(pillarId = null, archived = false) {
   };
 }
 
-// Projects Hook with Pagination
-export function useProjects(filter = {}, pagination = { limit: 20, offset: 0 }) {
-  const { data, loading, error, fetchMore, refetch } = useQuery(GET_PROJECTS, {
-    variables: { filter, pagination },
-    fetchPolicy: 'cache-first',
+// Projects Hook with filters
+export function useProjects(filter = {}, pagination = {}) {
+  const variables = {
+    filter: {
+      areaId: filter.areaId,
+      status: filter.status,
+      priority: filter.priority,
+      searchTerm: filter.searchTerm,
+      archived: filter.archived || false,
+    },
+    pagination: {
+      skip: pagination.skip || 0,
+      limit: pagination.limit || 20,
+    },
+  };
+
+  const { data, loading, error, refetch, fetchMore } = useQuery(GET_PROJECTS, {
+    variables,
+    fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
   });
 
   const loadMore = useCallback(() => {
-    if (data?.projects?.hasNextPage) {
-      return fetchMore({
-        variables: {
-          pagination: {
-            ...pagination,
-            offset: data.projects.projects.length,
-          },
+    if (!data?.projects?.hasNextPage) return;
+    
+    return fetchMore({
+      variables: {
+        ...variables,
+        pagination: {
+          ...variables.pagination,
+          skip: data.projects.projects.length,
         },
-      });
-    }
-  }, [data, fetchMore, pagination]);
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return {
+          projects: {
+            ...fetchMoreResult.projects,
+            projects: [...prev.projects.projects, ...fetchMoreResult.projects.projects],
+          },
+        };
+      },
+    });
+  }, [data?.projects, fetchMore, variables]);
 
   return {
     projects: data?.projects?.projects || [],
@@ -104,26 +139,66 @@ export function useProjects(filter = {}, pagination = { limit: 20, offset: 0 }) 
   };
 }
 
-// Tasks Hook with Pagination
-export function useTasks(filter = {}, pagination = { limit: 20, offset: 0 }) {
-  const { data, loading, error, fetchMore, refetch } = useQuery(GET_TASKS, {
-    variables: { filter, pagination },
-    fetchPolicy: 'cache-first',
+// Project Detail Hook
+export function useProjectDetail(id) {
+  const { data, loading, error, refetch } = useQuery(GET_PROJECT_DETAIL, {
+    variables: { id },
+    skip: !id,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  return {
+    project: data?.project,
+    loading,
+    error,
+    refetch,
+  };
+}
+
+// Tasks Hook with filters
+export function useTasks(filter = {}, pagination = {}) {
+  const variables = {
+    filter: {
+      projectId: filter.projectId,
+      status: filter.status,
+      priority: filter.priority,
+      completed: filter.completed,
+      searchTerm: filter.searchTerm,
+    },
+    pagination: {
+      skip: pagination.skip || 0,
+      limit: pagination.limit || 50,
+    },
+  };
+
+  const { data, loading, error, refetch, fetchMore } = useQuery(GET_TASKS, {
+    variables,
+    fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
   });
 
   const loadMore = useCallback(() => {
-    if (data?.tasks?.hasNextPage) {
-      return fetchMore({
-        variables: {
-          pagination: {
-            ...pagination,
-            offset: data.tasks.tasks.length,
-          },
+    if (!data?.tasks?.hasNextPage) return;
+    
+    return fetchMore({
+      variables: {
+        ...variables,
+        pagination: {
+          ...variables.pagination,
+          skip: data.tasks.tasks.length,
         },
-      });
-    }
-  }, [data, fetchMore, pagination]);
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return {
+          tasks: {
+            ...fetchMoreResult.tasks,
+            tasks: [...prev.tasks.tasks, ...fetchMoreResult.tasks.tasks],
+          },
+        };
+      },
+    });
+  }, [data?.tasks, fetchMore, variables]);
 
   return {
     tasks: data?.tasks?.tasks || [],
@@ -137,10 +212,11 @@ export function useTasks(filter = {}, pagination = { limit: 20, offset: 0 }) {
 }
 
 // Task Detail Hook
-export function useTaskDetail(taskId) {
+export function useTaskDetail(id) {
   const { data, loading, error, refetch } = useQuery(GET_TASK_DETAIL, {
-    variables: { id: taskId },
-    skip: !taskId,
+    variables: { id },
+    skip: !id,
+    fetchPolicy: 'cache-and-network',
   });
 
   return {
@@ -148,52 +224,6 @@ export function useTaskDetail(taskId) {
     loading,
     error,
     refetch,
-  };
-}
-
-// Project Detail Hook
-export function useProjectDetail(projectId) {
-  const { data, loading, error, refetch } = useQuery(GET_PROJECT_DETAIL, {
-    variables: { id: projectId },
-    skip: !projectId,
-  });
-
-  return {
-    project: data?.project,
-    loading,
-    error,
-    refetch,
-  };
-}
-
-// Journal Entries Hook
-export function useJournalEntries(search = '', pagination = { limit: 20, offset: 0 }) {
-  const { data, loading, error, fetchMore, refetch } = useQuery(GET_JOURNAL_ENTRIES, {
-    variables: { search, pagination },
-    fetchPolicy: 'cache-first',
-  });
-
-  const loadMore = useCallback(() => {
-    if (data?.journalEntries?.hasNextPage) {
-      return fetchMore({
-        variables: {
-          pagination: {
-            ...pagination,
-            offset: data.journalEntries.entries.length,
-          },
-        },
-      });
-    }
-  }, [data, fetchMore, pagination]);
-
-  return {
-    entries: data?.journalEntries?.entries || [],
-    totalCount: data?.journalEntries?.totalCount || 0,
-    hasNextPage: data?.journalEntries?.hasNextPage || false,
-    loading,
-    error,
-    refetch,
-    loadMore,
   };
 }
 
@@ -229,7 +259,7 @@ export function useCreateTask() {
   });
 
   return {
-    createTask: (input) => createTask({ variables: { input } }),
+    createTask: (task) => createTask({ variables: { task } }),
     loading,
     error,
   };
@@ -250,9 +280,9 @@ export function useUpdateTask() {
   });
 
   return {
-    updateTask: (input) => updateTask({
-      variables: { input },
-      optimisticResponse: optimisticTaskUpdate(input.id, input),
+    updateTask: (id, updates) => updateTask({ 
+      variables: { id, updates },
+      optimisticResponse: optimisticTaskUpdate(id, updates),
     }),
     loading,
     error,
@@ -274,8 +304,19 @@ export function useDeleteTask() {
     update: (cache, { data, variables }) => {
       if (data?.deleteTask?.success) {
         // Remove task from cache
-        cache.evict({ id: cache.identify({ __typename: 'Task', id: variables.id }) });
-        cache.gc();
+        cache.modify({
+          fields: {
+            tasks(existingTasks = { tasks: [], totalCount: 0 }, { readField }) {
+              return {
+                ...existingTasks,
+                tasks: existingTasks.tasks.filter(
+                  taskRef => readField('id', taskRef) !== variables.id
+                ),
+                totalCount: existingTasks.totalCount - 1,
+              };
+            },
+          },
+        });
       }
     },
   });
@@ -288,14 +329,10 @@ export function useDeleteTask() {
 }
 
 export function useToggleTaskCompletion() {
-  const [toggleTask, { loading, error }] = useMutation(TOGGLE_TASK_COMPLETION, {
-    onError: (error) => {
-      toast.error(error.message || 'Failed to update task');
-    },
-  });
+  const [toggleTask, { loading, error }] = useMutation(TOGGLE_TASK_COMPLETION);
 
   return {
-    toggleTask: (id) => toggleTask({
+    toggleCompletion: (id) => toggleTask({
       variables: { id },
       optimisticResponse: {
         __typename: 'Mutation',
@@ -348,7 +385,7 @@ export function useCreateProject() {
   });
 
   return {
-    createProject: (input) => createProject({ variables: { input } }),
+    createProject: (project) => createProject({ variables: { project } }),
     loading,
     error,
   };
@@ -369,21 +406,78 @@ export function useUpdateProject() {
   });
 
   return {
-    updateProject: (input) => updateProject({
-      variables: { input },
-      optimisticResponse: optimisticProjectUpdate(input.id, input),
+    updateProject: (id, updates) => updateProject({ 
+      variables: { id, updates },
+      optimisticResponse: optimisticProjectUpdate(id, updates),
     }),
     loading,
     error,
   };
 }
 
-// Journal Mutations
+// Journal Hooks
+export function useJournalEntries(options = {}) {
+  const variables = {
+    skip: options.skip || 0,
+    limit: options.limit || 20,
+    moodFilter: options.moodFilter,
+    tagFilter: options.tagFilter,
+    dateFrom: options.dateFrom,
+    dateTo: options.dateTo,
+  };
+
+  const { data, loading, error, refetch, fetchMore } = useQuery(GET_JOURNAL_ENTRIES, {
+    variables,
+    fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const loadMore = useCallback(() => {
+    if (!data?.journalEntries) return;
+    
+    return fetchMore({
+      variables: {
+        ...variables,
+        skip: data.journalEntries.length,
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return {
+          journalEntries: [...prev.journalEntries, ...fetchMoreResult.journalEntries],
+        };
+      },
+    });
+  }, [data?.journalEntries, fetchMore, variables]);
+
+  return {
+    entries: data?.journalEntries || [],
+    loading,
+    error,
+    refetch,
+    loadMore,
+  };
+}
+
+export function useJournalInsights(timeRange = 30) {
+  const { data, loading, error, refetch } = useQuery(GET_JOURNAL_INSIGHTS, {
+    variables: { timeRange },
+    fetchPolicy: 'cache-first',
+  });
+
+  return {
+    insights: data?.journalInsights,
+    loading,
+    error,
+    refetch,
+  };
+}
+
+// Journal Entry Creation Hook
 export function useCreateJournalEntry() {
   const [createEntry, { loading, error }] = useMutation(CREATE_JOURNAL_ENTRY, {
     onCompleted: (data) => {
       if (data.createJournalEntry.success) {
-        toast.success(data.createJournalEntry.message || 'Journal entry created');
+        toast.success(data.createJournalEntry.message || 'Entry created successfully');
       } else {
         toast.error(data.createJournalEntry.message || 'Failed to create entry');
       }
@@ -391,10 +485,282 @@ export function useCreateJournalEntry() {
     onError: (error) => {
       toast.error(error.message || 'Failed to create entry');
     },
+    update: (cache, { data }) => {
+      if (data?.createJournalEntry?.success && data.createJournalEntry.journalEntry) {
+        // Add new entry to cache
+        cache.modify({
+          fields: {
+            journalEntries(existingEntries = []) {
+              return [data.createJournalEntry.journalEntry, ...existingEntries];
+            },
+          },
+        });
+      }
+    },
   });
 
   return {
-    createEntry: (input) => createEntry({ variables: { input } }),
+    createEntry: (entry) => createEntry({ variables: { entry } }),
+    loading,
+    error,
+  };
+}
+
+// Journal Entry Update Hook
+export function useUpdateJournalEntry() {
+  const [updateEntry, { loading, error }] = useMutation(UPDATE_JOURNAL_ENTRY, {
+    onCompleted: (data) => {
+      if (data.updateJournalEntry.success) {
+        toast.success(data.updateJournalEntry.message || 'Entry updated successfully');
+      } else {
+        toast.error(data.updateJournalEntry.message || 'Failed to update entry');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update entry');
+    },
+  });
+
+  return {
+    updateEntry: (id, entry) => updateEntry({ variables: { id, entry } }),
+    loading,
+    error,
+  };
+}
+
+// Journal Entry Delete Hook
+export function useDeleteJournalEntry() {
+  const [deleteEntry, { loading, error }] = useMutation(DELETE_JOURNAL_ENTRY, {
+    onCompleted: (data) => {
+      if (data.deleteJournalEntry.success) {
+        toast.success(data.deleteJournalEntry.message || 'Entry deleted successfully');
+      } else {
+        toast.error(data.deleteJournalEntry.message || 'Failed to delete entry');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete entry');
+    },
+    update: (cache, { data, variables }) => {
+      if (data?.deleteJournalEntry?.success) {
+        // Remove entry from cache
+        cache.modify({
+          fields: {
+            journalEntries(existingEntries = [], { readField }) {
+              return existingEntries.filter(
+                entry => readField('id', entry) !== variables.id
+              );
+            },
+          },
+        });
+      }
+    },
+  });
+
+  return {
+    deleteEntry: (id) => deleteEntry({ variables: { id } }),
+    loading,
+    error,
+  };
+}
+
+// Journal Sentiment Analysis Hook
+export function useAnalyzeJournalSentiment() {
+  const [analyzeSentiment, { loading, error }] = useMutation(ANALYZE_JOURNAL_SENTIMENT, {
+    onCompleted: (data) => {
+      if (data.analyzeJournalSentiment.success) {
+        toast.success('Sentiment analysis completed');
+      } else {
+        toast.error(data.analyzeJournalSentiment.message || 'Analysis failed');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to analyze sentiment');
+    },
+  });
+
+  return {
+    analyzeSentiment: (entryId) => analyzeSentiment({ variables: { entryId } }),
+    loading,
+    error,
+  };
+}
+
+// Area Hooks
+export function useCreateArea() {
+  const [createArea, { loading, error }] = useMutation(CREATE_AREA, {
+    onCompleted: (data) => {
+      if (data.createArea.success) {
+        toast.success(data.createArea.message || 'Area created successfully');
+      } else {
+        toast.error(data.createArea.message || 'Failed to create area');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create area');
+    },
+    update: (cache, { data }) => {
+      if (data?.createArea?.success && data.createArea.area) {
+        // Update areas list in cache
+        cache.modify({
+          fields: {
+            areas(existingAreas = []) {
+              return [...existingAreas, data.createArea.area];
+            },
+          },
+        });
+      }
+    },
+  });
+
+  return {
+    createArea: (area) => createArea({ variables: { area } }),
+    loading,
+    error,
+  };
+}
+
+export function useUpdateArea() {
+  const [updateArea, { loading, error }] = useMutation(UPDATE_AREA, {
+    onCompleted: (data) => {
+      if (data.updateArea.success) {
+        toast.success(data.updateArea.message || 'Area updated successfully');
+      } else {
+        toast.error(data.updateArea.message || 'Failed to update area');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update area');
+    },
+  });
+
+  return {
+    updateArea: (id, area) => updateArea({ variables: { id, area } }),
+    loading,
+    error,
+  };
+}
+
+export function useDeleteArea() {
+  const [deleteArea, { loading, error }] = useMutation(DELETE_AREA, {
+    onCompleted: (data) => {
+      if (data.deleteArea.success) {
+        toast.success(data.deleteArea.message || 'Area deleted successfully');
+      } else {
+        toast.error(data.deleteArea.message || 'Failed to delete area');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete area');
+    },
+    update: (cache, { data, variables }) => {
+      if (data?.deleteArea?.success) {
+        // Remove area from cache
+        cache.modify({
+          fields: {
+            areas(existingAreas = [], { readField }) {
+              return existingAreas.filter(
+                area => readField('id', area) !== variables.id
+              );
+            },
+          },
+        });
+      }
+    },
+  });
+
+  return {
+    deleteArea: (id) => deleteArea({ variables: { id } }),
+    loading,
+    error,
+  };
+}
+
+// Pillar Hooks
+export function useCreatePillar() {
+  const [createPillar, { loading, error }] = useMutation(CREATE_PILLAR, {
+    onCompleted: (data) => {
+      if (data.createPillar.success) {
+        toast.success(data.createPillar.message || 'Pillar created successfully');
+      } else {
+        toast.error(data.createPillar.message || 'Failed to create pillar');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create pillar');
+    },
+    update: (cache, { data }) => {
+      if (data?.createPillar?.success && data.createPillar.pillar) {
+        // Update pillars list in cache
+        cache.modify({
+          fields: {
+            pillars(existingPillars = []) {
+              return [...existingPillars, data.createPillar.pillar];
+            },
+          },
+        });
+      }
+    },
+  });
+
+  return {
+    createPillar: (pillar) => createPillar({ variables: { pillar } }),
+    loading,
+    error,
+  };
+}
+
+export function useUpdatePillar() {
+  const [updatePillar, { loading, error }] = useMutation(UPDATE_PILLAR, {
+    onCompleted: (data) => {
+      if (data.updatePillar.success) {
+        toast.success(data.updatePillar.message || 'Pillar updated successfully');
+      } else {
+        toast.error(data.updatePillar.message || 'Failed to update pillar');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update pillar');
+    },
+  });
+
+  return {
+    updatePillar: (id, pillar) => updatePillar({ variables: { id, pillar } }),
+    loading,
+    error,
+  };
+}
+
+export function useDeletePillar() {
+  const [deletePillar, { loading, error }] = useMutation(DELETE_PILLAR, {
+    onCompleted: (data) => {
+      if (data.deletePillar.success) {
+        toast.success(data.deletePillar.message || 'Pillar deleted successfully');
+      } else {
+        toast.error(data.deletePillar.message || 'Failed to delete pillar');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete pillar');
+    },
+    update: (cache, { data, variables }) => {
+      if (data?.deletePillar?.success) {
+        // Remove pillar from cache
+        cache.modify({
+          fields: {
+            pillars(existingPillars = [], { readField }) {
+              return existingPillars.filter(
+                pillar => readField('id', pillar) !== variables.id
+              );
+            },
+          },
+        });
+      }
+    },
+  });
+
+  return {
+    deletePillar: (id) => deletePillar({ variables: { id } }),
     loading,
     error,
   };

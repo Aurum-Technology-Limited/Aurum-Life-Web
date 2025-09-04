@@ -154,6 +154,11 @@ class JournalEntry:
     created_at: datetime
     updated_at: datetime
     
+    # Additional fields
+    weather_info: Optional[str] = None
+    location: Optional[str] = None
+    reading_time: Optional[int] = None
+    
     # Sentiment analysis fields
     sentiment_score: Optional[float] = None
     sentiment_category: Optional[str] = None
@@ -170,6 +175,39 @@ class AlignmentScore:
     project_priority: Optional[str]
     area_importance: Optional[int]
     created_at: datetime
+
+# Journal Analytics Types
+@strawberry.type
+class SentimentTrend:
+    date: str
+    score: float
+    category: str
+
+@strawberry.type
+class WellnessScore:
+    overall: float
+    emotional: float
+    productivity: float
+    balance: float
+
+@strawberry.type
+class EmotionalInsight:
+    type: str
+    message: str
+    confidence: float
+
+@strawberry.type
+class ActivityCorrelation:
+    activity: str
+    sentiment_impact: float
+    frequency: int
+
+@strawberry.type
+class JournalInsights:
+    sentiment_trends: List[SentimentTrend]
+    wellness_score: WellnessScore
+    emotional_insights: List[EmotionalInsight]
+    activity_correlations: List[ActivityCorrelation]
     
     # Related
     task: Optional[Task] = None
@@ -289,6 +327,47 @@ class CreateJournalEntryInput:
     tags: List[str] = strawberry.field(default_factory=list)
 
 @strawberry.input
+class UpdateJournalEntryInput:
+    title: Optional[str] = None
+    content: Optional[str] = None
+    mood: Optional[str] = None
+    energy_level: Optional[str] = None
+    tags: Optional[List[str]] = None
+
+@strawberry.input
+class CreateAreaInput:
+    name: str
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    importance: Optional[int] = None
+    pillar_id: Optional[strawberry.ID] = None
+
+@strawberry.input
+class UpdateAreaInput:
+    name: Optional[str] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    importance: Optional[int] = None
+    archived: Optional[bool] = None
+
+@strawberry.input
+class CreatePillarInput:
+    name: str
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+
+@strawberry.input
+class UpdatePillarInput:
+    name: Optional[str] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    archived: Optional[bool] = None
+
+@strawberry.input
 class PaginationInput:
     limit: int = 20
     offset: int = 0
@@ -343,3 +422,15 @@ class ProjectMutationResponse(MutationResponse):
 @strawberry.type
 class JournalMutationResponse(MutationResponse):
     entry: Optional[JournalEntry] = None
+
+@strawberry.type
+class AreaMutationResponse(MutationResponse):
+    area: Optional[Area] = None
+
+@strawberry.type
+class PillarMutationResponse(MutationResponse):
+    pillar: Optional[Pillar] = None
+
+@strawberry.type
+class DeleteResponse(MutationResponse):
+    pass

@@ -18,7 +18,8 @@ from graphql_schema import (
     CreateTaskInput, UpdateTaskInput, CreateProjectInput, UpdateProjectInput,
     CreateJournalEntryInput, TaskMutationResponse, ProjectMutationResponse,
     JournalMutationResponse, PaginationInput, TaskFilterInput, ProjectFilterInput,
-    TaskStatus, Priority, ProjectStatus
+    TaskStatus, Priority, ProjectStatus, JournalInsights, SentimentTrend,
+    WellnessScore, EmotionalInsight, ActivityCorrelation
 )
 from supabase_client import supabase_manager
 from cache_service import cache_service
@@ -325,41 +326,158 @@ class Query:
             return Project(**response.data)
         return None
     
-    @strawberry.field
+    @strawberry.field(name="journalEntries")
     async def journal_entries(
         self,
         info,
-        pagination: Optional[PaginationInput] = None,
-        search: Optional[str] = None
-    ) -> JournalEntryConnection:
-        """Get journal entries with pagination and search"""
+        skip: Optional[int] = 0,
+        limit: Optional[int] = 20,
+        mood_filter: Optional[str] = None,
+        tag_filter: Optional[str] = None,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None
+    ) -> List[JournalEntry]:
+        """Get journal entries with filters"""
         user = info.context["user"]
-        pagination = pagination or PaginationInput()
         
         query = supabase_manager.client.table('journal_entries')\
-            .select('*', count='exact')\
+            .select('*')\
             .eq('user_id', str(user.id))\
             .eq('deleted', False)
         
-        # Apply search
-        if search:
-            query = query.or_(f'title.ilike.%{search}%,content.ilike.%{search}%')
+        # Apply mood filter
+        if mood_filter:
+            query = query.eq('mood', mood_filter)
+        
+        # Apply tag filter
+        if tag_filter:
+            query = query.contains('tags', [tag_filter])
+        
+        # Apply date filters
+        if date_from:
+            query = query.gte('created_at', date_from)
+        if date_to:
+            query = query.lte('created_at', date_to)
         
         # Apply pagination
-        query = query.range(
-            pagination.offset,
-            pagination.offset + pagination.limit - 1
-        )
+        query = query.range(skip, skip + limit - 1)
         
         response = await query.order('created_at', desc=True).execute()
         
-        entries = [JournalEntry(**entry) for entry in response.data]
-        total_count = response.count or 0
+        entries = [JournalEntry(
+            id=str(entry['id']),
+            user_id=str(entry['user_id']),
+            title=entry['title'],
+            content=entry['content'],
+            mood=entry.get('mood'),
+            energy_level=entry.get('energy_level'),
+            tags=entry.get('tags', []),
+            word_count=entry.get('word_count', 0),
+            created_at=datetime.fromisoformat(entry['created_at'].replace('Z', '+00:00')),
+            updated_at=datetime.fromisoformat(entry['updated_at'].replace('Z', '+00:00')),
+            sentiment_score=entry.get('sentiment_score'),
+            sentiment_category=entry.get('sentiment_category'),
+            emotional_keywords=entry.get('emotional_keywords', []),
+            dominant_emotions=entry.get('dominant_emotions', [])
+        ) for entry in (response.data or [])]
         
-        return JournalEntryConnection(
-            entries=entries,
-            total_count=total_count,
-            has_next_page=(pagination.offset + pagination.limit) < total_count
+        return entries
+    
+    @strawberry.field(name="journalInsights")
+    async def journal_insights(self, info, time_range: int = 30) -> JournalInsights:
+        """Get journal insights and analytics"""
+        user = info.context["user"]
+        
+        # Calculate date range
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=time_range)
+        
+        # Fetch journal entries in time range
+        entries_response = await supabase_manager.client.table('journal_entries')\
+            .select('*')\
+            .eq('user_id', str(user.id))\
+            .gte('created_at', start_date.isoformat())\
+            .lte('created_at', end_date.isoformat())\
+            .execute()
+        
+        entries = entries_response.data or []
+        
+        # Calculate sentiment trends
+        sentiment_by_date = {}
+        for entry in entries:
+            date_key = entry['created_at'][:10]  # YYYY-MM-DD
+            if date_key not in sentiment_by_date:
+                sentiment_by_date[date_key] = []
+            if entry.get('sentiment_score') is not None:
+                sentiment_by_date[date_key].append({
+                    'score': entry['sentiment_score'],
+                    'category': entry.get('sentiment_category', 'neutral')
+                })
+        
+        sentiment_trends = []
+        for date, sentiments in sorted(sentiment_by_date.items()):
+            if sentiments:
+                avg_score = sum(s['score'] for s in sentiments) / len(sentiments)
+                # Determine overall category
+                if avg_score > 0.6:
+                    category = 'very_positive'
+                elif avg_score > 0.2:
+                    category = 'positive'
+                elif avg_score > -0.2:
+                    category = 'neutral'
+                elif avg_score > -0.6:
+                    category = 'negative'
+                else:
+                    category = 'very_negative'
+                
+                sentiment_trends.append(SentimentTrend(
+                    date=date,
+                    score=avg_score,
+                    category=category
+                ))
+        
+        # Calculate wellness scores
+        total_entries = len(entries)
+        positive_entries = len([e for e in entries if e.get('sentiment_score', 0) > 0.2])
+        high_energy_entries = len([e for e in entries if e.get('energy_level') in ['high', 'very_high']])
+        
+        wellness_score = WellnessScore(
+            overall=0.7 if total_entries > 0 else 0.5,
+            emotional=positive_entries / total_entries if total_entries > 0 else 0.5,
+            productivity=0.65,  # Would calculate from task completion
+            balance=high_energy_entries / total_entries if total_entries > 0 else 0.5
+        )
+        
+        # Generate emotional insights
+        emotional_insights = []
+        if total_entries > 5:
+            if positive_entries / total_entries > 0.7:
+                emotional_insights.append(EmotionalInsight(
+                    type='positive_trend',
+                    message='Your emotional state has been predominantly positive!',
+                    confidence=0.85
+                ))
+            elif positive_entries / total_entries < 0.3:
+                emotional_insights.append(EmotionalInsight(
+                    type='support_needed',
+                    message='Consider focusing on self-care and activities that bring you joy.',
+                    confidence=0.8
+                ))
+        
+        # Activity correlations (simplified)
+        activity_correlations = [
+            ActivityCorrelation(
+                activity='journaling',
+                sentiment_impact=0.15,
+                frequency=total_entries
+            )
+        ]
+        
+        return JournalInsights(
+            sentiment_trends=sentiment_trends,
+            wellness_score=wellness_score,
+            emotional_insights=emotional_insights,
+            activity_correlations=activity_correlations
         )
     
     @strawberry.field
