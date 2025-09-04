@@ -90,6 +90,9 @@ app.add_middleware(SecurityHeadersMiddleware)
 from input_validation import InputValidationMiddleware
 app.add_middleware(InputValidationMiddleware)
 
+# Import GraphQL router
+from graphql_app import graphql_router
+
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
@@ -1589,3 +1592,4 @@ app.include_router(api_router)
 app.include_router(auth_router, prefix="/api")
 app.include_router(hrm_router)
 app.include_router(webhook_router, prefix="/api")
+app.include_router(graphql_router, prefix="/graphql")

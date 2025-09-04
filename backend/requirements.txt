@@ -57,3 +57,7 @@ openai>=1.12.0
 vaderSentiment>=3.3.2
 slowapi>=0.1.9
 Pillow>=10.2.0
+
+# GraphQL dependencies
+strawberry-graphql[fastapi]>=0.217.1
+graphene>=3.3
