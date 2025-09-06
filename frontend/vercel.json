@@ -23,7 +23,7 @@
   ],
   "env": {
     "REACT_APP_SUPABASE_URL": "https://sftppbnqlsumjlrgyzgo.supabase.co",
-    "REACT_APP_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdHBwYm5xbHN1bWpscmd5emdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDgzNjI3OTUsImV4cCI6MjAyMzk3ODc5NX0.PzL5W-OcWZwwFGj_YIAjGDCdtqvgM8mPQy1Yl-xW-S8",
+    "REACT_APP_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdHBwYm5xbHN1bWpscmd5emdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MTYwOTksImV4cCI6MjA2OTA5MjA5OX0.EE8EW1fr2GyUo_exh7Sj_kA2mXGWwffxU4aEHXPWjrQ",
     "REACT_APP_BACKEND_URL": "https://sftppbnqlsumjlrgyzgo.supabase.co/functions/v1",
     "REACT_APP_GOOGLE_CLIENT_ID": "266791319799-m9kd1n5t3pdh4oicijppk06sva56asj6.apps.googleusercontent.com"
   }
