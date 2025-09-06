@@ -14,32 +14,60 @@ serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client with proper headers
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
+    }
+
+    // Initialize Supabase client with proper auth
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
           headers: { 
-            Authorization: req.headers.get('Authorization') ?? '',
+            Authorization: authHeader,
             apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? ''
           },
         },
       }
     )
 
+    // Verify the JWT token
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
+    }
+
     // Parse URL and method
     const url = new URL(req.url)
     const path = url.pathname
     const method = req.method
 
-    // Route handling - Public endpoints (no auth required)
+    // Route handling - All endpoints now require authentication
     if (path === '/' && method === 'GET') {
       return new Response(
         JSON.stringify({
           message: "Aurum Life API - Supabase Edge Function",
           version: "2.0.0",
           status: "operational",
+          user: {
+            id: user.id,
+            email: user.email
+          },
           timestamp: new Date().toISOString()
         }),
         { 
@@ -49,13 +77,13 @@ serve(async (req) => {
       )
     }
 
-    // Health check - Public endpoint
+    // Health check - Authenticated
     if (path === '/health' && method === 'GET') {
       return new Response(
         JSON.stringify({ 
           status: 'healthy', 
           timestamp: new Date().toISOString(),
-          uptime: 'operational'
+          user: user.id
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -64,37 +92,22 @@ serve(async (req) => {
       )
     }
 
-    // Test endpoint - Public
-    if (path === '/test' && method === 'GET') {
-      return new Response(
-        JSON.stringify({ 
-          message: 'Aurum Life API Test Endpoint',
-          status: 'success',
-          timestamp: new Date().toISOString()
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      )
-    }
-
-    // API routes - These require authentication
+    // API routes
     if (path.startsWith('/api/')) {
       const apiPath = path.replace('/api', '')
       
       // Handle different API endpoints
       switch (apiPath) {
         case '/tasks':
-          return await handleTasks(req, supabaseClient)
+          return await handleTasks(req, supabaseClient, user.id)
         case '/projects':
-          return await handleProjects(req, supabaseClient)
+          return await handleProjects(req, supabaseClient, user.id)
         case '/pillars':
-          return await handlePillars(req, supabaseClient)
+          return await handlePillars(req, supabaseClient, user.id)
         case '/areas':
-          return await handleAreas(req, supabaseClient)
+          return await handleAreas(req, supabaseClient, user.id)
         case '/journal':
-          return await handleJournal(req, supabaseClient)
+          return await handleJournal(req, supabaseClient, user.id)
         default:
           return new Response(
             JSON.stringify({ error: 'Endpoint not found' }),
@@ -127,10 +140,11 @@ serve(async (req) => {
 })
 
 // API Handler Functions
-async function handleTasks(req: Request, supabase: any) {
+async function handleTasks(req: Request, supabase: any, userId: string) {
   const { data, error } = await supabase
     .from('tasks')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
@@ -144,10 +158,11 @@ async function handleTasks(req: Request, supabase: any) {
   )
 }
 
-async function handleProjects(req: Request, supabase: any) {
+async function handleProjects(req: Request, supabase: any, userId: string) {
   const { data, error } = await supabase
     .from('projects')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
@@ -161,10 +176,11 @@ async function handleProjects(req: Request, supabase: any) {
   )
 }
 
-async function handlePillars(req: Request, supabase: any) {
+async function handlePillars(req: Request, supabase: any, userId: string) {
   const { data, error } = await supabase
     .from('pillars')
     .select('*')
+    .eq('user_id', userId)
     .order('sort_order', { ascending: true })
 
   if (error) throw error
@@ -178,10 +194,11 @@ async function handlePillars(req: Request, supabase: any) {
   )
 }
 
-async function handleAreas(req: Request, supabase: any) {
+async function handleAreas(req: Request, supabase: any, userId: string) {
   const { data, error } = await supabase
     .from('areas')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
@@ -195,10 +212,11 @@ async function handleAreas(req: Request, supabase: any) {
   )
 }
 
-async function handleJournal(req: Request, supabase: any) {
+async function handleJournal(req: Request, supabase: any, userId: string) {
   const { data, error } = await supabase
     .from('journal_entries')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
