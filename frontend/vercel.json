@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "headers": {
+        "cache-control": "s-maxage=31536000,immutable"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "REACT_APP_SUPABASE_URL": "https://sftppbnqlsumjlrgyzgo.supabase.co",
+    "REACT_APP_BACKEND_URL": "https://sftppbnqlsumjlrgyzgo.supabase.co/functions/v1",
+    "REACT_APP_GOOGLE_CLIENT_ID": "266791319799-m9kd1n5t3pdh4oicijppk06sva56asj6.apps.googleusercontent.com"
+  }
+}

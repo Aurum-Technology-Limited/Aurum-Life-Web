@@ -318,29 +318,6 @@ export const JOURNAL_ENTRY_FRAGMENT = gql`
   }
 `;
 
-export const GET_JOURNAL_ENTRIES = gql`
-  query GetJournalEntries(
-    $skip: Int
-    $limit: Int
-    $moodFilter: String
-    $tagFilter: String
-    $dateFrom: String
-    $dateTo: String
-  ) {
-    journalEntries(
-      skip: $skip
-      limit: $limit
-      moodFilter: $moodFilter
-      tagFilter: $tagFilter
-      dateFrom: $dateFrom
-      dateTo: $dateTo
-    ) {
-      ...JournalEntryFragment
-    }
-  }
-  ${JOURNAL_ENTRY_FRAGMENT}
-`;
-
 export const GET_JOURNAL_INSIGHTS = gql`
   query GetJournalInsights($timeRange: Int!) {
     journalInsights(timeRange: $timeRange) {

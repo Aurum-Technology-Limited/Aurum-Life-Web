@@ -123,26 +123,6 @@ export const BATCH_DELETE_TASKS = gql`
   }
 `;
 
-// Journal Mutations
-export const CREATE_JOURNAL_ENTRY = gql`
-  mutation CreateJournalEntry($entry: CreateJournalEntryInput!) {
-    createJournalEntry(entry: $entry) {
-      success
-      message
-      journalEntry {
-        id
-        title
-        content
-        mood
-        tags
-        sentimentScore
-        sentimentCategory
-        createdAt
-      }
-    }
-  }
-`;
-
 export const UPDATE_JOURNAL_ENTRY = gql`
   mutation UpdateJournalEntry($id: ID!, $entry: UpdateJournalEntryInput!) {
     updateJournalEntry(id: $id, entry: $entry) {

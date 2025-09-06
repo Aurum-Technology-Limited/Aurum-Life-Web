@@ -291,6 +291,7 @@ function App() {
               </DataProvider>
             </AuthProvider>
           </GoogleOAuthProvider>
+          </ApolloProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     );
@@ -331,6 +332,7 @@ function App() {
             </DataProvider>
           </AuthProvider>
         </GoogleOAuthProvider>
+        </ApolloProvider>
         {/* TanStack Query DevTools - temporarily disabled due to locale issue */}
         {/* process.env.NODE_ENV === 'development' && (
           <ReactQueryDevtools initialIsOpen={false} />

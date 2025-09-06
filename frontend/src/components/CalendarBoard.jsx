@@ -4,7 +4,7 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { format, addDays, startOfWeek, endOfWeek, startOfDay, setHours, setMinutes, isSameDay, parseISO } from 'date-fns';
 import { PlusCircle, Filter, ChevronDown, ChevronRight } from 'lucide-react';
-import { TaskModal } from './Tasks';
+// import { TaskModal } from './Tasks'; // Temporarily disabled
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i); // 00:00 - 23:00
 const ITEM_TYPE = 'TASK_CARD';
@@ -299,10 +299,10 @@ const CalendarBoard = () => {
           </div>
         )}
 
-        {/* Task modal */}
-        {modalOpen && activeTask && (
+        {/* Task modal - temporarily disabled */}
+        {/* {modalOpen && activeTask && (
           <TaskModal task={activeTask} isOpen={modalOpen} onClose={onCloseTask} onSave={onSaveTask} loading={false} />
-        )}
+        )} */}
       </div>
 
       {/* Create task modal (overlay) */}
