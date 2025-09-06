@@ -14,13 +14,16 @@ serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client
+    // Initialize Supabase client with proper headers
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { 
+            Authorization: req.headers.get('Authorization') ?? '',
+            apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+          },
         },
       }
     )
@@ -30,13 +33,14 @@ serve(async (req) => {
     const path = url.pathname
     const method = req.method
 
-    // Route handling
+    // Route handling - Public endpoints (no auth required)
     if (path === '/' && method === 'GET') {
       return new Response(
         JSON.stringify({
           message: "Aurum Life API - Supabase Edge Function",
           version: "2.0.0",
-          status: "operational"
+          status: "operational",
+          timestamp: new Date().toISOString()
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -45,10 +49,14 @@ serve(async (req) => {
       )
     }
 
-    // Health check
+    // Health check - Public endpoint
     if (path === '/health' && method === 'GET') {
       return new Response(
-        JSON.stringify({ status: 'healthy', timestamp: new Date().toISOString() }),
+        JSON.stringify({ 
+          status: 'healthy', 
+          timestamp: new Date().toISOString(),
+          uptime: 'operational'
+        }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200 
@@ -56,7 +64,22 @@ serve(async (req) => {
       )
     }
 
-    // API routes
+    // Test endpoint - Public
+    if (path === '/test' && method === 'GET') {
+      return new Response(
+        JSON.stringify({ 
+          message: 'Aurum Life API Test Endpoint',
+          status: 'success',
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      )
+    }
+
+    // API routes - These require authentication
     if (path.startsWith('/api/')) {
       const apiPath = path.replace('/api', '')
       
