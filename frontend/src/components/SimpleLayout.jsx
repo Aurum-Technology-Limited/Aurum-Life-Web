@@ -19,7 +19,7 @@ import {
   LocationMarkerIcon
 } from '@heroicons/react/outline';
 import UserMenu from './UserMenu';
-import { useAuth } from '../contexts/BackendAuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import { useSemanticSearch } from './SemanticSearch';
 import CommandPalette from './CommandPalette';
 

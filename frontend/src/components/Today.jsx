@@ -4,7 +4,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVertical, X, Sun, Moon, Loader2, Brain, Sparkles} from 'lucide-react';
 import { aiCoachAPI, tasksAPI, hrmAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
-import { useAuth } from '../contexts/BackendAuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import PomodoroTimer from './PomodoroTimer';
 import TaskWhyStatements from './TaskWhyStatements';
 import TaskSearchBar from './TaskSearchBar';

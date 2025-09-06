@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
-import { useAuth } from '../contexts/BackendAuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import DatePicker from './ui/DatePicker';
 

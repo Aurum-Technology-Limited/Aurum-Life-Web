@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../contexts/BackendAuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import Login from './Login';
 
 const ProtectedRoute = ({ children }) => {

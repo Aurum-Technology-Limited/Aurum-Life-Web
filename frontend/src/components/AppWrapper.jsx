@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/BackendAuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import Login from './Login';
 import OnboardingWizard from './OnboardingWizard';
 import { api } from '../services/api';
