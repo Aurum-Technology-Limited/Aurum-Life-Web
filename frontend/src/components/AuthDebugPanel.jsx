@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/BackendAuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import { getBackendBaseUrl, getURLResolutionDebugInfo } from '../services/baseUrl';
 import { Settings, Eye, EyeOff, RefreshCw } from 'lucide-react';
 

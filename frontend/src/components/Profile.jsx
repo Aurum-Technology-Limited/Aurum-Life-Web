@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/BackendAuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import {SaveIcon} from '@heroicons/react/outline';
 import { AvatarCDNImage } from './ui/CDNImage';
 
