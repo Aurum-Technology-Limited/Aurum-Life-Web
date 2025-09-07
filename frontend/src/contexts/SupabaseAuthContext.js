@@ -211,7 +211,8 @@ export const AuthProvider = ({ children }) => {
             level: 1,
             total_points: 0,
             current_streak: 0
-          });
+          })
+        });
 
         if (!profileResponse.ok) {
           console.error('Error creating user profile:', profileResponse.status, profileResponse.statusText);
