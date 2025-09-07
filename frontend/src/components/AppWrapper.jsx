@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import Login from './Login';
-import OnboardingWizard from './OnboardingWizard';
 import { api } from '../services/api';
 
 const AppWrapper = ({ children, onNavigateToSection }) => {
@@ -149,14 +148,10 @@ const AppWrapper = ({ children, onNavigateToSection }) => {
     return <Login />;
   }
 
-  // Authenticated but needs onboarding - show onboarding wizard
+  // Authenticated but needs onboarding - show main app (onboarding removed)
   if (showOnboarding) {
-    return (
-      <OnboardingWizard
-        onComplete={handleOnboardingComplete}
-        onClose={handleOnboardingClose}
-      />
-    );
+    console.log('⚠️ Onboarding required but wizard removed - showing main app');
+    return children;
   }
 
   // Authenticated and onboarding completed - show main app
