@@ -26,7 +26,7 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
   });
 
   return (
-    <div ref={(node) => drag(drop(node))} className={`cursor-move ${isDragging ? 'opacity-50' : ''}`}>
+    <div className={`cursor-move ${isDragging ? 'opacity-50' : ''}`}>
       <UnifiedTaskItem
         task={task}
         context={task.project_name ? `Project: ${task.project_name}` : ''}
@@ -744,7 +744,7 @@ const Today = memo(() => {
                 ) : (
                   <div ref={drop} className="space-y-4">
                     {todaysTasks.map((task, index) => (
-                      <div key={task.id} ref={(node) => {/* DnD wrapper maintains drag behavior */}}>
+                      <div key={task.id}>
                         {/* Keep DragTaskItem to handle DnD and controls; render UnifiedTaskItem inside for visual parity */}
                         <div className="bg-transparent">
                           <UnifiedTaskItem

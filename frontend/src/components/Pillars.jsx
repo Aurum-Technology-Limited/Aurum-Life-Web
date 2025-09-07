@@ -24,6 +24,34 @@ const Pillars = memo(({ onSectionChange }) => {
 
   // Ensure we always have an array for rendering
   const pillars = Array.isArray(pillarsData) ? pillarsData : [];
+
+  // Handle API errors gracefully
+  if (isError && error) {
+    console.warn('Pillars API error:', error);
+    // Don't crash the component, just show empty state
+  }
+
+  // Show error state if API fails
+  if (isError && !loading) {
+    return (
+      <div className="min-h-screen bg-[#0B0D14] text-white p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold mb-4">Unable to Load Pillars</h1>
+            <p className="text-gray-400 mb-6">
+              There was an issue connecting to the server. This might be due to network connectivity or server maintenance.
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="px-6 py-3 bg-yellow-500 text-black rounded-lg hover:bg-yellow-400 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   const [showModal, setShowModal] = useState(false);
   const [editingPillar, setEditingPillar] = useState(null);
