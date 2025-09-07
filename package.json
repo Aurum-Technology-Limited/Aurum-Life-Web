@@ -1,4 +1,12 @@
 {
+  "name": "aurum-life-web",
+  "version": "1.0.0",
+  "description": "Aurum Life Personal Operating System",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd frontend && npm start",
+    "dev": "cd frontend && npm start"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.2"
   }
