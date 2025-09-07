@@ -74,13 +74,13 @@ const QuickActions = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 lg:gap-3">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
             <button
               key={action.id}
-              className="p-4 rounded-lg border hover:opacity-90 transition group"
+              className="p-3 lg:p-4 rounded-lg border hover:opacity-90 transition-all duration-200 hover:scale-[1.02] group"
               style={{
                 borderColor: 'rgba(244,208,63,0.15)', 
                 background: 'rgba(11,13,20,0.35)'

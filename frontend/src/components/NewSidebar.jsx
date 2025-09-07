@@ -53,8 +53,8 @@ const NewSidebar = ({ activeSection, onSectionChange }) => {
   ];
 
   return (
-    <aside className="w-64 border-r" style={{background: 'rgba(11,13,20,0.95)', borderColor: 'rgba(244,208,63,0.12)'}}>
-      <div className="flex flex-col h-full">
+    <aside className="w-64 lg:w-64 xl:w-72 border-r flex-shrink-0" style={{background: 'rgba(11,13,20,0.95)', borderColor: 'rgba(244,208,63,0.12)'}}>
+      <div className="flex flex-col h-full min-h-screen">
         {/* Logo */}
         <div className="p-6 border-b" style={{borderColor: 'rgba(244,208,63,0.12)'}}>
           <div className="flex items-center gap-3">
@@ -83,11 +83,16 @@ const NewSidebar = ({ activeSection, onSectionChange }) => {
                   return (
                     <li key={item.id}>
                       <button
-                        onClick={() => onSectionChange(item.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Sidebar navigation clicked:', item.id);
+                          onSectionChange(item.id);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-200 hover:scale-[1.02] ${
                           isActive 
-                            ? 'text-black font-medium' 
-                            : 'text-white hover:text-white'
+                            ? 'text-black font-medium shadow-lg' 
+                            : 'text-white hover:text-white hover:bg-white/5'
                         }`}
                         style={{
                           background: isActive 

@@ -1,11 +1,11 @@
-import React from 'react';
-import { Search, Plus, Bell, MoonStar } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Plus, Bell, MoonStar, Menu, X } from 'lucide-react';
 
 /**
  * New Header component with modern design
  * Converted from TypeScript to JavaScript
  */
-const NewHeader = () => {
+const NewHeader = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
   return (
     <header 
       className="sticky top-0 z-40 px-4 lg:px-6 py-4 border-b" 
@@ -16,8 +16,15 @@ const NewHeader = () => {
       }}
     >
       <div className="flex items-center justify-between gap-3">
-        {/* Mobile Brand */}
+        {/* Mobile Brand & Menu */}
         <div className="flex items-center gap-3 lg:hidden">
+          <button
+            onClick={onMobileMenuToggle}
+            className="p-2 rounded-lg border hover:opacity-90" 
+            style={{borderColor: 'rgba(244,208,63,0.2)'}}
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" style={{color: '#B8BCC8'}} /> : <Menu className="w-5 h-5" style={{color: '#B8BCC8'}} />}
+          </button>
           <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{background: 'linear-gradient(135deg,#F4D03F,#F7DC6F)'}}>
             <span className="text-black font-bold text-sm">AL</span>
           </div>

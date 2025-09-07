@@ -83,6 +83,7 @@ function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sectionParams, setSectionParams] = useState({});
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Initialize Semantic Search
   const { isOpen: isSemanticSearchOpen, close: closeSemanticSearch } = useSemanticSearch();
@@ -166,6 +167,12 @@ function App() {
     console.log('🧭 Navigating to section:', section, 'with params:', params);
     setActiveSection(section);
     setSectionParams(params);
+    // Close mobile menu when navigating
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   // Props to pass to components
@@ -258,14 +265,46 @@ function App() {
                 <NotificationProvider>
                   <DndProvider backend={HTML5Backend}>
                     <AppWrapper onNavigateToSection={handleNavigateToSection}>
-                      <div className="min-h-screen flex" style={{backgroundColor: '#0B0D14', color: 'white'}}>
-                        <NewSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+                      <div className="min-h-screen flex flex-col lg:flex-row" style={{backgroundColor: '#0B0D14', color: 'white'}}>
+                        {/* Mobile Header */}
+                        <div className="lg:hidden">
+                          <NewHeader 
+                            onMobileMenuToggle={handleMobileMenuToggle}
+                            isMobileMenuOpen={isMobileMenuOpen}
+                          />
+                        </div>
                         
-                        <div className="flex-1 flex flex-col">
-                          <NewHeader />
+                        {/* Mobile Sidebar Overlay */}
+                        {isMobileMenuOpen && (
+                          <div className="lg:hidden fixed inset-0 z-50">
+                            <div 
+                              className="absolute inset-0" 
+                              style={{background: 'rgba(0,0,0,0.5)'}}
+                              onClick={handleMobileMenuToggle}
+                            ></div>
+                            <div className="relative h-full w-80 max-w-[80vw]">
+                              <NewSidebar activeSection={activeSection} onSectionChange={handleNavigateToSection} />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Desktop Sidebar */}
+                        <div className="hidden lg:block">
+                          <NewSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+                        </div>
+                        
+                        {/* Main Content Area */}
+                        <div className="flex-1 flex flex-col min-w-0">
+                          {/* Desktop Header */}
+                          <div className="hidden lg:block">
+                            <NewHeader 
+                              onMobileMenuToggle={handleMobileMenuToggle}
+                              isMobileMenuOpen={isMobileMenuOpen}
+                            />
+                          </div>
                           
-                          <main className="px-4 lg:px-6 py-6">
-                            <div className="max-w-[1400px] mx-auto space-y-8">
+                          <main className="flex-1 px-4 lg:px-6 py-4 lg:py-6 overflow-x-hidden">
+                            <div className="w-full max-w-none lg:max-w-[1400px] mx-auto space-y-6 lg:space-y-8">
                               {/* Page Title / Breadcrumb */}
                               <div className="flex items-center justify-between gap-4">
                                 <div>

@@ -14,17 +14,25 @@ import { QuickActions } from './dashboard/QuickActions';
  */
 const NewDashboard = () => {
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 lg:space-y-6">
       {/* Strategic Overview + System Status */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <StrategicOverview />
-        <SystemStatus />
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+        <div className="xl:col-span-2">
+          <StrategicOverview />
+        </div>
+        <div>
+          <SystemStatus />
+        </div>
       </div>
 
       {/* Today's Focus + AI Insights */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <TodaysFocus />
-        <AIInsights />
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+        <div className="xl:col-span-2">
+          <TodaysFocus />
+        </div>
+        <div>
+          <AIInsights />
+        </div>
       </div>
 
       {/* Strategic Metrics Panel */}

@@ -58,13 +58,13 @@ const StrategicMetrics = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {metrics.map((metric, index) => {
           const Icon = metric.icon;
           return (
             <div 
               key={index} 
-              className="p-4 rounded-lg border hover:opacity-90 transition"
+              className="p-3 lg:p-4 rounded-lg border hover:opacity-90 transition-all duration-200 hover:scale-[1.02]"
               style={{
                 borderColor: 'rgba(244,208,63,0.15)', 
                 background: 'rgba(11,13,20,0.35)'

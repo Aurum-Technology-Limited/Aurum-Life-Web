@@ -25,7 +25,7 @@ const PillarCard = ({ pillar }) => {
 
   return (
     <div 
-      className="rounded-xl border p-4 hover:shadow-md transition" 
+      className="rounded-xl border p-3 lg:p-4 hover:shadow-md transition-all duration-200 hover:scale-[1.02] w-full" 
       style={{
         background: 'rgba(26,29,41,0.5)', 
         backdropFilter: 'blur(10px)', 
@@ -69,11 +69,11 @@ const PillarCard = ({ pillar }) => {
         </div>
       </div>
       
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-3 lg:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
         {pillar.areas.map((area) => (
           <div 
             key={area} 
-            className="text-[11px] px-2 py-1 rounded-md border" 
+            className="text-[10px] lg:text-[11px] px-2 py-1 rounded-md border text-center sm:text-left" 
             style={{
               borderColor: 'rgba(244,208,63,0.18)', 
               color: '#B8BCC8'
