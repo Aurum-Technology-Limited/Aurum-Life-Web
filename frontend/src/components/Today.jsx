@@ -26,7 +26,13 @@ const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPom
   });
 
   return (
-    <div className={`cursor-move ${isDragging ? 'opacity-50' : ''}`}>
+    <div 
+      ref={(node) => {
+        drag(node);
+        drop(node);
+      }}
+      className={`cursor-move ${isDragging ? 'opacity-50' : ''}`}
+    >
       <UnifiedTaskItem
         task={task}
         context={task.project_name ? `Project: ${task.project_name}` : ''}

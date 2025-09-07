@@ -137,13 +137,17 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [activeSection]);
 
-  // Update URL hash when section changes
+  // Update URL hash when section changes (debounced to prevent throttling)
   useEffect(() => {
-    if (activeSection && activeSection !== 'dashboard') {
-      window.location.hash = activeSection;
-    } else if (activeSection === 'dashboard') {
-      window.location.hash = '';
-    }
+    const timeoutId = setTimeout(() => {
+      if (activeSection && activeSection !== 'dashboard') {
+        window.location.hash = activeSection;
+      } else if (activeSection === 'dashboard') {
+        window.location.hash = '';
+      }
+    }, 100); // 100ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [activeSection]);
 
   // Handle password reset page
