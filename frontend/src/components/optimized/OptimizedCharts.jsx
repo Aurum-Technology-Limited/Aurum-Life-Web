@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { LazyChart } from '../ui/LazyChart';
+// LazyChart removed during refactoring
 import { arePropsEqual } from '../../hooks/useMemorization';
 
 /**
@@ -121,12 +121,12 @@ export const OptimizedDonutChart = memo(({
         <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
       )}
       <div className={`relative ${sizeClasses[size]}`}>
-        <LazyChart
-          type="Doughnut"
-          data={chartData}
-          options={options}
-          height={300}
-        />
+        <div className="w-full h-64 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700">
+          <div className="text-center">
+            <div className="text-gray-400 text-sm mb-2">Chart Component</div>
+            <div className="text-gray-500 text-xs">LazyChart temporarily removed during refactoring</div>
+          </div>
+        </div>
         {/* Center text showing total */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
@@ -211,12 +211,12 @@ export const OptimizedLineChart = memo(({
         <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
       )}
       <div style={{ height }}>
-        <LazyChart
-          type="Line"
-          data={chartData}
-          options={options}
-          height={height}
-        />
+        <div className="w-full bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700" style={{ height }}>
+          <div className="text-center">
+            <div className="text-gray-400 text-sm mb-2">Line Chart</div>
+            <div className="text-gray-500 text-xs">LazyChart temporarily removed during refactoring</div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -295,12 +295,12 @@ export const OptimizedBarChart = memo(({
         <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
       )}
       <div style={{ height }}>
-        <LazyChart
-          type="Bar"
-          data={chartData}
-          options={options}
-          height={height}
-        />
+        <div className="w-full bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700" style={{ height }}>
+          <div className="text-center">
+            <div className="text-gray-400 text-sm mb-2">Bar Chart</div>
+            <div className="text-gray-500 text-xs">LazyChart temporarily removed during refactoring</div>
+          </div>
+        </div>
       </div>
     </div>
   );
