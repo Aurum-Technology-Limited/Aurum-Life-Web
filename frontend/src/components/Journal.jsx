@@ -9,8 +9,8 @@ import {
   useAnalyzeJournalSentiment 
 } from '../hooks/useGraphQL';
 // SentimentIndicator removed during refactoring
-import { OptimizedLineChart } from './optimized/OptimizedCharts';
-import { OptimizedJournalEntryCard } from './optimized/OptimizedLists';
+// import { OptimizedLineChart } from './optimized/OptimizedCharts'; // Removed - using placeholder
+// import { OptimizedJournalEntryCard } from './optimized/OptimizedLists'; // Removed - using placeholder
 
 const Journal = ({ onSectionChange, sectionParams }) => {
   const [currentView, setCurrentView] = useState('entries'); // 'entries', 'insights', 'templates', 'trash'

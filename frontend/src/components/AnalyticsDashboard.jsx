@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAnalyticsDashboard, useAnalyticsPreferences, useUpdateAnalyticsPreferences } from '../hooks/useGraphQL';
-import { OptimizedBarChart, OptimizedLineChart } from './optimized/OptimizedCharts';
+// import { OptimizedBarChart, OptimizedLineChart } from './optimized/OptimizedCharts'; // Removed - using placeholders
 import {
   Brain,
   TrendingUp,
