@@ -79,7 +79,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+function NewApp() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sectionParams, setSectionParams] = useState({});
   const [isPasswordResetPage, setIsPasswordResetPage] = useState(false);
@@ -333,4 +333,4 @@ function App() {
   );
 }
 
-export default App;
+export default NewApp;
