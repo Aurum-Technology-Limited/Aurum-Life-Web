@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { CogIcon, BellIcon, ShieldCheckIcon } from '@heroicons/react/outline';
 import { Target } from 'lucide-react';
 import NotificationSettings from './NotificationSettings';
-import GoalSettings from './GoalSettings';
 import DeleteAccountSection from './DeleteAccountSection';
 
 const Settings = ({ sectionParams }) => {
@@ -33,7 +32,19 @@ const Settings = ({ sectionParams }) => {
   const renderSubSection = () => {
     switch (activeSubSection) {
       case 'goals':
-        return <GoalSettings />;
+        return (
+          <div className="space-y-6">
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold text-white mb-4">Goal Settings</h3>
+              <p className="text-gray-400 mb-4">
+                Goal settings have been temporarily removed during refactoring.
+              </p>
+              <p className="text-sm text-gray-500">
+                This feature will be restored in a future update.
+              </p>
+            </div>
+          </div>
+        );
       case 'notifications':
         return <NotificationSettings />;
       case 'privacy':
@@ -98,7 +109,19 @@ const Settings = ({ sectionParams }) => {
       case 'delete-account':
         return <DeleteAccountSection onBack={() => setActiveSubSection('privacy')} />;
       default:
-        return <GoalSettings />;
+        return (
+          <div className="space-y-6">
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold text-white mb-4">Goal Settings</h3>
+              <p className="text-gray-400 mb-4">
+                Goal settings have been temporarily removed during refactoring.
+              </p>
+              <p className="text-sm text-gray-500">
+                This feature will be restored in a future update.
+              </p>
+            </div>
+          </div>
+        );
     }
   };
 
