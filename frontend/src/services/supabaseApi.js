@@ -6,17 +6,30 @@
 import { supabase } from './supabase';
 
 class SupabaseAPI {
+  // Helper method to get authentication token
+  static async getToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  }
+
   // User Profile Operations
   static async getUserProfile(userId) {
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      const response = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/functions/v1/api/user-profiles/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${await this.getToken()}`,
+          'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      if (error) throw error;
-      return { success: true, data };
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return { success: true, data: result.data };
     } catch (error) {
       console.error('Get user profile error:', error);
       return { success: false, error: error.message };
@@ -25,15 +38,22 @@ class SupabaseAPI {
 
   static async updateUserProfile(userId, profileData) {
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update(profileData)
-        .eq('id', userId)
-        .select()
-        .single();
+      const response = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/functions/v1/api/user-profiles/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${await this.getToken()}`,
+          'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(profileData)
+      });
 
-      if (error) throw error;
-      return { success: true, data };
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return { success: true, data: result.data };
     } catch (error) {
       console.error('Update user profile error:', error);
       return { success: false, error: error.message };

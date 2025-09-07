@@ -144,6 +144,27 @@ serve(async (req) => {
       case '/api/ultra/dashboard':
         return await handleDashboard(req, supabaseClient, user.id)
       
+      // User Profile endpoints
+      case '/api/user-profiles':
+        if (method === 'GET') {
+          return await handleGetUserProfiles(req, supabaseClient, user.id)
+        } else if (method === 'POST') {
+          return await handleCreateUserProfile(req, supabaseClient, user.id)
+        }
+        break
+      case (path.match(/^\/api\/user-profiles\/([^\/]+)$/) ? path : null):
+        const userId = path.match(/^\/api\/user-profiles\/([^\/]+)$/)?.[1]
+        if (userId) {
+          if (method === 'GET') {
+            return await handleGetUserProfile(req, supabaseClient, user.id, userId)
+          } else if (method === 'PUT') {
+            return await handleUpdateUserProfile(req, supabaseClient, user.id, userId)
+          } else if (method === 'DELETE') {
+            return await handleDeleteUserProfile(req, supabaseClient, user.id, userId)
+          }
+        }
+        break
+      
       // AI endpoints - Core Aurum Life AI features
       case '/ai/task-why-statements':
         return await handleAITaskWhyStatements(req, supabaseClient, user.id)
@@ -370,6 +391,184 @@ async function handleJournal(req: Request, supabase: any, userId: string) {
       status: 200 
     }
   )
+}
+
+// User Profile handlers
+async function handleGetUserProfiles(req: Request, supabase: any, userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: data || [],
+        message: 'User profiles retrieved successfully'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to get user profiles'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    )
+  }
+}
+
+async function handleGetUserProfile(req: Request, supabase: any, userId: string, profileId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', profileId)
+      .single();
+
+    if (error) throw error;
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: data,
+        message: 'User profile retrieved successfully'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to get user profile'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    )
+  }
+}
+
+async function handleCreateUserProfile(req: Request, supabase: any, userId: string) {
+  try {
+    const body = await req.json();
+    
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert([{ ...body, id: userId }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: data,
+        message: 'User profile created successfully'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 201 
+      }
+    )
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to create user profile'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    )
+  }
+}
+
+async function handleUpdateUserProfile(req: Request, supabase: any, userId: string, profileId: string) {
+  try {
+    const body = await req.json();
+    
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update(body)
+      .eq('id', profileId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: data,
+        message: 'User profile updated successfully'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to update user profile'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    )
+  }
+}
+
+async function handleDeleteUserProfile(req: Request, supabase: any, userId: string, profileId: string) {
+  try {
+    const { error } = await supabase
+      .from('user_profiles')
+      .delete()
+      .eq('id', profileId);
+
+    if (error) throw error;
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'User profile deleted successfully'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || 'Failed to delete user profile'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    )
+  }
 }
 
 // Dashboard handler

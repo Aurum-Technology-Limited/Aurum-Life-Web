@@ -87,15 +87,22 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (supabaseUser) => {
     try {
-      // First try to get profile from Supabase user_profiles table
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .single();
+      // Use our Edge Function API instead of direct Supabase calls
+      const response = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/functions/v1/api/user-profiles/${supabaseUser.id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${supabaseUser.access_token}`,
+          'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', profileError);
+      let profile = null;
+      if (response.ok) {
+        const result = await response.json();
+        profile = result.data;
+      } else if (response.status !== 404) {
+        console.error('Error fetching user profile:', response.status, response.statusText);
       }
 
       // Combine Supabase user data with profile data
@@ -187,10 +194,15 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.user) {
-        // Create user profile in our user_profiles table
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert({
+        // Create user profile using our Edge Function API
+        const profileResponse = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/functions/v1/api/user-profiles`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${data.session.access_token}`,
+            'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
             id: data.user.id,
             username: userData.username,
             first_name: userData.first_name,
@@ -201,8 +213,8 @@ export const AuthProvider = ({ children }) => {
             current_streak: 0
           });
 
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
+        if (!profileResponse.ok) {
+          console.error('Error creating user profile:', profileResponse.status, profileResponse.statusText);
         }
 
         // Also create a user in the public.users table for backend compatibility
@@ -295,16 +307,22 @@ export const AuthProvider = ({ children }) => {
     try {
       if (!user) return { success: false, error: 'User not authenticated' };
 
-      // Update user_profiles table
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .update(profileData)
-        .eq('id', user.id);
+      // Update user_profiles table using our Edge Function API
+      const response = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/functions/v1/api/user-profiles/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${user.access_token}`,
+          'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(profileData)
+      });
 
-      if (profileError) {
+      if (!response.ok) {
+        const errorData = await response.json();
         return { 
           success: false, 
-          error: profileError.message || 'Profile update failed' 
+          error: errorData.message || 'Profile update failed' 
         };
       }
 
