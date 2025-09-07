@@ -20,6 +20,10 @@ import LazyComponentErrorBoundary from './components/LazyComponentErrorBoundary'
 import PasswordReset from './components/PasswordReset';
 import AIDecisionHelper from './components/ui/AIDecisionHelper';
 import AuthDebugPanel from './components/AuthDebugPanel';
+import { StrategicProjectAssessment } from './components/StrategicProjectAssessment';
+import { AreasSection } from './components/AreasSection';
+import { TasksSection } from './components/TasksSection';
+import { AdvancedAIInsights } from './components/AdvancedAIInsights';
 
 // Import performance test for debugging
 import './services/performanceTest';
@@ -28,10 +32,7 @@ import './services/performanceTest';
 const OptimizedDashboard = lazy(() => import('./components/OptimizedDashboard'));
 const Today = lazy(() => import('./components/Today'));
 const Pillars = lazy(() => import('./components/Pillars'));
-const Areas = lazy(() => import('./components/Areas'));
-const Projects = lazy(() => import('./components/Projects'));
 const Journal = lazy(() => import('./components/Journal'));
-const Tasks = lazy(() => import('./components/Tasks'));
 const Feedback = lazy(() => import('./components/Feedback'));
 const AICoach = lazy(() => import('./components/AICoach'));
 const AICommandCenter = lazy(() => import('./components/AICommandCenter'));
@@ -43,7 +44,6 @@ const Settings = lazy(() => import('./components/Settings'));
 const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
 const NotificationCenter = lazy(() => import('./components/NotificationCenter'));
 const AIIntelligenceCenter = lazy(() => import('./components/AIIntelligenceCenter'));
-const HRMDemo = lazy(() => import('./components/HRMDemo'));
 
 // Import AI Command Center hook
 import SemanticSearch, { useSemanticSearch } from './components/SemanticSearch';
@@ -205,8 +205,8 @@ function App() {
               console.log('📅 Rendering Today component');
               return <Today {...props} />;
             case 'insights':
-              console.log('📊 Rendering Enhanced Insights component');
-              return <EnhancedInsights {...props} onSectionChange={setActiveSection} />;
+              console.log('📊 Rendering Advanced AI Insights component');
+              return <AdvancedAIInsights />;
             case 'analytics':
               console.log('📈 Rendering Analytics Dashboard component');
               return <AnalyticsDashboard {...props} onSectionChange={setActiveSection} />;
@@ -214,11 +214,11 @@ function App() {
               console.log('⛰️ Rendering Pillars component');
               return <Pillars {...props} />;
             case 'areas':
-              console.log('🗂️ Rendering Areas component');
-              return <Areas {...props} />;
+              console.log('🗂️ Rendering Areas Section component');
+              return <AreasSection />;
             case 'projects':
-              console.log('📁 Rendering Projects component');
-              return <Projects {...props} />;
+              console.log('📁 Rendering Strategic Project Assessment component');
+              return <StrategicProjectAssessment />;
             case 'journal':
               console.log('📖 Rendering Journal component');
               return (
@@ -227,8 +227,8 @@ function App() {
                 </LazyComponentErrorBoundary>
               );
             case 'tasks':
-              console.log('✅ Rendering Tasks component');
-              return <Tasks {...props} />;
+              console.log('✅ Rendering Tasks Section component');
+              return <TasksSection />;
             case 'feedback':
               console.log('💬 Rendering Feedback component');
               return <Feedback {...props} />;
