@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { insightsAPI, hrmAPI, aiCoachAPI } from '../services/api';
 import { useQuery } from '@tanstack/react-query';
-import AIInsightCard from './ui/AIInsightCard';
+// AIInsightCard removed during refactoring
 // CrossNavigationWidget removed during refactoring
 
 const EnhancedInsights = ({ onSectionChange }) => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import {SaveIcon} from '@heroicons/react/outline';
-import { AvatarCDNImage } from './ui/CDNImage';
+// AvatarCDNImage removed during refactoring
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
@@ -96,13 +96,9 @@ const Profile = () => {
           <div className="flex items-center space-x-6">
             <div className="relative">
               {user.profile_picture ? (
-                <AvatarCDNImage
-                  bucket="avatars"
-                  path={user.profile_picture}
-                  alt="Profile"
-                  size={80}
-                  className="h-20 w-20"
-                />
+                <div className="h-20 w-20 bg-gray-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                  {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                </div>
               ) : (
                 <div className="h-20 w-20 bg-yellow-500 rounded-full flex items-center justify-center">
                   <span className="text-black font-bold text-2xl">{initials}</span>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { UserIcon, CogIcon, LogoutIcon } from '@heroicons/react/outline';
-import { AvatarCDNImage } from './ui/CDNImage';
+// AvatarCDNImage removed during refactoring
 
 const UserMenu = ({ onSectionChange }) => {
   const { user, logout } = useAuth();
@@ -53,13 +53,9 @@ const UserMenu = ({ onSectionChange }) => {
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
             {user.profile_picture ? (
-              <AvatarCDNImage
-                bucket="avatars"
-                path={user.profile_picture}
-                alt="Profile"
-                size={32}
-                className="h-8 w-8"
-              />
+              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+              </div>
             ) : (
               <div className="h-8 w-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <span className="text-black font-medium text-sm">{initials}</span>

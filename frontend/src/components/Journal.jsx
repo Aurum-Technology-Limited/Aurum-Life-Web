@@ -8,7 +8,7 @@ import {
   useDeleteJournalEntry,
   useAnalyzeJournalSentiment 
 } from '../hooks/useGraphQL';
-import SentimentIndicator, { SentimentBadge } from './ui/SentimentIndicator';
+// SentimentIndicator removed during refactoring
 import { OptimizedLineChart } from './optimized/OptimizedCharts';
 import { OptimizedJournalEntryCard } from './optimized/OptimizedLists';
 
@@ -176,10 +176,9 @@ const Journal = ({ onSectionChange, sectionParams }) => {
         </div>
         <div className="flex items-center gap-2">
           {entry.sentimentScore !== null && (
-            <SentimentBadge 
-              score={entry.sentimentScore} 
-              category={entry.sentimentCategory}
-            />
+            <div className="px-2 py-1 bg-gray-700 rounded text-xs text-gray-300">
+              Sentiment: {entry.sentimentCategory || 'Neutral'}
+            </div>
           )}
           <button
             onClick={() => handleAnalyzeSentiment(entry.id)}

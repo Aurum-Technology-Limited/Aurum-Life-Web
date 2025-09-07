@@ -4,7 +4,7 @@ import {HomeIcon, CalendarIcon, LightningBoltIcon, ViewGridIcon, FolderIcon, Doc
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/BackendAuthContext';
 import { useSemanticSearch } from './SemanticSearch';
-import { CDNImage } from './ui/CDNImage';
+// CDNImage removed during refactoring
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -104,15 +104,9 @@ const Layout = ({ children }) => {
           {!sidebarCollapsed && (
             <div className="flex items-center space-x-2">
             <div className="w-8 h-8 flex items-center justify-center">
-              <CDNImage
-                bucket="assets"
-                path="logos/aurum-brain-logo.svg"
-                alt="Aurum Life Logo"
-                className="w-8 h-8 object-contain"
-                size="thumbnail"
-                priority={true}
-                placeholder="/aurum-brain-logo.svg"
-              />
+              <div className="w-8 h-8 bg-gray-600 rounded flex items-center justify-center text-white text-sm font-bold">
+                AL
+              </div>
               <div 
                 className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg items-center justify-center text-black font-bold text-sm hidden"
                 style={{ display: 'none' }}

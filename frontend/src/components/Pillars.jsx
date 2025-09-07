@@ -4,7 +4,7 @@ import { useDataContext } from '../contexts/DataContext';
 import { api } from '../services/api';
 import { usePillarsQuery, useInvalidateQueries } from '../hooks/useQueries';
 import {Plus, Trash2, Edit2, Layers} from 'lucide-react';
-import IconPicker from './ui/IconPicker';
+// IconPicker removed during refactoring
 
 const Pillars = memo(({ onSectionChange }) => {
   const { onDataMutation } = useDataContext();
@@ -403,16 +403,26 @@ const Pillars = memo(({ onSectionChange }) => {
                   />
                 </div>
 
-                {/* Icon Picker */}
-                <IconPicker
-                  value={formData.icon}
-                  onChange={(icon) => setFormData({...formData, icon})}
-                  label="Icon"
-                  placeholder="🎯"
-                  required={false}
-                  iconSet="pillars"
-                  allowCustom={true}
-                />
+                {/* Icon Picker - temporarily removed during refactoring */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-300">Icon</label>
+                  <div className="flex space-x-2">
+                    {['🏠', '💼', '❤️', '🎯', '📚', '🏃', '🎨', '🌟'].map((icon) => (
+                      <button
+                        key={icon}
+                        type="button"
+                        onClick={() => setFormData({...formData, icon})}
+                        className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-lg ${
+                          formData.icon === icon 
+                            ? 'border-yellow-500 bg-yellow-500/20' 
+                            : 'border-gray-600 hover:border-gray-500'
+                        }`}
+                      >
+                        {icon}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">

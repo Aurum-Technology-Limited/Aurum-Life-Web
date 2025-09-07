@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
-import DatePicker from './ui/DatePicker';
+// DatePicker removed during refactoring
 
 const Login = () => {
   const { login, register, forgotPassword, loginWithGoogle, loading } = useAuth();
@@ -446,13 +446,13 @@ const Login = () => {
                   <label htmlFor="birthDate" className="block text-sm font-medium text-gray-300">
                     Date of Birth
                   </label>
-                  <DatePicker
+                  <input
+                    type="date"
                     value={formData.birthDate}
-                    onChange={(date) => setFormData(prev => ({ ...prev, birthDate: date }))}
-                    placeholder="DD/MM/YYYY"
-                    className="mt-1"
-                    maxDate={new Date()} // Can't select future dates
-                    minDate={new Date(1900, 0, 1)} // Reasonable minimum date
+                    onChange={(e) => setFormData(prev => ({ ...prev, birthDate: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 mt-1"
+                    max={new Date().toISOString().split('T')[0]}
+                    min="1900-01-01"
                   />
                 </div>
               </>

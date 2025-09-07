@@ -22,8 +22,7 @@ import {
 } from 'lucide-react';
 import { hrmAPI, aiCoachAPI } from '../services/api';
 // CrossNavigationWidget removed during refactoring
-import AIQuotaWidget from './ui/AIQuotaWidget';
-import AIInsightCard from './ui/AIInsightCard';
+// AIQuotaWidget and AIInsightCard removed during refactoring
 import { useAnalytics } from '../hooks/useAnalytics';
 
 const AIIntelligenceCenter = ({ onSectionChange }) => {

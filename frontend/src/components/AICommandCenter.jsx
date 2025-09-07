@@ -13,9 +13,7 @@ import {
 } from 'lucide-react';
 import { hrmAPI, aiCoachAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
-import AIQuotaWidget from './ui/AIQuotaWidget';
-import AIInsightCard from './ui/AIInsightCard';
-import AIActionButton from './ui/AIActionButton';
+// AIQuotaWidget, AIInsightCard, and AIActionButton removed during refactoring
 
 const AICommandCenter = ({ onSectionChange }) => {
   const { toast } = useToast();
@@ -136,12 +134,13 @@ const AICommandCenter = ({ onSectionChange }) => {
           </div>
         </div>
 
-        {/* AI Quota Status */}
-        <AIQuotaWidget 
-          remaining={currentQuota.remaining} 
-          total={currentQuota.total}
-          showDetails={true}
-        />
+        {/* AI Quota Status - temporarily removed during refactoring */}
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <h3 className="text-lg font-semibold text-white mb-2">AI Quota</h3>
+          <p className="text-gray-400 text-sm">
+            AI quota tracking has been temporarily removed during refactoring.
+          </p>
+        </div>
 
         {/* Quick Actions Section */}
         <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
@@ -207,28 +206,22 @@ const AICommandCenter = ({ onSectionChange }) => {
             </div>
 
             {/* Weekly Review */}
-            <AIActionButton
-              icon={TrendingUp}
-              title="Weekly Review"
-              description="Quick strategic analysis of your progress"
-              buttonText="Generate Review"
-              onClick={() => onSectionChange('ai-coach')}
-              disabled={currentQuota.remaining === 0}
-              size="small"
-              quotaRequired={true}
-            />
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <h3 className="text-lg font-semibold text-white mb-2">Weekly Review</h3>
+              <p className="text-gray-400 text-sm mb-3">Quick strategic analysis of your progress</p>
+              <button className="w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                Coming Soon
+              </button>
+            </div>
 
             {/* Obstacle Help */}
-            <AIActionButton
-              icon={AlertTriangle}
-              title="Get Unstuck"
-              description="AI help when you're blocked on projects"
-              buttonText="Analyze Obstacles"
-              onClick={() => onSectionChange('ai-coach')}
-              disabled={currentQuota.remaining === 0}
-              size="small"
-              quotaRequired={true}
-            />
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <h3 className="text-lg font-semibold text-white mb-2">Get Unstuck</h3>
+              <p className="text-gray-400 text-sm mb-3">AI help when you're blocked on projects</p>
+              <button className="w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                Coming Soon
+              </button>
+            </div>
           </div>
         </div>
 
@@ -263,14 +256,13 @@ const AICommandCenter = ({ onSectionChange }) => {
             ) : recentInsights && recentInsights.length > 0 ? (
               <div className="space-y-4">
                 {recentInsights.slice(0, 3).map((insight) => (
-                  <AIInsightCard
-                    key={insight.id}
-                    insight={insight}
-                    onClick={handleInsightClick}
-                    compact={true}
-                    showActions={false}
-                    showMetrics={true}
-                  />
+                  <div key={insight.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                    <h3 className="text-lg font-semibold text-white mb-2">{insight.title || 'AI Insight'}</h3>
+                    <p className="text-gray-400 text-sm mb-3">{insight.description || 'AI insight description'}</p>
+                    <button className="w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                      View Details
+                    </button>
+                  </div>
                 ))}
               </div>
             ) : (

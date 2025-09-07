@@ -3,8 +3,7 @@ import { Bot, Target, TrendingUp, AlertTriangle, Loader2, AlertCircle, Brain, Ch
 import api, { aiCoachAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
 // CrossNavigationWidget removed during refactoring
-import AIQuotaWidget from './ui/AIQuotaWidget';
-import AIActionButton from './ui/AIActionButton';
+// AIQuotaWidget and AIActionButton removed during refactoring
 
 // Defensive check to ensure API dependency injection is working
 if (!api) {

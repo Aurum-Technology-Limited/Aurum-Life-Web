@@ -6,9 +6,7 @@ import { aiCoachAPI, tasksAPI, hrmAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 // Removed missing component imports during refactoring
-import AIBadge from './ui/AIBadge';
-import AIInsightPanel from './ui/AIInsightPanel';
-import ConfidenceIndicator from './ui/ConfidenceIndicator';
+// AIBadge, AIInsightPanel, and ConfidenceIndicator removed during refactoring
 
 const DragTaskItem = memo(({ task, index, moveTask, onToggleComplete, onStartPomodoro, onRemove }) => {
   const [{ isDragging }, drag] = useDrag({
