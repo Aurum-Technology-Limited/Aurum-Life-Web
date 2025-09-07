@@ -5,11 +5,7 @@ import {Calendar, Clock, CheckCircle2, Circle, Plus, AlertCircle, Timer, GripVer
 import { aiCoachAPI, tasksAPI, hrmAPI } from '../services/api';
 import { useDataContext } from '../contexts/DataContext';
 import { useAuth } from '../contexts/SupabaseAuthContext';
-import PomodoroTimer from './PomodoroTimer';
-import TaskWhyStatements from './TaskWhyStatements';
-import TaskSearchBar from './TaskSearchBar';
-import MorningReflection from './MorningReflection';
-import EveningReflectionPrompt from './EveningReflectionPrompt';
+// Removed missing component imports during refactoring
 import AIBadge from './ui/AIBadge';
 import AIInsightPanel from './ui/AIInsightPanel';
 import ConfidenceIndicator from './ui/ConfidenceIndicator';
@@ -520,19 +516,39 @@ const Today = memo(() => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      {/* Daily Ritual Prompts (moved from DailyRitualManager) */}
+      {/* Daily Ritual Prompts - temporarily removed during refactoring */}
       {user && showMorningPrompt && (
-        <MorningReflection
-          onComplete={handleMorningComplete}
-          onClose={closeMorningPrompt}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-white mb-4">Morning Reflection</h3>
+            <p className="text-gray-400 mb-4">
+              Morning reflection has been temporarily removed during refactoring.
+            </p>
+            <button
+              onClick={closeMorningPrompt}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       {user && showEveningPrompt && (
-        <EveningReflectionPrompt
-          onComplete={handleEveningComplete}
-          onClose={closeEveningPrompt}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-white mb-4">Evening Reflection</h3>
+            <p className="text-gray-400 mb-4">
+              Evening reflection has been temporarily removed during refactoring.
+            </p>
+            <button
+              onClick={closeEveningPrompt}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="min-h-screen p-6" style={{ backgroundColor: '#0B0D14', color: '#ffffff' }}>
@@ -625,10 +641,11 @@ const Today = memo(() => {
                 {/* Unified Action Bar: Search + Suggest My Focus */}
                 <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-3 sm:space-y-0">
                   <div className="flex-1">
-                    <TaskSearchBar 
-                      onAddTask={handleAddTaskToFocus}
-                      placeholder="Search for tasks or..."
-                    />
+                    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                      <p className="text-gray-400 text-sm">
+                        Task search has been temporarily removed during refactoring.
+                      </p>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -750,12 +767,13 @@ const Today = memo(() => {
                   </div>
                 )}
                 
-                {/* Task Why Statements - Show contextual insights */}
+                {/* Task Why Statements - temporarily removed during refactoring */}
                 {todaysTasks.length > 0 && (
-                  <TaskWhyStatements 
-                    taskIds={todaysTasks.filter(task => !task.completed).map(task => task.id)}
-                    showAll={false}
-                  />
+                  <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-4">
+                    <p className="text-gray-400 text-sm">
+                      Task insights have been temporarily removed during refactoring.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -766,11 +784,13 @@ const Today = memo(() => {
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Daily Engagement Hub</h3>
                 
-                {/* Pomodoro Timer */}
-                <PomodoroTimer
-                  taskName={activePomodoro?.name}
-                  onSessionComplete={handlePomodoroComplete}
-                />
+                {/* Pomodoro Timer - temporarily removed during refactoring */}
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                  <h3 className="text-lg font-semibold text-white mb-2">Pomodoro Timer</h3>
+                  <p className="text-gray-400 text-sm">
+                    Pomodoro timer has been temporarily removed during refactoring.
+                  </p>
+                </div>
                 
                 {/* Daily Ritual Buttons */}
                 <div className="mt-4 flex space-x-3">
