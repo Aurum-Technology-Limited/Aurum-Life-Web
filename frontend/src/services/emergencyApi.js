@@ -138,12 +138,12 @@ export const emergencyAPI = {
   },
   
   aiCoach: () => queuedApiCall(
-    () => apiClient.get('/api/ai/task-why-statements'),
+    () => apiClient.get('/ai/task-why-statements'),
     'ai_coach'
   ),
   
   aiCoachChat: (message) => queuedApiCall(
-    () => apiClient.post('/api/ai/decompose-project', { 
+    () => apiClient.post('/ai/decompose-project', { 
       project_name: message,
       template_type: 'general'
     }),

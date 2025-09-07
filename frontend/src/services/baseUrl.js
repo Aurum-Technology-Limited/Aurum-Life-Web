@@ -167,7 +167,15 @@ export function getBackendBaseUrl() {
     URLLogger.log('error', 'URL resolution failed:', error.message);
   }
   
-  // Step 3: Last resort - use sensible fallback based on environment
+  // Step 3: Last resort - use Supabase Edge Function
+  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+  if (supabaseUrl) {
+    const edgeFunctionUrl = `${supabaseUrl}/functions/v1`;
+    URLLogger.log('success', 'Using Supabase Edge Function:', edgeFunctionUrl);
+    return edgeFunctionUrl;
+  }
+  
+  // Step 4: Fallback to current domain
   const currentDomain = typeof window !== 'undefined' ? window.location?.origin : null;
   const devFallback = currentDomain || 'https://journal-analytics-1.preview.emergentagent.com';
   

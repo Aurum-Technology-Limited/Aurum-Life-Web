@@ -175,6 +175,12 @@ function createAPIClient() {
       config.headers['Content-Type'] = 'application/json';
       config.headers['Accept'] = 'application/json';
       
+      // Add Supabase apikey header for Edge Functions
+      const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+      if (supabaseAnonKey) {
+        config.headers['apikey'] = supabaseAnonKey;
+      }
+      
       return config;
     },
     (error) => {

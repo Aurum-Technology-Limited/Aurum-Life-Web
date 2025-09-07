@@ -30,7 +30,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   supabaseClient = {
     auth: {
       getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      onAuthStateChange: (callback) => {
+        // Immediately call the callback to resolve loading state
+        setTimeout(() => callback('SIGNED_OUT', null), 0);
+        return { data: { subscription: { unsubscribe: () => {} } } };
+      },
       signInWithPassword: () => Promise.resolve({ data: { user: null }, error: null }),
       signUp: () => Promise.resolve({ data: { user: null }, error: null }),
       signOut: () => Promise.resolve({ error: null }),

@@ -47,10 +47,17 @@ export const AuthProvider = ({ children }) => {
         console.log('🔧 Continuing without authentication due to error');
       } finally {
         setLoading(false);
+        clearTimeout(loadingTimeout);
       }
     };
 
     getInitialSession();
+
+    // Fallback timeout to ensure loading always resolves
+    const loadingTimeout = setTimeout(() => {
+      console.log('⏰ Loading timeout - forcing loading to false');
+      setLoading(false);
+    }, 5000);
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -69,6 +76,7 @@ export const AuthProvider = ({ children }) => {
         }
         
         setLoading(false);
+        clearTimeout(loadingTimeout);
       }
     );
 
