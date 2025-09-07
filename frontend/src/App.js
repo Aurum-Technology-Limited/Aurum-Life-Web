@@ -155,8 +155,11 @@ function App() {
 
   // Global error handler setup
   useEffect(() => {
-    globalErrorHandler.setup();
-    return () => globalErrorHandler.cleanup();
+    // Global error handler is already set up in its constructor
+    // No additional setup needed
+    return () => {
+      // Cleanup if needed
+    };
   }, []);
 
   const handleNavigateToSection = (section, params = {}) => {
