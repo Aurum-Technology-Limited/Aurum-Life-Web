@@ -21,17 +21,11 @@ import {
 import UserMenu from './UserMenu';
 import { useAuth } from '../contexts/SupabaseAuthContext';
 import { useSemanticSearch } from './SemanticSearch';
-import CommandPalette from './CommandPalette';
 
 const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
   const { user } = useAuth();
   const { open: openSemanticSearch } = useSemanticSearch();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  
-  // Command palette handlers
-  const openCommandPalette = () => setCommandPaletteOpen(true);
-  const closeCommandPalette = () => setCommandPaletteOpen(false);
 
   const navigation = [
     {
@@ -145,12 +139,7 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
         return;
       }
 
-      // Command palette shortcut
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        openCommandPalette();
-        return;
-      }
+      // Command palette shortcut removed - using semantic search instead
 
       const shortcuts = {
         'd': 'dashboard',
@@ -293,21 +282,7 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
           </button>
         </div>
 
-        {/* Command Palette Button */}
-        {!sidebarCollapsed && (
-          <div className="px-4 py-3 border-b border-gray-700">
-            <button
-              onClick={openCommandPalette}
-              className="w-full flex items-center px-3 py-2 text-sm text-gray-400 bg-gray-800 rounded-lg border border-gray-700 hover:bg-gray-750 hover:text-white transition-all"
-            >
-              <SearchIcon className="h-4 w-4 mr-3" />
-              <span>Search commands...</span>
-              <kbd className="ml-auto text-xs px-1.5 py-0.5 bg-gray-700 border border-gray-600 rounded">
-                ⌘K
-              </kbd>
-            </button>
-          </div>
-        )}
+        {/* Command Palette Button removed - using semantic search instead */}
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto scrollbar-enhanced">
@@ -365,15 +340,7 @@ const SimpleLayout = ({ children, activeSection, setActiveSection }) => {
         </main>
       </div>
 
-      {/* Command Palette */}
-      <CommandPalette 
-        isOpen={commandPaletteOpen}
-        onClose={closeCommandPalette}
-        onNavigate={(section) => {
-          setActiveSection(section);
-          closeCommandPalette();
-        }}
-      />
+      {/* Command Palette removed - using semantic search instead */}
     </div>
   );
 };
