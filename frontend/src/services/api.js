@@ -156,7 +156,7 @@ function createAPIClient() {
   const baseURL = getBackendBaseUrl();
   
   const client = axios.create({
-    baseURL: `${baseURL}/api`,
+    baseURL: baseURL,
     timeout: API_CONFIG.TIMEOUT,
     headers: {
       'Content-Type': 'application/json'
