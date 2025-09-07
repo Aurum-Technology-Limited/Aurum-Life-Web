@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bot, Target, TrendingUp, AlertTriangle, Loader2, AlertCircle, Brain, ChevronRight, Clock, Zap } from 'lucide-react';
 import api, { aiCoachAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
-import CrossNavigationWidget from './ui/CrossNavigationWidget';
+// CrossNavigationWidget removed during refactoring
 import AIQuotaWidget from './ui/AIQuotaWidget';
 import AIActionButton from './ui/AIActionButton';
 
@@ -969,12 +969,7 @@ const AICoach = ({ onSectionChange, prefillGoal = null }) => {
   return (
     <div className="space-y-8">
       
-      {/* Cross-Navigation Widget */}
-      <CrossNavigationWidget 
-        currentScreen="goal-planner"
-        onNavigate={(screen) => onSectionChange && onSectionChange(screen)}
-        relatedInsights={relatedInsights}
-      />
+      {/* Cross-Navigation Widget - temporarily removed during refactoring */}
       
       {/* Header */}
       <div className="text-center">

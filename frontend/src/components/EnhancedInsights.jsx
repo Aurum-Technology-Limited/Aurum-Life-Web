@@ -13,7 +13,7 @@ import {
 import { insightsAPI, hrmAPI, aiCoachAPI } from '../services/api';
 import { useQuery } from '@tanstack/react-query';
 import AIInsightCard from './ui/AIInsightCard';
-import CrossNavigationWidget from './ui/CrossNavigationWidget';
+// CrossNavigationWidget removed during refactoring
 
 const EnhancedInsights = ({ onSectionChange }) => {
   const [activeTab, setActiveTab] = useState('analytics'); // 'analytics', 'ai-insights'
@@ -55,11 +55,7 @@ const EnhancedInsights = ({ onSectionChange }) => {
     <div className="min-h-screen bg-[#0B0D14] text-white p-6">
       <div className="max-w-7xl mx-auto">
         
-        {/* Cross-Navigation Widget */}
-        <CrossNavigationWidget 
-          currentScreen="insights"
-          onNavigate={(screen) => onSectionChange && onSectionChange(screen)}
-        />
+        {/* Cross-Navigation Widget - temporarily removed during refactoring */}
 
         {/* Header */}
         <div className="mb-8">

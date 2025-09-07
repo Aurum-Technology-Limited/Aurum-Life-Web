@@ -21,7 +21,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { hrmAPI, aiCoachAPI } from '../services/api';
-import CrossNavigationWidget from './ui/CrossNavigationWidget';
+// CrossNavigationWidget removed during refactoring
 import AIQuotaWidget from './ui/AIQuotaWidget';
 import AIInsightCard from './ui/AIInsightCard';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -386,12 +386,7 @@ const AIIntelligenceCenter = ({ onSectionChange }) => {
     <div className="min-h-screen bg-[#0B0D14] text-white p-6">
       <div className="max-w-7xl mx-auto">
         
-        {/* Cross-Navigation Widget */}
-        <CrossNavigationWidget 
-          currentScreen="ai-insights"
-          onNavigate={(screen) => onSectionChange && onSectionChange(screen)}
-          recentCoachActions={quota ? quota.total - quota.remaining : 0}
-        />
+        {/* Cross-Navigation Widget - temporarily removed during refactoring */}
 
         {/* Header */}
         <div className="mb-8">
