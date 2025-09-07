@@ -36,10 +36,15 @@ export const AuthProvider = ({ children }) => {
           setSession(initialSession);
           if (initialSession?.user) {
             await fetchUserProfile(initialSession.user);
+          } else {
+            // No user session - set loading to false to show login
+            console.log('🔍 No user session found - showing login');
           }
         }
       } catch (error) {
         console.error('Session initialization error:', error);
+        // Even if there's an error, stop loading to show the app
+        console.log('🔧 Continuing without authentication due to error');
       } finally {
         setLoading(false);
       }

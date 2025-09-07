@@ -17,11 +17,26 @@ console.log('🔍 Supabase Environment Variables:', {
 });
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Missing Supabase environment variables:', {
+  console.warn('⚠️ Missing Supabase environment variables - using mock mode:', {
     REACT_APP_SUPABASE_URL: supabaseUrl,
     REACT_APP_SUPABASE_ANON_KEY: supabaseAnonKey ? 'Set' : 'Missing'
   });
-  throw new Error('Missing Supabase environment variables');
+  
+  // Create a mock Supabase client for development
+  const mockSupabase = {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signInWithPassword: () => Promise.resolve({ data: { user: null }, error: null }),
+      signUp: () => Promise.resolve({ data: { user: null }, error: null }),
+      signOut: () => Promise.resolve({ error: null }),
+    }
+  };
+  
+  console.log('🔧 Using mock Supabase client for development');
+  export const supabase = mockSupabase;
+  export const auth = mockSupabase.auth;
+  return;
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
