@@ -435,6 +435,10 @@ CREATE POLICY "Users can view task templates for their project templates" ON pub
 CREATE POLICY "Users can manage their own user stats" ON public.user_stats FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage their own password reset tokens" ON public.password_reset_tokens FOR ALL USING (auth.uid() = user_id);
 
+-- New RLS Policies for RAG and Enhanced Features
+CREATE POLICY "Users can access their embeddings" ON public.user_metadata_embeddings FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can view their webhook logs" ON public.webhook_logs FOR SELECT USING (auth.uid() = user_id);
+
 -- Functions and Triggers for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
