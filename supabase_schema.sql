@@ -362,6 +362,54 @@ CREATE TABLE public.daily_reflections (
 -- Add daily_streak column to user_profiles for streak tracking
 ALTER TABLE public.user_profiles 
 ADD COLUMN IF NOT EXISTS daily_streak INTEGER DEFAULT 0;
+
+-- RAG System Enhancements (Migration 016+)
+-- Enable pgvector extension for semantic search
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- User Metadata Embeddings for RAG System
+CREATE TABLE IF NOT EXISTS public.user_metadata_embeddings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  domain_tag TEXT NOT NULL, -- 'pillar', 'area', 'project', 'task', 'journal_entry'
+  entity_id UUID,         -- references specific entity
+  text_snippet TEXT NOT NULL,
+  embedding VECTOR(1536) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Behavioral Metrics Enhancement
+ALTER TABLE public.pillars ADD COLUMN IF NOT EXISTS behavior_metrics JSONB DEFAULT '[]'::JSONB;
+ALTER TABLE public.areas ADD COLUMN IF NOT EXISTS behavior_metrics JSONB DEFAULT '[]'::JSONB;
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS task_metadata JSONB DEFAULT '{}'::JSONB;
+
+-- Enhanced Analytics Preferences
+ALTER TABLE public.user_analytics_preferences
+  ADD COLUMN IF NOT EXISTS track_pillar_metrics BOOLEAN DEFAULT true,
+  ADD COLUMN IF NOT EXISTS record_rag_snippets BOOLEAN DEFAULT true,
+  ADD COLUMN IF NOT EXISTS store_task_context BOOLEAN DEFAULT true,
+  ADD COLUMN IF NOT EXISTS track_flow_states BOOLEAN DEFAULT true,
+  ADD COLUMN IF NOT EXISTS store_behavioral_embeddings BOOLEAN DEFAULT true;
+
+-- Webhook Logs for Background Processing
+CREATE TABLE IF NOT EXISTS public.webhook_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  webhook_type TEXT NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  table_name TEXT,
+  triggered_at TIMESTAMPTZ DEFAULT NOW(),
+  status TEXT DEFAULT 'pending',
+  error_message TEXT,
+  processed_at TIMESTAMPTZ
+);
+
+-- Enhanced user_behavior_events
+ALTER TABLE public.user_behavior_events
+  ADD COLUMN IF NOT EXISTS flow_state_event BOOLEAN DEFAULT FALSE;
+
+-- Enable RLS on new tables
+ALTER TABLE public.user_metadata_embeddings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.webhook_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.project_templates ENABLE ROW LEVEL SECURITY;
