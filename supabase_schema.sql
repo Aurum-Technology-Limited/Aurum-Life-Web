@@ -328,6 +328,25 @@ CREATE INDEX idx_resources_parent ON public.resources(parent_type, parent_id) WH
 CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);
 CREATE INDEX idx_notifications_unread ON public.notifications(user_id, is_read) WHERE is_read = FALSE;
 
+-- RAG and Behavioral Metrics Indexes
+CREATE INDEX IF NOT EXISTS idx_metadata_embeddings_hnsw
+ON public.user_metadata_embeddings USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64);
+CREATE INDEX IF NOT EXISTS idx_metadata_embeddings_user_domain ON public.user_metadata_embeddings (user_id, domain_tag);
+CREATE INDEX IF NOT EXISTS idx_metadata_embeddings_entity ON public.user_metadata_embeddings (entity_id, domain_tag);
+
+-- Behavioral metrics indexes (GIN for JSONB)
+CREATE INDEX IF NOT EXISTS idx_pillars_behavior_metrics ON public.pillars USING GIN (behavior_metrics);
+CREATE INDEX IF NOT EXISTS idx_areas_behavior_metrics ON public.areas USING GIN (behavior_metrics);
+CREATE INDEX IF NOT EXISTS idx_tasks_metadata ON public.tasks USING GIN (task_metadata);
+
+-- Enhanced analytics indexes
+CREATE INDEX IF NOT EXISTS idx_behavior_events_flow_state ON public.user_behavior_events (user_id, flow_state_event, timestamp) WHERE flow_state_event = true;
+CREATE INDEX IF NOT EXISTS idx_webhook_logs_user_type_status ON public.webhook_logs (user_id, webhook_type, status, triggered_at DESC);
+
+-- Soft delete optimized indexes for journal
+CREATE INDEX idx_journal_user_deleted_created ON public.journal_entries(user_id, deleted, created_at DESC);
+CREATE INDEX idx_journal_deleted ON public.journal_entries(deleted);
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pillars ENABLE ROW LEVEL SECURITY;
