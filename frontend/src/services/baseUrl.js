@@ -177,7 +177,7 @@ export function getBackendBaseUrl() {
   
   // Step 4: Fallback to current domain
   const currentDomain = typeof window !== 'undefined' ? window.location?.origin : null;
-  const devFallback = currentDomain || 'https://journal-analytics-1.preview.emergentagent.com';
+  const devFallback = currentDomain || 'https://supa-data-explained.preview.emergentagent.com';
   
   URLLogger.log('fallback', 'Using computed fallback:', devFallback);
   return devFallback;

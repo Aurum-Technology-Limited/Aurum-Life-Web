@@ -7,7 +7,7 @@ Quick test to debug the authentication header issue
 import requests
 import json
 
-base_url = "https://journal-analytics-1.preview.emergentagent.com"
+base_url = "https://supa-data-explained.preview.emergentagent.com"
 
 # Test 1: No auth header
 print("Test 1: No Authorization Header")

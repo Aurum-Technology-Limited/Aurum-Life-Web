@@ -21,7 +21,7 @@ import time
 import uuid
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://supa-data-explained.preview.emergentagent.com/api"
 
 class NotNullRegressionTester:
     def __init__(self):

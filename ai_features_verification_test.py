@@ -17,7 +17,7 @@ from datetime import datetime
 import time
 
 class AIFeaturesVerificationTester:
-    def __init__(self, base_url="https://journal-analytics-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://supa-data-explained.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

@@ -18,7 +18,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://supa-data-explained.preview.emergentagent.com/api"
 
 def test_onboarding_endpoint_fix():
     """Test the onboarding endpoint fix comprehensively"""

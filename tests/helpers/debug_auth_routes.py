@@ -6,7 +6,7 @@ Debug the authentication routing issue
 import requests
 
 # Test different auth endpoints
-BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com"
+BACKEND_URL = "https://supa-data-explained.preview.emergentagent.com"
 
 endpoints_to_test = [
     "/api/auth/register",

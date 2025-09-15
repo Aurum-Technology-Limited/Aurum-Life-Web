@@ -6,7 +6,7 @@ Debug current user data
 import requests
 import json
 
-BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://supa-data-explained.preview.emergentagent.com/api"
 
 def debug_user():
     # Login first

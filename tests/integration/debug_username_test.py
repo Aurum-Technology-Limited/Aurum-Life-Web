@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://supa-data-explained.preview.emergentagent.com/api"
 
 def test_username_change():
     # Login

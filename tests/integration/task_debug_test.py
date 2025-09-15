@@ -6,7 +6,7 @@ import json
 import os
 
 # Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://journal-analytics-1.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://supa-data-explained.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 async def test_task_creation_debug():

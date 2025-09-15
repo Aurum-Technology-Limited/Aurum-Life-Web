@@ -31,7 +31,7 @@ from typing import Dict, List, Any
 import uuid
 
 # Configuration - Using the backend URL from frontend/.env
-BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://supa-data-explained.preview.emergentagent.com/api"
 
 class ComprehensiveUsernameTester:
     def __init__(self):

@@ -6,7 +6,7 @@ import requests
 import json
 
 # Backend URL
-BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com"
+BACKEND_URL = "https://supa-data-explained.preview.emergentagent.com"
 
 def test_login_credentials():
     """Test various credentials for the test user"""

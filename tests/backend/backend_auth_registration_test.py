@@ -12,7 +12,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://journal-analytics-1.preview.emergentagent.com"
+BASE_URL = "https://supa-data-explained.preview.emergentagent.com"
 TIMEOUT = 30
 
 def log_test_step(step, message):

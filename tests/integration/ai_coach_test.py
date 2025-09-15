@@ -34,7 +34,7 @@ import uuid
 import time
 
 # Configuration - Using the production backend URL from frontend/.env
-BACKEND_URL = "https://journal-analytics-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://supa-data-explained.preview.emergentagent.com/api"
 
 class AiCoachTester:
     def __init__(self):

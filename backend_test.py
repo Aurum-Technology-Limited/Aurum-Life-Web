@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 class AurumLifeAPITester:
-    def __init__(self, base_url="https://journal-analytics-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://supa-data-explained.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.user_id = None
@@ -398,7 +398,7 @@ import uuid
 import time
 
 class AnalyticsBackendTester:
-    def __init__(self, base_url="https://journal-analytics-1.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://supa-data-explained.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.session_id = None
