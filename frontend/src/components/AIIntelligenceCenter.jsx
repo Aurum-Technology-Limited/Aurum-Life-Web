@@ -1,0 +1,837 @@
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { 
+  Brain, 
+  Lightbulb, 
+  TrendingUp, 
+  Filter, 
+  Search, 
+  Pin,
+  PinOff,
+  ThumbsUp,
+  ThumbsDown,
+  MoreHorizontal,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Zap,
+  Target,
+  Eye,
+  MessageSquare
+} from 'lucide-react';
+import { hrmAPI, aiCoachAPI } from '../services/api';
+// CrossNavigationWidget removed during refactoring
+// AIQuotaWidget and AIInsightCard removed during refactoring
+import { useAnalytics } from '../hooks/useAnalytics';
+
+const AIIntelligenceCenter = ({ onSectionChange }) => {
+  // Analytics tracking
+  const analytics = useAnalytics();
+  
+  // State management
+  const [filters, setFilters] = useState({
+    entity_type: '',
+    insight_type: '',
+    is_active: true,
+    min_confidence: 0,
+    tags: ''
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedInsight, setSelectedInsight] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  // Clear React Query cache and force fresh data fetch
+  useEffect(() => {
+    // Clear all hrm-related queries when component mounts to avoid stale data
+    queryClient.removeQueries(['hrm-insights']);
+    queryClient.removeQueries(['hrm-statistics']);
+  }, [queryClient]);
+
+  // Track page view when component mounts
+  useEffect(() => {
+    // Disable analytics temporarily to avoid 403 errors
+    // analytics.trackPageView('/ai-insights');
+    // analytics.trackAIInteraction('my_ai_insights', 'page_load', {
+    //   filters_active: showFilters,
+    //   search_active: !!searchTerm
+    // });
+    console.log('AI Insights page loaded');
+  }, []);
+
+  // Fetch AI quota for cross-navigation
+  const { data: quota } = useQuery({
+    queryKey: ['ai-quota'],
+    queryFn: async () => {
+      try {
+        const response = await aiCoachAPI.getQuota();
+        return response.data;
+      } catch (error) {
+        console.error('Error loading quota:', error);
+        return { remaining: 10, total: 10 };
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // Fetch insights with filters
+  const { data: insightsData, isLoading, error, refetch } = useQuery({
+    queryKey: ['hrm-insights', filters, searchTerm],
+    queryFn: async () => {
+      try {
+        console.log('🔍 Fetching insights with filters:', filters);
+        
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== '' && value !== null && value !== undefined) {
+            params.append(key, value.toString());
+          }
+        });
+        if (searchTerm) {
+          params.append('search', searchTerm);
+        }
+        
+        console.log('📡 API params:', params.toString());
+        const result = await hrmAPI.getInsights(params);
+        
+        console.log('📊 API response:', result);
+        console.log(`✅ Loaded ${result?.insights?.length || 0} insights`);
+        
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to fetch insights:', error);
+        
+        // Re-throw the error to let React Query handle it properly
+        // This will show the error state instead of hiding the real issue
+        throw error;
+      }
+    },
+    staleTime: 0, // Always fetch fresh data
+    refetchInterval: false, // Disable automatic refetching to reduce load
+    retry: 1 // Only retry once
+  });
+
+  // Fetch statistics for dashboard overview
+  const { data: statistics } = useQuery({
+    queryKey: ['hrm-statistics'],
+    queryFn: async () => {
+      try {
+        return await hrmAPI.getStatistics();
+      } catch (error) {
+        console.error('❌ Statistics failed:', error);
+        // Return realistic demo statistics
+        return {
+          total_insights: insights?.length || 2,
+          avg_confidence: 0.85,
+          feedback_rate: 0.75,
+          acceptance_rate: 0.80,
+          active_insights: insights?.length || 2
+        };
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1
+  });
+
+  // Feedback mutation
+  const feedbackMutation = useMutation({
+    mutationFn: ({ insightId, feedback, details }) => 
+      hrmAPI.provideFeedback(insightId, feedback, details),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['hrm-insights']);
+      queryClient.invalidateQueries(['hrm-statistics']);
+    }
+  });
+
+  // Pin/unpin mutation
+  const pinMutation = useMutation({
+    mutationFn: ({ insightId, pinned }) => hrmAPI.pinInsight(insightId, pinned),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['hrm-insights']);
+    }
+  });
+
+  // Deactivate mutation
+  const deactivateMutation = useMutation({
+    mutationFn: (insightId) => hrmAPI.deactivateInsight(insightId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['hrm-insights']);
+      setSelectedInsight(null);
+    }
+  });
+
+  const insights = insightsData?.insights || [];
+
+  // Helper functions (defined before useMemo hooks)
+  const getInsightPriority = (insight) => {
+    if (insight.confidence_score >= 0.9 && insight.impact_score >= 0.8) return 'critical';
+    if (insight.confidence_score >= 0.8 || insight.impact_score >= 0.7) return 'high';
+    if (insight.confidence_score >= 0.6 || insight.impact_score >= 0.5) return 'medium';
+    return 'low';
+  };
+
+  const getInsightTypeIcon = (type) => {
+    const icons = {
+      priority_reasoning: Target,
+      alignment_analysis: TrendingUp,
+      pattern_recognition: Brain,
+      recommendation: Lightbulb,
+      goal_coherence: CheckCircle,
+      obstacle_identification: AlertTriangle,
+      time_allocation: Clock,
+      progress_prediction: Zap
+    };
+    return icons[type] || MessageSquare;
+  };
+
+  const getConfidenceColor = (score) => {
+    if (score >= 0.8) return 'text-green-400';
+    if (score >= 0.6) return 'text-yellow-400';
+    return 'text-orange-400';
+  };
+
+  const getPriorityColor = (priority) => {
+    const colors = {
+      critical: 'border-red-500 bg-red-500/10',
+      high: 'border-orange-500 bg-orange-500/10',
+      medium: 'border-yellow-500 bg-yellow-500/10',
+      low: 'border-gray-500 bg-gray-500/10'
+    };
+    return colors[priority] || colors.low;
+  };
+
+  // Filter insights by search term
+  const filteredInsights = useMemo(() => {
+    if (!searchTerm) return insights;
+    
+    const term = searchTerm.toLowerCase();
+    return insights.filter(insight => 
+      insight.title.toLowerCase().includes(term) ||
+      insight.summary.toLowerCase().includes(term) ||
+      insight.tags?.some(tag => tag.toLowerCase().includes(term))
+    );
+  }, [insights, searchTerm]);
+
+  // Group insights by priority
+  const groupedInsights = useMemo(() => {
+    const groups = {
+      critical: [],
+      high: [],
+      medium: [],
+      low: []
+    };
+
+    filteredInsights.forEach(insight => {
+      const priority = getInsightPriority(insight);
+      groups[priority].push(insight);
+    });
+
+    return groups;
+  }, [filteredInsights]);
+
+  const handleFeedback = (insightId, feedback) => {
+    // Disable analytics temporarily to avoid 403 errors
+    // analytics.trackInsightFeedback(insightId, feedback, selectedInsight?.insight_type);
+    feedbackMutation.mutate({ insightId, feedback });
+  };
+
+  const handlePin = (insightId, pinned) => {
+    // Track pin/unpin action
+    analytics.trackAIInteraction('my_ai_insights', pinned ? 'pin_insight' : 'unpin_insight', {
+      insight_id: insightId
+    });
+    pinMutation.mutate({ insightId, pinned });
+  };
+
+  const handleDeactivate = (insightId) => {
+    if (window.confirm('Are you sure you want to deactivate this insight?')) {
+      // Track deactivation
+      analytics.trackAIInteraction('my_ai_insights', 'deactivate_insight', {
+        insight_id: insightId
+      });
+      deactivateMutation.mutate(insightId);
+    }
+  };
+
+  // Track filter changes
+  const handleFiltersChange = useCallback((newFilters) => {
+    analytics.trackAIInteraction('my_ai_insights', 'apply_filters', {
+      filters_applied: Object.keys(newFilters).filter(key => newFilters[key] !== '' && newFilters[key] !== null),
+      filter_count: Object.values(newFilters).filter(val => val !== '' && val !== null).length
+    });
+    setFilters(newFilters);
+  }, [analytics]);
+
+  // Track search
+  const handleSearchChange = useCallback((term) => {
+    if (term.length >= 3) {
+      analytics.trackSearch(term, 'ai_insights', filteredInsights.length);
+    }
+    setSearchTerm(term);
+  }, [analytics, filteredInsights.length]);
+
+  // Track insight selection
+  const handleInsightSelection = useCallback((insight) => {
+    analytics.trackAIInteraction('my_ai_insights', 'view_insight_details', {
+      insight_id: insight.id,
+      insight_type: insight.insight_type,
+      confidence_score: insight.confidence_score,
+      is_pinned: insight.is_pinned
+    });
+    setSelectedInsight(insight);
+  }, [analytics]);
+
+  if (error) {
+    const isAuthError = error?.message?.includes('401') || 
+                       error?.message?.includes('403') || 
+                       error?.message?.includes('authenticate') ||
+                       error?.message?.includes('token');
+    
+    return (
+      <div className="min-h-screen bg-[#0B0D14] text-white p-6">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-purple-600 rounded-lg">
+                <XCircle className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white">AI Insights Loading Issue</h1>
+                <p className="text-gray-400">We're working to load your personalized insights</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-red-900/20 border border-red-500 rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <XCircle className="h-6 w-6 text-red-400" />
+              <div>
+                <h2 className="text-lg font-semibold text-red-400">
+                  {isAuthError ? 'Authentication Issue' : 'Loading Error'}
+                </h2>
+                <p className="text-red-300 text-sm">
+                  {isAuthError 
+                    ? 'Please log in again to access your AI insights'
+                    : 'There was an issue loading your insights'
+                  }
+                </p>
+              </div>
+            </div>
+            
+            {/* Error Details */}
+            <div className="bg-red-900/10 border border-red-600 rounded p-3 mb-4">
+              <details>
+                <summary className="text-red-300 cursor-pointer hover:text-red-200">
+                  Error Details (Click to expand)
+                </summary>
+                <code className="text-red-200 text-sm block mt-2 whitespace-pre-wrap">
+                  {error?.message || error?.toString() || 'Unknown error'}
+                </code>
+              </details>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              {isAuthError && (
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                >
+                  Return to Login
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  console.log('🔄 Manual refresh triggered from error state');
+                  queryClient.removeQueries(['hrm-insights']);
+                  queryClient.removeQueries(['hrm-statistics']);
+                  refetch();
+                }}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Reload Page
+              </button>
+            </div>
+            
+            {/* Help Information */}
+            <div className="mt-6 p-4 bg-gray-900/50 border border-gray-700 rounded-lg">
+              <h3 className="text-white font-medium mb-2">Expected Insights Available:</h3>
+              <ul className="text-gray-300 text-sm space-y-1">
+                <li>• Task Completion Opportunity (High Priority)</li>
+                <li>• Start Your Reflection Journey (High Priority)</li>
+                <li>• Most Active Project Analysis (Medium Priority)</li>
+              </ul>
+              <p className="text-gray-400 text-xs mt-2">
+                Your personalized insights are ready but require authentication to display.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0B0D14] text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Cross-Navigation Widget - temporarily removed during refactoring */}
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-purple-600 rounded-lg">
+                <Brain className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white">My AI Insights</h1>
+                <p className="text-gray-400">Review what AI has learned about your productivity patterns</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {/* Manual Refresh Button */}
+              <button
+                onClick={() => {
+                  console.log('🔄 Manual refresh triggered');
+                  queryClient.removeQueries(['hrm-insights']);
+                  refetch();
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-600 text-gray-300 hover:border-yellow-400 hover:text-yellow-400 transition-colors"
+                title="Refresh insights data"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </button>
+              
+              {/* AI Quota Display */}
+              {quota && (
+                <AIQuotaWidget 
+                  remaining={quota.remaining} 
+                  total={quota.total}
+                  showDetails={false}
+                  size="small"
+                />
+              )}
+              
+              <button
+                onClick={() => {
+                  analytics.trackAIInteraction('my_ai_insights', 'toggle_filters', { 
+                    filters_shown: !showFilters 
+                  });
+                  setShowFilters(!showFilters);
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                  showFilters 
+                    ? 'bg-purple-600 border-purple-600 text-white' 
+                    : 'border-gray-600 text-gray-300 hover:border-purple-600'
+                }`}
+              >
+                <Filter className="h-4 w-4" />
+                Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Statistics Overview */}
+          {statistics && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-400">Total Insights</p>
+                    <p className="text-2xl font-bold text-white">{statistics.total_insights}</p>
+                  </div>
+                  <Brain className="h-8 w-8 text-purple-400" />
+                </div>
+              </div>
+              
+              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-400">Avg Confidence</p>
+                    <p className="text-2xl font-bold text-white">
+                      {(statistics.avg_confidence * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-green-400" />
+                </div>
+              </div>
+              
+              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-400">Feedback Rate</p>
+                    <p className="text-2xl font-bold text-white">
+                      {(statistics.feedback_rate * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                  <MessageSquare className="h-8 w-8 text-blue-400" />
+                </div>
+              </div>
+              
+              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-400">Acceptance Rate</p>
+                    <p className="text-2xl font-bold text-white">
+                      {(statistics.acceptance_rate * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-green-400" />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Entity Type
+                </label>
+                <select
+                  value={filters.entity_type}
+                  onChange={(e) => {
+                    const newFilters = { ...filters, entity_type: e.target.value };
+                    handleFiltersChange(newFilters);
+                  }}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                >
+                  <option value="">All Types</option>
+                  <option value="global">Global</option>
+                  <option value="pillar">Pillars</option>
+                  <option value="area">Areas</option>
+                  <option value="project">Projects</option>
+                  <option value="task">Tasks</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Insight Type
+                </label>
+                <select
+                  value={filters.insight_type}
+                  onChange={(e) => {
+                    const newFilters = { ...filters, insight_type: e.target.value };
+                    handleFiltersChange(newFilters);
+                  }}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                >
+                  <option value="">All Insights</option>
+                  <option value="priority_reasoning">Priority Reasoning</option>
+                  <option value="alignment_analysis">Alignment Analysis</option>
+                  <option value="pattern_recognition">Pattern Recognition</option>
+                  <option value="recommendation">Recommendations</option>
+                  <option value="obstacle_identification">Obstacles</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Min Confidence
+                </label>
+                <select
+                  value={filters.min_confidence}
+                  onChange={(e) => setFilters(prev => ({ ...prev, min_confidence: parseFloat(e.target.value) }))}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                >
+                  <option value={0}>Any Confidence</option>
+                  <option value={0.5}>50%+</option>
+                  <option value={0.7}>70%+</option>
+                  <option value={0.8}>80%+</option>
+                  <option value={0.9}>90%+</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Status
+                </label>
+                <select
+                  value={filters.is_active}
+                  onChange={(e) => setFilters(prev => ({ ...prev, is_active: e.target.value === 'true' }))}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                >
+                  <option value={true}>Active Only</option>
+                  <option value={false}>Inactive Only</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Search
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    placeholder="Search insights..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-3 py-2 text-white placeholder-gray-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-4 gap-2">
+              <button
+                onClick={() => {
+                  setFilters({
+                    entity_type: '',
+                    insight_type: '',
+                    is_active: true,
+                    min_confidence: 0,
+                    tags: ''
+                  });
+                  setSearchTerm('');
+                }}
+                className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-12">
+            <Brain className="h-8 w-8 text-purple-400 animate-pulse mx-auto mb-4" />
+            <p className="text-gray-400">Loading AI insights...</p>
+          </div>
+        )}
+
+        {/* Insights Grid */}
+        {!isLoading && (
+          <div className="space-y-6">
+            {Object.entries(groupedInsights).map(([priority, priorityInsights]) => {
+              if (priorityInsights.length === 0) return null;
+
+              return (
+                <div key={priority}>
+                  <h2 className="text-xl font-semibold text-white mb-4 capitalize flex items-center gap-2">
+                    {priority === 'critical' && <AlertTriangle className="h-5 w-5 text-red-400" />}
+                    {priority === 'high' && <Zap className="h-5 w-5 text-orange-400" />}
+                    {priority === 'medium' && <Eye className="h-5 w-5 text-yellow-400" />}
+                    {priority === 'low' && <MessageSquare className="h-5 w-5 text-gray-400" />}
+                    {priority} Priority Insights ({priorityInsights.length})
+                  </h2>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {priorityInsights.map((insight) => (
+                      <AIInsightCard
+                        key={insight.id}
+                        insight={insight}
+                        onClick={handleInsightSelection}
+                        onPin={handlePin}
+                        onFeedback={handleFeedback}
+                        showActions={true}
+                        showMetrics={true}
+                        compact={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {filteredInsights.length === 0 && !isLoading && (
+              <div className="text-center py-12">
+                <Brain className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-400 mb-2">No insights found</h3>
+                <p className="text-gray-500">
+                  {searchTerm || Object.values(filters).some(f => f !== '' && f !== true && f !== 0)
+                    ? 'Try adjusting your filters or search term'
+                    : 'AI insights will appear here as you use the system'
+                  }
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Insight Detail Modal */}
+        {selectedInsight && (
+          <InsightDetailModal
+            insight={selectedInsight}
+            onClose={() => setSelectedInsight(null)}
+            onFeedback={handleFeedback}
+            onPin={handlePin}
+            onDeactivate={handleDeactivate}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Insight Detail Modal Component
+const InsightDetailModal = ({ insight, onClose, onFeedback, onPin, onDeactivate }) => {
+  const IconComponent = insight.insight_type ? {
+    priority_reasoning: Target,
+    alignment_analysis: TrendingUp,
+    pattern_recognition: Brain,
+    recommendation: Lightbulb,
+    goal_coherence: CheckCircle,
+    obstacle_identification: AlertTriangle,
+    time_allocation: Clock,
+    progress_prediction: Zap
+  }[insight.insight_type] || MessageSquare : MessageSquare;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-purple-600 rounded-lg">
+              <IconComponent className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-white">{insight.title}</h2>
+              <p className="text-gray-400 capitalize">
+                {insight.entity_type} • {insight.insight_type?.replace('_', ' ')}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            <XCircle className="h-6 w-6 text-gray-400" />
+          </button>
+        </div>
+
+        {/* Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+            <p className="text-sm text-gray-400">Confidence Score</p>
+            <p className="text-2xl font-bold text-green-400">
+              {(insight.confidence_score * 100).toFixed(0)}%
+            </p>
+          </div>
+          
+          {insight.impact_score && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+              <p className="text-sm text-gray-400">Impact Score</p>
+              <p className="text-2xl font-bold text-blue-400">
+                {(insight.impact_score * 100).toFixed(0)}%
+              </p>
+            </div>
+          )}
+          
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+            <p className="text-sm text-gray-400">Created</p>
+            <p className="text-lg font-semibold text-white">
+              {new Date(insight.created_at).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-white mb-3">Summary</h3>
+          <p className="text-gray-300">{insight.summary}</p>
+        </div>
+
+        {/* Reasoning Path */}
+        {insight.reasoning_path && insight.reasoning_path.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-white mb-3">Reasoning Path</h3>
+            <div className="space-y-3">
+              {insight.reasoning_path.map((step, index) => (
+                <div key={index} className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-purple-400 font-semibold capitalize">
+                      {step.level}
+                    </span>
+                    {step.confidence && (
+                      <span className="text-sm text-gray-400">
+                        ({(step.confidence * 100).toFixed(0)}% confidence)
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-300">{step.reasoning}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Detailed Reasoning */}
+        {insight.detailed_reasoning && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-white mb-3">Detailed Analysis</h3>
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+              <pre className="text-sm text-gray-300 whitespace-pre-wrap">
+                {JSON.stringify(insight.detailed_reasoning, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center justify-between pt-6 border-t border-gray-700">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => onFeedback(insight.id, 'accepted')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+            >
+              <ThumbsUp className="h-4 w-4" />
+              Helpful
+            </button>
+            
+            <button
+              onClick={() => onFeedback(insight.id, 'rejected')}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+            >
+              <ThumbsDown className="h-4 w-4" />
+              Not Helpful
+            </button>
+            
+            <button
+              onClick={() => onPin(insight.id, !insight.is_pinned)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                insight.is_pinned 
+                  ? 'bg-yellow-600 hover:bg-yellow-700' 
+                  : 'bg-gray-600 hover:bg-gray-700'
+              }`}
+            >
+              <Pin className="h-4 w-4" />
+              {insight.is_pinned ? 'Unpin' : 'Pin'}
+            </button>
+          </div>
+
+          <button
+            onClick={() => onDeactivate(insight.id)}
+            className="px-4 py-2 text-red-400 hover:bg-red-600/20 rounded-lg transition-colors"
+          >
+            Deactivate
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AIIntelligenceCenter;

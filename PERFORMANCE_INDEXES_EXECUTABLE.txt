@@ -1,0 +1,149 @@
+-- Performance Optimization Indexes for Aurum Life
+-- Based on application architecture and common query patterns
+-- For Supabase SQL Editor - EXECUTABLE VERSION
+
+-- TASKS TABLE INDEXES
+-- Most queries filter by user_id and often need sorting by dates
+CREATE INDEX IF NOT EXISTS idx_tasks_user_created 
+ON public.tasks(user_id, created_at DESC);
+
+-- For filtering incomplete tasks by user with due dates
+CREATE INDEX IF NOT EXISTS idx_tasks_user_incomplete_due 
+ON public.tasks(user_id, completed, due_date) 
+WHERE completed = false;
+
+-- For project-based task queries
+CREATE INDEX IF NOT EXISTS idx_tasks_project 
+ON public.tasks(project_id) 
+WHERE project_id IS NOT NULL;
+
+-- For hierarchical task queries
+CREATE INDEX IF NOT EXISTS idx_tasks_parent 
+ON public.tasks(parent_task_id) 
+WHERE parent_task_id IS NOT NULL;
+
+-- PROJECTS TABLE INDEXES
+-- For user's active projects sorted by update time
+CREATE INDEX IF NOT EXISTS idx_projects_user_active 
+ON public.projects(user_id, archived, updated_at DESC) 
+WHERE archived = false;
+
+-- For area-based project queries
+CREATE INDEX IF NOT EXISTS idx_projects_area 
+ON public.projects(area_id) 
+WHERE area_id IS NOT NULL;
+
+-- JOURNAL ENTRIES INDEXES
+-- For user's journal entries in chronological order
+CREATE INDEX IF NOT EXISTS idx_journal_entries_user_created 
+ON public.journal_entries(user_id, created_at DESC);
+
+-- For sentiment analysis queries
+CREATE INDEX IF NOT EXISTS idx_journal_entries_sentiment 
+ON public.journal_entries(user_id, sentiment_score, created_at DESC) 
+WHERE sentiment_score IS NOT NULL;
+
+-- AREAS TABLE INDEXES
+-- For pillar-based area queries
+CREATE INDEX IF NOT EXISTS idx_areas_pillar_user 
+ON public.areas(pillar_id, user_id);
+
+-- For user's areas
+CREATE INDEX IF NOT EXISTS idx_areas_user 
+ON public.areas(user_id);
+
+-- PILLARS TABLE INDEXES
+-- For user's pillars
+CREATE INDEX IF NOT EXISTS idx_pillars_user 
+ON public.pillars(user_id);
+
+-- DAILY REFLECTIONS INDEXES
+-- For user's reflections in date order
+CREATE INDEX IF NOT EXISTS idx_daily_reflections_user_date 
+ON public.daily_reflections(user_id, reflection_date DESC);
+
+-- AI INTERACTIONS INDEXES
+-- For quota tracking and usage analytics
+CREATE INDEX IF NOT EXISTS idx_ai_interactions_user_created 
+ON public.ai_interactions(user_id, created_at DESC);
+
+-- For feature-specific queries
+CREATE INDEX IF NOT EXISTS idx_ai_interactions_user_type 
+ON public.ai_interactions(user_id, feature_type, created_at DESC) 
+WHERE feature_type IS NOT NULL;
+
+-- ALIGNMENT SCORES INDEXES
+-- For user's alignment history
+CREATE INDEX IF NOT EXISTS idx_alignment_scores_user_created 
+ON public.alignment_scores(user_id, created_at DESC);
+
+-- For project-based alignment queries
+CREATE INDEX IF NOT EXISTS idx_alignment_scores_project 
+ON public.alignment_scores(project_id) 
+WHERE project_id IS NOT NULL;
+
+-- USER STATS INDEXES
+-- Primary lookup by user
+CREATE INDEX IF NOT EXISTS idx_user_stats_user 
+ON public.user_stats(user_id);
+
+-- FEEDBACK TABLE INDEXES
+-- For user's feedback history
+CREATE INDEX IF NOT EXISTS idx_feedback_user_created 
+ON public.feedback(user_id, created_at DESC) 
+WHERE user_id IS NOT NULL;
+
+-- For admin feedback management
+CREATE INDEX IF NOT EXISTS idx_feedback_status_created 
+ON public.feedback(status, created_at DESC);
+
+-- NOTIFICATIONS INDEXES
+-- For user's unread notifications
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread 
+ON public.notifications(user_id, is_read, created_at DESC) 
+WHERE is_read = false;
+
+-- RESOURCES INDEXES
+-- For parent-child resource relationships
+CREATE INDEX IF NOT EXISTS idx_resources_parent 
+ON public.resources(parent_type, parent_id) 
+WHERE parent_id IS NOT NULL;
+
+-- For user's resources
+CREATE INDEX IF NOT EXISTS idx_resources_user 
+ON public.resources(user_id) 
+WHERE user_id IS NOT NULL;
+
+-- ANALYTICS EVENTS INDEXES (if table exists)
+-- For user behavior tracking
+CREATE INDEX IF NOT EXISTS idx_analytics_events_user_created 
+ON public.analytics_events(user_id, created_at DESC) 
+WHERE user_id IS NOT NULL;
+
+-- For session-based analytics
+CREATE INDEX IF NOT EXISTS idx_analytics_events_session 
+ON public.analytics_events(session_id, created_at) 
+WHERE session_id IS NOT NULL;
+
+-- USER PROFILES INDEXES
+-- For profile lookups
+CREATE INDEX IF NOT EXISTS idx_user_profiles_user 
+ON public.user_profiles(user_id);
+
+-- Update statistics for query planner
+ANALYZE public.tasks;
+ANALYZE public.projects;
+ANALYZE public.journal_entries;
+ANALYZE public.areas;
+ANALYZE public.pillars;
+ANALYZE public.daily_reflections;
+ANALYZE public.ai_interactions;
+ANALYZE public.alignment_scores;
+ANALYZE public.user_stats;
+ANALYZE public.feedback;
+ANALYZE public.notifications;
+ANALYZE public.resources;
+ANALYZE public.user_profiles;
+
+-- Note: If any ANALYZE command fails due to table not existing, 
+-- it's safe to ignore that specific error
